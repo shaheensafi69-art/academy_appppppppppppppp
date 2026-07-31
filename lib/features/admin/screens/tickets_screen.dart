@@ -106,7 +106,16 @@ class _TicketsScreenState extends State<TicketsScreen> {
   List<TicketMessage> messages = [];
   bool isLoadingMessages = false;
   final replyCtrl = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   bool isSending = false;
+
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
 
   @override
   void initState() {
@@ -117,7 +126,18 @@ class _TicketsScreenState extends State<TicketsScreen> {
   @override
   void dispose() {
     replyCtrl.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   Future<void> _fetchTickets() async {
@@ -132,7 +152,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
         tickets = (response as List).map((t) => TicketItem.fromJson(t)).toList();
         isLoading = false;
       });
-        } catch (e) {
+    } catch (e) {
       debugPrint("Error fetching tickets: $e");
       if (mounted) setState(() => isLoading = false);
     }
@@ -155,7 +175,8 @@ class _TicketsScreenState extends State<TicketsScreen> {
         messages = (response as List).map((m) => TicketMessage.fromJson(m)).toList();
         isLoadingMessages = false;
       });
-        } catch (e) {
+      Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
+    } catch (e) {
       debugPrint("Error fetching messages: $e");
       if (mounted) setState(() => isLoadingMessages = false);
     }
@@ -224,6 +245,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
         messages.add(newMsg);
         replyCtrl.clear();
       });
+      _scrollToBottom();
     } catch (e) {
       debugPrint("Error sending reply: $e");
     } finally {
@@ -251,14 +273,14 @@ class _TicketsScreenState extends State<TicketsScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFF030305),
+        backgroundColor: surfaceWhite,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: Colors.blueAccent, strokeWidth: 2.5),
+              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
-              Text("LOADING SUPPORT DESK...", style: TextStyle(color: Colors.grey.shade500, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text("LOADING SUPPORT DESK...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
             ],
           ),
         ),
@@ -268,285 +290,306 @@ class _TicketsScreenState extends State<TicketsScreen> {
     final currentStats = stats;
     final currentFiltered = filteredTickets;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF030305),
-      body: Stack(
-        children: [
-          Positioned(
-            top: -40,
-            left: -40,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(color: Colors.blueAccent.withOpacity(0.08), blurRadius: 90, spreadRadius: 40),
-                ],
+    // اگر تیکتی در موبایل انتخاب شده بود، صفحه چت را نشان بده
+    if (selectedTicket != null) {
+      return Scaffold(
+        backgroundColor: surfaceWhite,
+        resizeToAvoidBottomInset: true,
+        appBar: AppBar(
+          backgroundColor: surfaceWhite,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded, color: textDark),
+            onPressed: () => setState(() => selectedTicket = null),
+          ),
+          title: Text(selectedTicket!.subject, style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 12.0),
+              child: Center(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: selectedTicket!.status == 'OPEN' ? Colors.redAccent.withOpacity(0.12) : Colors.green.withOpacity(0.12),
+                    foregroundColor: selectedTicket!.status == 'OPEN' ? Colors.redAccent : Colors.green.shade700,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: toggleTicketStatus,
+                  child: Text(selectedTicket!.status == 'OPEN' ? "Close Ticket" : "Reopen", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                ),
               ),
             ),
-          ),
+          ],
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: isLoadingMessages
+                  ? const Center(child: CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5))
+                  : messages.isEmpty
+                      ? const Center(child: Text("No messages yet.", style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.bold)))
+                      : ListView.builder(
+                          controller: _scrollController,
+                          physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.all(16),
+                          itemCount: messages.length,
+                          itemBuilder: (context, index) {
+                            final msg = messages[index];
+                            bool isAdmin = msg.senderId != selectedTicket!.studentId;
 
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-              child: Column(
-                children: [
-                  // ================= HEADER =================
-                  _buildGlassCard(
-                    padding: const EdgeInsets.all(14),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text("Support Desk", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-                            const SizedBox(height: 2),
-                            Text("Resolve inquiries and manage support tickets.", style: TextStyle(fontSize: 9, color: Colors.grey.shade400)),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            _buildMiniStat("Open", currentStats['open'].toString(), Colors.blueAccent),
-                            const SizedBox(width: 8),
-                            _buildMiniStat("Resolved", currentStats['closed'].toString(), Colors.grey),
-                          ],
-                        )
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // ================= MAIN LAYOUT =================
-                  Expanded(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // LEFT: TICKET LIST (Fixed width on tablet/desktop, full if no selection on mobile)
-                        Container(
-                          width: 280,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0a0a0f).withOpacity(0.6),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white.withOpacity(0.06)),
-                          ),
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(10.0),
+                            return Align(
+                              alignment: isAdmin ? Alignment.centerRight : Alignment.centerLeft,
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(vertical: 6),
+                                padding: const EdgeInsets.all(14),
+                                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+                                decoration: BoxDecoration(
+                                  color: isAdmin ? lightPinkBg : surfaceWhite,
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(color: isAdmin ? primaryPink.withOpacity(0.2) : cardBorder, width: 1.5),
+                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
+                                ),
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    TextField(
-                                      onChanged: (val) => setState(() => searchQuery = val),
-                                      style: const TextStyle(color: Colors.white, fontSize: 11),
-                                      decoration: InputDecoration(
-                                        hintText: "Search tickets...",
-                                        hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 10),
-                                        prefixIcon: const Icon(Icons.search, color: Colors.grey, size: 14),
-                                        filled: true,
-                                        fillColor: Colors.black.withOpacity(0.4),
-                                        contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-                                      ),
+                                    Text(
+                                      isAdmin ? "Support Agent" : (msg.sender?.firstName ?? 'User'),
+                                      style: TextStyle(color: isAdmin ? primaryPink : textGrey, fontSize: 9, fontWeight: FontWeight.w900),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        _buildFilterBtn("All", "ALL"),
-                                        const SizedBox(width: 4),
-                                        _buildFilterBtn("Open", "OPEN"),
-                                        const SizedBox(width: 4),
-                                        _buildFilterBtn("Closed", "CLOSED"),
-                                      ],
-                                    )
+                                    const SizedBox(height: 4),
+                                    Text(msg.messageText, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w500)),
                                   ],
                                 ),
                               ),
-                              Expanded(
-                                child: currentFiltered.isEmpty
-                                    ? const Center(child: Text("No tickets", style: TextStyle(color: Colors.grey, fontSize: 10)))
-                                    : ListView.separated(
-                                        padding: const EdgeInsets.all(8),
-                                        itemCount: currentFiltered.length,
-                                        separatorBuilder: (_, _) => const SizedBox(height: 6),
-                                        itemBuilder: (context, index) {
-                                          final t = currentFiltered[index];
-                                          bool isSelected = selectedTicket?.id == t.id;
-                                          return GestureDetector(
-                                            onTap: () => handleSelectTicket(t),
-                                            child: Container(
-                                              padding: const EdgeInsets.all(10),
-                                              decoration: BoxDecoration(
-                                                color: isSelected ? Colors.blueAccent.withOpacity(0.2) : Colors.black.withOpacity(0.3),
-                                                borderRadius: BorderRadius.circular(12),
-                                                border: Border.all(color: isSelected ? Colors.blueAccent : Colors.white.withOpacity(0.04)),
-                                              ),
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                    children: [
-                                                      Expanded(child: Text(t.subject, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis)),
-                                                      Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: t.status == 'OPEN' ? Colors.blueAccent : Colors.grey)),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  Text(t.student != null ? "${t.student!.firstName} ${t.student!.lastName}" : "Unknown", style: TextStyle(color: Colors.grey.shade400, fontSize: 9)),
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                              ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
-                        const SizedBox(width: 12),
-
-                        // RIGHT: CHAT INTERFACE
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0a0a0f).withOpacity(0.6),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.white.withOpacity(0.06)),
-                            ),
-                            child: selectedTicket == null
-                                ? const Center(child: Text("Select a ticket to view conversation", style: TextStyle(color: Colors.grey, fontSize: 11)))
-                                : Column(
-                                    children: [
-                                      // Chat Header
-                                      Container(
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.06))),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(selectedTicket!.subject, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-                                                  Text("Department: ${selectedTicket!.department}", style: TextStyle(color: Colors.grey.shade400, fontSize: 9)),
-                                                ],
-                                              ),
-                                            ),
-                                            ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: selectedTicket!.status == 'OPEN' ? Colors.redAccent.withOpacity(0.15) : Colors.green.withOpacity(0.15),
-                                                foregroundColor: selectedTicket!.status == 'OPEN' ? Colors.redAccent : Colors.greenAccent,
-                                                elevation: 0,
-                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                              ),
-                                              onPressed: toggleTicketStatus,
-                                              child: Text(selectedTicket!.status == 'OPEN' ? "Close" : "Reopen", style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-
-                                      // Messages
-                                      Expanded(
-                                        child: isLoadingMessages
-                                            ? const Center(child: CircularProgressIndicator(color: Colors.blueAccent, strokeWidth: 2))
-                                            : messages.isEmpty
-                                                ? const Center(child: Text("No messages yet.", style: TextStyle(color: Colors.grey, fontSize: 11)))
-                                                : ListView.builder(
-                                                    padding: const EdgeInsets.all(12),
-                                                    itemCount: messages.length,
-                                                    itemBuilder: (context, index) {
-                                                      final msg = messages[index];
-                                                      bool isAdmin = msg.senderId != selectedTicket!.studentId;
-                                                      return Align(
-                                                        alignment: isAdmin ? Alignment.centerRight : Alignment.centerLeft,
-                                                        child: Container(
-                                                          margin: const EdgeInsets.symmetric(vertical: 4),
-                                                          padding: const EdgeInsets.all(10),
-                                                          constraints: const BoxConstraints(maxWidth: 260),
-                                                          decoration: BoxDecoration(
-                                                            color: isAdmin ? Colors.blueAccent.withOpacity(0.2) : Colors.white.withOpacity(0.05),
-                                                            borderRadius: BorderRadius.circular(12),
-                                                            border: Border.all(color: isAdmin ? Colors.blueAccent.withOpacity(0.3) : Colors.white10),
-                                                          ),
-                                                          child: Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            children: [
-                                                              Text(isAdmin ? "Support Agent" : msg.sender?.firstName ?? 'User', style: TextStyle(color: isAdmin ? Colors.blueAccent : Colors.grey, fontSize: 8, fontWeight: FontWeight.bold)),
-                                                              const SizedBox(height: 2),
-                                                              Text(msg.messageText, style: const TextStyle(color: Colors.white, fontSize: 11)),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      );
-                                                    },
-                                                  ),
-                                      ),
-
-                                      // Reply Input
-                                      Container(
-                                        padding: const EdgeInsets.all(10),
-                                        decoration: BoxDecoration(
-                                          border: Border(top: BorderSide(color: Colors.white.withOpacity(0.06))),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: TextField(
-                                                controller: replyCtrl,
-                                                style: const TextStyle(color: Colors.white, fontSize: 11),
-                                                decoration: InputDecoration(
-                                                  hintText: "Type your response...",
-                                                  hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 10),
-                                                  filled: true,
-                                                  fillColor: Colors.black.withOpacity(0.4),
-                                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            IconButton(
-                                              icon: isSending ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.blueAccent, strokeWidth: 2)) : const Icon(Icons.send, color: Colors.blueAccent, size: 18),
-                                              onPressed: isSending ? null : handleSendReply,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                          ),
-                        ),
-                      ],
+            ),
+            // Reply Input
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: surfaceWhite,
+                border: Border(top: BorderSide(color: cardBorder, width: 1.5)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: replyCtrl,
+                      style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                        hintText: "Type your response...",
+                        hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                        filled: true,
+                        fillColor: cardBorder.withOpacity(0.5),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    height: 50,
+                    width: 50,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryPink,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: isSending ? null : handleSendReply,
+                      child: isSending
+                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : const Icon(Icons.send_rounded, size: 18),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+      );
+    }
 
-  Widget _buildGlassCard({required Widget child, EdgeInsetsGeometry? padding}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: const Color(0xFF0a0a0f).withOpacity(0.55),
-            border: Border.all(color: Colors.white.withOpacity(0.06)),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: child,
+    // نمای اصلی لیست تیکت‌ها برای موبایل
+    return Scaffold(
+      backgroundColor: surfaceWhite,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Banner
+            Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                boxShadow: [
+                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: lightPinkBg,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Text(
+                          "SUPPORT DESK",
+                          style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
+                        ),
+                      ),
+                      const Icon(Icons.support_agent_rounded, color: primaryPink, size: 22),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text("Support Desk", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark)),
+                  const SizedBox(height: 4),
+                  const Text("Resolve inquiries and manage support tickets.", style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(child: _buildMiniStat("Open", currentStats['open'].toString(), primaryPink)),
+                      const SizedBox(width: 12),
+                      Expanded(child: _buildMiniStat("Resolved", currentStats['closed'].toString(), textGrey)),
+                    ],
+                  )
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Search Bar & Filters
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(
+                color: cardBorder.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: cardBorder, width: 1.5),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.search_rounded, color: primaryPink, size: 18),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      onChanged: (val) => setState(() => searchQuery = val),
+                      style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                        hintText: "Search tickets...",
+                        hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // Filter Tabs
+            Row(
+              children: [
+                Expanded(child: _buildFilterBtn("All", "ALL")),
+                const SizedBox(width: 8),
+                Expanded(child: _buildFilterBtn("Open", "OPEN")),
+                const SizedBox(width: 8),
+                Expanded(child: _buildFilterBtn("Closed", "CLOSED")),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Tickets List
+            currentFiltered.isEmpty
+                ? Container(
+                    padding: const EdgeInsets.all(40),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                    ),
+                    child: const Text("No tickets found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                  )
+                : ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: currentFiltered.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final t = currentFiltered[index];
+                      bool isOpen = t.status == 'OPEN';
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: surfaceWhite,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: cardBorder, width: 1.5),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: isOpen ? lightPinkBg : cardBorder,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                isOpen ? Icons.mark_email_unread_rounded : Icons.mark_email_read_rounded,
+                                color: isOpen ? primaryPink : textGrey,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(t.subject, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                  const SizedBox(height: 2),
+                                  Text(t.student != null ? "${t.student!.firstName} ${t.student!.lastName}" : "Unknown Student", style: const TextStyle(color: textGrey, fontSize: 10)),
+                                ],
+                              ),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: lightPinkBg,
+                                foregroundColor: primaryPink,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              onPressed: () => handleSelectTicket(t),
+                              child: const Text("Open Chat", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+            const SizedBox(height: 40),
+          ],
         ),
       ),
     );
@@ -554,16 +597,18 @@ class _TicketsScreenState extends State<TicketsScreen> {
 
   Widget _buildMiniStat(String title, String value, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.35),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withOpacity(0.04)),
+        color: surfaceWhite,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: cardBorder, width: 1.5),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 6, offset: const Offset(0, 2))],
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text("$title: ", style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.grey)),
-          Text(value, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: color)),
+          Text(title.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+          Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: color)),
         ],
       ),
     );
@@ -571,18 +616,17 @@ class _TicketsScreenState extends State<TicketsScreen> {
 
   Widget _buildFilterBtn(String label, String statusKey) {
     bool isActive = filterStatus == statusKey;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => filterStatus = statusKey),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          decoration: BoxDecoration(
-            color: isActive ? Colors.blueAccent.withOpacity(0.2) : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          alignment: Alignment.center,
-          child: Text(label, style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: isActive ? Colors.white : Colors.grey)),
+    return GestureDetector(
+      onTap: () => setState(() => filterStatus = statusKey),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive ? lightPinkBg : cardBorder.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isActive ? primaryPink : cardBorder, width: isActive ? 1.5 : 1),
         ),
+        alignment: Alignment.center,
+        child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: isActive ? primaryPink : textGrey)),
       ),
     );
   }

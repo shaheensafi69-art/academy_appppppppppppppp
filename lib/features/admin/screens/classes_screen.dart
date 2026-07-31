@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'class_detail_screen.dart'; // در ادامه این صفحه را می‌سازیم
+import 'class_detail_screen.dart';
 
 class ClassItemModel {
   final String id;
@@ -39,6 +39,14 @@ class _ClassesScreenState extends State<ClassesScreen> {
   bool isLoading = true;
   List<ClassItemModel> classes = [];
   String searchQuery = "";
+
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
 
   @override
   void initState() {
@@ -127,14 +135,14 @@ class _ClassesScreenState extends State<ClassesScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFF030305),
+        backgroundColor: surfaceWhite,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: Colors.cyanAccent, strokeWidth: 2.5),
+              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
-              Text("ORGANIZING CLASS COHORTS...", style: TextStyle(color: Colors.grey.shade500, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text("ORGANIZING CLASS COHORTS...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
             ],
           ),
         ),
@@ -144,223 +152,217 @@ class _ClassesScreenState extends State<ClassesScreen> {
     final groups = groupedClasses;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF030305),
-      body: Stack(
-        children: [
-          Positioned(
-            top: -40,
-            left: -40,
-            child: Container(
-              width: 200,
-              height: 200,
+      backgroundColor: surfaceWhite,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ================= HEADER =================
+            Container(
+              padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
                 boxShadow: [
-                  BoxShadow(color: Colors.cyanAccent.withOpacity(0.08), blurRadius: 90, spreadRadius: 40),
+                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
                 ],
               ),
-            ),
-          ),
-
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-              physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ================= HEADER =================
-                  _buildGlassCard(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: Colors.cyanAccent.withOpacity(0.08),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.cyanAccent.withOpacity(0.2)),
-                              ),
-                              child: const Text(
-                                "COHORTS DIRECTORY",
-                                style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.cyanAccent, letterSpacing: 1.2),
-                              ),
-                            ),
-                            const Icon(Icons.class_rounded, color: Colors.cyanAccent, size: 18),
-                          ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: lightPinkBg,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          "Class Cohorts",
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white),
+                        child: const Text(
+                          "COHORTS DIRECTORY",
+                          style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Monitor active groups and track newly formed cohorts.",
-                          style: TextStyle(fontSize: 10, color: Colors.grey.shade400, fontWeight: FontWeight.w500),
-                        ),
-                        const SizedBox(height: 14),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.4),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.white.withOpacity(0.05)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.search, color: Colors.grey, size: 16),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: TextField(
-                                  onChanged: (val) => setState(() => searchQuery = val),
-                                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                                  decoration: InputDecoration(
-                                    hintText: "Search classes, courses...",
-                                    hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 11),
-                                    border: InputBorder.none,
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
+                      ),
+                      const Icon(Icons.class_rounded, color: primaryPink, size: 20),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    "Class Cohorts",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "Monitor active groups and track newly formed cohorts.",
+                    style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 16),
-
-                  // ================= GROUPED CLASSES =================
-                  groups.isEmpty
-                      ? Container(
-                          padding: const EdgeInsets.all(40),
-                          alignment: Alignment.center,
-                          child: Text("No classes found.", style: TextStyle(color: Colors.grey.shade500, fontSize: 11, fontWeight: FontWeight.bold)),
-                        )
-                      : ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: groups.keys.length,
-                          itemBuilder: (context, groupIndex) {
-                            String courseName = groups.keys.elementAt(groupIndex);
-                            List<ClassItemModel> courseClasses = groups[courseName]!;
-
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.book_rounded, color: Colors.cyanAccent, size: 14),
-                                      const SizedBox(width: 6),
-                                      Expanded(
-                                        child: Text(courseName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13)),
-                                      ),
-                                      Text("${courseClasses.length} Classes", style: TextStyle(color: Colors.grey.shade500, fontSize: 9, fontWeight: FontWeight.bold)),
-                                    ],
-                                  ),
-                                ),
-                                ListView.separated(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: courseClasses.length,
-                                  separatorBuilder: (_, _) => const SizedBox(height: 8),
-                                  itemBuilder: (context, classIndex) {
-                                    final cls = courseClasses[classIndex];
-                                    final isNew = _isClassNew(cls.createdAt);
-
-                                    return GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(builder: (_) => ClassDetailScreen(classId: cls.id)),
-                                        );
-                                      },
-                                      child: _buildGlassCard(
-                                        padding: const EdgeInsets.all(14),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                                  decoration: BoxDecoration(
-                                                    color: cls.isActive ? Colors.cyan.withOpacity(0.15) : Colors.white.withOpacity(0.05),
-                                                    borderRadius: BorderRadius.circular(8),
-                                                  ),
-                                                  child: Text(cls.isActive ? "IN PROGRESS" : "COMPLETED", style: TextStyle(color: cls.isActive ? Colors.cyanAccent : Colors.grey, fontSize: 7, fontWeight: FontWeight.w900)),
-                                                ),
-                                                if (isNew)
-                                                  Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                                    decoration: BoxDecoration(color: Colors.amber.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
-                                                    child: const Text("NEW", style: TextStyle(color: Colors.amberAccent, fontSize: 7, fontWeight: FontWeight.w900)),
-                                                  ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Text(cls.className, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
-                                            const SizedBox(height: 10),
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    CircleAvatar(
-                                                      radius: 10,
-                                                      backgroundColor: Colors.black,
-                                                      backgroundImage: cls.teacherAvatar != null ? NetworkImage(cls.teacherAvatar!) : null,
-                                                      child: cls.teacherAvatar == null ? const Text("T", style: TextStyle(color: Colors.cyanAccent, fontSize: 8)) : null,
-                                                    ),
-                                                    const SizedBox(width: 6),
-                                                    Text("${cls.teacherFirstName ?? ''} ${cls.teacherLastName ?? ''}", style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
-                                                  ],
-                                                ),
-                                                Text("${cls.studentsCount} Students", style: const TextStyle(color: Colors.cyanAccent, fontSize: 10, fontWeight: FontWeight.bold)),
-                                              ],
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 14),
-                              ],
-                            );
-                          },
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: cardBorder.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.search_rounded, color: textGrey, size: 18),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            onChanged: (val) => setState(() => searchQuery = val),
+                            style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                            decoration: InputDecoration(
+                              hintText: "Search classes, courses...",
+                              hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
                         ),
-                  const SizedBox(height: 30),
+                      ],
+                    ),
+                  )
                 ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+            const SizedBox(height: 24),
 
-  Widget _buildGlassCard({required Widget child, EdgeInsetsGeometry? padding}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: const Color(0xFF0a0a0f).withOpacity(0.55),
-            border: Border.all(color: Colors.white.withOpacity(0.06)),
-            borderRadius: BorderRadius.circular(22),
-          ),
-          child: child,
+            // ================= GROUPED CLASSES =================
+            groups.isEmpty
+                ? Container(
+                    padding: const EdgeInsets.all(40),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                    ),
+                    child: const Text("No classes found.", style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.bold)),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: groups.keys.length,
+                    itemBuilder: (context, groupIndex) {
+                      String courseName = groups.keys.elementAt(groupIndex);
+                      List<ClassItemModel> courseClasses = groups[courseName]!;
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 4),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.menu_book_rounded, color: primaryPink, size: 16),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(courseName, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(color: cardBorder, borderRadius: BorderRadius.circular(8)),
+                                  child: Text("${courseClasses.length} Classes", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: courseClasses.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 12),
+                            itemBuilder: (context, classIndex) {
+                              final cls = courseClasses[classIndex];
+                              final isNew = _isClassNew(cls.createdAt);
+
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => ClassDetailScreen(classId: cls.id)),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(18),
+                                  decoration: BoxDecoration(
+                                    color: surfaceWhite,
+                                    borderRadius: BorderRadius.circular(24),
+                                    border: Border.all(color: cardBorder, width: 1.5),
+                                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: cls.isActive ? Colors.green.withOpacity(0.12) : cardBorder,
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              cls.isActive ? "● IN PROGRESS" : "○ COMPLETED",
+                                              style: TextStyle(color: cls.isActive ? Colors.green.shade700 : textGrey, fontSize: 9, fontWeight: FontWeight.w900),
+                                            ),
+                                          ),
+                                          if (isNew)
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                              decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                                              child: const Text("NEW", style: TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                            ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(cls.className, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                                      const SizedBox(height: 14),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              CircleAvatar(
+                                                radius: 14,
+                                                backgroundColor: lightPinkBg,
+                                                backgroundImage: cls.teacherAvatar != null ? NetworkImage(cls.teacherAvatar!) : null,
+                                                child: cls.teacherAvatar == null ? const Text("T", style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.bold)) : null,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text("${cls.teacherFirstName ?? ''} ${cls.teacherLastName ?? ''}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w600)),
+                                            ],
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                                            child: Text("${cls.studentsCount} Students", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      );
+                    },
+                  ),
+            const SizedBox(height: 40),
+          ],
         ),
       ),
     );

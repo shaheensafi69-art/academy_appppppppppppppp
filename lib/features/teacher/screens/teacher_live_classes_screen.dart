@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'teacher_live_class_details_screen.dart';
+import 'teacher_create_class_screen.dart'; // 👈 ایمپورت صفحه ایجاد کلاس
 
 class LiveClassItem {
   final String id;
@@ -40,6 +41,14 @@ class _TeacherLiveClassesScreenState extends State<TeacherLiveClassesScreen> {
   final supabase = Supabase.instance.client;
   bool isLoading = true;
   List<LiveClassItem> classGroups = [];
+
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
 
   @override
   void initState() {
@@ -89,59 +98,106 @@ class _TeacherLiveClassesScreenState extends State<TeacherLiveClassesScreen> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
       physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // هدر صفحه
+          // ================= هدر صفحه همراه با دکمه ایجاد کلاس =================
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
+              gradient: LinearGradient(
+                colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryPink.withOpacity(0.08),
+                  blurRadius: 25,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: Colors.purple.withOpacity(0.15), borderRadius: BorderRadius.circular(14)),
-                  child: const Text("🔴", style: TextStyle(fontSize: 22)),
-                ),
-                const SizedBox(width: 12),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
                   children: [
-                    Text("Live Streaming", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-                    SizedBox(height: 2),
-                    Text("Launch live lectures and manage active channels.", style: TextStyle(fontSize: 9, color: Colors.grey)),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: primaryPink.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(Icons.live_tv_rounded, color: primaryPink, size: 26),
+                    ),
+                    const SizedBox(width: 14),
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Live Streaming", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                        SizedBox(height: 3),
+                        Text("Launch live lectures and channels.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                      ],
+                    ),
                   ],
+                ),
+                // 👈 دکمه ایجاد کلاس متصل به TeacherCreateClassScreen
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryPink,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  ),
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: const Text("Create Class", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const TeacherCreateClassScreen()),
+                    ).then((_) => _fetchLiveClasses());
+                  },
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
 
-          const Text("Active Broadcasts", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
-          const SizedBox(height: 10),
+          const Text("Active Broadcasts", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+          const SizedBox(height: 12),
 
           isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.purpleAccent))
+              ? const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator(color: primaryPink)))
               : classGroups.isNotEmpty
                   ? ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: classGroups.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      separatorBuilder: (_, __) => const SizedBox(height: 14),
                       itemBuilder: (context, index) {
                         final cls = classGroups[index];
                         return Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0a0a0f).withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: cls.isActive ? Colors.red.withOpacity(0.3) : Colors.white.withOpacity(0.06)),
+                            color: surfaceWhite,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: cls.isActive ? primaryPink : cardBorder,
+                              width: cls.isActive ? 2 : 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: cls.isActive ? primaryPink.withOpacity(0.15) : Colors.black.withOpacity(0.04),
+                                blurRadius: 15,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,39 +206,55 @@ class _TeacherLiveClassesScreenState extends State<TeacherLiveClassesScreen> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(color: Colors.purple.withOpacity(0.15), borderRadius: BorderRadius.circular(6)),
-                                    child: Text(cls.category, style: const TextStyle(color: Colors.purpleAccent, fontSize: 8, fontWeight: FontWeight.bold)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                                    child: Text(cls.category.toUpperCase(), style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
                                   ),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: cls.isActive ? Colors.red.withOpacity(0.2) : Colors.white.withOpacity(0.05),
-                                      borderRadius: BorderRadius.circular(6),
+                                      color: cls.isActive ? Colors.red.withOpacity(0.15) : Colors.grey.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
-                                      cls.isActive ? "LIVE NOW" : "Standby",
-                                      style: TextStyle(color: cls.isActive ? Colors.redAccent : Colors.grey, fontSize: 8, fontWeight: FontWeight.w900),
+                                      cls.isActive ? "● LIVE NOW" : "○ Standby",
+                                      style: TextStyle(
+                                        color: cls.isActive ? Colors.redAccent : textGrey,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w900,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 10),
-                              Text(cls.className, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
-                              const SizedBox(height: 4),
-                              Text("📅 ${cls.classDays} | 🕒 ${cls.classTime}", style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
                               const SizedBox(height: 12),
+                              Text(cls.className, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  const Icon(Icons.schedule_rounded, size: 14, color: textGrey),
+                                  const SizedBox(width: 6),
+                                  Text("${cls.classDays} | ${cls.classTime}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text("👥 ${cls.studentCount} Students Enrolled", style: const TextStyle(color: Colors.grey, fontSize: 10)),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.people_alt_rounded, size: 14, color: textGrey),
+                                      const SizedBox(width: 5),
+                                      Text("${cls.studentCount} Students Enrolled", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w700)),
+                                    ],
+                                  ),
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.purple,
+                                      backgroundColor: primaryPink,
                                       foregroundColor: Colors.white,
                                       elevation: 0,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                     ),
                                     onPressed: () {
                                       Navigator.push(
@@ -190,7 +262,7 @@ class _TeacherLiveClassesScreenState extends State<TeacherLiveClassesScreen> {
                                         MaterialPageRoute(builder: (_) => TeacherLiveClassDetailsScreen(classId: cls.id)),
                                       );
                                     },
-                                    child: const Text("Manage Class", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                                    child: const Text("Manage Class", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                   ),
                                 ],
                               ),
@@ -200,15 +272,24 @@ class _TeacherLiveClassesScreenState extends State<TeacherLiveClassesScreen> {
                       },
                     )
                   : Container(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(40),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0a0a0f),
-                        borderRadius: BorderRadius.circular(18),
+                        color: surfaceWhite,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: cardBorder),
                       ),
-                      child: const Text("No live broadcasts available.", style: TextStyle(color: Colors.grey, fontSize: 11)),
+                      child: const Column(
+                        children: [
+                          Icon(Icons.tv_off_rounded, size: 36, color: textGrey),
+                          SizedBox(height: 10),
+                          Text("No Live Broadcasts", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
+                          SizedBox(height: 4),
+                          Text("No live streams or broadcasts available right now.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                        ],
+                      ),
                     ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 40),
         ],
       ),
     );

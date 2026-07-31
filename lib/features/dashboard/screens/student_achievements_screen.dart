@@ -75,6 +75,14 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
   List<CertificateItem> certificates = [];
   List<AwardItem> awards = [];
 
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
+
   @override
   void initState() {
     super.initState();
@@ -146,224 +154,278 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.blueAccent),
+      return Scaffold(
+        backgroundColor: surfaceWhite,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
+              const SizedBox(height: 14),
+              Text("LOADING ACHIEVEMENTS...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+            ],
+          ),
+        ),
       );
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ================= هدر مینیمال و قدرتمند =================
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
+    return Scaffold(
+      backgroundColor: surfaceWhite,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ================= هدر مینیمال و واکنش‌گرا =================
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                boxShadow: [
+                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("My Achievements", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                        const SizedBox(height: 4),
+                        const Text("A structured record of your academic milestones.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: lightPinkBg,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.bolt_rounded, color: primaryPink, size: 14),
+                        const SizedBox(width: 4),
+                        Text("$totalScore Pts", style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900)),
+                      ],
+                    ),
+                  )
+                ],
+              ),
             ),
-            child: Row(
+            const SizedBox(height: 24),
+
+            // ================= بخش گواهینامه‌ها =================
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("My Achievements", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-                    const SizedBox(height: 2),
-                    Text("A structured record of your academic milestones.", style: TextStyle(fontSize: 9, color: Colors.grey.shade400)),
-                  ],
-                ),
+                const Text("Official Certificates", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.blue.withOpacity(0.2)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.bolt, color: Colors.blueAccent, size: 14),
-                      const SizedBox(width: 4),
-                      Text("$totalScore Pts", style: const TextStyle(color: Colors.blueAccent, fontSize: 11, fontWeight: FontWeight.w900)),
-                    ],
-                  ),
-                )
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(color: cardBorder, borderRadius: BorderRadius.circular(8)),
+                  child: Text("${certificates.length}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900)),
+                ),
               ],
             ),
-          ),
-          const SizedBox(height: 20),
+            const SizedBox(height: 12),
 
-          // ================= بخش گواهینامه‌ها =================
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text("Official Certificates", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(6)),
-                child: Text("${certificates.length}", style: const TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          certificates.isNotEmpty
-              ? ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: certificates.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    final cert = certificates[index];
-                    return Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0a0a0f).withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: Colors.white.withOpacity(0.06)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.blueAccent.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: Colors.blueAccent.withOpacity(0.2)),
+            certificates.isNotEmpty
+                ? ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: certificates.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final cert = certificates[index];
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: surfaceWhite,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: cardBorder, width: 1.5),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: lightPinkBg,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.5),
+                                  ),
+                                  child: const Icon(Icons.verified_outlined, color: primaryPink, size: 20),
                                 ),
-                                child: const Icon(Icons.verified_outlined, color: Colors.blueAccent, size: 18),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text("VERIFIED CREDENTIAL", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.blueAccent, letterSpacing: 1)),
-                                    const SizedBox(height: 2),
-                                    Text(cert.courseName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                                  ],
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text("VERIFIED CREDENTIAL", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1)),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        cert.courseName,
+                                        style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text("Issued: ${_formatDate(cert.issueDate)}", style: const TextStyle(color: Colors.grey, fontSize: 9)),
-                              Text("ID: ${cert.certificateCode}", style: const TextStyle(color: Colors.grey, fontSize: 9, fontFamily: 'monospace')),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 36,
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white.withOpacity(0.05),
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: BorderSide(color: Colors.white.withOpacity(0.1))),
-                                // side: Border.all(color: Colors.white.withOpacity(0.1)), // This line was causing the error
-                              ),
-                              icon: const Icon(Icons.download, size: 14),
-                              label: const Text("View PDF", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                              onPressed: () => _launchURL(cert.certificateUrl),
+                              ],
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                )
-              : Container(
-                  padding: const EdgeInsets.all(24),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0a0a0f),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.white.withOpacity(0.06)),
+                            const SizedBox(height: 14),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("Issued: ${_formatDate(cert.issueDate)}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                Flexible(
+                                  child: Text(
+                                    "ID: ${cert.certificateCode}",
+                                    style: const TextStyle(color: textGrey, fontSize: 10, fontFamily: 'monospace', fontWeight: FontWeight.bold),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 40,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: lightPinkBg,
+                                  foregroundColor: primaryPink,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                ),
+                                icon: const Icon(Icons.download_rounded, size: 16),
+                                label: const Text("View PDF", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                onPressed: () => _launchURL(cert.certificateUrl),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  )
+                : Container(
+                    padding: const EdgeInsets.all(40),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                    ),
+                    child: const Text("No Certificates Yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                   ),
-                  child: const Text("No Certificates Yet.", style: TextStyle(color: Colors.grey, fontSize: 11)),
+            const SizedBox(height: 28),
+
+            // ================= ویترین نشان‌ها (Badges & Honors) =================
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Badges & Honors", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(color: cardBorder, borderRadius: BorderRadius.circular(8)),
+                  child: Text("${awards.length}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900)),
                 ),
-          const SizedBox(height: 24),
+              ],
+            ),
+            const SizedBox(height: 12),
 
-          // ================= ویترین نشان‌ها (Badges & Honors) =================
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text("Badges & Honors", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(6)),
-                child: Text("${awards.length}", style: const TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          awards.isNotEmpty
-              ? GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    childAspectRatio: 0.9,
-                  ),
-                  itemCount: awards.length,
-                  itemBuilder: (context, index) {
-                    final award = awards[index];
-                    return Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0a0a0f).withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: Colors.white.withOpacity(0.06)),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 42,
-                            height: 42,
+            awards.isNotEmpty
+                ? LayoutBuilder(
+                    builder: (context, constraints) {
+                      // تنظیم هوشمند ابعاد گرید بر اساس عرض صفحه گوشی
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 0.9,
+                        ),
+                        itemCount: awards.length,
+                        itemBuilder: (context, index) {
+                          final award = awards[index];
+                          return Container(
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.indigo.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
+                              color: surfaceWhite,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(color: cardBorder, width: 1.5),
+                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
                             ),
-                            alignment: Alignment.center,
-                            child: Text(award.iconUrl, style: const TextStyle(fontSize: 20)),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(award.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
-                          const SizedBox(height: 2),
-                          Text(award.description, style: TextStyle(color: Colors.grey.shade500, fontSize: 8), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
-                          const SizedBox(height: 8),
-                          Text(_formatDate(award.awardedAt), style: const TextStyle(color: Colors.grey, fontSize: 7)),
-                        ],
-                      ),
-                    );
-                  },
-                )
-              : Container(
-                  padding: const EdgeInsets.all(24),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0a0a0f),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.white.withOpacity(0.06)),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: lightPinkBg,
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(award.iconUrl, style: const TextStyle(fontSize: 20)),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  award.title,
+                                  style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 11),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  award.description,
+                                  style: const TextStyle(color: textGrey, fontSize: 8, fontWeight: FontWeight.w500),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(_formatDate(award.awardedAt), style: const TextStyle(color: textGrey, fontSize: 8, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  )
+                : Container(
+                    padding: const EdgeInsets.all(40),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                    ),
+                    child: const Text("No Badges Yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                   ),
-                  child: const Text("No Badges Yet.", style: TextStyle(color: Colors.grey, fontSize: 11)),
-                ),
-          const SizedBox(height: 30),
-        ],
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }

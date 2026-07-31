@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:convert';
-import 'package:http/http.dart' as http; // برای فراخوانی API چت
+import 'package:http/http.dart' as http;
 
 class Message {
   final String id;
@@ -44,8 +44,14 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
   ];
 
   final List<String> emojis = ["🔥", "🚀", "💻", "📈", "📊", "🎯", "💰", "💎", "💡", "🧠", "👍", "🙌", "🎉", "👑"];
-  
-  Null get ascending => null;
+
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
 
   @override
   void initState() {
@@ -148,10 +154,8 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
       if (user == null) return;
       final userId = user.id;
 
-      // توجه: در فلاتر اگر اندپوینت وب Next.js دارید، آدرس کامل API را اینجا قرار دهید یا از سرویس هوش مصنوعی مستقیم استفاده کنید.
-      // مثال اتصال به API سرور Next.js شما:
       final response = await http.post(
-        Uri.parse("https://your-domain.com/api/chat"), // آدرس وب‌سایت یا سرور Next.js
+        Uri.parse("https://your-domain.com/api/chat"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"prompt": text, "userId": userId}),
       );
@@ -163,7 +167,6 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
 
       final realAIResponse = resData['message'] ?? "No response received.";
 
-      // ذخیره در دیتابیس Supabase
       final savedChat = await supabase
           .from("ai_chat_history")
           .insert({
@@ -214,12 +217,13 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
     bool? confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF0a0a0f),
-        title: const Text("Clear History", style: TextStyle(color: Colors.white, fontSize: 14)),
-        content: const Text("Are you sure you want to clear your AI chat history?", style: TextStyle(color: Colors.grey, fontSize: 11)),
+        backgroundColor: surfaceWhite,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: cardBorder, width: 1.5)),
+        title: const Text("Clear History", style: TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+        content: const Text("Are you sure you want to clear your AI chat history?", style: TextStyle(color: textGrey, fontSize: 11)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Clear", style: TextStyle(color: Colors.redAccent))),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold))),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Clear", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold))),
         ],
       ),
     );
@@ -249,15 +253,15 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF030305),
+      backgroundColor: surfaceWhite,
       body: Column(
         children: [
           // ================= هدر اختصاصی صفحه هوش مصنوعی =================
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFF050508).withOpacity(0.8),
-              border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.05))),
+              color: surfaceWhite,
+              border: Border(bottom: BorderSide(color: cardBorder, width: 1.5)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -268,22 +272,23 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Colors.blueAccent, Colors.purpleAccent]),
-                        borderRadius: BorderRadius.circular(10),
+                        color: lightPinkBg,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
                       ),
                       alignment: Alignment.center,
-                      child: const Text("🤖", style: TextStyle(fontSize: 18)),
+                      child: const Icon(Icons.smart_toy_rounded, color: primaryPink, size: 20),
                     ),
                     const SizedBox(width: 10),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("Safi AI Assistant", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13)),
+                        const Text("Safi AI Assistant", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
                         Row(
                           children: [
-                            Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.purpleAccent, shape: BoxShape.circle)),
+                            Container(width: 6, height: 6, decoration: const BoxDecoration(color: primaryPink, shape: BoxShape.circle)),
                             const SizedBox(width: 4),
-                            const Text("Quantum Core Live", style: TextStyle(color: Colors.purpleAccent, fontSize: 8, fontWeight: FontWeight.bold)),
+                            const Text("Quantum Core Live", style: TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900)),
                           ],
                         ),
                       ],
@@ -292,7 +297,7 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
                 ),
                 TextButton(
                   onPressed: _handleClearChat,
-                  child: const Text("Clear History", style: TextStyle(color: Colors.redAccent, fontSize: 9, fontWeight: FontWeight.bold)),
+                  child: const Text("Clear History", style: TextStyle(color: Colors.redAccent, fontSize: 10, fontWeight: FontWeight.w900)),
                 ),
               ],
             ),
@@ -301,7 +306,7 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
           // ================= لیست پیام‌ها =================
           Expanded(
             child: isLoadingHistory
-                ? const Center(child: CircularProgressIndicator(color: Colors.purpleAccent))
+                ? const Center(child: CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5))
                 : messages.isEmpty
                     ? Center(
                         child: SingleChildScrollView(
@@ -309,20 +314,24 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text("⚡", style: TextStyle(fontSize: 40)),
-                              const SizedBox(height: 10),
-                              Text("How can I assist you, ${studentName.isNotEmpty ? studentName : "Trader"}?", style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900), textAlign: TextAlign.center),
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
+                                child: const Icon(Icons.bolt_rounded, size: 36, color: primaryPink),
+                              ),
+                              const SizedBox(height: 12),
+                              Text("How can I assist you, ${studentName.isNotEmpty ? studentName : "Trader"}?", style: const TextStyle(color: textDark, fontSize: 16, fontWeight: FontWeight.w900), textAlign: TextAlign.center),
                               const SizedBox(height: 6),
-                              const Text("Ask anything about financial markets, smart contracts, or full-stack systems.", style: TextStyle(color: Colors.grey, fontSize: 10), textAlign: TextAlign.center),
+                              const Text("Ask anything about financial markets, smart contracts, or full-stack systems.", style: TextStyle(color: textGrey, fontSize: 11), textAlign: TextAlign.center),
                               const SizedBox(height: 20),
                               GridView.builder(
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: 2,
-                                  crossAxisSpacing: 8,
-                                  mainAxisSpacing: 8,
-                                  childAspectRatio: 2.2,
+                                  crossAxisSpacing: 10,
+                                  mainAxisSpacing: 10,
+                                  childAspectRatio: 2.3,
                                 ),
                                 itemCount: suggestedPrompts.length,
                                 itemBuilder: (context, index) {
@@ -332,15 +341,16 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
                                     child: Container(
                                       padding: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.03),
-                                        borderRadius: BorderRadius.circular(14),
-                                        border: Border.all(color: Colors.white.withOpacity(0.06)),
+                                        color: surfaceWhite,
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(color: cardBorder, width: 1.5),
+                                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
                                       ),
                                       child: Row(
                                         children: [
-                                          const Text("👉", style: TextStyle(fontSize: 10)),
+                                          const Icon(Icons.arrow_forward_ios_rounded, size: 10, color: primaryPink),
                                           const SizedBox(width: 6),
-                                          Expanded(child: Text(prompt, style: const TextStyle(color: Colors.white70, fontSize: 9, fontWeight: FontWeight.bold), maxLines: 2, overflow: TextOverflow.ellipsis)),
+                                          Expanded(child: Text(prompt, style: const TextStyle(color: textDark, fontSize: 10, fontWeight: FontWeight.bold), maxLines: 2, overflow: TextOverflow.ellipsis)),
                                         ],
                                       ),
                                     ),
@@ -353,27 +363,29 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
                       )
                     : ListView.builder(
                         controller: _scrollController,
-                        padding: const EdgeInsets.all(12),
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.all(16),
                         itemCount: messages.length + (isTyping ? 1 : 0),
                         itemBuilder: (context, index) {
                           if (index == messages.length && isTyping) {
                             return Align(
                               alignment: Alignment.centerLeft,
                               child: Container(
-                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                margin: const EdgeInsets.symmetric(vertical: 6),
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(14),
+                                  color: surfaceWhite,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: cardBorder, width: 1.5),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.purple, shape: BoxShape.circle)),
+                                    Container(width: 6, height: 6, decoration: const BoxDecoration(color: primaryPink, shape: BoxShape.circle)),
                                     const SizedBox(width: 4),
-                                    Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.purple, shape: BoxShape.circle)),
+                                    Container(width: 6, height: 6, decoration: const BoxDecoration(color: primaryPink, shape: BoxShape.circle)),
                                     const SizedBox(width: 4),
-                                    Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.purple, shape: BoxShape.circle)),
+                                    Container(width: 6, height: 6, decoration: const BoxDecoration(color: primaryPink, shape: BoxShape.circle)),
                                   ],
                                 ),
                               ),
@@ -387,21 +399,22 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
                             alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
                             child: Container(
                               margin: const EdgeInsets.symmetric(vertical: 6),
-                              padding: const EdgeInsets.all(12),
-                              constraints: const BoxConstraints(maxWidth: 280),
+                              padding: const EdgeInsets.all(14),
+                              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
                               decoration: BoxDecoration(
-                                color: isMe ? Colors.indigo.withOpacity(0.3) : Colors.white.withOpacity(0.05),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: isMe ? Colors.indigo.withOpacity(0.4) : Colors.white10),
+                                color: isMe ? lightPinkBg : surfaceWhite,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(color: isMe ? primaryPink.withOpacity(0.2) : cardBorder, width: 1.5),
+                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(msg.content, style: const TextStyle(color: Colors.white, fontSize: 11)),
+                                  Text(msg.content, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w500)),
                                   const SizedBox(height: 4),
                                   Align(
                                     alignment: Alignment.bottomRight,
-                                    child: Text(_formatTime(msg.createdAt), style: TextStyle(color: Colors.grey.shade500, fontSize: 7)),
+                                    child: Text(_formatTime(msg.createdAt), style: const TextStyle(color: textGrey, fontSize: 8, fontWeight: FontWeight.bold)),
                                   ),
                                 ],
                               ),
@@ -414,10 +427,11 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
           // ================= پنل ایموجی =================
           if (showEmojiPanel)
             Container(
-              padding: const EdgeInsets.all(8),
-              color: Colors.black.withOpacity(0.8),
+              padding: const EdgeInsets.all(12),
+              color: cardBorder,
               child: Wrap(
-                spacing: 8,
+                spacing: 10,
+                runSpacing: 10,
                 children: emojis.map((emoji) {
                   return GestureDetector(
                     onTap: () {
@@ -426,7 +440,7 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
                         showEmojiPanel = false;
                       });
                     },
-                    child: Text(emoji, style: const TextStyle(fontSize: 20)),
+                    child: Text(emoji, style: const TextStyle(fontSize: 22)),
                   );
                 }).toList(),
               ),
@@ -434,36 +448,51 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
 
           // ================= باکس ارسال پیام =================
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF050508),
-              border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05))),
+              color: surfaceWhite,
+              border: Border(top: BorderSide(color: cardBorder, width: 1.5)),
             ),
             child: Row(
               children: [
                 IconButton(
-                  icon: Text(showEmojiPanel ? "⌨️" : "😀", style: const TextStyle(fontSize: 16)),
+                  icon: Icon(showEmojiPanel ? Icons.keyboard_rounded : Icons.emoji_emotions_outlined, color: textGrey, size: 20),
                   onPressed: () => setState(() => showEmojiPanel = !showEmojiPanel),
                 ),
                 Expanded(
                   child: TextField(
                     controller: _textController,
-                    style: const TextStyle(color: Colors.white, fontSize: 11),
+                    style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                     decoration: InputDecoration(
                       hintText: "Ask anything from Safi AI...",
-                      hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 10),
+                      hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                       filled: true,
-                      fillColor: Colors.white.withOpacity(0.04),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                      fillColor: cardBorder.withOpacity(0.5),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                     ),
                     onSubmitted: (_) => _handleSendMessage(),
                   ),
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.send, color: Colors.indigoAccent, size: 18),
-                  onPressed: isTyping ? null : () => _handleSendMessage(),
+                const SizedBox(width: 10),
+                SizedBox(
+                  height: 50,
+                  width: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryPink,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    onPressed: isTyping ? null : () => _handleSendMessage(),
+                    child: isTyping
+                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Icon(Icons.send_rounded, size: 18),
+                  ),
                 ),
               ],
             ),

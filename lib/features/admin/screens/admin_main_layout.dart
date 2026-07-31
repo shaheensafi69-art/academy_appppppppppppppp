@@ -30,6 +30,14 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   int _currentIndex = 0;
   Map<String, dynamic>? _userProfile;
 
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
+
   late final List<Widget> _screens = [
     const AdminDashboardScreen(), // 0: Overview
     const ManageStudentsScreen(), // 1: Students
@@ -45,17 +53,17 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   ];
 
   final List<Map<String, dynamic>> _menuItems = [
-    {"name": "Overview", "icon": "📊", "color": Colors.blue},
-    {"name": "Students", "icon": "👨‍🎓", "color": Colors.green},
-    {"name": "Faculty", "icon": "👨‍🏫", "color": Colors.indigo},
-    {"name": "Courses", "icon": "📚", "color": Colors.purple},
-    {"name": "Classes", "icon": "🏫", "color": Colors.cyan},
-    {"name": "Finance", "icon": "💰", "color": Colors.greenAccent},
-    {"name": "Honors", "icon": "🏆", "color": Colors.amber},
-    {"name": "Notices", "icon": "📢", "color": Colors.orange},
-    {"name": "Live Studio", "icon": "🔴", "color": Colors.red},
-    {"name": "Tickets", "icon": "🎧", "color": Colors.pink},
-    {"name": "Settings", "icon": "⚙️", "color": Colors.grey},
+    {"name": "Overview", "icon": Icons.dashboard_rounded, "color": primaryPink},
+    {"name": "Students", "icon": Icons.school_rounded, "color": Colors.green},
+    {"name": "Faculty", "icon": Icons.psychology_rounded, "color": Colors.indigo},
+    {"name": "Courses", "icon": Icons.menu_book_rounded, "color": Colors.purple},
+    {"name": "Classes", "icon": Icons.class_rounded, "color": Colors.cyan},
+    {"name": "Finance", "icon": Icons.payments_rounded, "color": Colors.teal},
+    {"name": "Honors", "icon": Icons.emoji_events_rounded, "color": Colors.amber},
+    {"name": "Notices", "icon": Icons.campaign_rounded, "color": Colors.orange},
+    {"name": "Live Studio", "icon": Icons.live_tv_rounded, "color": Colors.redAccent},
+    {"name": "Tickets", "icon": "🎧", "color": primaryPink},
+    {"name": "Settings", "icon": "⚙️", "color": textGrey},
   ];
 
   @override
@@ -108,16 +116,16 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFF030305),
+        backgroundColor: surfaceWhite,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: Colors.pinkAccent),
+              const CircularProgressIndicator(color: primaryPink),
               const SizedBox(height: 16),
               Text(
                 "INITIALIZING COMMAND CENTER...",
-                style: TextStyle(color: Colors.pinkAccent.shade100, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2),
+                style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2),
               ),
             ],
           ),
@@ -125,20 +133,17 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
       );
     }
 
-    final topPadding = MediaQuery.of(context).padding.top;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    
-    // محاسبه دقیق فضای خالی بالا (هدر) و پایین (نوار ناوبری) به صورت استاندارد
-    final contentTopPadding = topPadding + 68;
-    final contentBottomPadding = bottomPadding + 75;
+    final contentTopPadding = 16.0;
+    final contentBottomPadding = bottomPadding + 85;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF030305),
+      backgroundColor: surfaceWhite,
       extendBody: true, 
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // 1. محتوای صفحات با پدینگ کاملاً خودکار و هوشمند بدون نیاز به مارجین در صفحات داخلی
+          // 1. محتوای صفحات
           Positioned.fill(
             child: Padding(
               padding: EdgeInsets.only(top: contentTopPadding, bottom: contentBottomPadding),
@@ -149,23 +154,15 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
             ),
           ),
 
-          // 2. هدر شناور بالای صفحه
+          // 2. نوار ناوبری پایین کاملاً فیکس‌شده برای تمام سایزها
           Positioned(
-            top: topPadding + 6,
-            left: 14,
-            right: 14,
-            child: _buildSurpriseHeader(),
-          ),
-
-          // 3. نوار ناوبری پایین شناور
-          Positioned(
-            bottom: bottomPadding > 0 ? bottomPadding + 4 : 12.0,
-            left: 16,
-            right: 16,
+            bottom: bottomPadding > 0 ? bottomPadding + 6 : 16.0,
+            left: 12,
+            right: 12,
             child: _buildFloatingBottomNav(),
           ),
 
-          // 4. منوی شیشه‌ای تمام‌صفحه (Drawer)
+          // 3. منوی شیشه‌ای تمام‌صفحه پیشرفته
           if (_isMenuOpen)
             Positioned.fill(
               child: _buildFullScreenMenu(),
@@ -175,149 +172,52 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     );
   }
 
-  Widget _buildSurpriseHeader() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          height: 52,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: Colors.white.withOpacity(0.08)),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4)),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: Colors.pinkAccent.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.pinkAccent.withOpacity(0.2)),
-                    ),
-                    child: Image.asset('assets/logo-without-b.png', height: 16),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    "SAFI",
-                    style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.5),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  GestureDetector(
-                    onTap: () => setState(() => _currentIndex = 10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.03),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white.withOpacity(0.06)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircleAvatar(
-                            radius: 10,
-                            backgroundColor: Colors.pinkAccent.withOpacity(0.2),
-                            backgroundImage: _userProfile?['avatar_url'] != null ? NetworkImage(_userProfile!['avatar_url']) : null,
-                            child: _userProfile?['avatar_url'] == null ? const Icon(Icons.person, color: Colors.pinkAccent, size: 10) : null,
-                          ),
-                          const SizedBox(width: 5),
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 75),
-                            child: Text(
-                              _userProfile?['first_name'] ?? 'Admin',
-                              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  GestureDetector(
-                    onTap: () => setState(() => _currentIndex = 7),
-                    child: Stack(
-                      children: [
-                        Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.03),
-                            borderRadius: BorderRadius.circular(9),
-                            border: Border.all(color: Colors.white.withOpacity(0.06)),
-                          ),
-                          child: const Icon(Icons.notifications_none_rounded, color: Colors.grey, size: 15),
-                        ),
-                        Positioned(
-                          top: 6,
-                          right: 6,
-                          child: Container(
-                            width: 5,
-                            height: 5,
-                            decoration: const BoxDecoration(
-                              color: Colors.pinkAccent,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildFloatingBottomNav() {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(30),
+      borderRadius: BorderRadius.circular(28),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
         child: Container(
-          height: 52,
+          height: 64,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
-            color: Colors.transparent,
-            border: Border.all(color: Colors.white.withOpacity(0.08)),
-            borderRadius: BorderRadius.circular(30),
+            color: surfaceWhite.withOpacity(0.95),
+            border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+            borderRadius: BorderRadius.circular(28),
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8)),
+              BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 25, offset: const Offset(0, 10)),
             ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildNavItem(0, "Overview", "📊"),
-              _buildNavItem(1, "Students", "👨‍🎓"),
-              _buildNavItem(2, "Finance", "💰"),
-              GestureDetector(
-                onTap: () => setState(() => _isMenuOpen = true),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("⚙️", style: TextStyle(fontSize: 16)),
-                    const SizedBox(height: 1),
-                    Text("MENU", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.grey.shade500, letterSpacing: 0.8)),
-                  ],
+              Expanded(child: _buildNavItem(0, "Overview", Icons.dashboard_rounded)),
+              Expanded(child: _buildNavItem(1, "Students", Icons.school_rounded)),
+              Expanded(child: _buildNavItem(2, "Faculty", Icons.psychology_rounded)),
+              Expanded(child: _buildNavItem(3, "Courses", Icons.menu_book_rounded)),
+              // دکمه منوی اصلی فیکس‌شده
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _isMenuOpen = true),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    decoration: BoxDecoration(
+                      color: primaryPink,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+                    ),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.grid_view_rounded, color: Colors.white, size: 20),
+                        SizedBox(height: 2),
+                        Text("MENU", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.8)),
+                      ],
+                    ),
+                  ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -325,26 +225,33 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     );
   }
 
-  Widget _buildNavItem(int index, String title, String icon) {
+  Widget _buildNavItem(int index, String title, IconData icon) {
     bool isActive = _currentIndex == index;
     return GestureDetector(
       onTap: () => setState(() => _currentIndex = index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        margin: const EdgeInsets.symmetric(horizontal: 2),
+        decoration: BoxDecoration(
+          color: isActive ? lightPinkBg : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(icon, style: TextStyle(fontSize: isActive ? 20 : 16, shadows: isActive ? [const Shadow(color: Colors.pinkAccent, blurRadius: 8)] : [])),
-            const SizedBox(height: 1),
+            Icon(icon, color: isActive ? primaryPink : textGrey, size: isActive ? 22 : 19),
+            const SizedBox(height: 2),
             Text(
               title.toUpperCase(),
               style: TextStyle(
                 fontSize: 7,
                 fontWeight: FontWeight.w900,
-                color: isActive ? Colors.pinkAccent : Colors.grey.shade500,
-                letterSpacing: 0.8,
+                color: isActive ? primaryPink : textGrey,
+                letterSpacing: 0.3,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -359,22 +266,22 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
           child: Container(
-            color: const Color(0xFF030305).withOpacity(0.95),
+            color: surfaceWhite.withOpacity(0.98),
             child: SafeArea(
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(20.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("COMMAND CENTER MENU", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                        const Text("COMMAND CENTER MENU", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
                         GestureDetector(
                           onTap: () => setState(() => _isMenuOpen = false),
                           child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), shape: BoxShape.circle),
-                            child: const Icon(Icons.close, color: Colors.grey, size: 18),
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(color: cardBorder, shape: BoxShape.circle),
+                            child: const Icon(Icons.close_rounded, color: textDark, size: 20),
                           ),
                         )
                       ],
@@ -383,12 +290,12 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
 
                   Expanded(
                     child: GridView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
-                        childAspectRatio: 1.6,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
+                        childAspectRatio: 1.7,
+                        crossAxisSpacing: 14,
+                        mainAxisSpacing: 14,
                       ),
                       itemCount: _menuItems.length,
                       itemBuilder: (context, index) {
@@ -402,16 +309,19 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                           },
                           child: Container(
                             decoration: BoxDecoration(
-                              color: item['color'].withOpacity(0.08),
-                              border: Border.all(color: item['color'].withOpacity(0.15)),
-                              borderRadius: BorderRadius.circular(20),
+                              color: surfaceWhite,
+                              border: Border.all(color: cardBorder, width: 1.5),
+                              borderRadius: BorderRadius.circular(22),
+                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(item['icon'], style: const TextStyle(fontSize: 28)),
-                                const SizedBox(height: 6),
-                                Text(item['name'].toUpperCase(), style: TextStyle(color: item['color'], fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                                item['icon'] is IconData
+                                    ? Icon(item['icon'], color: item['color'], size: 28)
+                                    : Text(item['icon'], style: const TextStyle(fontSize: 26)),
+                                const SizedBox(height: 8),
+                                Text(item['name'].toUpperCase(), style: TextStyle(color: item['color'], fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
                               ],
                             ),
                           ),
@@ -421,47 +331,49 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                   ),
 
                   Container(
-                    margin: const EdgeInsets.all(16),
-                    padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.02),
-                      border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05))),
+                      color: lightPinkBg.withOpacity(0.4),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.5),
                     ),
                     child: Column(
                       children: [
                         Row(
                           children: [
                             CircleAvatar(
-                              radius: 18,
-                              backgroundColor: Colors.pinkAccent.withOpacity(0.2),
+                              radius: 20,
+                              backgroundColor: lightPinkBg,
                               backgroundImage: _userProfile?['avatar_url'] != null ? NetworkImage(_userProfile!['avatar_url']) : null,
-                              child: _userProfile?['avatar_url'] == null ? const Icon(Icons.person, color: Colors.pinkAccent, size: 18) : null,
+                              child: _userProfile?['avatar_url'] == null ? const Icon(Icons.person, color: primaryPink, size: 20) : null,
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("${_userProfile?['first_name']} ${_userProfile?['last_name']}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-                                  Text(_userProfile?['role']?.toString().toUpperCase() ?? 'ADMIN', style: const TextStyle(color: Colors.pinkAccent, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                                  Text("${_userProfile?['first_name']} ${_userProfile?['last_name']}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                  Text(_userProfile?['role']?.toString().toUpperCase() ?? 'ADMIN', style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1)),
                                 ],
                               ),
                             ),
                           ],
                         ),
-const SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.redAccent.withOpacity(0.1),
                               foregroundColor: Colors.redAccent,
-                              side: BorderSide(color: Colors.redAccent.withOpacity(0.2)),
+                              elevation: 0,
+                              side: const BorderSide(color: Colors.redAccent, width: 1.5),
                               padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             ),
-                            icon: const Icon(Icons.logout, size: 16),
-                            label: const Text("SECURE SIGN OUT", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                            icon: const Icon(Icons.logout_rounded, size: 18),
+                            label: const Text("SECURE SIGN OUT", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1)),
                             onPressed: _logout,
                           ),
                         ),
@@ -476,4 +388,4 @@ const SizedBox(height: 16),
       ),
     );
   }
-}             
+}

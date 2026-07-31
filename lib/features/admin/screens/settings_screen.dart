@@ -18,43 +18,50 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   bool isLoggingOut = false;
   Map<String, String>? message;
 
+  // Controllers مطابق با جداول دیتابیس (profiles و teacher_info)
   final firstNameCtrl = TextEditingController();
   final lastNameCtrl = TextEditingController();
-  final fatherNameCtrl = TextEditingController();
-  final dobCtrl = TextEditingController();
   final emailCtrl = TextEditingController();
   final phoneCtrl = TextEditingController();
-  final countryCtrl = TextEditingController();
   final avatarCtrl = TextEditingController();
   final bioCtrl = TextEditingController();
+  final achievementsCtrl = TextEditingController();
 
-  String role = "admin";
+  String role = "teacher";
   int totalScore = 0;
   double walletBalance = 0;
-  String referralCode = "";
   String userId = "";
+
+  List<Map<String, dynamic>> teacherCourses = [];
+  List<Map<String, dynamic>> teacherClasses = [];
+
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
 
   @override
   void initState() {
     super.initState();
-    _fetchAdminProfile();
+    _fetchAdminAndFacultyData();
   }
 
   @override
   void dispose() {
     firstNameCtrl.dispose();
     lastNameCtrl.dispose();
-    fatherNameCtrl.dispose();
-    dobCtrl.dispose();
     emailCtrl.dispose();
     phoneCtrl.dispose();
-    countryCtrl.dispose();
     avatarCtrl.dispose();
     bioCtrl.dispose();
+    achievementsCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _fetchAdminProfile() async {
+  Future<void> _fetchAdminAndFacultyData() async {
     setState(() => isLoading = true);
     try {
       final user = supabase.auth.currentUser;
@@ -64,6 +71,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       }
 
       userId = user.id;
+
+      // 1. دریافت اطلاعات از جدول profiles
       final profile = await supabase
           .from("profiles")
           .select("*")
@@ -72,20 +81,61 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
 
       firstNameCtrl.text = profile['first_name'] ?? "";
       lastNameCtrl.text = profile['last_name'] ?? "";
-      fatherNameCtrl.text = profile['father_name'] ?? "";
-      dobCtrl.text = profile['date_of_birth'] ?? "";
       emailCtrl.text = profile['email'] ?? "";
       phoneCtrl.text = profile['phone_number'] ?? "";
-      countryCtrl.text = profile['country'] ?? "";
       avatarCtrl.text = profile['avatar_url'] ?? "";
       bioCtrl.text = profile['bio'] ?? "";
 
-      role = profile['role'] ?? "admin";
+      role = profile['role'] ?? "teacher";
       totalScore = profile['total_score'] ?? 0;
       walletBalance = (profile['wallet_balance'] ?? 0).toDouble();
-      referralCode = profile['referral_code'] ?? "";
-        } catch (e) {
-      debugPrint("Error fetching admin profile: $e");
+
+      // 2. دریافت اطلاعات از جدول teacher_info
+      try {
+        final info = await supabase
+            .from("teacher_info")
+            .select("*")
+            .eq("id", userId)
+            .maybeSingle();
+
+        if (info != null) {
+          bioCtrl.text = info['bio'] ?? bioCtrl.text;
+          achievementsCtrl.text = info['achievements'] ?? "";
+          if (info['avatar_url'] != null && avatarCtrl.text.isEmpty) {
+            avatarCtrl.text = info['avatar_url'];
+          }
+        }
+      } catch (_) {}
+
+      // 3. دریافت دوره‌ها و تخصص‌های مرتبط از teacher_info_courses و courses
+      try {
+        final tCourses = await supabase
+            .from("teacher_info_courses")
+            .select("course:courses(id, title, category)")
+            .eq("teacher_info_id", userId);
+
+        teacherCourses = (tCourses as List).map((tc) => tc['course'] as Map<String, dynamic>).toList();
+      } catch (_) {}
+
+      // 4. دریافت کلاس‌های مرتبط از class_groups
+      try {
+        final classesData = await supabase
+            .from("class_groups")
+            .select("id, class_name, is_active, course:courses(title), class_students(student_id)")
+            .eq("teacher_id", userId);
+
+        teacherClasses = (classesData as List).map((cls) {
+          return {
+            'class_name': cls['class_name'],
+            'is_active': cls['is_active'],
+            'students_count': (cls['class_students'] as List?)?.length ?? 0,
+            'course_title': cls['course'] != null ? (cls['course'] is List ? cls['course'][0]['title'] : cls['course']['title']) : 'General'
+          };
+        }).toList();
+      } catch (_) {}
+
+    } catch (e) {
+      debugPrint("Error fetching faculty settings profile: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -98,22 +148,40 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     });
 
     try {
+      String fName = firstNameCtrl.text.trim();
+      String lName = lastNameCtrl.text.trim();
+      String email = emailCtrl.text.trim();
+      String phone = phoneCtrl.text.trim();
+      String bio = bioCtrl.text.trim();
+      String achievements = achievementsCtrl.text.trim();
+      String avatar = avatarCtrl.text.trim();
+
+      // آپدیت جدول profiles
       await supabase
           .from("profiles")
           .update({
-            'first_name': firstNameCtrl.text.trim(),
-            'last_name': lastNameCtrl.text.trim(),
-            'father_name': fatherNameCtrl.text.trim(),
-            'date_of_birth': dobCtrl.text.trim().isNotEmpty ? dobCtrl.text.trim() : null,
-            'phone_number': phoneCtrl.text.trim(),
-            'country': countryCtrl.text.trim(),
-            'bio': bioCtrl.text.trim(),
-            'avatar_url': avatarCtrl.text.trim(),
+            'first_name': fName,
+            'last_name': lName,
+            'email': email,
+            'phone_number': phone.isNotEmpty ? phone : null,
+            'bio': bio.isNotEmpty ? bio : null,
+            'avatar_url': avatar.isNotEmpty ? avatar : null,
+            'role': role,
           })
           .eq("id", userId);
 
+      // آپدیت جدول teacher_info
+      await supabase.from("teacher_info").upsert({
+        'id': userId,
+        'first_name': fName,
+        'last_name': lName,
+        'bio': bio.isNotEmpty ? bio : null,
+        'achievements': achievements.isNotEmpty ? achievements : null,
+        'avatar_url': avatar.isNotEmpty ? avatar : null,
+      });
+
       setState(() {
-        message = {'type': 'success', 'text': 'System configuration and profile metrics synced successfully!'};
+        message = {'type': 'success', 'text': 'Faculty profile, role & system configurations synced successfully! 🚀'};
       });
 
       Future.delayed(const Duration(seconds: 3), () {
@@ -141,12 +209,12 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     bool? confirmLogout = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF0a0a0f),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: Colors.white.withOpacity(0.1))),
-        title: const Text("Secure Logout", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900)),
-        content: const Text("Are you sure you want to securely log out of the command center?", style: TextStyle(color: Colors.grey, fontSize: 11)),
+        backgroundColor: surfaceWhite,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: cardBorder, width: 1.5)),
+        title: const Text("Secure Logout", style: TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+        content: const Text("Are you sure you want to securely log out of the command center?", style: TextStyle(color: textGrey, fontSize: 11)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel", style: TextStyle(color: Colors.grey))),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold))),
           TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Logout", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold))),
         ],
       ),
@@ -162,14 +230,14 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFF030305),
+        backgroundColor: surfaceWhite,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: Colors.indigoAccent, strokeWidth: 2.5),
+              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
-              Text("SYNCHRONIZING CORE ENGINE...", style: TextStyle(color: Colors.grey.shade500, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text("SYNCHRONIZING FACULTY ENGINE...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
             ],
           ),
         ),
@@ -177,389 +245,360 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF030305),
-      body: Stack(
-        children: [
-          // Background Ambience Glow
-          Positioned(
-            top: -40,
-            left: -40,
-            child: Container(
-              width: 200,
-              height: 200,
+      backgroundColor: surfaceWhite,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ================= HEADER =================
+            Container(
+              padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
                 boxShadow: [
-                  BoxShadow(color: Colors.indigoAccent.withOpacity(0.08), blurRadius: 90, spreadRadius: 40),
+                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
                 ],
               ),
-            ),
-          ),
-
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-              physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ================= HEADER =================
-                  _buildGlassCard(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: Colors.indigoAccent.withOpacity(0.08),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.indigoAccent.withOpacity(0.2)),
-                              ),
-                              child: const Text(
-                                "SYSTEM SETTINGS",
-                                style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.indigoAccent, letterSpacing: 1.2),
-                              ),
-                            ),
-                            ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.redAccent.withOpacity(0.15),
-                                foregroundColor: Colors.redAccent,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                side: BorderSide(color: Colors.redAccent.withOpacity(0.3)),
-                              ),
-                              icon: isLoggingOut ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(color: Colors.redAccent, strokeWidth: 2)) : const Icon(Icons.logout, size: 14),
-                              label: Text(isLoggingOut ? "Logging out..." : "Logout", style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900)),
-                              onPressed: isLoggingOut ? null : handleLogoutButton,
-                            ),
-                          ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: lightPinkBg,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          "Administrator Profile",
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white),
+                        child: const Text(
+                          "SYSTEM SETTINGS & PROFILE",
+                          style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Manage your master admin profile and configure parameters.",
-                          style: TextStyle(fontSize: 10, color: Colors.grey.shade400, fontWeight: FontWeight.w500),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  if (message != null) ...[
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: message!['type'] == 'success' ? Colors.green.withOpacity(0.15) : Colors.red.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: message!['type'] == 'success' ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3)),
                       ),
-                      child: Row(
-                        children: [
-                          Icon(message!['type'] == 'success' ? Icons.check_circle : Icons.error, color: message!['type'] == 'success' ? Colors.greenAccent : Colors.redAccent, size: 16),
-                          const SizedBox(width: 8),
-                          Expanded(child: Text(message!['text']!, style: TextStyle(color: message!['type'] == 'success' ? Colors.greenAccent : Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold))),
-                        ],
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent.withOpacity(0.12),
+                          foregroundColor: Colors.redAccent,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          side: BorderSide(color: Colors.redAccent.withOpacity(0.3), width: 1.5),
+                        ),
+                        icon: isLoggingOut ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(color: Colors.redAccent, strokeWidth: 2)) : const Icon(Icons.logout_rounded, size: 16),
+                        label: Text(isLoggingOut ? "Logging out..." : "Logout", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                        onPressed: isLoggingOut ? null : handleLogoutButton,
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // ================= SECTION 1: IDENTITY =================
-                  _buildGlassCard(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("IDENTITY CONFIGURATION", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.indigoAccent, letterSpacing: 1.2)),
-                        const SizedBox(height: 14),
-
-                        // Avatar
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 26,
-                              backgroundColor: Colors.black,
-                              backgroundImage: avatarCtrl.text.trim().isNotEmpty ? NetworkImage(avatarCtrl.text.trim()) : null,
-                              child: avatarCtrl.text.trim().isEmpty ? Text(firstNameCtrl.text.isNotEmpty ? firstNameCtrl.text[0] : 'A', style: const TextStyle(color: Colors.indigoAccent, fontWeight: FontWeight.bold)) : null,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text("AVATAR VECTOR URL", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 0.8)),
-                                  const SizedBox(height: 4),
-                                  TextField(
-                                    controller: avatarCtrl,
-                                    onChanged: (_) => setState(() {}),
-                                    style: const TextStyle(color: Colors.white, fontSize: 11),
-                                    decoration: InputDecoration(
-                                      hintText: "https://...",
-                                      hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 10),
-                                      filled: true,
-                                      fillColor: Colors.white.withOpacity(0.04),
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.white.withOpacity(0.08))),
-                                      focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: Colors.indigoAccent, width: 1.5)),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-
-                        // Names
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text("FIRST NAME *", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 0.8)),
-                                  const SizedBox(height: 6),
-                                  TextField(
-                                    controller: firstNameCtrl,
-                                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                                    decoration: _inputDeco(),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text("LAST NAME *", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 0.8)),
-                                  const SizedBox(height: 6),
-                                  TextField(
-                                    controller: lastNameCtrl,
-                                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                                    decoration: _inputDeco(),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Father Name & DOB
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text("FATHER'S NAME", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 0.8)),
-                                  const SizedBox(height: 6),
-                                  TextField(
-                                    controller: fatherNameCtrl,
-                                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                                    decoration: _inputDeco(),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text("DATE OF BIRTH", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 0.8)),
-                                  const SizedBox(height: 6),
-                                  TextField(
-                                    controller: dobCtrl,
-                                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                                    decoration: _inputDeco(hint: "YYYY-MM-DD"),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-
-                  // ================= SECTION 2: COMMUNICATIONS & LOCATION =================
-                  _buildGlassCard(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("COMMUNICATIONS & GEOGRAPHY", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.indigoAccent, letterSpacing: 1.2)),
-                        const SizedBox(height: 14),
-
-                        // Email (Read Only)
-                        const Text("PRIMARY EMAIL (PROTECTED)", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 0.8)),
-                        const SizedBox(height: 6),
-                        TextField(
-                          controller: emailCtrl,
-                          enabled: false,
-                          style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-                          decoration: _inputDeco(),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Phone & Country
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text("PHONE NUMBER", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 0.8)),
-                                  const SizedBox(height: 6),
-                                  TextField(
-                                    controller: phoneCtrl,
-                                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                                    decoration: _inputDeco(hint: "+44..."),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text("COUNTRY NODE", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 0.8)),
-                                  const SizedBox(height: 6),
-                                  TextField(
-                                    controller: countryCtrl,
-                                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                                    decoration: _inputDeco(hint: "UK"),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Bio
-                        const Text("PROFESSIONAL BIOGRAPHY", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 0.8)),
-                        const SizedBox(height: 6),
-                        TextField(
-                          controller: bioCtrl,
-                          maxLines: 3,
-                          style: const TextStyle(color: Colors.white, fontSize: 12),
-                          decoration: _inputDeco(hint: "Write credentials..."),
-                        ),
-                      ],
-                    ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    "Faculty & System Control",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
                   ),
-                  const SizedBox(height: 16),
-
-                  // ================= SECTION 3: METRICS & AFFILIATES =================
-                  _buildGlassCard(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("INTERNAL METRICS & AFFILIATES", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.indigoAccent, letterSpacing: 1.2)),
-                        const SizedBox(height: 14),
-
-                        Row(
-                          children: [
-                            Expanded(child: _buildInfoBox("Academic Score", "$totalScore Pts", Colors.indigoAccent)),
-                            const SizedBox(width: 8),
-                            Expanded(child: _buildInfoBox("Wallet Balance", "\$${walletBalance.toStringAsFixed(2)}", Colors.amberAccent)),
-                            const SizedBox(width: 8),
-                            Expanded(child: _buildInfoBox("Affiliate Code", referralCode.isNotEmpty ? referralCode : "NONE", Colors.purpleAccent)),
-                          ],
-                        ),
-                      ],
-                    ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "Manage your master profile, teacher info, specialized courses & classes.",
+                    style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
                   ),
-                  const SizedBox(height: 20),
-
-                  // Save Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 46,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.indigoAccent,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                      onPressed: isSaving ? null : handleSaveChanges,
-                      child: isSaving
-                          ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : const Text("SAVE CONFIGURATION", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
                 ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+            const SizedBox(height: 24),
 
-  InputDecoration _inputDeco({String? hint}) {
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 11),
-      filled: true,
-      fillColor: Colors.white.withOpacity(0.04),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.08))),
-      focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12)), borderSide: BorderSide(color: Colors.indigoAccent, width: 1.5)),
-    );
-  }
+            if (message != null) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: message!['type'] == 'success' ? Colors.green.withOpacity(0.12) : Colors.redAccent.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: message!['type'] == 'success' ? Colors.green.withOpacity(0.3) : Colors.redAccent.withOpacity(0.3), width: 1.5),
+                ),
+                child: Row(
+                  children: [
+                    Icon(message!['type'] == 'success' ? Icons.check_circle_rounded : Icons.error_rounded, color: message!['type'] == 'success' ? Colors.green.shade700 : Colors.redAccent, size: 18),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text(message!['text']!, style: TextStyle(color: message!['type'] == 'success' ? Colors.green.shade700 : Colors.redAccent, fontSize: 11, fontWeight: FontWeight.w900))),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
 
-  Widget _buildGlassCard({required Widget child, EdgeInsetsGeometry? padding}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: const Color(0xFF0a0a0f).withOpacity(0.55),
-            border: Border.all(color: Colors.white.withOpacity(0.06)),
-            borderRadius: BorderRadius.circular(22),
-          ),
-          child: child,
+            // ================= SECTION 1: IDENTITY & PROFILES =================
+            Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: surfaceWhite,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: cardBorder, width: 1.5),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("FACULTY IDENTITY & ROLE", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                  const SizedBox(height: 16),
+
+                  // Avatar
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 28,
+                        backgroundColor: lightPinkBg,
+                        backgroundImage: avatarCtrl.text.trim().isNotEmpty ? NetworkImage(avatarCtrl.text.trim()) : null,
+                        child: avatarCtrl.text.trim().isEmpty ? Text(firstNameCtrl.text.isNotEmpty ? firstNameCtrl.text[0] : 'T', style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 16)) : null,
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("AVATAR URL", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: avatarCtrl,
+                              onChanged: (_) => setState(() {}),
+                              style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                              decoration: _inputFieldDecoration("https://..."),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Names
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("FIRST NAME *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                            const SizedBox(height: 6),
+                            TextField(controller: firstNameCtrl, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("First Name")),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("LAST NAME *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                            const SizedBox(height: 6),
+                            TextField(controller: lastNameCtrl, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("Last Name")),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  const Text("EMAIL ADDRESS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                  const SizedBox(height: 6),
+                  TextField(controller: emailCtrl, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("Email address")),
+                  const SizedBox(height: 16),
+
+                  const Text("PHONE NUMBER", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                  const SizedBox(height: 6),
+                  TextField(controller: phoneCtrl, keyboardType: TextInputType.phone, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("Phone number")),
+                  const SizedBox(height: 16),
+
+                  // System Role Dropdown
+                  const Text("SYSTEM ROLE", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                  const SizedBox(height: 6),
+                  DropdownButtonFormField<String>(
+                    value: role,
+                    dropdownColor: surfaceWhite,
+                    style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                    decoration: _inputFieldDecoration("Select role"),
+                    items: const [
+                      DropdownMenuItem(value: 'teacher', child: Text("Instructor / Mentor (Teacher)")),
+                      DropdownMenuItem(value: 'super_admin', child: Text("Administrator (Super Admin)")),
+                      DropdownMenuItem(value: 'student', child: Text("Student (Normal)")),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) setState(() => role = val);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // ================= SECTION 2: TEACHER INFO (BIO & ACHIEVEMENTS) =================
+            Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: surfaceWhite,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: cardBorder, width: 1.5),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("TEACHER INFO & CREDENTIALS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                  const SizedBox(height: 16),
+
+                  const Text("BIOGRAPHY", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: bioCtrl,
+                    maxLines: 4,
+                    style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                    decoration: _inputFieldDecoration("Write comprehensive professional biography..."),
+                  ),
+                  const SizedBox(height: 16),
+
+                  const Text("ACHIEVEMENTS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: achievementsCtrl,
+                    maxLines: 3,
+                    style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                    decoration: _inputFieldDecoration("List certifications, awards or milestones..."),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // ================= SECTION 3: SPECIALIZED COURSES & CLASSES =================
+            Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: surfaceWhite,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: cardBorder, width: 1.5),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("SPECIALIZED COURSES (TEACHER INFO COURSES)", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                  const SizedBox(height: 12),
+                  teacherCourses.isEmpty
+                      ? const Text("No specialized courses linked.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold))
+                      : ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: teacherCourses.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final crs = teacherCourses[index];
+                            return Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: cardBorder.withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(crs['title'] ?? 'Course', style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                                    child: Text(crs['category'] ?? 'General', style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                  const SizedBox(height: 20),
+
+                  const Text("ASSIGNED CLASSES (CLASS GROUPS)", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                  const SizedBox(height: 12),
+                  teacherClasses.isEmpty
+                      ? const Text("No active classes assigned.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold))
+                      : ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: teacherClasses.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final cls = teacherClasses[index];
+                            return Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: cardBorder.withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(cls['class_name'], style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
+                                        const SizedBox(height: 2),
+                                        Text("Course: ${cls['course_title']}", style: const TextStyle(color: textGrey, fontSize: 10)),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                                    child: Text("${cls['students_count']} Students", style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Save Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryPink,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                onPressed: isSaving ? null : handleSaveChanges,
+                child: isSaving
+                    ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                    : const Text("SAVE CONFIGURATION & SYNC 🚀", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+              ),
+            ),
+            const SizedBox(height: 40),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoBox(String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.4),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.04)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label.toUpperCase(), style: const TextStyle(fontSize: 6, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 0.5)),
-          const SizedBox(height: 2),
-          Text(value, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: color), overflow: TextOverflow.ellipsis),
-        ],
-      ),
+  InputDecoration _inputFieldDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+      filled: true,
+      fillColor: cardBorder.withOpacity(0.5),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
     );
   }
 }

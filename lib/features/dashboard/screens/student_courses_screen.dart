@@ -108,16 +108,16 @@ class _ExpirationCounterState extends State<ExpirationCounter> {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.red.withOpacity(0.1),
+          color: Colors.red.withOpacity(0.12),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.red.withOpacity(0.2)),
+          border: Border.all(color: Colors.red.withOpacity(0.3), width: 1.5),
         ),
         child: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text("⚠️", style: TextStyle(fontSize: 10)),
+            Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 12),
             SizedBox(width: 4),
-            Text("EXPIRED", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.redAccent)),
+            Text("EXPIRED", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.redAccent)),
           ],
         ),
       );
@@ -128,18 +128,18 @@ class _ExpirationCounterState extends State<ExpirationCounter> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isExpiringSoon ? Colors.red.withOpacity(0.1) : Colors.amber.withOpacity(0.1),
+        color: isExpiringSoon ? Colors.red.withOpacity(0.12) : const Color(0xFFC2185B).withOpacity(0.12),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: isExpiringSoon ? Colors.red.withOpacity(0.3) : Colors.amber.withOpacity(0.2)),
+        border: Border.all(color: isExpiringSoon ? Colors.red.withOpacity(0.3) : const Color(0xFFC2185B).withOpacity(0.3), width: 1.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(isExpiringSoon ? "🔥" : "⏳", style: const TextStyle(fontSize: 10)),
+          Icon(isExpiringSoon ? Icons.local_fire_department_rounded : Icons.timer_rounded, color: isExpiringSoon ? Colors.redAccent : const Color(0xFFC2185B), size: 12),
           const SizedBox(width: 4),
           Text(
             "${days}d ${hours.toString().padLeft(2, '0')}h",
-            style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: isExpiringSoon ? Colors.redAccent : Colors.amberAccent, fontFamily: 'monospace'),
+            style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: isExpiringSoon ? Colors.redAccent : const Color(0xFFC2185B), fontFamily: 'monospace'),
           ),
         ],
       ),
@@ -159,6 +159,14 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
   bool isLoading = true;
   List<EnrolledCourse> courses = [];
   String filter = "all"; // "all", "in-progress", "completed"
+
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
 
   @override
   void initState() {
@@ -181,7 +189,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
       setState(() {
         courses = (enrollments as List).map((item) => EnrolledCourse.fromJson(item)).toList();
       });
-        } catch (e) {
+    } catch (e) {
       debugPrint("Error fetching courses: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -213,201 +221,228 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
     int inProgressCount = courses.where((c) => !_isCourseExpired(c.enrolledAt)).length;
     int completedCount = courses.where((c) => _isCourseExpired(c.enrolledAt)).length;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ================= هدر صفحه =================
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Text("📚", style: TextStyle(fontSize: 22)),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("My Courses", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-                      const SizedBox(height: 2),
-                      Text("Real-time database records and active core tracking.", style: TextStyle(fontSize: 9, color: Colors.grey.shade400)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+    if (isLoading) {
+      return Scaffold(
+        backgroundColor: surfaceWhite,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
+              const SizedBox(height: 14),
+              Text("LOADING COURSES...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+            ],
           ),
-          const SizedBox(height: 16),
+        ),
+      );
+    }
 
-          // ================= تب‌های فیلتر =================
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: [
-                _buildFilterTab("all", "All Courses", "📚", allCount),
-                const SizedBox(width: 8),
-                _buildFilterTab("in-progress", "In Progress", "⚡", inProgressCount),
-                const SizedBox(width: 8),
-                _buildFilterTab("completed", "Completed", "🏆", completedCount),
-              ],
+    return Scaffold(
+      backgroundColor: surfaceWhite,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ================= هدر صفحه =================
+            Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                boxShadow: [
+                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: lightPinkBg,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                    ),
+                    child: const Icon(Icons.menu_book_rounded, color: primaryPink, size: 24),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("My Courses", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                        const SizedBox(height: 3),
+                        const Text("Real-time database records and active core tracking.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
-          // ================= لیست دوره‌ها =================
-          isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.amberAccent))
-              : filteredCourses.isNotEmpty
-                  ? ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: filteredCourses.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 14),
-                      itemBuilder: (context, index) {
-                        final course = filteredCourses[index];
-                        final expired = _isCourseExpired(course.enrolledAt);
+            // ================= تب‌های فیلتر =================
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  _buildFilterTab("all", "All Courses", Icons.library_books_rounded, allCount),
+                  const SizedBox(width: 10),
+                  _buildFilterTab("in-progress", "In Progress", Icons.bolt_rounded, inProgressCount),
+                  const SizedBox(width: 10),
+                  _buildFilterTab("completed", "Completed", Icons.emoji_events_rounded, completedCount),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
 
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0a0a0f).withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(22),
-                            border: Border.all(color: expired ? Colors.red.withOpacity(0.2) : Colors.amber.withOpacity(0.2)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Stack(
+            // ================= لیست دوره‌ها =================
+            filteredCourses.isNotEmpty
+                ? ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: filteredCourses.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 14),
+                    itemBuilder: (context, index) {
+                      final course = filteredCourses[index];
+                      final expired = _isCourseExpired(course.enrolledAt);
+
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: surfaceWhite,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: expired ? Colors.red.withOpacity(0.3) : cardBorder, width: 1.5),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(23)),
+                                  child: Image.network(
+                                    course.thumbnail,
+                                    height: 150,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, _, _) => Container(height: 150, color: cardBorder),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 12,
+                                  left: 12,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.75),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(course.category.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.white)),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 12,
+                                  right: 12,
+                                  child: ExpirationCounter(enrolledDate: course.enrolledAt),
+                                ),
+                              ],
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: expired ? Colors.red.withOpacity(0.1) : lightPinkBg,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      expired ? "COMPLETED (ACCESS FINISHED)" : "IN PROGRESS (ACTIVE SESSION)",
+                                      style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: expired ? Colors.redAccent : primaryPink),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(course.title, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15), maxLines: 2, overflow: TextOverflow.ellipsis),
+                                  const SizedBox(height: 4),
+                                  Text("Instructor: ${course.instructor}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 14),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text("Progress", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                      Text("${course.progress}%", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 11)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
                                   ClipRRect(
-                                    borderRadius: const BorderRadius.vertical(top: Radius.circular(21)),
-                                    child: Image.network(
-                                      course.thumbnail,
-                                      height: 140,
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, _, _) => Container(height: 140, color: Colors.black54),
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: LinearProgressIndicator(
+                                      value: course.progress / 100,
+                                      backgroundColor: cardBorder,
+                                      valueColor: AlwaysStoppedAnimation<Color>(expired ? Colors.redAccent : primaryPink),
+                                      minHeight: 8,
                                     ),
-                                  ),
-                                  Positioned(
-                                    top: 10,
-                                    left: 10,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.7),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(course.category.toUpperCase(), style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.amberAccent)),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 10,
-                                    right: 10,
-                                    child: ExpirationCounter(enrolledDate: course.enrolledAt),
                                   ),
                                 ],
                               ),
-                              Padding(
-                                padding: const EdgeInsets.all(14),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: expired ? Colors.red.withOpacity(0.1) : Colors.green.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: Text(
-                                        expired ? "COMPLETED (ACCESS FINISHED)" : "IN PROGRESS (ACTIVE SESSION)",
-                                        style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: expired ? Colors.redAccent : Colors.greenAccent),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(course.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14), maxLines: 2, overflow: TextOverflow.ellipsis),
-                                    const SizedBox(height: 4),
-                                    Text("Instructor: ${course.instructor}", style: TextStyle(color: Colors.grey.shade400, fontSize: 9)),
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text("Progress", style: TextStyle(color: Colors.grey, fontSize: 9)),
-                                        Text("${course.progress}%", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 6),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: LinearProgressIndicator(
-                                        value: course.progress / 100,
-                                        backgroundColor: Colors.black.withOpacity(0.5),
-                                        valueColor: AlwaysStoppedAnimation<Color>(expired ? Colors.redAccent : Colors.amberAccent),
-                                        minHeight: 5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    )
-                  : Container(
-                      padding: const EdgeInsets.all(30),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0a0a0f),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withOpacity(0.06)),
-                      ),
-                      child: const Text("No courses found matching this filter.", style: TextStyle(color: Colors.grey, fontSize: 11)),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  )
+                : Container(
+                    padding: const EdgeInsets.all(40),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: cardBorder, width: 1.5),
                     ),
-          const SizedBox(height: 30),
-        ],
+                    child: const Text("No courses found matching this filter.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                  ),
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildFilterTab(String id, String label, String emoji, int count) {
+  Widget _buildFilterTab(String id, String label, IconData icon, int count) {
     bool isSelected = filter == id;
     return GestureDetector(
       onTap: () => setState(() => filter = id),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.amberAccent : Colors.white.withOpacity(0.04),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isSelected ? Colors.amberAccent : Colors.white.withOpacity(0.08)),
+          color: isSelected ? primaryPink : lightPinkBg.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isSelected ? primaryPink : cardBorder, width: 1.5),
+          boxShadow: isSelected ? [BoxShadow(color: primaryPink.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 3))] : [],
         ),
         child: Row(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 12)),
-            const SizedBox(width: 6),
-            Text(label, style: TextStyle(color: isSelected ? Colors.black : Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-            const SizedBox(width: 6),
+            Icon(icon, size: 16, color: isSelected ? Colors.white : primaryPink),
+            const SizedBox(width: 8),
+            Text(label, style: TextStyle(color: isSelected ? Colors.white : textDark, fontSize: 11, fontWeight: FontWeight.w900)),
+            const SizedBox(width: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.black.withOpacity(0.2) : Colors.white.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(6),
+                color: isSelected ? Colors.white.withOpacity(0.2) : cardBorder,
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Text("$count", style: TextStyle(color: isSelected ? Colors.black : Colors.grey, fontSize: 8, fontWeight: FontWeight.bold)),
+              child: Text("$count", style: TextStyle(color: isSelected ? Colors.white : textGrey, fontSize: 9, fontWeight: FontWeight.w900)),
             ),
           ],
         ),

@@ -2,26 +2,39 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'teacher_create_course_screen.dart';
+import 'teacher_courses_screen.dart'; // 👈 ایمپورت صفحه مدرس کلاس‌ها و کوهورت‌ها
 
 class CourseCurriculumItem {
   final String id;
   final String title;
   final String category;
   final String? thumbnailUrl;
+  final double price;
+  final String language;
+  final bool isPublished;
+  final String description;
 
   CourseCurriculumItem({
     required this.id,
     required this.title,
     required this.category,
     this.thumbnailUrl,
+    required this.price,
+    required this.language,
+    required this.isPublished,
+    required this.description,
   });
 
   factory CourseCurriculumItem.fromJson(Map<String, dynamic> json) {
     return CourseCurriculumItem(
       id: json['id'] ?? '',
-      title: json['title'] ?? '',
+      title: json['title'] ?? 'Untitled Course',
       category: json['category'] ?? 'General',
       thumbnailUrl: json['thumbnail_url'],
+      price: (json['price'] ?? 0).toDouble(),
+      language: json['language'] ?? 'English',
+      isPublished: json['is_published'] ?? false,
+      description: json['description'] ?? 'No description provided.',
     );
   }
 }
@@ -38,6 +51,13 @@ class _TeacherCoursesCurriculumScreenState extends State<TeacherCoursesCurriculu
   bool isLoading = true;
   List<CourseCurriculumItem> courses = [];
 
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
+
   @override
   void initState() {
     super.initState();
@@ -52,7 +72,7 @@ class _TeacherCoursesCurriculumScreenState extends State<TeacherCoursesCurriculu
 
       final data = await supabase
           .from("courses")
-          .select("id, title, category, thumbnail_url")
+          .select("id, title, category, thumbnail_url, price, language, is_published, description")
           .eq("teacher_id", user.id)
           .order("created_at", ascending: false);
 
@@ -71,18 +91,29 @@ class _TeacherCoursesCurriculumScreenState extends State<TeacherCoursesCurriculu
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
       physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // هدر صفحه
+          // ================= هدر صفحه =================
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
+              gradient: LinearGradient(
+                colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryPink.withOpacity(0.08),
+                  blurRadius: 25,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -90,31 +121,34 @@ class _TeacherCoursesCurriculumScreenState extends State<TeacherCoursesCurriculu
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(color: Colors.pink.withOpacity(0.15), borderRadius: BorderRadius.circular(14)),
-                      child: const Text("📚", style: TextStyle(fontSize: 22)),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: primaryPink.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(Icons.menu_book_rounded, color: primaryPink, size: 26),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 14),
                     const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Course Curriculum", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-                        SizedBox(height: 2),
-                        Text("Manage your published video courses.", style: TextStyle(fontSize: 9, color: Colors.grey)),
+                        Text("Course Curriculum", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                        SizedBox(height: 3),
+                        Text("Manage your published video courses and materials.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ],
                 ),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink,
+                    backgroundColor: primaryPink,
                     foregroundColor: Colors.white,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   ),
-                  icon: const Icon(Icons.add, size: 16),
-                  label: const Text("Create", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: const Text("Create", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -125,46 +159,52 @@ class _TeacherCoursesCurriculumScreenState extends State<TeacherCoursesCurriculu
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
-          // لیست گرید کورس‌ها
+          // ================= لیست گرید کورس‌ها =================
           isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.pinkAccent))
+              ? const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator(color: primaryPink)))
               : courses.isNotEmpty
                   ? GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        childAspectRatio: 0.78,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 0.72,
                       ),
                       itemCount: courses.length,
                       itemBuilder: (context, index) {
                         final course = courses[index];
                         return Container(
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0a0a0f).withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: Colors.white.withOpacity(0.06)),
+                            color: surfaceWhite,
+                            borderRadius: BorderRadius.circular(22),
+                            border: Border.all(color: cardBorder, width: 1.5),
+                            boxShadow: [
+                              BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6)),
+                            ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               ClipRRect(
-                                borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
                                 child: SizedBox(
-                                  height: 90,
+                                  height: 100,
                                   width: double.infinity,
                                   child: course.thumbnailUrl != null
                                       ? Image.network(course.thumbnailUrl!, fit: BoxFit.cover)
-                                      : Container(color: Colors.grey.shade800, child: const Icon(Icons.book, color: Colors.grey)),
+                                      : Container(
+                                          color: lightPinkBg,
+                                          child: const Icon(Icons.book_rounded, color: primaryPink, size: 32),
+                                        ),
                                 ),
                               ),
                               Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsets.all(10.0),
+                                  padding: const EdgeInsets.all(12.0),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -172,23 +212,42 @@ class _TeacherCoursesCurriculumScreenState extends State<TeacherCoursesCurriculu
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text(course.category.toUpperCase(), style: const TextStyle(color: Colors.pinkAccent, fontSize: 7, fontWeight: FontWeight.bold)),
-                                          const SizedBox(height: 2),
-                                          Text(course.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11), maxLines: 2, overflow: TextOverflow.ellipsis),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(course.category.toUpperCase(),
+                                                  style: const TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900)),
+                                              Text("\$${course.price.toStringAsFixed(0)}",
+                                                  style: const TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.w900)),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(course.title,
+                                              style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis),
                                         ],
                                       ),
                                       SizedBox(
                                         width: double.infinity,
-                                        height: 28,
+                                        height: 32,
                                         child: OutlinedButton(
                                           style: OutlinedButton.styleFrom(
-                                            foregroundColor: Colors.white,
-                                            side: BorderSide(color: Colors.white12),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            foregroundColor: textDark,
+                                            side: const BorderSide(color: cardBorder, width: 1.5),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                             padding: EdgeInsets.zero,
                                           ),
-                                          onPressed: () {},
-                                          child: const Text("Manage", style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
+                                          onPressed: () {
+                                            // 👈 هدایت صحیح به صفحه TeacherCoursesScreen (teacher_courses_screen.dart)
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) => const TeacherCoursesScreen(),
+                                              ),
+                                            ).then((_) => _fetchCourses());
+                                          },
+                                          child: const Text("Manage", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
                                         ),
                                       ),
                                     ],
@@ -201,15 +260,24 @@ class _TeacherCoursesCurriculumScreenState extends State<TeacherCoursesCurriculu
                       },
                     )
                   : Container(
-                      padding: const EdgeInsets.all(30),
+                      padding: const EdgeInsets.all(40),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0a0a0f),
-                        borderRadius: BorderRadius.circular(18),
+                        color: surfaceWhite,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: cardBorder),
                       ),
-                      child: const Text("No courses published yet.", style: TextStyle(color: Colors.grey, fontSize: 11)),
+                      child: const Column(
+                        children: [
+                          Icon(Icons.library_books_rounded, size: 36, color: textGrey),
+                          SizedBox(height: 10),
+                          Text("No Courses Published", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
+                          SizedBox(height: 4),
+                          Text("You haven't created any courses yet.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                        ],
+                      ),
                     ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 40),
         ],
       ),
     );

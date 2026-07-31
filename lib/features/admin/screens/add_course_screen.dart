@@ -34,6 +34,14 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   File? thumbnailFile;
   final ImagePicker _picker = ImagePicker();
 
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
+
   @override
   void dispose() {
     titleCtrl.dispose();
@@ -99,7 +107,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Course created successfully! 🚀"), backgroundColor: Colors.green),
         );
-        Navigator.pop(context); // بازگشت به صفحه قبل
+        Navigator.pop(context);
       }
     } catch (error) {
       _showError("Error: ${error.toString()}");
@@ -117,291 +125,271 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF050505),
+      backgroundColor: surfaceWhite,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: surfaceWhite,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text("Create Course", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: textDark),
+        title: const Text("Create Course", style: TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(color: cardBorder, height: 1),
+        ),
       ),
-      extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          // Background Blobs (نورهای محو پس‌زمینه)
-          Positioned(
-            top: 50, left: -100,
-            child: _buildGlowOrb(Colors.amber.withOpacity(0.15), 300),
-          ),
-          Positioned(
-            top: 300, right: -100,
-            child: _buildGlowOrb(Colors.blue.withOpacity(0.15), 250),
-          ),
-          Positioned(
-            bottom: -50, left: 50,
-            child: _buildGlowOrb(Colors.purple.withOpacity(0.15), 300),
-          ),
-
-          // Main Form Content
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              physics: const BouncingScrollPhysics(),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Info
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 8))],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header Info
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withOpacity(0.1)),
-                    ),
-                    child: const Text("ADMIN STUDIO", style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(10)),
+                    child: const Text("ADMIN STUDIO", style: TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
                   ),
-                  const SizedBox(height: 16),
-                  const Text("Design a premium course page.", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white, height: 1.1)),
-                  const SizedBox(height: 12),
-                  Text("Every field is styled for clarity and impact. Upload assets, add instructors, and publish your course.", style: TextStyle(color: Colors.grey.shade400, fontSize: 14)),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 10),
+                  const Text("Design a premium course page.", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark)),
+                  const SizedBox(height: 6),
+                  const Text("Upload assets, add instructors, and publish your course with high visual impact.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
 
-                  // 1. Course Details Section
-                  _buildGlassSection(
-                    title: "Course Details",
-                    children: [
-                      _buildTextField(titleCtrl, "Course Title", "Fintech Mastery...", isRequired: true),
-                      const SizedBox(height: 16),
-                      Row(
+            // 1. Course Details Section
+            _buildSection(
+              title: "Course Details",
+              children: [
+                _buildTextField(titleCtrl, "Course Title *", "Fintech Mastery..."),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(child: _buildTextField(categoryCtrl, "Category *", "Finance, Tech...")),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(child: _buildTextField(categoryCtrl, "Category", "Finance, Tech...", isRequired: true)),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text("Language", style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.05),
-                                    borderRadius: BorderRadius.circular(24),
-                                    border: Border.all(color: Colors.white.withOpacity(0.1)),
-                                  ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      value: selectedLanguage,
-                                      isExpanded: true,
-                                      dropdownColor: const Color(0xFF1a1a1a),
-                                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                                      icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
-                                      items: ['English', 'Persian', 'Pashto'].map((String value) {
-                                        return DropdownMenuItem<String>(value: value, child: Text(value));
-                                      }).toList(),
-                                      onChanged: (val) => setState(() => selectedLanguage = val!),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                          const Text("Language *", style: TextStyle(color: textDark, fontSize: 10, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            decoration: BoxDecoration(
+                              color: cardBorder.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: cardBorder, width: 1.5),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: selectedLanguage,
+                                dropdownColor: surfaceWhite,
+                                style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: textGrey),
+                                items: ['English', 'Persian', 'Pashto'].map((String value) {
+                                  return DropdownMenuItem<String>(value: value, child: Text(value));
+                                }).toList(),
+                                onChanged: (val) => setState(() => selectedLanguage = val!),
+                              ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      _buildTextField(descCtrl, "Description", "Write a compelling summary...", maxLines: 4, isRequired: true),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // 2. Instructor 1
-                  _buildGlassSection(
-                    title: "Instructor 1",
-                    subtitle: "Primary course instructor",
-                    isRequired: true,
-                    children: [
-                      _buildTextField(inst1NameCtrl, "Name", "Instructor Name"),
-                      const SizedBox(height: 12),
-                      _buildTextField(inst1BioCtrl, "Bio", "Brief background...", maxLines: 3),
-                      const SizedBox(height: 12),
-                      _buildTextField(inst1ImgCtrl, "Image URL", "https://..."),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // 3. Instructor 2 (Optional)
-                  _buildGlassSection(
-                    title: "Instructor 2",
-                    subtitle: "Optional co-instructor",
-                    children: [
-                      _buildTextField(inst2NameCtrl, "Name", "Instructor 2 Name"),
-                      const SizedBox(height: 12),
-                      _buildTextField(inst2BioCtrl, "Bio", "Brief background...", maxLines: 3),
-                      const SizedBox(height: 12),
-                      _buildTextField(inst2ImgCtrl, "Image URL", "https://..."),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // 4. Asset Upload & Price
-                  _buildGlassSection(
-                    title: "Asset & Pricing",
-                    children: [
-                      // Upload Box
-                      GestureDetector(
-                        onTap: _pickImage,
-                        child: Container(
-                          height: 180,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: Colors.amber.withOpacity(0.3), style: BorderStyle.solid),
-                          ),
-                          child: thumbnailFile != null
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(24),
-                                  child: Image.file(thumbnailFile!, fit: BoxFit.cover),
-                                )
-                              : Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.image_outlined, color: Colors.grey, size: 40),
-                                    const SizedBox(height: 12),
-                                    const Text("Upload 16:9 Thumbnail", style: TextStyle(color: Colors.grey, fontSize: 12)),
-                                    const SizedBox(height: 12),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                      decoration: BoxDecoration(color: Colors.amber, borderRadius: BorderRadius.circular(20)),
-                                      child: const Text("Choose File", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12)),
-                                    )
-                                  ],
-                                ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      _buildTextField(priceCtrl, "Price (USD)", "e.g. 99.99", isRequired: true, isNumber: true),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: Colors.black.withOpacity(0.4), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.white.withOpacity(0.1))),
-                        child: const Text("The course is saved as a draft and will be published after you submit. You can edit it later.", style: TextStyle(color: Colors.grey, fontSize: 11)),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 30),
-
-                  // Submit Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                        elevation: 10,
-                        shadowColor: Colors.amber.withOpacity(0.3),
-                      ),
-                      onPressed: isSubmitting ? null : _handleSubmit,
-                      child: isSubmitting
-                          ? const CircularProgressIndicator(color: Colors.black)
-                          : const Text("PUBLISH COURSE NOW", style: TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1)),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(descCtrl, "Description *", "Write a compelling summary...", maxLines: 4),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // 2. Instructor 1
+            _buildSection(
+              title: "Instructor 1",
+              subtitle: "Primary course instructor",
+              isRequired: true,
+              children: [
+                _buildTextField(inst1NameCtrl, "Name", "Instructor Name"),
+                const SizedBox(height: 12),
+                _buildTextField(inst1BioCtrl, "Bio", "Brief background...", maxLines: 3),
+                const SizedBox(height: 12),
+                _buildTextField(inst1ImgCtrl, "Image URL", "https://..."),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // 3. Instructor 2 (Optional)
+            _buildSection(
+              title: "Instructor 2",
+              subtitle: "Optional co-instructor",
+              children: [
+                _buildTextField(inst2NameCtrl, "Name", "Instructor 2 Name"),
+                const SizedBox(height: 12),
+                _buildTextField(inst2BioCtrl, "Bio", "Brief background...", maxLines: 3),
+                const SizedBox(height: 12),
+                _buildTextField(inst2ImgCtrl, "Image URL", "https://..."),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // 4. Asset Upload & Price
+            _buildSection(
+              title: "Asset & Pricing",
+              children: [
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: Container(
+                    height: 170,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: cardBorder.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5, style: BorderStyle.solid),
+                    ),
+                    child: thumbnailFile != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Image.file(thumbnailFile!, fit: BoxFit.cover),
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.image_outlined, color: primaryPink, size: 36),
+                              const SizedBox(height: 10),
+                              const Text("Upload 16:9 Thumbnail", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900)),
+                              const SizedBox(height: 4),
+                              const Text("Tap to browse gallery", style: TextStyle(color: textGrey, fontSize: 10)),
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                decoration: BoxDecoration(color: primaryPink, borderRadius: BorderRadius.circular(12)),
+                                child: const Text("Choose File", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 10)),
+                              )
+                            ],
+                          ),
                   ),
-                  const SizedBox(height: 40),
-                ],
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(priceCtrl, "Price (USD) *", "e.g. 99.99", isNumber: true),
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: lightPinkBg.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: primaryPink.withOpacity(0.2), width: 1),
+                  ),
+                  child: const Text(
+                    "The course is saved as a draft and will be published after you submit. You can edit it later.",
+                    style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                )
+              ],
+            ),
+            const SizedBox(height: 30),
+
+            // Submit Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryPink,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                onPressed: isSubmitting ? null : _handleSubmit,
+                child: Text(
+                  isSubmitting ? "Publishing..." : "PUBLISH COURSE NOW 🚀",
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1),
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // === Helper Widgets ===
-
-  Widget _buildGlowOrb(Color color, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(color: color, blurRadius: 100, spreadRadius: 50),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGlassSection({required String title, String? subtitle, bool isRequired = false, required List<Widget> children}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(32),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: Colors.white.withOpacity(0.08)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: 2),
-                        Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                      ]
-                    ],
-                  ),
-                  if (isRequired)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: Colors.amber.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                      child: const Text("REQUIRED", style: TextStyle(color: Colors.amber, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 1)),
-                    )
-                ],
-              ),
-              const SizedBox(height: 20),
-              ...children,
-            ],
-          ),
+            const SizedBox(height: 40),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, String hint, {bool isRequired = false, int maxLines = 1, bool isNumber = false}) {
+  Widget _buildSection({required String title, String? subtitle, bool isRequired = false, required List<Widget> children}) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: surfaceWhite,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: cardBorder, width: 1.5),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(color: textDark, fontSize: 15, fontWeight: FontWeight.w900)),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(subtitle, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500)),
+                  ]
+                ],
+              ),
+              if (isRequired)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                  child: const Text("REQUIRED", style: TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                )
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, String hint, {int maxLines = 1, bool isNumber = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-            if (isRequired) const Text("REQUIRED", style: TextStyle(color: Colors.grey, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 1)),
-          ],
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
+        Text(label, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 6),
+        TextField(
           controller: controller,
           maxLines: maxLines,
           keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-          style: const TextStyle(color: Colors.white, fontSize: 14),
+          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.grey.shade600),
+            hintStyle: const TextStyle(color: textGrey, fontSize: 11),
             filled: true,
-            fillColor: Colors.white.withOpacity(0.05),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: const BorderSide(color: Colors.amber)),
+            fillColor: cardBorder.withOpacity(0.5),
+            contentPadding: maxLines > 1 ? const EdgeInsets.all(14) : const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
           ),
         ),
       ],

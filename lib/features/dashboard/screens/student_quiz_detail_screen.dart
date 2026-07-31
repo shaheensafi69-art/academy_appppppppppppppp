@@ -6,8 +6,33 @@ class QuestionItem {
   final String id;
   final String questionText;
   final int points;
+  final String questionType; // "multiple_choice" یا "descriptive"
+  final List<String> options; // لیست گزینه‌ها برای سوالات تستی
 
-  QuestionItem({required this.id, required this.questionText, required this.points});
+  QuestionItem({
+    required this.id,
+    required this.questionText,
+    required this.points,
+    required this.questionType,
+    required this.options,
+  });
+
+  factory QuestionItem.fromJson(Map<String, dynamic> json) {
+    List<String> parsedOptions = [];
+    if (json['options'] != null) {
+      if (json['options'] is List) {
+        parsedOptions = List<String>.from(json['options']);
+      }
+    }
+
+    return QuestionItem(
+      id: json['id'] ?? '',
+      questionText: json['question_text'] ?? '',
+      points: json['points'] ?? 10,
+      questionType: json['question_type'] ?? 'descriptive',
+      options: parsedOptions,
+    );
+  }
 }
 
 class StudentQuizDetailScreen extends StatefulWidget {
@@ -26,7 +51,18 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
 
   Map<String, dynamic>? quizInfo;
   List<QuestionItem> questions = [];
-  final Map<String, TextEditingController> _controllers = {};
+  
+  // نگهداری پاسخ‌های دانشجو: برای تشریحی متن و برای تستی ایندکس یا متن گزینه انتخابی
+  final Map<String, TextEditingController> _textControllers = {};
+  final Map<String, String> _selectedOptions = {};
+
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
 
   @override
   void initState() {
@@ -36,7 +72,7 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
 
   @override
   void dispose() {
-    for (var controller in _controllers.values) {
+    for (var controller in _textControllers.values) {
       controller.dispose();
     }
     super.dispose();
@@ -55,20 +91,18 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
     
       final questionsData = await supabase
           .from("quiz_questions")
-          .select("id, question_text, points")
+          .select("id, question_text, points, question_type, options")
           .eq("quiz_id", widget.quizId)
           .order("created_at", ascending: true);
 
       questions = (questionsData as List).map((q) {
-        final id = q['id'];
-        _controllers[id] = TextEditingController();
-        return QuestionItem(
-          id: id,
-          questionText: q['question_text'] ?? '',
-          points: q['points'] ?? 10,
-        );
+        final item = QuestionItem.fromJson(q);
+        if (item.questionType == 'descriptive') {
+          _textControllers[item.id] = TextEditingController();
+        }
+        return item; // استاندارد نگاشت
       }).toList();
-        } catch (e) {
+    } catch (e) {
       debugPrint("Failed to load exam paper: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -79,18 +113,26 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
     final user = supabase.auth.currentUser;
     if (user == null || quizInfo == null) return;
 
-    // بررسی پاسخ‌دهی
-    int unanswered = questions.where((q) => (_controllers[q.id]?.text.trim() ?? "").isEmpty).length;
+    // بررسی تعداد سوالات بی‌پاسخ (چه تستی و چه تشریحی)
+    int unanswered = questions.where((q) {
+      if (q.questionType == 'multiple_choice') {
+        return !_selectedOptions.containsKey(q.id) || _selectedOptions[q.id]!.isEmpty;
+      } else {
+        return (_textControllers[q.id]?.text.trim() ?? "").isEmpty;
+      }
+    }).length;
+
     if (unanswered > 0) {
       bool? confirm = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          backgroundColor: const Color(0xFF0a0a0f),
-          title: const Text("Unanswered Questions", style: TextStyle(color: Colors.white, fontSize: 14)),
-          content: Text("You have $unanswered unanswered questions! Are you sure you want to submit?", style: const TextStyle(color: Colors.grey, fontSize: 11)),
+          backgroundColor: surfaceWhite, // This line is not part of the change, but it's close to the target.
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: cardBorder, width: 1.5)),
+          title: const Text("Unanswered Questions", style: TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+          content: Text("You have $unanswered unanswered questions! Are you sure you want to submit?", style: const TextStyle(color: textGrey, fontSize: 11)),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
-            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Submit", style: TextStyle(color: Colors.amberAccent))),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold))),
+            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Submit", style: TextStyle(color: primaryPink, fontWeight: FontWeight.w900))),
           ],
         ),
       );
@@ -99,7 +141,6 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
 
     setState(() => isSubmitting = true);
     try {
-      // ۱. ثبت در جدول quiz_attempts با وضعیت pending_review
       final attemptData = await supabase
           .from("quiz_attempts")
           .insert({
@@ -115,12 +156,18 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
 
       final attemptId = attemptData['id'];
 
-      // ۲. ثبت پاسخ‌های تشریحی شاگرد
       List<Map<String, dynamic>> answersArray = questions.map((q) {
+        String answerText = "";
+        if (q.questionType == 'multiple_choice') {
+          answerText = _selectedOptions[q.id] ?? "No answer provided.";
+        } else {
+          answerText = _textControllers[q.id]?.text.trim().isNotEmpty == true ? _textControllers[q.id]!.text.trim() : "No answer provided.";
+        }
+
         return {
           'attempt_id': attemptId,
           'question_id': q.id,
-          'student_answer_text': _controllers[q.id]?.text.trim().isNotEmpty == true ? _controllers[q.id]!.text.trim() : "No answer provided.",
+          'student_answer_text': answerText,
           'points_earned': 0,
           'is_correct': null,
         };
@@ -140,14 +187,14 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFF030305),
+        backgroundColor: surfaceWhite,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: Colors.purpleAccent),
-              const SizedBox(height: 12),
-              Text("Distributing Exam Papers...", style: TextStyle(color: Colors.purpleAccent.shade100, fontSize: 10, fontWeight: FontWeight.bold)),
+              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
+              const SizedBox(height: 14),
+              Text("DISTRIBUTING EXAM PAPERS...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
             ],
           ),
         ),
@@ -156,23 +203,33 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
 
     if (isSubmittedSuccessfully) {
       return Scaffold(
-        backgroundColor: const Color(0xFF030305),
+        backgroundColor: surfaceWhite,
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text("⏳", style: TextStyle(fontSize: 48)),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
+                  child: const Icon(Icons.check_circle_rounded, size: 48, color: primaryPink),
+                ),
                 const SizedBox(height: 16),
-                const Text("Paper Submitted!", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
+                const Text("Paper Submitted!", style: TextStyle(color: textDark, fontSize: 20, fontWeight: FontWeight.w900)),
                 const SizedBox(height: 8),
-                Text("Your answers for ${quizInfo?['title']} have been securely saved. The instructor will review your paper shortly.", style: TextStyle(color: Colors.grey.shade400, fontSize: 11), textAlign: TextAlign.center),
+                Text("Your answers for ${quizInfo?['title']} have been securely saved. The instructor will review your paper shortly.", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryPink,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Return to Exam Center"),
+                  child: const Text("Return to Exam Center", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
                 ),
               ],
             ),
@@ -182,31 +239,32 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF030305),
+      backgroundColor: surfaceWhite,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF050508),
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(quizInfo?['title'] ?? 'Exam Paper', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+        backgroundColor: surfaceWhite,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: textDark),
+        title: Text(quizInfo?['title'] ?? 'Exam Paper', style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
         physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.purple.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.purple.withOpacity(0.2)),
+                color: lightPinkBg,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
               ),
               child: const Row(
                 children: [
-                  Text("✍️", style: TextStyle(fontSize: 20)),
+                  Icon(Icons.edit_note_rounded, color: primaryPink, size: 22),
                   SizedBox(width: 10),
                   Expanded(
-                    child: Text("Read each question carefully and type your descriptive answer in the provided boxes.", style: TextStyle(color: Colors.purpleAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                    child: Text("Read each question carefully. Select the correct option for multiple-choice questions or type your detailed answer in the text boxes.", style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.bold, height: 1.3)),
                   ),
                 ],
               ),
@@ -217,15 +275,18 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: questions.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 16),
+              separatorBuilder: (_, __) => const SizedBox(height: 16),
               itemBuilder: (context, index) {
                 final q = questions[index];
+                bool isMultipleChoice = q.questionType == 'multiple_choice';
+
                 return Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0a0a0f),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withOpacity(0.06)),
+                    color: surfaceWhite,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: cardBorder, width: 1.5),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,36 +295,81 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            width: 24,
-                            height: 24,
-                            decoration: const BoxDecoration(color: Colors.purple, shape: BoxShape.circle),
+                            width: 26,
+                            height: 26,
+                            decoration: BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
                             alignment: Alignment.center,
-                            child: Text("${index + 1}", style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                            child: Text("${index + 1}", style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900)),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(6)),
-                            child: Text("${q.points} Pts", style: const TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(color: cardBorder, borderRadius: BorderRadius.circular(8)),
+                            child: Text("${q.points} Pts", style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.w900)),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
-                      Text(q.questionText, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
                       const SizedBox(height: 12),
-                      TextField(
-                        controller: _controllers[q.id],
-                        maxLines: 5,
-                        style: const TextStyle(color: Colors.white, fontSize: 12),
-                        decoration: InputDecoration(
-                          hintText: "Type your detailed answer here...",
-                          hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 11),
-                          filled: true,
-                          fillColor: Colors.black.withOpacity(0.4),
-                          contentPadding: const EdgeInsets.all(12),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+                      Text(q.questionText, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13, height: 1.3)),
+                      const SizedBox(height: 14),
+
+                      // رندر هوشمند گزینه چهارجوابی یا فیلد متن تشریحی
+                      if (isMultipleChoice && q.options.isNotEmpty) ...[
+                        ...q.options.map((option) {
+                          bool isSelected = _selectedOptions[q.id] == option;
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedOptions[q.id] = option;
+                              });
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: isSelected ? lightPinkBg : cardBorder.withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: isSelected ? primaryPink : cardBorder, width: isSelected ? 1.5 : 1),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_unchecked_rounded,
+                                    color: isSelected ? primaryPink : textGrey,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      option,
+                                      style: TextStyle(
+                                        color: isSelected ? primaryPink : textDark,
+                                        fontSize: 12,
+                                        fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                      ] else ...[
+                        TextField(
+                          controller: _textControllers[q.id],
+                          maxLines: 4,
+                          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                          decoration: InputDecoration(
+                            hintText: "Type your detailed answer here...",
+                            hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                            filled: true,
+                            fillColor: cardBorder.withOpacity(0.5),
+                            contentPadding: const EdgeInsets.all(14),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 );
@@ -275,16 +381,19 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
+                  backgroundColor: primaryPink,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
                 onPressed: isSubmitting ? null : _handleSubmitExam,
-                child: Text(isSubmitting ? "Submitting Paper..." : "Submit Exam Paper 🚀", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                child: isSubmitting
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                    : const Text("SUBMIT EXAM PAPER 🚀", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1)),
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 40),
           ],
         ),
       ),

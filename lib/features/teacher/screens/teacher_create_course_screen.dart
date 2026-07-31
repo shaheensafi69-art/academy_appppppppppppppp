@@ -32,6 +32,14 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
   bool isUploadingThumb = false;
   bool isUploadingCo = false;
 
+  // پالت رنگی لایت (سفید صدفی و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
+
   @override
   void initState() {
     super.initState();
@@ -137,96 +145,113 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFF030305),
-        body: const Center(child: CircularProgressIndicator(color: Colors.pink)),
+        backgroundColor: surfaceWhite,
+        body: const Center(child: CircularProgressIndicator(color: primaryPink)),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF030305),
+      backgroundColor: surfaceWhite,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF050508),
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text("Create New Course", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+        backgroundColor: surfaceWhite,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: textDark),
+        title: const Text("Create New Course", style: TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(color: cardBorder, height: 1),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Course Title *", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
+            // عنوان دوره
+            const Text("Course Title *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
             TextField(
               controller: _titleController,
-              style: const TextStyle(color: Colors.white, fontSize: 11),
+              style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 hintText: "e.g. Advanced AI Trading Masterclass",
-                hintStyle: TextStyle(color: Colors.grey.shade700),
+                hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                 filled: true,
-                fillColor: Colors.black.withOpacity(0.4),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+                fillColor: cardBorder.withOpacity(0.5),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
-            const Text("Detailed Description", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
+            // توضیحات دوره
+            const Text("Detailed Description", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
             TextField(
               controller: _descController,
               maxLines: 4,
-              style: const TextStyle(color: Colors.white, fontSize: 11),
+              style: const TextStyle(color: textDark, fontSize: 12),
               decoration: InputDecoration(
-                hintText: "What will students learn...",
-                hintStyle: TextStyle(color: Colors.grey.shade700),
+                hintText: "What will students learn in this course...",
+                hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                 filled: true,
-                fillColor: Colors.black.withOpacity(0.4),
-                contentPadding: const EdgeInsets.all(12),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+                fillColor: cardBorder.withOpacity(0.5),
+                contentPadding: const EdgeInsets.all(14),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
+            // دسته‌بندی و قیمت
             Row(
               children: [
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Category", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
+                      const Text("Category", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 6),
                       TextField(
                         controller: _categoryController,
-                        style: const TextStyle(color: Colors.white, fontSize: 11),
+                        style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                         decoration: InputDecoration(
                           filled: true,
-                          fillColor: Colors.black.withOpacity(0.4),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+                          fillColor: cardBorder.withOpacity(0.5),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Price (USD)", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
+                      const Text("Price (USD)", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 6),
                       TextField(
                         controller: _priceController,
                         keyboardType: TextInputType.number,
-                        style: const TextStyle(color: Colors.white, fontSize: 11),
+                        style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                         decoration: InputDecoration(
                           hintText: "0.00",
-                          hintStyle: TextStyle(color: Colors.grey.shade700),
+                          hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                           filled: true,
-                          fillColor: Colors.black.withOpacity(0.4),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+                          fillColor: cardBorder.withOpacity(0.5),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                         ),
                       ),
                     ],
@@ -234,58 +259,199 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
-            const Text("Course Thumbnail Image URL", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
+            // زبان دوره
+            const Text("Language", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            DropdownButtonFormField<String>(
+              value: selectedLanguage,
+              dropdownColor: surfaceWhite,
+              style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: cardBorder.withOpacity(0.5),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+              ),
+              items: ["English", "Persian", "Arabic", "Pashto"].map((lang) => DropdownMenuItem(value: lang, child: Text(lang))).toList(),
+              onChanged: (val) => setState(() => selectedLanguage = val ?? "English"),
+            ),
+            const SizedBox(height: 16),
+
+            // تامبنیل دوره
+            const Text("Course Thumbnail Image", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _thumbController,
-                    style: const TextStyle(color: Colors.white, fontSize: 11),
+                    style: const TextStyle(color: textDark, fontSize: 11),
                     decoration: InputDecoration(
                       hintText: "https://...",
-                      hintStyle: TextStyle(color: Colors.grey.shade700),
+                      hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                       filled: true,
-                      fillColor: Colors.black.withOpacity(0.4),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+                      fillColor: cardBorder.withOpacity(0.5),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.white12, foregroundColor: Colors.white),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryPink,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
                   onPressed: isUploadingThumb ? null : () => _uploadImage('course-thumbnails', (url) => setState(() => _thumbController.text = url), (val) => setState(() => isUploadingThumb = val)),
-                  child: Text(isUploadingThumb ? "..." : "Upload"),
+                  child: Text(isUploadingThumb ? "..." : "Upload", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
                 ),
               ],
             ),
             const SizedBox(height: 20),
 
-            SwitchListTile(
-              title: const Text("Publish Course", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-              subtitle: Text("Make it visible to academy students.", style: TextStyle(color: Colors.grey.shade500, fontSize: 9)),
-              value: isPublished,
-              activeColor: Colors.pink,
-              onChanged: (val) => setState(() => isPublished = val),
+            // اطلاعات مدرس اول (نمایش خودکار پروفایل استاد)
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: lightPinkBg.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.5),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: lightPinkBg,
+                    backgroundImage: primaryInstructor['image_url'].isNotEmpty ? NetworkImage(primaryInstructor['image_url']) : null,
+                    child: primaryInstructor['image_url'].isEmpty ? const Icon(Icons.person, color: primaryPink) : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("PRIMARY INSTRUCTOR (YOU)", style: TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900)),
+                        const SizedBox(height: 2),
+                        Text(primaryInstructor['name'].isEmpty ? 'Academy Instructor' : primaryInstructor['name'], style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                        const SizedBox(height: 2),
+                        Text(primaryInstructor['bio'], style: const TextStyle(color: textGrey, fontSize: 10), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
+            // اطلاعات مدرس دوم (اختیاری)
+            const Text("Co-Instructor Details (Optional)", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _coNameController,
+              style: const TextStyle(color: textDark, fontSize: 12),
+              decoration: InputDecoration(
+                labelText: "Co-Instructor Name",
+                labelStyle: const TextStyle(color: textGrey, fontSize: 11),
+                filled: true,
+                fillColor: cardBorder.withOpacity(0.5),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _coBioController,
+              style: const TextStyle(color: textDark, fontSize: 12),
+              decoration: InputDecoration(
+                labelText: "Co-Instructor Bio",
+                labelStyle: const TextStyle(color: textGrey, fontSize: 11),
+                filled: true,
+                fillColor: cardBorder.withOpacity(0.5),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _coImageController,
+                    style: const TextStyle(color: textDark, fontSize: 11),
+                    decoration: InputDecoration(
+                      hintText: "Co-Instructor Image URL",
+                      hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                      filled: true,
+                      fillColor: cardBorder.withOpacity(0.5),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: textDark,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  onPressed: isUploadingCo ? null : () => _uploadImage('course-thumbnails', (url) => setState(() => _coImageController.text = url), (val) => setState(() => isUploadingCo = val)),
+                  child: Text(isUploadingCo ? "..." : "Upload", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // انتشار دوره
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: surfaceWhite,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: cardBorder, width: 1.5),
+              ),
+              child: SwitchListTile(
+                title: const Text("Publish Course", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900)),
+                subtitle: const Text("Make it visible to academy students.", style: TextStyle(color: textGrey, fontSize: 10)),
+                value: isPublished,
+                activeColor: primaryPink,
+                contentPadding: EdgeInsets.zero,
+                onChanged: (val) => setState(() => isPublished = val),
+              ),
+            ),
+            const SizedBox(height: 30),
+
+            // دکمه ارسال نهایی
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.pink,
+                  backgroundColor: primaryPink,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
                 onPressed: isSubmitting ? null : _handleSubmit,
-                child: Text(isSubmitting ? "Compiling..." : "Create Course 🚀", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                child: Text(isSubmitting ? "Compiling Course..." : "Create Course 🚀", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
               ),
             ),
+            const SizedBox(height: 40),
           ],
         ),
       ),

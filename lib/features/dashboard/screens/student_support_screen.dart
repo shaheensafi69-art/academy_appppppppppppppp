@@ -2,11 +2,8 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:http/http.dart' as http; // برای ارسال پیام به تلگرام
+import 'package:http/http.dart' as http;
 
-// ========================================================
-// ⚠️ Your Telegram Keys (Token 2 & Chat ID 2)
-// ========================================================
 const String telegramBotToken = "8994358206:AAHUpoHpMpqdnTxA_J30-xMipDg4l0vhBV8";
 const String telegramChatId = "5195615040";
 
@@ -51,14 +48,18 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
 
   Map<String, int> stats = {'open': 0, 'answered': 0, 'total': 0};
 
-  // فرم تیکت
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
-  
-  get ascending => null;
+
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
 
   @override
   void initState() {
@@ -166,7 +167,6 @@ $message
     try {
       final userId = userInfo['id']!;
 
-      // ۱. درج تیکت در جدول tickets
       final newTicket = await supabase
           .from("tickets")
           .insert({
@@ -178,14 +178,12 @@ $message
           .select()
           .single();
 
-      // ۲. درج متن پیام در جدول ticket_messages
       await supabase.from("ticket_messages").insert({
         'ticket_id': newTicket['id'],
         'sender_id': userId,
         'message_text': message,
       });
 
-      // ۳. ارسال هشدار به تلگرام
       await _sendTicketAlertToTelegram(
         _firstNameController.text.trim(),
         _lastNameController.text.trim(),
@@ -232,270 +230,326 @@ $message
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ================= هدر صفحه و دکمه ایجاد تیکت =================
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.amber.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: const Text("🎧", style: TextStyle(fontSize: 22)),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("Support Desk", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-                        const SizedBox(height: 2),
-                        Text("Submit your queries directly to our elite assistance unit.", style: TextStyle(fontSize: 9, color: Colors.grey.shade400)),
-                      ],
-                    ),
-                  ],
-                ),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
-                    foregroundColor: Colors.black,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                  icon: const Icon(Icons.add, size: 16),
-                  label: const Text("Create Ticket", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
-                  onPressed: () => setState(() => isModalOpen = true),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // ================= باکس‌های آمار =================
-          Row(
+    if (isLoading) {
+      return Scaffold(
+        backgroundColor: surfaceWhite,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.amber.withOpacity(0.2)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Text("⏳", style: TextStyle(fontSize: 20)),
-                      const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("OPEN", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.amberAccent)),
-                          Text("${stats['open']}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.green.withOpacity(0.2)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Text("✅", style: TextStyle(fontSize: 20)),
-                      const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("ANSWERED", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.greenAccent)),
-                          Text("${stats['answered']}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.blue.withOpacity(0.2)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Text("📋", style: TextStyle(fontSize: 20)),
-                      const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("TOTAL", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.blueAccent)),
-                          Text("${stats['total']}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
+              const SizedBox(height: 14),
+              Text("LOADING SUPPORT DESK...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
             ],
           ),
-          const SizedBox(height: 20),
+        ),
+      );
+    }
 
-          // ================= لیست تیکت‌ها =================
-          const Text("My Support Logs", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
-          const SizedBox(height: 10),
-
-          isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.amberAccent))
-              : tickets.isNotEmpty
-                  ? ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: tickets.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
-                      itemBuilder: (context, index) {
-                        final t = tickets[index];
-                        bool isOpen = t.status == 'open';
-
-                        return Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0a0a0f).withOpacity(0.7),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: Colors.white.withOpacity(0.06)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(10)),
-                                    child: const Text("🎫", style: TextStyle(fontSize: 18)),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(t.subject, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-                                      const SizedBox(height: 2),
-                                      Text("Submitted: ${_formatDate(t.createdAt)}", style: const TextStyle(color: Colors.grey, fontSize: 9)),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: isOpen ? Colors.amber.withOpacity(0.15) : Colors.green.withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  isOpen ? 'Pending Review' : 'Answered',
-                                  style: TextStyle(color: isOpen ? Colors.amberAccent : Colors.greenAccent, fontSize: 8, fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    )
-                  : Container(
-                      padding: const EdgeInsets.all(24),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0a0a0f),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: Colors.white.withOpacity(0.06)),
-                      ),
-                      child: Column(
-                        children: [
-                          const Text("📩", style: TextStyle(fontSize: 32)),
-                          const SizedBox(height: 10),
-                          const Text("No Support Logs Active", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-                          const SizedBox(height: 4),
-                          Text("Need help with something? Click below to forward an alert.", style: TextStyle(color: Colors.grey.shade500, fontSize: 10), textAlign: TextAlign.center),
-                        ],
-                      ),
-                    ),
-          const SizedBox(height: 30),
-
-          // ================= مودال ایجاد تیکت (Bottom Sheet / Dialog) =================
-          if (isModalOpen)
+    return Scaffold(
+      backgroundColor: surfaceWhite,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ================= هدر صفحه و دکمه ایجاد تیکت =================
             Container(
-              padding: const EdgeInsets.all(16),
-              margin: const EdgeInsets.only(top: 10),
+              padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
-                color: const Color(0xFF0d0d14),
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                gradient: LinearGradient(
+                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                boxShadow: [
+                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Open Support Request", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15)),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.grey, size: 18),
-                        onPressed: () => setState(() => isModalOpen = false),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _buildInput("First Name *", _firstNameController),
-                  const SizedBox(height: 8),
-                  _buildInput("Last Name *", _lastNameController),
-                  const SizedBox(height: 8),
-                  _buildInput("Account Email *", _emailController),
-                  const SizedBox(height: 8),
-                  _buildInput("Subject *", _subjectController, hint: "e.g., Database Sync Error"),
-                  const SizedBox(height: 8),
-                  _buildInput("Message Details *", _messageController, hint: "Describe your difficulty...", maxLines: 4),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: isSubmitting ? null : _handleCreateTicket,
-                      child: Text(isSubmitting ? "Dispatching..." : "Submit Ticket Terminal 🚀", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: lightPinkBg,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
                     ),
+                    child: const Icon(Icons.support_agent_rounded, color: primaryPink, size: 24),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Support Desk", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                        const SizedBox(height: 3),
+                        const Text("Submit queries to our elite assistance unit.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryPink,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    icon: const Icon(Icons.add_rounded, size: 16),
+                    label: const Text("Ticket", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                    onPressed: () => setState(() => isModalOpen = true),
                   ),
                 ],
               ),
             ),
-        ],
+            const SizedBox(height: 20),
+
+            // ================= باکس‌های آمار ریسپانسیو =================
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(10)),
+                          child: const Icon(Icons.hourglass_top_rounded, color: primaryPink, size: 16),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("OPEN", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                              const SizedBox(height: 2),
+                              Text("${stats['open']}", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: textDark)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(color: Colors.green.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
+                          child: const Icon(Icons.check_circle_rounded, color: Colors.green, size: 16),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("ANSWERED", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                              const SizedBox(height: 2),
+                              Text("${stats['answered']}", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: textDark)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(color: Colors.blue.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
+                          child: const Icon(Icons.list_alt_rounded, color: Colors.blue, size: 16),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("TOTAL", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                              const SizedBox(height: 2),
+                              Text("${stats['total']}", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: textDark)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // ================= لیست تیکت‌ها =================
+            const Text("My Support Logs", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+            const SizedBox(height: 12),
+
+            tickets.isNotEmpty
+                ? ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: tickets.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final t = tickets[index];
+                      bool isOpen = t.status == 'open';
+
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: surfaceWhite,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: cardBorder, width: 1.5),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(12)),
+                                    child: const Icon(Icons.confirmation_number_rounded, color: primaryPink, size: 20),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(t.subject, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                        const SizedBox(height: 2),
+                                        Text("Submitted: ${_formatDate(t.createdAt)}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: isOpen ? lightPinkBg : Colors.green.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                isOpen ? 'Pending' : 'Answered',
+                                style: TextStyle(color: isOpen ? primaryPink : Colors.green.shade700, fontSize: 9, fontWeight: FontWeight.w900),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  )
+                : Container(
+                    padding: const EdgeInsets.all(40),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.mark_email_unread_rounded, color: textGrey, size: 36),
+                        const SizedBox(height: 10),
+                        const Text("No Support Logs Active", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                        const SizedBox(height: 4),
+                        const Text("Need help with something? Click above to open a ticket.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+                      ],
+                    ),
+                  ),
+            const SizedBox(height: 30),
+
+            // ================= مودال ایجاد تیکت =================
+            if (isModalOpen)
+              Container(
+                padding: const EdgeInsets.all(20),
+                margin: const EdgeInsets.only(top: 10),
+                decoration: BoxDecoration(
+                  color: surfaceWhite,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 6))],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text("Open Support Request", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded, color: textGrey, size: 20),
+                          onPressed: () => setState(() => isModalOpen = false),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _buildInput("First Name *", _firstNameController),
+                    const SizedBox(height: 12),
+                    _buildInput("Last Name *", _lastNameController),
+                    const SizedBox(height: 12),
+                    _buildInput("Account Email *", _emailController),
+                    const SizedBox(height: 12),
+                    _buildInput("Subject *", _subjectController, hint: "e.g., Database Sync Error"),
+                    const SizedBox(height: 12),
+                    _buildInput("Message Details *", _messageController, hint: "Describe your difficulty...", maxLines: 4),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryPink,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        onPressed: isSubmitting ? null : _handleCreateTicket,
+                        child: Text(isSubmitting ? "Dispatching..." : "Submit Ticket Terminal 🚀", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }
@@ -504,20 +558,21 @@ $message
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
+        Text(label, style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+        const SizedBox(height: 6),
         TextField(
           controller: controller,
           maxLines: maxLines,
-          style: const TextStyle(color: Colors.white, fontSize: 11),
+          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.grey.shade700, fontSize: 10),
+            hintStyle: const TextStyle(color: textGrey, fontSize: 11),
             filled: true,
-            fillColor: Colors.black.withOpacity(0.5),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+            fillColor: cardBorder.withOpacity(0.5),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
           ),
         ),
       ],

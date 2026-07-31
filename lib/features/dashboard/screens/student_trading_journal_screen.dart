@@ -97,7 +97,7 @@ class _StudentTradingJournalScreenState extends State<StudentTradingJournalScree
   final TextEditingController _rrController = TextEditingController();
   final TextEditingController _emotionsController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
-  
+
   String positionType = "LONG";
   String tradeDate = DateTime.now().toIso8601String().split('T')[0];
 
@@ -106,6 +106,14 @@ class _StudentTradingJournalScreenState extends State<StudentTradingJournalScree
     'winRate': 0,
     'totalProfitLoss': 0.0,
   };
+
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
 
   @override
   void initState() {
@@ -209,7 +217,7 @@ class _StudentTradingJournalScreenState extends State<StudentTradingJournalScree
 
       String? uploadedChartUrl;
       if (chartFile != null) {
-        final fileExt = chartFile!.name.split('.').pop();
+        final fileExt = chartFile!.name.split('.').last;
         final fileName = '${user.id}-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
         final bytes = await chartFile!.readAsBytes();
 
@@ -284,33 +292,48 @@ class _StudentTradingJournalScreenState extends State<StudentTradingJournalScree
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Colors.amberAccent));
+      return Scaffold(
+        backgroundColor: surfaceWhite,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
+              const SizedBox(height: 14),
+              Text("LOADING TRADING JOURNAL...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+            ],
+          ),
+        ),
+      );
     }
 
     // ==========================================
     // UI 1: اگر کاربر دسترسی نداشت
     // ==========================================
     if (!hasAccess) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), shape: BoxShape.circle),
-                child: const Icon(Icons.lock, color: Colors.redAccent, size: 36),
-              ),
-              const SizedBox(height: 16),
-              const Text("Access Restricted", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
-              const SizedBox(height: 8),
-              Text(
-                "The Professional Trading Journal is an exclusive tool reserved strictly for students enrolled in the Financial Markets & Forex Trading masterclass.",
-                style: TextStyle(color: Colors.grey.shade400, fontSize: 10),
-                textAlign: TextAlign.center,
-              ),
-            ],
+      return Scaffold(
+        backgroundColor: surfaceWhite,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(color: Colors.red.withOpacity(0.12), shape: BoxShape.circle),
+                  child: const Icon(Icons.lock_rounded, color: Colors.redAccent, size: 36),
+                ),
+                const SizedBox(height: 16),
+                const Text("Access Restricted", style: TextStyle(color: textDark, fontSize: 18, fontWeight: FontWeight.w900)),
+                const SizedBox(height: 8),
+                const Text(
+                  "The Professional Trading Journal is an exclusive tool reserved strictly for students enrolled in the Financial Markets & Forex Trading masterclass.",
+                  style: TextStyle(color: textGrey, fontSize: 11, height: 1.4),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -319,351 +342,379 @@ class _StudentTradingJournalScreenState extends State<StudentTradingJournalScree
     // ==========================================
     // UI 2: اگر کاربر دسترسی داشت
     // ==========================================
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // هدر صفحه
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(color: Colors.amber.withOpacity(0.15), borderRadius: BorderRadius.circular(14)),
-                      child: const Text("📈", style: TextStyle(fontSize: 22)),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("Trading Journal", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-                        const SizedBox(height: 2),
-                        Text("Log your executions and track your edge.", style: TextStyle(fontSize: 9, color: Colors.grey.shade400)),
-                      ],
-                    ),
-                  ],
-                ),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
-                    foregroundColor: Colors.black,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                  icon: const Icon(Icons.add, size: 16),
-                  label: const Text("Log Trade", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
-                  onPressed: () => setState(() => isModalOpen = true),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // آمار کلی
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: stats['totalProfitLoss'] >= 0 ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: stats['totalProfitLoss'] >= 0 ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("NET PNL (USD)", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.grey)),
-                      const SizedBox(height: 2),
-                      Text(
-                        "${stats['totalProfitLoss'] >= 0 ? '+' : ''}\$${stats['totalProfitLoss'].toStringAsFixed(2)}",
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: stats['totalProfitLoss'] >= 0 ? Colors.greenAccent : Colors.redAccent),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.amber.withOpacity(0.2)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("WIN RATE", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.amberAccent)),
-                      const SizedBox(height: 2),
-                      Text("${stats['winRate']}%", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Colors.white)),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // تب‌های فیلتر
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: [
-                _buildFilterTab("all", "All", "📋"),
-                const SizedBox(width: 8),
-                _buildFilterTab("open", "Open", "⏳"),
-                const SizedBox(width: 8),
-                _buildFilterTab("win", "Wins", "🏆"),
-                const SizedBox(width: 8),
-                _buildFilterTab("loss", "Losses", "📉"),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // لیست معاملات
-          filteredEntries.isNotEmpty
-              ? ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: filteredEntries.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    final entry = filteredEntries[index];
-                    bool isOpen = entry.profitLossUsd == null;
-                    bool isWin = !isOpen && entry.profitLossUsd! > 0;
-
-                    return Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0a0a0f).withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: isOpen ? Colors.amber.withOpacity(0.2) : isWin ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: entry.positionType == 'LONG' ? Colors.green.withOpacity(0.15) : Colors.red.withOpacity(0.15),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(entry.positionType, style: TextStyle(color: entry.positionType == 'LONG' ? Colors.greenAccent : Colors.redAccent, fontSize: 8, fontWeight: FontWeight.w900)),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(entry.symbol, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
-                                ],
-                              ),
-                              isOpen
-                                  ? Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                      decoration: BoxDecoration(color: Colors.amber.withOpacity(0.15), borderRadius: BorderRadius.circular(6)),
-                                      child: const Text("OPEN", style: TextStyle(color: Colors.amberAccent, fontSize: 8, fontWeight: FontWeight.bold)),
-                                    )
-                                  : Text(
-                                      "${isWin ? '+' : ''}\$${entry.profitLossUsd?.toStringAsFixed(2)}",
-                                      style: TextStyle(color: isWin ? Colors.greenAccent : Colors.redAccent, fontWeight: FontWeight.w900, fontSize: 13),
-                                    ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text("Entry: ${entry.entryPrice} | Exit: ${entry.exitPrice ?? 'Running'}", style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
-                              if (entry.chartImageUrl != null)
-                                GestureDetector(
-                                  onTap: () => _launchURL(entry.chartImageUrl!),
-                                  child: const Text("🖼️ View Chart", style: TextStyle(color: Colors.blueAccent, fontSize: 10, fontWeight: FontWeight.bold)),
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                )
-              : Container(
-                  padding: const EdgeInsets.all(30),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0a0a0f),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withOpacity(0.06)),
-                  ),
-                  child: const Text("No trades found matching this filter.", style: TextStyle(color: Colors.grey, fontSize: 11)),
-                ),
-          const SizedBox(height: 30),
-
-          // ================= مودال ثبت معامله جدید =================
-          if (isModalOpen)
+    return Scaffold(
+      backgroundColor: surfaceWhite,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // هدر صفحه
             Container(
-              padding: const EdgeInsets.all(16),
-              margin: const EdgeInsets.only(top: 10),
+              padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
-                color: const Color(0xFF0d0d14),
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                gradient: LinearGradient(
+                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                boxShadow: [
+                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Log Execution", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15)),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.grey, size: 18),
-                        onPressed: () => setState(() => isModalOpen = false),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _buildInput("Pair / Symbol *", _symbolController, hint: "e.g. XAUUSD"),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => positionType = "LONG"),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: positionType == "LONG" ? Colors.green : Colors.white.withOpacity(0.04),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text("LONG", style: TextStyle(color: positionType == "LONG" ? Colors.black : Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
-                          ),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: lightPinkBg,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
                         ),
+                        child: const Icon(Icons.show_chart_rounded, color: primaryPink, size: 24),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => positionType = "SHORT"),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: positionType == "SHORT" ? Colors.red : Colors.white.withOpacity(0.04),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text("SHORT", style: TextStyle(color: positionType == "SHORT" ? Colors.white : Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  _buildInput("Strategy / Setup", _strategyController, hint: "e.g. SMC, Breakout"),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(child: _buildInput("Lot Size", _lotController, hint: "0.10")),
-                      const SizedBox(width: 8),
-                      Expanded(child: _buildInput("Entry Price *", _entryController, hint: "0.00")),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(child: _buildInput("Stop Loss", _slController, hint: "0.00")),
-                      const SizedBox(width: 8),
-                      Expanded(child: _buildInput("Take Profit", _tpController, hint: "0.00")),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(child: _buildInput("Exit Price", _exitController, hint: "0.00")),
-                      const SizedBox(width: 8),
-                      Expanded(child: _buildInput("Net PnL (\$)", _pnlController, hint: "150 or -50")),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: _pickChartImage,
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.04),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white.withOpacity(0.1)),
-                      ),
-                      child: Row(
+                      const SizedBox(width: 14),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.image, color: Colors.grey, size: 16),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              chartFile != null ? chartFile!.name : "Upload Chart Screenshot (Optional)",
-                              style: TextStyle(color: chartFile != null ? Colors.white : Colors.grey, fontSize: 10),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
+                          Text("Trading Journal", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                          SizedBox(height: 3),
+                          Text("Log your executions and track your edge.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                         ],
                       ),
-                    ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: isSubmitting ? null : _handleAddTrade,
-                      child: Text(isSubmitting ? "Saving..." : "Save Trade to Journal 🚀", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryPink,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     ),
+                    icon: const Icon(Icons.add_rounded, size: 16),
+                    label: const Text("Log Trade", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                    onPressed: () => setState(() => isModalOpen = true),
                   ),
                 ],
               ),
             ),
-        ],
+            const SizedBox(height: 20),
+
+            // آمار کلی ریسپانسیو
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("NET PNL (USD)", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                        const SizedBox(height: 4),
+                        Text(
+                          "${stats['totalProfitLoss'] >= 0 ? '+' : ''}\$${stats['totalProfitLoss'].toStringAsFixed(2)}",
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: stats['totalProfitLoss'] >= 0 ? Colors.green.shade700 : Colors.redAccent),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("WIN RATE", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                        const SizedBox(height: 4),
+                        Text("${stats['winRate']}%", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: textDark)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // تب‌های فیلتر
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  _buildFilterTab("all", "All Trades", Icons.list_alt_rounded),
+                  const SizedBox(width: 10),
+                  _buildFilterTab("open", "Open", Icons.hourglass_top_rounded),
+                  const SizedBox(width: 10),
+                  _buildFilterTab("win", "Wins", Icons.emoji_events_rounded),
+                  const SizedBox(width: 10),
+                  _buildFilterTab("loss", "Losses", Icons.trending_down_rounded),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // لیست معاملات
+            filteredEntries.isNotEmpty
+                ? ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: filteredEntries.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final entry = filteredEntries[index];
+                      bool isOpen = entry.profitLossUsd == null;
+                      bool isWin = !isOpen && entry.profitLossUsd! > 0;
+
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: surfaceWhite,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isOpen ? Colors.amber.withOpacity(0.3) : isWin ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3),
+                            width: 1.5,
+                          ),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: entry.positionType == 'LONG' ? Colors.green.withOpacity(0.12) : Colors.red.withOpacity(0.12),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(entry.positionType, style: TextStyle(color: entry.positionType == 'LONG' ? Colors.green.shade700 : Colors.redAccent, fontSize: 9, fontWeight: FontWeight.w900)),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(entry.symbol, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                                  ],
+                                ),
+                                isOpen
+                                    ? Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                                        child: const Text("OPEN", style: TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                      )
+                                    : Text(
+                                        "${isWin ? '+' : ''}\$${entry.profitLossUsd?.toStringAsFixed(2)}",
+                                        style: TextStyle(color: isWin ? Colors.green.shade700 : Colors.redAccent, fontWeight: FontWeight.w900, fontSize: 13),
+                                      ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("Entry: ${entry.entryPrice} | Exit: ${entry.exitPrice ?? 'Running'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                if (entry.chartImageUrl != null)
+                                  GestureDetector(
+                                    onTap: () => _launchURL(entry.chartImageUrl!),
+                                    child: const Text("View Chart ↗", style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  )
+                : Container(
+                    padding: const EdgeInsets.all(40),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                    ),
+                    child: const Text("No trades found matching this filter.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                  ),
+            const SizedBox(height: 30),
+
+            // ================= مودال ثبت معامله جدید =================
+            if (isModalOpen)
+              Container(
+                padding: const EdgeInsets.all(20),
+                margin: const EdgeInsets.only(top: 10),
+                decoration: BoxDecoration(
+                  color: surfaceWhite,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 6))],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text("Log Execution", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded, color: textGrey, size: 20),
+                          onPressed: () => setState(() => isModalOpen = false),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _buildInput("Pair / Symbol *", _symbolController, hint: "e.g. XAUUSD"),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => positionType = "LONG"),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: positionType == "LONG" ? Colors.green.withOpacity(0.15) : cardBorder,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: positionType == "LONG" ? Colors.green : cardBorder, width: 1.5),
+                              ),
+                              child: Text("LONG", style: TextStyle(color: positionType == "LONG" ? Colors.green.shade700 : textGrey, fontWeight: FontWeight.w900, fontSize: 11)),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => positionType = "SHORT"),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: positionType == "SHORT" ? Colors.red.withOpacity(0.15) : cardBorder,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: positionType == "SHORT" ? Colors.redAccent : cardBorder, width: 1.5),
+                              ),
+                              child: Text("SHORT", style: TextStyle(color: positionType == "SHORT" ? Colors.redAccent : textGrey, fontWeight: FontWeight.w900, fontSize: 11)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _buildInput("Strategy / Setup", _strategyController, hint: "e.g. SMC, Breakout"),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: _buildInput("Lot Size", _lotController, hint: "0.10")),
+                        const SizedBox(width: 10),
+                        Expanded(child: _buildInput("Entry Price *", _entryController, hint: "0.00")),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: _buildInput("Stop Loss", _slController, hint: "0.00")),
+                        const SizedBox(width: 10),
+                        Expanded(child: _buildInput("Take Profit", _tpController, hint: "0.00")),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: _buildInput("Exit Price", _exitController, hint: "0.00")),
+                        const SizedBox(width: 10),
+                        Expanded(child: _buildInput("Net PnL (\$)", _pnlController, hint: "150 or -50")),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    GestureDetector(
+                      onTap: _pickChartImage,
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: cardBorder.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: cardBorder, width: 1.5),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.image_rounded, color: textGrey, size: 18),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                chartFile != null ? chartFile!.name : "Upload Chart Screenshot (Optional)",
+                                style: TextStyle(color: chartFile != null ? textDark : textGrey, fontSize: 11, fontWeight: FontWeight.bold),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryPink,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        onPressed: isSubmitting ? null : _handleAddTrade,
+                        child: Text(isSubmitting ? "Saving..." : "Save Trade to Journal 🚀", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildFilterTab(String id, String label, String emoji) {
+  Widget _buildFilterTab(String id, String label, IconData icon) {
     bool isSelected = filter == id;
     return GestureDetector(
       onTap: () => setState(() => filter = id),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.amberAccent : Colors.white.withOpacity(0.04),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isSelected ? Colors.amberAccent : Colors.white.withOpacity(0.08)),
+          color: isSelected ? primaryPink : lightPinkBg.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isSelected ? primaryPink : cardBorder, width: 1.5),
+          boxShadow: isSelected ? [BoxShadow(color: primaryPink.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 3))] : [],
         ),
         child: Row(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 12)),
-            const SizedBox(width: 6),
-            Text(label, style: TextStyle(color: isSelected ? Colors.black : Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+            Icon(icon, size: 16, color: isSelected ? Colors.white : primaryPink),
+            const SizedBox(width: 8),
+            Text(label, style: TextStyle(color: isSelected ? Colors.white : textDark, fontSize: 11, fontWeight: FontWeight.w900)),
           ],
         ),
       ),
@@ -674,27 +725,24 @@ class _StudentTradingJournalScreenState extends State<StudentTradingJournalScree
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
+        Text(label, style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+        const SizedBox(height: 6),
         TextField(
           controller: controller,
           maxLines: maxLines,
-          style: const TextStyle(color: Colors.white, fontSize: 11),
+          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.grey.shade700, fontSize: 10),
+            hintStyle: const TextStyle(color: textGrey, fontSize: 11),
             filled: true,
-            fillColor: Colors.black.withOpacity(0.5),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+            fillColor: cardBorder.withOpacity(0.5),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
           ),
         ),
       ],
     );
   }
-}
-
-extension on List<String> {
-  Object? pop() {}
 }

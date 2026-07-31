@@ -37,6 +37,14 @@ class _CoursesScreenState extends State<CoursesScreen> {
   List<CourseItemModel> courses = [];
   String searchQuery = "";
 
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
+
   @override
   void initState() {
     super.initState();
@@ -86,14 +94,14 @@ class _CoursesScreenState extends State<CoursesScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFF030305),
+        backgroundColor: surfaceWhite,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: Colors.purpleAccent, strokeWidth: 2.5),
+              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
-              Text("LOADING COURSE LIBRARY...", style: TextStyle(color: Colors.grey.shade500, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text("LOADING COURSE LIBRARY...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
             ],
           ),
         ),
@@ -103,193 +111,208 @@ class _CoursesScreenState extends State<CoursesScreen> {
     final currentFiltered = filteredCourses;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF030305),
-      body: Stack(
-        children: [
-          Positioned(
-            top: -40,
-            left: -40,
-            child: Container(
-              width: 200,
-              height: 200,
+      backgroundColor: surfaceWhite,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ================= HEADER =================
+            Container(
+              padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
                 boxShadow: [
-                  BoxShadow(color: Colors.purpleAccent.withOpacity(0.08), blurRadius: 90, spreadRadius: 40),
+                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
                 ],
               ),
-            ),
-          ),
-
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-              physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header
-                  _buildGlassCard(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: Colors.purpleAccent.withOpacity(0.08),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.purpleAccent.withOpacity(0.2)),
-                              ),
-                              child: const Text(
-                                "COURSE LIBRARY",
-                                style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.purpleAccent, letterSpacing: 1.2),
-                              ),
-                            ),
-                            ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.purpleAccent,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                              icon: const Icon(Icons.add, size: 14),
-                              label: const Text("Deploy", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900)),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const CreateCourseScreen()),
-                                ).then((_) => _fetchCourses());
-                              },
-                            ),
-                          ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: lightPinkBg,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        const SizedBox(height: 10),
-                        const Text("Manage Courses", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
-                        const SizedBox(height: 4),
-                        Text("Create and organize educational programs.", style: TextStyle(fontSize: 10, color: Colors.grey.shade400)),
-                        const SizedBox(height: 14),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: const Text(
+                          "COURSE LIBRARY",
+                          style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryPink,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        icon: const Icon(Icons.add_rounded, size: 16),
+                        label: const Text("Deploy", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const CreateCourseScreen()),
+                          ).then((_) => _fetchCourses());
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    "Manage Courses",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "Create and organize educational programs effortlessly.",
+                    style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: cardBorder.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.search_rounded, color: primaryPink, size: 18),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            onChanged: (val) => setState(() => searchQuery = val),
+                            style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                            decoration: InputDecoration(
+                              hintText: "Search courses by title...",
+                              hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // ================= COURSES LIST =================
+            currentFiltered.isEmpty
+                ? Container(
+                    padding: const EdgeInsets.all(40),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                    ),
+                    child: const Text("No courses found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                  )
+                : ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: currentFiltered.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final course = currentFiltered[index];
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => CourseDetailScreen(courseId: course.id)),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.4),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.white.withOpacity(0.05)),
+                            color: surfaceWhite,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: cardBorder, width: 1.5),
+                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.search, color: Colors.grey, size: 16),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: TextField(
-                                  onChanged: (val) => setState(() => searchQuery = val),
-                                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                                  decoration: InputDecoration(
-                                    hintText: "Search courses by title...",
-                                    hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 11),
-                                    border: InputBorder.none,
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                                  ),
+                              Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  color: lightPinkBg,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.5),
+                                  image: course.thumbnailUrl != null ? DecorationImage(image: NetworkImage(course.thumbnailUrl!), fit: BoxFit.cover) : null,
                                 ),
+                                child: course.thumbnailUrl == null ? const Icon(Icons.menu_book_rounded, color: primaryPink, size: 28) : null,
                               ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Courses Grid
-                  currentFiltered.isEmpty
-                      ? Container(padding: const EdgeInsets.all(40), alignment: Alignment.center, child: Text("No courses found.", style: TextStyle(color: Colors.grey.shade500, fontSize: 11)))
-                      : ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: currentFiltered.length,
-                          separatorBuilder: (_, _) => const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final course = currentFiltered[index];
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => CourseDetailScreen(courseId: course.id)),
-                                );
-                              },
-                              child: _buildGlassCard(
-                                padding: const EdgeInsets.all(12),
-                                child: Row(
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(
-                                      width: 60,
-                                      height: 60,
-                                      decoration: BoxDecoration(
-                                        color: Colors.black,
-                                        borderRadius: BorderRadius.circular(12),
-                                        image: course.thumbnailUrl != null ? DecorationImage(image: NetworkImage(course.thumbnailUrl!), fit: BoxFit.cover) : null,
-                                      ),
-                                      child: course.thumbnailUrl == null ? const Icon(Icons.book, color: Colors.purpleAccent, size: 24) : null,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Expanded(child: Text(course.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12), overflow: TextOverflow.ellipsis)),
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                decoration: BoxDecoration(
-                                                  color: course.isPublished ? Colors.green.withOpacity(0.15) : Colors.amber.withOpacity(0.15),
-                                                  borderRadius: BorderRadius.circular(6),
-                                                ),
-                                                child: Text(course.isPublished ? "Published" : "Draft", style: TextStyle(color: course.isPublished ? Colors.greenAccent : Colors.amberAccent, fontSize: 7, fontWeight: FontWeight.bold)),
-                                              ),
-                                            ],
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            course.title,
+                                            style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13),
+                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                          const SizedBox(height: 4),
-                                          Text(course.description, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
-                                          const SizedBox(height: 6),
-                                          Text(course.price > 0 ? "\$${course.price}" : "FREE", style: TextStyle(color: Colors.purpleAccent, fontSize: 10, fontWeight: FontWeight.w900)),
-                                        ],
-                                      ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: course.isPublished ? Colors.green.withOpacity(0.12) : lightPinkBg,
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            course.isPublished ? "PUBLISHED" : "DRAFT",
+                                            style: TextStyle(
+                                              color: course.isPublished ? Colors.green.shade700 : primaryPink,
+                                              fontSize: 8,
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      course.description,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      course.price > 0 ? "\$${course.price.toStringAsFixed(2)}" : "FREE",
+                                      style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900),
                                     ),
                                   ],
                                 ),
                               ),
-                            );
-                          },
+                            ],
+                          ),
                         ),
-                  const SizedBox(height: 30),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGlassCard({required Widget child, EdgeInsetsGeometry? padding}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: const Color(0xFF0a0a0f).withOpacity(0.55),
-            border: Border.all(color: Colors.white.withOpacity(0.06)),
-            borderRadius: BorderRadius.circular(22),
-          ),
-          child: child,
+                      );
+                    },
+                  ),
+            const SizedBox(height: 40),
+          ],
         ),
       ),
     );

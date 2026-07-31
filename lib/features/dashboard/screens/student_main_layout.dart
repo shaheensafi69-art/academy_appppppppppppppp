@@ -26,40 +26,49 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
   final supabase = Supabase.instance.client;
 
   bool _isLoading = true;
-  bool _isMenuOpen = false;
+  bool _isMobileMenuOpen = false;
   int _currentIndex = 0;
   Map<String, dynamic>? _userProfile;
 
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color backgroundWhite = Colors.white;
+  static const Color surfaceColor = Colors.white;
+  static const Color textColor = Color(0xFF111827);
+  static const Color subTextColor = Color(0xFF6B7280);
+  static const Color borderColor = Color(0xFFF3F4F6);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+
   // لیست کامل صفحات پنل دانشجو به ترتیب منو
   late final List<Widget> _screens = [
-    const StudentOverviewScreen(),          // 0: Overview
-    const StudentAnnouncementsScreen(),   // 1: Announcements
-    const StudentCoursesScreen(),         // 2: My Courses
-    const StudentLiveClassesScreen(),     // 3: Live Campus
-    const StudentAssignmentsScreen(),     // 4: Assignments
-    const StudentQuizzesScreen(),         // 5: Exams & Quizzes
-    const StudentTradingJournalScreen(),  // 6: Trading Journal
-    const StudentWalletScreen(),          // 7: Wallet & Referral
-    const StudentAchievementsScreen(),    // 8: Achievements
-    _buildPlaceholderScreen("AI Assistant", "🤖", "Smart assistant for your trading & studies."), // 9: AI Assistant (Coming Soon)
-    const StudentSupportScreen(),         // 10: Support Tickets
-    const StudentSettingsScreen(),        // 11: Settings
+    const StudentOverviewScreen(),         // 0: Overview
+    const StudentAnnouncementsScreen(),    // 1: Announcements
+    const StudentCoursesScreen(),          // 2: My Courses
+    const StudentLiveClassesScreen(),      // 3: Live Campus
+    const StudentAssignmentsScreen(),      // 4: Assignments
+    const StudentQuizzesScreen(),          // 5: Exams & Quizzes
+    const StudentTradingJournalScreen(), // 6: Trading Journal
+    const StudentWalletScreen(),           // 7: Wallet & Referral
+    const StudentAchievementsScreen(),     // 8: Achievements
+    _buildPlaceholderScreen("AI Assistant", Icons.smart_toy_rounded, "Smart assistant for your trading & studies."), // 9: AI Assistant
+    const StudentSupportScreen(),          // 10: Support Tickets
+    const StudentSettingsScreen(),         // 11: Settings
   ];
 
-  // دیتای منوی تمام‌صفحه با برچسب Coming Soon برای دستیار هوش مصنوعی
-  final List<Map<String, dynamic>> _menuItems = [
-    {"name": "Overview", "icon": "📊", "color": Colors.blue},
-    {"name": "Announcements", "icon": "📢", "color": Colors.indigo},
-    {"name": "My Courses", "icon": "📚", "color": Colors.green},
-    {"name": "Live Campus", "icon": "🔴", "color": Colors.red},
-    {"name": "Assignments", "icon": "📝", "color": Colors.orange},
-    {"name": "Exams & Quizzes", "icon": "🎯", "color": Colors.purple},
-    {"name": "Trading Journal", "icon": "📈", "color": Colors.cyan},
-    {"name": "Wallet & Referral", "icon": "💰", "color": Colors.amber},
-    {"name": "Achievements", "icon": "🏆", "color": Colors.amberAccent},
-    {"name": "AI Assistant", "icon": "🤖", "color": Colors.pink, "soon": true},
-    {"name": "Support Tickets", "icon": "🎧", "color": Colors.teal},
-    {"name": "Settings", "icon": "⚙️", "color": Colors.grey},
+  // دیتای منو به سبک پنل استادی (لیستی، حرفه‌ای و بدون ایموجی)
+  final List<Map<String, Object>> _menuItems = [
+    {"index": 0, "name": "Overview", "icon": Icons.dashboard_rounded},
+    {"index": 1, "name": "Announcements", "icon": Icons.campaign_rounded},
+    {"index": 2, "name": "My Courses", "icon": Icons.menu_book_rounded},
+    {"index": 3, "name": "Live Campus", "icon": Icons.podcasts_rounded},
+    {"index": 4, "name": "Assignments", "icon": Icons.assignment_rounded},
+    {"index": 5, "name": "Exams & Quizzes", "icon": Icons.quiz_rounded},
+    {"index": 6, "name": "Trading Journal", "icon": Icons.show_chart_rounded},
+    {"index": 7, "name": "Wallet & Referral", "icon": Icons.account_balance_wallet_rounded},
+    {"index": 8, "name": "Achievements", "icon": Icons.emoji_events_rounded},
+    {"index": 9, "name": "AI Assistant (Soon)", "icon": Icons.smart_toy_rounded, "soon": true},
+    {"index": 10, "name": "Support Tickets", "icon": Icons.support_agent_rounded},
+    {"index": 11, "name": "Settings", "icon": Icons.settings_rounded},
   ];
 
   @override
@@ -104,29 +113,33 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
     }
   }
 
-  Widget _buildPlaceholderScreen(String title, String emoji, String subtitle) {
+  Widget _buildPlaceholderScreen(String title, IconData icon, String subtitle) {
     return Scaffold(
-      backgroundColor: const Color(0xFF030305),
+      backgroundColor: backgroundWhite,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(emoji, style: const TextStyle(fontSize: 48)),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
+                child: Icon(icon, size: 40, color: primaryPink),
+              ),
               const SizedBox(height: 16),
-              Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+              Text(title, style: const TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.w900)),
               const SizedBox(height: 6),
-              Text(subtitle, style: TextStyle(color: Colors.grey.shade500, fontSize: 11), textAlign: TextAlign.center),
+              Text(subtitle, style: const TextStyle(color: subTextColor, fontSize: 11), textAlign: TextAlign.center),
               const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.yellow.withOpacity(0.08),
+                  color: lightPinkBg,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.yellow.withOpacity(0.2)),
+                  border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
                 ),
-                child: const Text("Coming Soon 🚀", style: TextStyle(color: Colors.yellowAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                child: const Text("Coming Soon 🚀", style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
               )
             ],
           ),
@@ -139,68 +152,33 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFF030305),
+        backgroundColor: backgroundWhite,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: Colors.yellowAccent),
+              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 16),
-              Text(
-                "INITIALIZING STUDENT PORTAL...",
-                style: TextStyle(color: Colors.yellowAccent.shade100, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2),
-              ),
+              Text("INITIALIZING STUDENT PORTAL...", style: TextStyle(color: subTextColor, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
             ],
           ),
         ),
       );
     }
 
-    final topPadding = MediaQuery.of(context).padding.top;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     final floatBottomMargin = bottomPadding > 0 ? bottomPadding + 4 : 12.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF030305),
+      backgroundColor: backgroundWhite,
       extendBody: true,
-      extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // 🌟 هاله‌های نوری پویا طلایی رنگ پس‌زمینه
-          Positioned(
-            top: -40,
-            left: -40,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(color: Colors.yellow.withOpacity(0.12), blurRadius: 90, spreadRadius: 40),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -40,
-            right: -40,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(color: Colors.amber.withOpacity(0.1), blurRadius: 90, spreadRadius: 40),
-                ],
-              ),
-            ),
-          ),
-
-          // 1. محتوای صفحات با پدینگ استاندارد فول‌اسکرین
+          // ۱. محتوای صفحات فول‌اسکرین (بدون هدر بالا)
           Positioned.fill(
             child: Padding(
               padding: EdgeInsets.only(
-                top: topPadding + 68,
+                top: MediaQuery.of(context).padding.top + 8,
                 bottom: 85,
               ),
               child: IndexedStack(
@@ -210,15 +188,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
             ),
           ),
 
-          // 2. هدر شناور بالای صفحه (کاملاً شیشه‌ای و بدون قاب سیاه)
-          Positioned(
-            top: topPadding + 6,
-            left: 14,
-            right: 14,
-            child: _buildStudentHeader(),
-          ),
-
-          // 3. نوار ناوبری پایین شناور هوشمند
+          // ۲. نوار ناوبری پایین شناور هوشمند با ۴ دکمه اصلی و منو
           Positioned(
             bottom: floatBottomMargin,
             left: 16,
@@ -226,8 +196,8 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
             child: _buildFloatingBottomNav(),
           ),
 
-          // 4. منوی شیشه‌ای تمام‌صفحه (Drawer)
-          if (_isMenuOpen)
+          // ۳. منوی تمام‌صفحه لیستی و حرفه‌ای
+          if (_isMobileMenuOpen)
             Positioned.fill(
               child: _buildFullScreenMenu(),
             ),
@@ -236,153 +206,43 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
     );
   }
 
-  Widget _buildStudentHeader() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          height: 52,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: Colors.white.withOpacity(0.08)),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4)),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // لوگو و نام آکادمی
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: Colors.yellowAccent.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.yellowAccent.withOpacity(0.2)),
-                    ),
-                    child: Image.asset('assets/logo-without-b.png', height: 16),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    "SAFI",
-                    style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.5),
-                  ),
-                ],
-              ),
-
-              // پروفایل دانشجو (اتصال به Settings) و زنگوله (اتصال به Announcements)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  GestureDetector(
-                    onTap: () => setState(() => _currentIndex = 11), // Settings
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.03),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white.withOpacity(0.06)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircleAvatar(
-                            radius: 10,
-                            backgroundColor: Colors.yellowAccent.withOpacity(0.2),
-                            backgroundImage: _userProfile?['avatar_url'] != null ? NetworkImage(_userProfile!['avatar_url']) : null,
-                            child: _userProfile?['avatar_url'] == null ? const Icon(Icons.person, color: Colors.yellowAccent, size: 10) : null,
-                          ),
-                          const SizedBox(width: 5),
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 75),
-                            child: Text(
-                              _userProfile?['first_name'] ?? 'Student',
-                              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  GestureDetector(
-                    onTap: () => setState(() => _currentIndex = 1), // Announcements
-                    child: Stack(
-                      children: [
-                        Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.03),
-                            borderRadius: BorderRadius.circular(9),
-                            border: Border.all(color: Colors.white.withOpacity(0.06)),
-                          ),
-                          child: const Icon(Icons.notifications_none_rounded, color: Colors.grey, size: 15),
-                        ),
-                        Positioned(
-                          top: 6,
-                          right: 6,
-                          child: Container(
-                            width: 5,
-                            height: 5,
-                            decoration: const BoxDecoration(
-                              color: Colors.yellowAccent,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildFloatingBottomNav() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(30),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
         child: Container(
-          height: 52,
+          height: 60,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-            color: Colors.transparent,
-            border: Border.all(color: Colors.white.withOpacity(0.08)),
+            color: surfaceColor.withOpacity(0.95),
+            border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.5),
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8)),
+              BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 6)),
             ],
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(0, "Overview", "📊"),
-              _buildNavItem(2, "Courses", "📚"),
-              _buildNavItem(3, "Live", "🔴"),
-              _buildNavItem(7, "Wallet", "💰"),
-              GestureDetector(
-                onTap: () => setState(() => _isMenuOpen = true),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("⚙️", style: TextStyle(fontSize: 16)),
-                    const SizedBox(height: 1),
-                    Text("MENU", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.grey.shade500, letterSpacing: 0.8)),
-                  ],
+              Expanded(child: _buildNavItem(0, "Overview", Icons.dashboard_rounded)),
+              Expanded(child: _buildNavItem(2, "Courses", Icons.menu_book_rounded)),
+              Expanded(child: _buildNavItem(3, "Live", Icons.podcasts_rounded)),
+              Expanded(child: _buildNavItem(7, "Wallet", Icons.account_balance_wallet_rounded)),
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => setState(() => _isMobileMenuOpen = true),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.grid_view_rounded, color: subTextColor, size: 22),
+                      const SizedBox(height: 2),
+                      Text("MENU", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: subTextColor, letterSpacing: 0.8)),
+                    ],
+                  ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -390,26 +250,32 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
     );
   }
 
-  Widget _buildNavItem(int index, String title, String icon) {
+  Widget _buildNavItem(int index, String title, IconData icon) {
     bool isActive = _currentIndex == index;
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => setState(() => _currentIndex = index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Container(
+        alignment: Alignment.center,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(icon, style: TextStyle(fontSize: isActive ? 20 : 16, shadows: isActive ? [const Shadow(color: Colors.yellowAccent, blurRadius: 8)] : [])),
-            const SizedBox(height: 1),
+            Icon(
+              icon,
+              size: isActive ? 24 : 20,
+              color: isActive ? primaryPink : subTextColor,
+            ),
+            const SizedBox(height: 2),
             Text(
               title.toUpperCase(),
               style: TextStyle(
                 fontSize: 7,
                 fontWeight: FontWeight.w900,
-                color: isActive ? Colors.yellowAccent : Colors.grey.shade500,
+                color: isActive ? primaryPink : subTextColor,
                 letterSpacing: 0.8,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -422,84 +288,99 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
       backgroundColor: Colors.transparent,
       body: ClipRRect(
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
           child: Container(
-            color: const Color(0xFF030305).withOpacity(0.95),
+            color: backgroundWhite.withOpacity(0.97),
             child: SafeArea(
               child: Column(
                 children: [
+                  // هدر منو
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("STUDENT PORTAL MENU", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                        const Text("STUDENT PORTAL MENU", style: TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
                         GestureDetector(
-                          onTap: () => setState(() => _isMenuOpen = false),
+                          onTap: () => setState(() => _isMobileMenuOpen = false),
                           child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), shape: BoxShape.circle),
-                            child: const Icon(Icons.close, color: Colors.grey, size: 18),
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(color: primaryPink.withOpacity(0.15), shape: BoxShape.circle),
+                            child: const Icon(Icons.close, color: primaryPink, size: 18),
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
-
+                  
+                  // لیست منوها به صورت لیستی و حرفه‌ای
                   Expanded(
-                    child: GridView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 1.6,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                      ),
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       itemCount: _menuItems.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         final item = _menuItems[index];
-                        bool isSoon = item['soon'] == true;
+                        final int screenIndex = item['index'] as int;
+                        final bool isSelected = _currentIndex == screenIndex;
+                        final bool isSoon = item['soon'] == true;
+
                         return GestureDetector(
                           onTap: () {
                             if (!isSoon) {
                               setState(() {
-                                _currentIndex = index;
-                                _isMenuOpen = false;
+                                _currentIndex = screenIndex;
+                                _isMobileMenuOpen = false;
                               });
                             }
                           },
                           child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             decoration: BoxDecoration(
-                              color: item['color'].withOpacity(isSoon ? 0.03 : 0.08),
-                              border: Border.all(color: item['color'].withOpacity(isSoon ? 0.06 : 0.15)),
-                              borderRadius: BorderRadius.circular(20),
+                              color: isSelected ? primaryPink.withOpacity(0.15) : Colors.grey.shade50,
+                              border: Border.all(color: isSelected ? primaryPink.withOpacity(0.4) : borderColor, width: 1.5),
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            child: Stack(
+                            child: Row(
                               children: [
-                                Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(item['icon'], style: TextStyle(fontSize: 28, color: isSoon ? Colors.grey : null)),
-                                      const SizedBox(height: 6),
-                                      Text(item['name'].toUpperCase(), style: TextStyle(color: isSoon ? Colors.grey : item['color'], fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? primaryPink : Colors.white,
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: [
+                                      BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4, offset: const Offset(0, 2)),
                                     ],
+                                  ),
+                                  child: Icon(
+                                    item['icon'] as IconData,
+                                    size: 18,
+                                    color: isSelected ? Colors.white : primaryPink,
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Text(
+                                    item['name'] as String,
+                                    style: TextStyle(
+                                      color: isSelected ? primaryPink : textColor,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w900,
+                                    ),
                                   ),
                                 ),
                                 if (isSoon)
-                                  Positioned(
-                                    top: 10,
-                                    right: 10,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: Colors.yellowAccent.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(color: Colors.yellowAccent.withOpacity(0.2)),
-                                      ),
-                                      child: const Text("SOON", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.yellowAccent)),
-                                    ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(6)),
+                                    child: const Text("SOON", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: primaryPink)),
                                   )
+                                else
+                                  Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    size: 14,
+                                    color: isSelected ? primaryPink : subTextColor,
+                                  ),
                               ],
                             ),
                           ),
@@ -508,48 +389,52 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                     ),
                   ),
 
+                  // بخش پروفایل و خروج در پایین منو
                   Container(
                     margin: const EdgeInsets.all(16),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.02),
-                      border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05))),
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: borderColor, width: 1.5),
                     ),
                     child: Column(
                       children: [
                         Row(
                           children: [
                             CircleAvatar(
-                              radius: 18,
-                              backgroundColor: Colors.yellowAccent.withOpacity(0.2),
+                              radius: 20,
+                              backgroundColor: primaryPink.withOpacity(0.15),
                               backgroundImage: _userProfile?['avatar_url'] != null ? NetworkImage(_userProfile!['avatar_url']) : null,
-                              child: _userProfile?['avatar_url'] == null ? const Icon(Icons.person, color: Colors.yellowAccent, size: 18) : null,
+                              child: _userProfile?['avatar_url'] == null ? const Icon(Icons.person, color: primaryPink, size: 20) : null,
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("${_userProfile?['first_name']} ${_userProfile?['last_name']}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-                                  Text("BALANCE: \$${_userProfile?['wallet_balance'] != null ? NumberFormatField(_userProfile!['wallet_balance']) : '0.00'}", style: TextStyle(color: Colors.greenAccent, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                                  Text("${_userProfile?['first_name'] ?? 'Student'} ${_userProfile?['last_name'] ?? ''}", style: const TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13)),
+                                  const SizedBox(height: 2),
+                                  Text("BALANCE: \$${_userProfile?['wallet_balance'] != null ? NumberFormatField(_userProfile!['wallet_balance']) : '0.00'}", style: const TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
                                 ],
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 14),
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.redAccent.withOpacity(0.1),
+                              backgroundColor: Colors.redAccent.withOpacity(0.15),
                               foregroundColor: Colors.redAccent,
-                              side: BorderSide(color: Colors.redAccent.withOpacity(0.2)),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              elevation: 0,
+                              side: BorderSide(color: Colors.redAccent.withOpacity(0.3), width: 1.5),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                             ),
-                            icon: const Icon(Icons.logout, size: 16),
-                            label: const Text("SECURE SIGN OUT", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                            icon: const Icon(Icons.logout_rounded, size: 16),
+                            label: const Text("SECURE SIGN OUT", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
                             onPressed: _logout,
                           ),
                         ),

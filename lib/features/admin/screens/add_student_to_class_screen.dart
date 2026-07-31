@@ -16,9 +16,18 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
   bool isLoading = true;
   List<Map<String, dynamic>> allStudents = [];
   String searchQuery = "";
-  Map<String, dynamic>? selectedStudent;
+  
+  final Set<String> selectedStudentIds = {};
   bool isPaid = false;
   bool isEnrolling = false;
+
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
 
   @override
   void initState() {
@@ -59,8 +68,8 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
     }).toList();
   }
 
-  Future<void> handleEnrollStudent() async {
-    if (selectedStudent == null) return;
+  Future<void> handleEnrollStudents() async {
+    if (selectedStudentIds.isEmpty) return;
     setState(() => isEnrolling = true);
 
     try {
@@ -70,27 +79,48 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
           .eq("id", widget.classId)
           .single();
 
-      // درج در جدول class_students
-      await supabase.from("class_students").upsert({
-        'class_group_id': widget.classId,
-        'student_id': selectedStudent!['id'],
-        'is_paid': isPaid,
-      }, onConflict: "class_group_id, student_id");
+      final courseId = classData['course_id'];
 
-      // درج در جدول enrollments
-      await supabase.from("enrollments").upsert({
-        'student_id': selectedStudent!['id'],
-        'course_id': classData['course_id'],
-        'progress_percentage': 0,
-      }, onConflict: "student_id, course_id");
+      List<Map<String, dynamic>> classStudentsPayload = [];
+      List<Map<String, dynamic>> enrollmentsPayload = [];
+
+      for (String studentId in selectedStudentIds) {
+        classStudentsPayload.add({
+          'class_group_id': widget.classId,
+          'student_id': studentId,
+          'is_paid': isPaid,
+        });
+
+        if (courseId != null) {
+          enrollmentsPayload.add({
+            'student_id': studentId,
+            'course_id': courseId,
+            'progress_percentage': 0,
+          });
+        }
+      }
+
+      await supabase.from("class_students").upsert(
+            classStudentsPayload,
+            onConflict: "class_group_id, student_id",
+          );
+
+      if (enrollmentsPayload.isNotEmpty) {
+        await supabase.from("enrollments").upsert(
+              enrollmentsPayload,
+              onConflict: "student_id, course_id",
+            );
+      }
 
       if (mounted) {
         Navigator.pop(context);
       }
     } catch (e) {
-      debugPrint("Error enrolling student: $e");
+      debugPrint("Error enrolling students: $e");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${e.toString()}"), backgroundColor: Colors.redAccent),
+        );
         setState(() => isEnrolling = false);
       }
     }
@@ -100,14 +130,14 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFF030305),
+        backgroundColor: surfaceWhite,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: Colors.cyanAccent, strokeWidth: 2.5),
+              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
-              Text("LOADING GLOBAL DIRECTORY...", style: TextStyle(color: Colors.grey.shade500, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text("LOADING GLOBAL DIRECTORY...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
             ],
           ),
         ),
@@ -117,221 +147,229 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
     final currentFiltered = filteredStudents;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF030305),
-      body: Stack(
-        children: [
-          Positioned(
-            top: -40,
-            right: -40,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(color: Colors.cyanAccent.withOpacity(0.08), blurRadius: 90, spreadRadius: 40),
-                ],
-              ),
-            ),
-          ),
-
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white.withOpacity(0.08)),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.arrow_back, color: Colors.white70, size: 14),
-                          SizedBox(width: 6),
-                          Text("Back to Class Roster", style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
+      backgroundColor: surfaceWhite,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // دکمه بازگشت
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: cardBorder,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: cardBorder, width: 1.5),
                   ),
-                  const SizedBox(height: 14),
-
-                  // Header & Search
-                  _buildGlassCard(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("Enroll Student", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
-                        const SizedBox(height: 4),
-                        Text("Search and select a student to enroll in this cohort.", style: TextStyle(fontSize: 10, color: Colors.grey.shade400)),
-                        const SizedBox(height: 14),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.4),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.white.withOpacity(0.05)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.search, color: Colors.cyanAccent, size: 18),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: TextField(
-                                  onChanged: (val) => setState(() => searchQuery = val),
-                                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                                  decoration: InputDecoration(
-                                    hintText: "Search by name, email...",
-                                    hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 11),
-                                    border: InputBorder.none,
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.arrow_back_rounded, color: textDark, size: 14),
+                      SizedBox(width: 6),
+                      Text("Back to Class Roster", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-
-                  // Students List
-                  currentFiltered.isEmpty
-                      ? Container(padding: const EdgeInsets.all(30), alignment: Alignment.center, child: const Text("No students found.", style: TextStyle(color: Colors.grey, fontSize: 11)))
-                      : ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: currentFiltered.length,
-                          separatorBuilder: (_, _) => const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
-                            final student = currentFiltered[index];
-                            bool isSelected = selectedStudent?['id'] == student['id'];
-
-                            return GestureDetector(
-                              onTap: () => setState(() => selectedStudent = student),
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: isSelected ? Colors.cyan.withOpacity(0.15) : const Color(0xFF0a0a0f).withOpacity(0.55),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: isSelected ? Colors.cyanAccent : Colors.white.withOpacity(0.06)),
-                                ),
-                                child: Row(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 18,
-                                      backgroundColor: Colors.black,
-                                      backgroundImage: student['avatar_url'] != null ? NetworkImage(student['avatar_url']) : null,
-                                      child: student['avatar_url'] == null ? Text(student['first_name'][0], style: const TextStyle(color: Colors.cyanAccent, fontSize: 12)) : null,
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text("${student['first_name']} ${student['last_name']}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                                          const SizedBox(height: 2),
-                                          Text(student['email'], style: TextStyle(color: Colors.grey.shade500, fontSize: 9)),
-                                        ],
-                                      ),
-                                    ),
-                                    if (isSelected) const Icon(Icons.check_circle, color: Colors.cyanAccent, size: 18),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                  const SizedBox(height: 80),
-                ],
+                ),
               ),
-            ),
-          ),
+              const SizedBox(height: 14),
 
-          // Bottom Action Bar when student is selected
-          if (selectedStudent != null)
-            Positioned(
-              bottom: 12,
-              left: 16,
-              right: 16,
-              child: Container(
-                padding: const EdgeInsets.all(14),
+              // هدر و جستجو (ثابت بالای صفحه)
+              Container(
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0a0a0f),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.cyanAccent.withOpacity(0.3)),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.6), blurRadius: 20)],
+                  gradient: LinearGradient(
+                    colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                  boxShadow: [
+                    BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 8)),
+                  ],
                 ),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text("Enroll: ${selectedStudent!['first_name']} ${selectedStudent!['last_name']}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11), overflow: TextOverflow.ellipsis),
-                        ),
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: isPaid,
-                              activeColor: Colors.cyanAccent,
-                              checkColor: Colors.black,
-                              onChanged: (val) => setState(() => isPaid = val ?? false),
-                            ),
-                            const Text("Paid", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-                          ],
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 40,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.cyanAccent,
-                          foregroundColor: Colors.black,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: isEnrolling ? null : handleEnrollStudent,
-                        child: isEnrolling
-                            ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
-                            : const Text("CONFIRM ENROLLMENT", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1)),
+                    const Text("Enroll Students", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: textDark)),
+                    const SizedBox(height: 4),
+                    const Text("Select multiple students to enroll in this cohort.", style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        color: cardBorder.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: cardBorder, width: 1.5),
                       ),
-                    ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.search_rounded, color: primaryPink, size: 18),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: TextField(
+                              onChanged: (val) => setState(() => searchQuery = val),
+                              style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                              decoration: InputDecoration(
+                                hintText: "Search by name, email...",
+                                hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
                   ],
                 ),
               ),
-            ),
-        ],
-      ),
-    );
-  }
+              const SizedBox(height: 16),
 
-  Widget _buildGlassCard({required Widget child, EdgeInsetsGeometry? padding}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: const Color(0xFF0a0a0f).withOpacity(0.55),
-            border: Border.all(color: Colors.white.withOpacity(0.06)),
-            borderRadius: BorderRadius.circular(22),
+              // لیست دانشجویان با قابلیت اسکرول کامل بدون تداخل
+              Expanded(
+                child: currentFiltered.isEmpty
+                    ? Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(30),
+                          decoration: BoxDecoration(
+                            color: surfaceWhite,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: cardBorder, width: 1.5),
+                          ),
+                          child: const Text("No students found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
+                      )
+                    : ListView.separated(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: currentFiltered.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          final student = currentFiltered[index];
+                          final studentId = student['id'];
+                          bool isSelected = selectedStudentIds.contains(studentId);
+
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                if (isSelected) {
+                                  selectedStudentIds.remove(studentId);
+                                } else {
+                                  selectedStudentIds.add(studentId);
+                                }
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: isSelected ? lightPinkBg.withOpacity(0.5) : surfaceWhite,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: isSelected ? primaryPink : cardBorder, width: isSelected ? 2 : 1.5),
+                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                              ),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 18,
+                                    backgroundColor: lightPinkBg,
+                                    backgroundImage: student['avatar_url'] != null ? NetworkImage(student['avatar_url']) : null,
+                                    child: student['avatar_url'] == null ? Text(student['first_name'][0], style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.bold)) : null,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text("${student['first_name']} ${student['last_name']}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
+                                        const SizedBox(height: 2),
+                                        Text(student['email'], style: const TextStyle(color: textGrey, fontSize: 10)),
+                                      ],
+                                    ),
+                                  ),
+                                  Checkbox(
+                                    value: isSelected,
+                                    activeColor: primaryPink,
+                                    checkColor: Colors.white,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                    onChanged: (val) {
+                                      setState(() {
+                                        if (val == true) {
+                                          selectedStudentIds.add(studentId);
+                                        } else {
+                                          selectedStudentIds.remove(studentId);
+                                        }
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+
+              // نوار عملیات پایین صفحه (فقط زمانی که حداقل یک دانشجو انتخاب شده باشد به صورت کاملاً فیکس ظاهر می‌شود)
+              if (selectedStudentIds.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: surfaceWhite,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                    boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 6))],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "${selectedStudentIds.length} Students Selected",
+                            style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12),
+                          ),
+                          Row(
+                            children: [
+                              Checkbox(
+                                value: isPaid,
+                                activeColor: primaryPink,
+                                checkColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                onChanged: (val) => setState(() => isPaid = val ?? false),
+                              ),
+                              const Text("Paid (All)", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.w900)),
+                            ],
+                          )
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryPink,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                          onPressed: isEnrolling ? null : handleEnrollStudents,
+                          child: isEnrolling
+                              ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                              : Text("CONFIRM ENROLLMENT (${selectedStudentIds.length}) 🚀", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ]
+            ],
           ),
-          child: child,
         ),
       ),
     );

@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 
 class GlobalStudentItem {
   final String id;
@@ -40,6 +39,14 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
   String searchQuery = "";
   String? addingId;
 
+  // پالت رنگی اختصاصی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +56,7 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
   Future<void> _fetchData() async {
     setState(() => isLoading = true);
     try {
+      // ۱. دریافت اطلاعات کلاس و دوره مربوطه
       final classData = await supabase
           .from("class_groups")
           .select("class_name, course_id")
@@ -60,6 +68,7 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
         courseId = classData['course_id'];
       }
 
+      // ۲. دریافت تمام پروفایل‌ها با نقش دانشجو
       final profilesData = await supabase
           .from("profiles")
           .select("id, first_name, last_name, email, phone_number, avatar_url")
@@ -76,6 +85,7 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
             )).toList();
       }
 
+      // ۳. بررسی دانشجویانی که از قبل عضو این کلاس هستند
       final enrolledData = await supabase
           .from("class_students")
           .select("student_id")
@@ -92,25 +102,27 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
   }
 
   Future<void> _addStudent(GlobalStudentItem student) async {
-    if (courseId == null) return;
-
     setState(() => addingId = student.id);
     try {
-      final existingEnrollment = await supabase
-          .from("enrollments")
-          .select("id")
-          .eq("course_id", courseId!)
-          .eq("student_id", student.id)
-          .maybeSingle();
+      // الف: بررسی ثبت نام در جدول enrollments مربوط به دوره (در صورت وجود courseId)
+      if (courseId != null) {
+        final existingEnrollment = await supabase
+            .from("enrollments")
+            .select("id")
+            .eq("course_id", courseId!)
+            .eq("student_id", student.id)
+            .maybeSingle();
 
-      if (existingEnrollment == null) {
-        await supabase.from("enrollments").insert({
-          'course_id': courseId,
-          'student_id': student.id,
-          'progress_percentage': 0,
-        });
+        if (existingEnrollment == null) {
+          await supabase.from("enrollments").insert({
+            'course_id': courseId,
+            'student_id': student.id,
+            'progress_percentage': 0,
+          });
+        }
       }
 
+      // ب: افزودن دانشجو به کلاس مشخص شده در جدول class_students
       await supabase.from("class_students").insert({
         'class_group_id': widget.classId,
         'student_id': student.id,
@@ -122,11 +134,26 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("${student.firstName} added to class successfully!"), backgroundColor: Colors.green),
+          SnackBar(
+            content: Text("${student.firstName} added to class successfully!"),
+            backgroundColor: primaryPink,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         );
       }
     } catch (e) {
       debugPrint("Error adding student: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Failed to add student: $e"),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => addingId = null);
     }
@@ -136,8 +163,8 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFF030305),
-        body: Center(child: CircularProgressIndicator(color: Colors.pinkAccent)),
+        backgroundColor: surfaceWhite,
+        body: const Center(child: CircularProgressIndicator(color: primaryPink)),
       );
     }
 
@@ -147,48 +174,63 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF030305),
+      backgroundColor: surfaceWhite,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF050508),
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text("Add to: $className", style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+        backgroundColor: surfaceWhite,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: textDark),
+        title: Text(
+          "Add to: $className",
+          style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(color: cardBorder, height: 1),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         physics: const BouncingScrollPhysics(),
         child: Column(
           children: [
+            // سرچ‌بار مدرن
             TextField(
               onChanged: (val) => setState(() => searchQuery = val),
-              style: const TextStyle(color: Colors.white, fontSize: 11),
+              style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w600),
               decoration: InputDecoration(
                 hintText: "Search student by name or email...",
-                hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 10),
-                prefixIcon: const Icon(Icons.search, color: Colors.grey, size: 16),
+                hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                prefixIcon: const Icon(Icons.search_rounded, color: textGrey, size: 20),
                 filled: true,
-                fillColor: Colors.black.withOpacity(0.4),
-                contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+                fillColor: cardBorder.withOpacity(0.5),
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
 
             filtered.isNotEmpty
                 ? ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: filtered.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final student = filtered[index];
                       bool isEnrolled = enrolledIds.contains(student.id);
 
                       return Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0a0a0f),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white.withOpacity(0.06)),
+                          color: surfaceWhite,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: isEnrolled ? primaryPink.withOpacity(0.3) : cardBorder, width: isEnrolled ? 1.5 : 1),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+                          ],
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -196,33 +238,46 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
                             Row(
                               children: [
                                 CircleAvatar(
-                                  radius: 18,
-                                  backgroundColor: Colors.pinkAccent.withOpacity(0.2),
+                                  radius: 20,
+                                  backgroundColor: lightPinkBg,
                                   backgroundImage: student.avatarUrl != null ? NetworkImage(student.avatarUrl!) : null,
-                                  child: student.avatarUrl == null ? Text(student.firstName[0], style: const TextStyle(color: Colors.pinkAccent)) : null,
+                                  child: student.avatarUrl == null
+                                      ? Text(student.firstName.isNotEmpty ? student.firstName[0] : 'S', style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold))
+                                      : null,
                                 ),
-                                const SizedBox(width: 10),
+                                const SizedBox(width: 12),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text("${student.firstName} ${student.lastName}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                                    Text(student.email, style: TextStyle(color: Colors.grey.shade500, fontSize: 8)),
+                                    Text("${student.firstName} ${student.lastName}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                    const SizedBox(height: 2),
+                                    Text(student.email, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500)),
                                   ],
                                 ),
                               ],
                             ),
                             isEnrolled
-                                ? const Text("Enrolled", style: TextStyle(color: Colors.greenAccent, fontSize: 10, fontWeight: FontWeight.bold))
+                                ? Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Text("Enrolled", style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.w900)),
+                                  )
                                 : ElevatedButton(
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.pinkAccent,
+                                      backgroundColor: primaryPink,
                                       foregroundColor: Colors.white,
                                       elevation: 0,
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                     ),
                                     onPressed: addingId == student.id ? null : () => _addStudent(student),
-                                    child: Text(addingId == student.id ? "..." : "Add", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                                    child: Text(
+                                      addingId == student.id ? "Adding..." : "Add",
+                                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900),
+                                    ),
                                   ),
                           ],
                         ),
@@ -231,7 +286,7 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
                   )
                 : const Padding(
                     padding: EdgeInsets.all(40.0),
-                    child: Text("No students found.", style: TextStyle(color: Colors.grey, fontSize: 11)),
+                    child: Text("No students found.", style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w600)),
                   ),
           ],
         ),

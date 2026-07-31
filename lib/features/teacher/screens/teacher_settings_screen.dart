@@ -33,6 +33,14 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
   final TextEditingController _newPassController = TextEditingController();
   final TextEditingController _confirmPassController = TextEditingController();
 
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
+
   @override
   void initState() {
     super.initState();
@@ -143,41 +151,52 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Colors.pinkAccent));
+      return const Center(child: CircularProgressIndicator(color: primaryPink));
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
       physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ================= هدر صفحه =================
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
+              gradient: LinearGradient(
+                colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryPink.withOpacity(0.08),
+                  blurRadius: 25,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.pink.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(14),
+                    color: primaryPink.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Text("⚙️", style: TextStyle(fontSize: 22)),
+                  child: const Icon(Icons.settings_suggest_rounded, color: primaryPink, size: 26),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
+                const SizedBox(width: 14),
+                const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Account Settings", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-                      const SizedBox(height: 2),
-                      Text("Manage your academic profile and security credentials.", style: TextStyle(fontSize: 9, color: Colors.grey.shade400)),
+                      Text("Account Settings", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                      SizedBox(height: 3),
+                      Text("Manage your academic profile and security credentials.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                     ],
                   ),
                 ),
@@ -189,35 +208,36 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
           // پیام سیستم (Toast)
           if (messageText != null)
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: isSuccessMessage ? Colors.green.withOpacity(0.15) : Colors.red.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: isSuccessMessage ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3)),
+                color: isSuccessMessage ? Colors.green.withOpacity(0.12) : Colors.red.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: isSuccessMessage ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3), width: 1.5),
               ),
               child: Row(
                 children: [
-                  Icon(isSuccessMessage ? Icons.check_circle : Icons.error, color: isSuccessMessage ? Colors.greenAccent : Colors.redAccent, size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(messageText!, style: TextStyle(color: isSuccessMessage ? Colors.greenAccent : Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold))),
+                  Icon(isSuccessMessage ? Icons.check_circle_rounded : Icons.error_rounded, color: isSuccessMessage ? Colors.green.shade700 : Colors.redAccent, size: 18),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(messageText!, style: TextStyle(color: isSuccessMessage ? Colors.green.shade700 : Colors.redAccent, fontSize: 11, fontWeight: FontWeight.w900))),
                 ],
               ),
             ),
 
           // ================= ۱. فرم پروفایل عمومی =================
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f).withOpacity(0.8),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
+              color: surfaceWhite,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: cardBorder, width: 1.5),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Public Profile Data", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15)),
-                const SizedBox(height: 14),
+                const Text("Public Profile Data", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                const SizedBox(height: 16),
 
                 Row(
                   children: [
@@ -225,36 +245,40 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("First Name", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 4),
+                          const Text("First Name", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 6),
                           TextField(
                             controller: _firstNameController,
-                            style: const TextStyle(color: Colors.white, fontSize: 11),
+                            style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: Colors.black.withOpacity(0.4),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+                              fillColor: cardBorder.withOpacity(0.5),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Last Name", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 4),
+                          const Text("Last Name", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 6),
                           TextField(
                             controller: _lastNameController,
-                            style: const TextStyle(color: Colors.white, fontSize: 11),
+                            style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: Colors.black.withOpacity(0.4),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+                              fillColor: cardBorder.withOpacity(0.5),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                             ),
                           ),
                         ],
@@ -262,80 +286,89 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
 
-                const Text("Phone Number", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
+                const Text("Phone Number", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
                 TextField(
                   controller: _phoneController,
-                  style: const TextStyle(color: Colors.white, fontSize: 11),
+                  style: const TextStyle(color: textDark, fontSize: 12),
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: Colors.black.withOpacity(0.4),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                const Text("Country / Region", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                TextField(
-                  controller: _countryController,
-                  style: const TextStyle(color: Colors.white, fontSize: 11),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.black.withOpacity(0.4),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                const Text("Avatar Image URL", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                TextField(
-                  controller: _avatarController,
-                  style: const TextStyle(color: Colors.white, fontSize: 11),
-                  decoration: InputDecoration(
-                    hintText: "https://...",
-                    hintStyle: TextStyle(color: Colors.grey.shade700),
-                    filled: true,
-                    fillColor: Colors.black.withOpacity(0.4),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                const Text("Professional Biography", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                TextField(
-                  controller: _bioController,
-                  maxLines: 3,
-                  style: const TextStyle(color: Colors.white, fontSize: 11),
-                  decoration: InputDecoration(
-                    hintText: "Write a short bio...",
-                    hintStyle: TextStyle(color: Colors.grey.shade700),
-                    filled: true,
-                    fillColor: Colors.black.withOpacity(0.4),
-                    contentPadding: const EdgeInsets.all(12),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+                    fillColor: cardBorder.withOpacity(0.5),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                const Text("Country / Region", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _countryController,
+                  style: const TextStyle(color: textDark, fontSize: 12),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: cardBorder.withOpacity(0.5),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                const Text("Avatar Image URL", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _avatarController,
+                  style: const TextStyle(color: textDark, fontSize: 12),
+                  decoration: InputDecoration(
+                    hintText: "https://...",
+                    hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                    filled: true,
+                    fillColor: cardBorder.withOpacity(0.5),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                const Text("Professional Biography", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _bioController,
+                  maxLines: 3,
+                  style: const TextStyle(color: textDark, fontSize: 12),
+                  decoration: InputDecoration(
+                    hintText: "Write a short bio...",
+                    hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                    filled: true,
+                    fillColor: cardBorder.withOpacity(0.5),
+                    contentPadding: const EdgeInsets.all(14),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                  ),
+                ),
+                const SizedBox(height: 20),
 
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink,
+                      backgroundColor: primaryPink,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     onPressed: isSavingProfile ? null : _handleUpdateProfile,
-                    child: Text(isSavingProfile ? "Saving..." : "Save Profile Updates 💾", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                    child: Text(isSavingProfile ? "Saving..." : "Save Profile Updates 💾", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
                   ),
                 ),
               ],
@@ -345,69 +378,74 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
 
           // ================= ۲. فرم امنیت و تغییر رمز عبور =================
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f).withOpacity(0.8),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
+              color: surfaceWhite,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: cardBorder, width: 1.5),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Security & Authentication", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15)),
-                const SizedBox(height: 14),
+                const Text("Security & Authentication", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                const SizedBox(height: 16),
 
-                const Text("New Password", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
+                const Text("New Password", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
                 TextField(
                   controller: _newPassController,
                   obscureText: true,
-                  style: const TextStyle(color: Colors.white, fontSize: 11),
+                  style: const TextStyle(color: textDark, fontSize: 12),
                   decoration: InputDecoration(
                     hintText: "••••••••",
-                    hintStyle: TextStyle(color: Colors.grey.shade700),
+                    hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                     filled: true,
-                    fillColor: Colors.black.withOpacity(0.4),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                const Text("Confirm New Password", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                TextField(
-                  controller: _confirmPassController,
-                  obscureText: true,
-                  style: const TextStyle(color: Colors.white, fontSize: 11),
-                  decoration: InputDecoration(
-                    hintText: "••••••••",
-                    hintStyle: TextStyle(color: Colors.grey.shade700),
-                    filled: true,
-                    fillColor: Colors.black.withOpacity(0.4),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+                    fillColor: cardBorder.withOpacity(0.5),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                const Text("Confirm New Password", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _confirmPassController,
+                  obscureText: true,
+                  style: const TextStyle(color: textDark, fontSize: 12),
+                  decoration: InputDecoration(
+                    hintText: "••••••••",
+                    hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                    filled: true,
+                    fillColor: cardBorder.withOpacity(0.5),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                  ),
+                ),
+                const SizedBox(height: 20),
 
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: BorderSide(color: Colors.pink.withOpacity(0.4)),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      foregroundColor: textDark,
+                      side: const BorderSide(color: primaryPink, width: 1.5),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     onPressed: isSavingPassword ? null : _handleUpdatePassword,
-                    child: Text(isSavingPassword ? "Updating..." : "Update Password 🔒", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                    child: Text(isSavingPassword ? "Updating..." : "Update Password 🔒", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 40),
         ],
       ),
     );

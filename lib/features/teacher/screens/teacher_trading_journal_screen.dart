@@ -67,13 +67,21 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
   bool isLoading = true;
   bool hasAccess = false;
   List<TradingJournalItem> journals = [];
-  bool isSubmittingGrade = false; // Added this line
+  bool isSubmittingGrade = false;
   String searchQuery = "";
 
   // مودال ممیزی
   TradingJournalItem? selectedJournal;
   final TextEditingController _scoreController = TextEditingController();
   final TextEditingController _feedbackController = TextEditingController();
+
+  // پالت رنگی لایت (سفید صدفی و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
 
   @override
   void initState() {
@@ -137,7 +145,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
       final journalsData = await supabase
           .from("trading_journals")
           .select("*")
-          .inFilter("student_id", studentIds) // Corrected: Use named argument for ascending
+          .inFilter("student_id", studentIds)
           .order("trade_date", ascending: false);
 
       if (journalsData != null) {
@@ -226,30 +234,31 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Colors.purpleAccent));
+      return const Center(child: CircularProgressIndicator(color: primaryPink));
     }
 
     // بررسی دسترسی استاد به دوره فارکس
     if (!hasAccess) {
       return Center(
         child: Container(
-          padding: const EdgeInsets.all(24),
-          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(28),
+          margin: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: const Color(0xFF0a0a0f),
+            color: surfaceWhite,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.06)),
+            border: Border.all(color: cardBorder, width: 1.5),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.lock_outline, color: Colors.purpleAccent, size: 40),
-              const SizedBox(height: 12),
-              const Text("Access Restricted", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900)),
-              const SizedBox(height: 6),
-              Text(
+              const Icon(Icons.lock_outline_rounded, color: primaryPink, size: 44),
+              const SizedBox(height: 14),
+              const Text("Access Restricted", style: TextStyle(color: textDark, fontSize: 16, fontWeight: FontWeight.w900)),
+              const SizedBox(height: 8),
+              const Text(
                 "The Trading Journal Audit system is exclusively available for instructors actively teaching the Financial Markets & Forex Trading masterclass.",
-                style: TextStyle(color: Colors.grey.shade400, fontSize: 10),
+                style: TextStyle(color: textGrey, fontSize: 11),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -265,262 +274,327 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
           j.setupStrategy.toLowerCase().contains(q);
     }).toList();
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Scaffold(
+      backgroundColor: surfaceWhite,
+      body: Stack(
         children: [
-          // ================= هدر صفحه =================
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
-            ),
+          SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+            physics: const BouncingScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.purple.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: const Text("📈", style: TextStyle(fontSize: 22)),
+                // ================= هدر صفحه =================
+                Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    borderRadius: BorderRadius.circular(32),
+                    border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryPink.withOpacity(0.08),
+                        blurRadius: 25,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          const Text("Trading Journals",
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-                          const SizedBox(height: 2),
-                          Text("Audit student ledger submissions and verify risk compliance.",
-                              style: TextStyle(fontSize: 9, color: Colors.grey.shade400)),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: primaryPink.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(Icons.trending_up_rounded, color: primaryPink, size: 26),
+                          ),
+                          const SizedBox(width: 14),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Trading Journals", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                                SizedBox(height: 3),
+                                Text("Audit student ledger submissions and verify risk compliance.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                TextField(
-                  onChanged: (val) => setState(() => searchQuery = val),
-                  style: const TextStyle(color: Colors.white, fontSize: 11),
-                  decoration: InputDecoration(
-                    hintText: "Search student, symbol...",
-                    hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 10),
-                    prefixIcon: const Icon(Icons.search, color: Colors.grey, size: 16),
-                    filled: true,
-                    fillColor: Colors.black.withOpacity(0.4),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+                      const SizedBox(height: 18),
+                      TextField(
+                        onChanged: (val) => setState(() => searchQuery = val),
+                        style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                        decoration: InputDecoration(
+                          hintText: "Search student, symbol, strategy...",
+                          hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                          prefixIcon: const Icon(Icons.search_rounded, color: primaryPink, size: 18),
+                          filled: true,
+                          fillColor: cardBorder.withOpacity(0.5),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                const SizedBox(height: 24),
+
+                // ================= لیست ژورنال‌ها =================
+                const Text("Student Trade Submissions", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                const SizedBox(height: 12),
+
+                filteredJournals.isNotEmpty
+                    ? ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: filteredJournals.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 14),
+                        itemBuilder: (context, index) {
+                          final journal = filteredJournals[index];
+                          bool isWin = journal.profitLossUsd >= 0;
+                          bool isGraded = journal.teacherScore != null;
+
+                          return Container(
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              color: surfaceWhite,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: isGraded ? Colors.green.withOpacity(0.3) : cardBorder,
+                                width: 1.5,
+                              ),
+                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 16,
+                                          backgroundColor: lightPinkBg,
+                                          backgroundImage: journal.avatarUrl != null ? NetworkImage(journal.avatarUrl!) : null,
+                                          child: journal.avatarUrl == null
+                                              ? Text(journal.firstName[0], style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.bold))
+                                              : null,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Text("${journal.firstName} ${journal.lastName}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                      ],
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: isGraded ? Colors.green.withOpacity(0.12) : lightPinkBg,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        isGraded ? "Audited (${journal.teacherScore})" : "● Pending Audit",
+                                        style: TextStyle(
+                                          color: isGraded ? Colors.green.shade700 : primaryPink,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 14),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(journal.symbol, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: journal.positionType.toUpperCase() == 'BUY' ? Colors.green.withOpacity(0.12) : Colors.red.withOpacity(0.12),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            journal.positionType.toUpperCase(),
+                                            style: TextStyle(
+                                              color: journal.positionType.toUpperCase() == 'BUY' ? Colors.green.shade700 : Colors.redAccent,
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Text(
+                                      isWin ? "+\$${journal.profitLossUsd.toStringAsFixed(2)}" : "-\$${journal.profitLossUsd.abs().toStringAsFixed(2)}",
+                                      style: TextStyle(
+                                        color: isWin ? Colors.green.shade700 : Colors.redAccent,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text("Lots: ${journal.lotSize} | R&R: ${journal.rrMultiple}R", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: primaryPink,
+                                        foregroundColor: Colors.white,
+                                        elevation: 0,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          selectedJournal = journal;
+                                          _scoreController.text = journal.teacherScore?.toString() ?? "";
+                                          _feedbackController.text = journal.teacherFeedback ?? "";
+                                        });
+                                      },
+                                      child: const Text("Audit Trade", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      )
+                    : Container(
+                        padding: const EdgeInsets.all(40),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: surfaceWhite,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: cardBorder),
+                        ),
+                        child: const Column(
+                          children: [
+                            Icon(Icons.query_stats_rounded, size: 36, color: textGrey),
+                            SizedBox(height: 10),
+                            Text("No Trading Journals", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
+                            SizedBox(height: 4),
+                            Text("No student trading ledgers found.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                          ],
+                        ),
+                      ),
+                const SizedBox(height: 40),
               ],
             ),
           ),
-          const SizedBox(height: 16),
-
-          // ================= لیست ژورنال‌ها =================
-          filteredJournals.isNotEmpty
-              ? ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: filteredJournals.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    final journal = filteredJournals[index];
-                    bool isWin = journal.profitLossUsd >= 0;
-                    bool isGraded = journal.teacherScore != null;
-
-                    return Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0a0a0f).withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: Colors.white.withOpacity(0.06)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 14,
-                                    backgroundColor: Colors.purple.withOpacity(0.2),
-                                    backgroundImage: journal.avatarUrl != null ? NetworkImage(journal.avatarUrl!) : null,
-                                    child: journal.avatarUrl == null
-                                        ? Text(journal.firstName[0], style: const TextStyle(color: Colors.purpleAccent, fontSize: 10))
-                                        : null,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text("${journal.firstName} ${journal.lastName}",
-                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
-                                ],
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: isGraded ? Colors.purple.withOpacity(0.15) : Colors.amber.withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(isGraded ? "Audited (${journal.teacherScore})" : "Pending Audit",
-                                    style: TextStyle(color: isGraded ? Colors.purpleAccent : Colors.amberAccent, fontSize: 8, fontWeight: FontWeight.bold)),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(journal.symbol, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13)),
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: journal.positionType.toUpperCase() == 'BUY' ? Colors.green.withOpacity(0.15) : Colors.red.withOpacity(0.15),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(journal.positionType,
-                                        style: TextStyle(color: journal.positionType.toUpperCase() == 'BUY' ? Colors.greenAccent : Colors.redAccent, fontSize: 8, fontWeight: FontWeight.bold)),
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                isWin ? "+\$${journal.profitLossUsd}" : "-\$${journal.profitLossUsd.abs()}",
-                                style: TextStyle(color: isWin ? Colors.greenAccent : Colors.redAccent, fontWeight: FontWeight.w900, fontSize: 12),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text("Lots: ${journal.lotSize} | R&R: ${journal.rrMultiple}R", style: const TextStyle(color: Colors.grey, fontSize: 9)),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white.withOpacity(0.06),
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    selectedJournal = journal;
-                                    _scoreController.text = journal.teacherScore?.toString() ?? "";
-                                    _feedbackController.text = journal.teacherFeedback ?? "";
-                                  });
-                                },
-                                child: const Text("Audit Trade", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                )
-              : Container(
-                  padding: const EdgeInsets.all(30),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0a0a0f),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withOpacity(0.06)),
-                  ),
-                  child: const Text("No trading journals found.", style: TextStyle(color: Colors.grey, fontSize: 11)),
-                ),
-          const SizedBox(height: 30),
 
           // ================= مودال ممیزی معامله =================
           if (selectedJournal != null)
             Container(
-              color: Colors.black54,
+              color: Colors.black45,
               alignment: Alignment.center,
               padding: const EdgeInsets.all(16),
               child: Container(
-                padding: const EdgeInsets.all(18),
+                width: double.infinity,
+                padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0d0d14),
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: Colors.purple.withOpacity(0.4)),
+                  color: surfaceWhite,
+                  borderRadius: BorderRadius.circular(26),
+                  border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                  boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 25, offset: const Offset(0, 10))],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text("Audit Sheet: ${selectedJournal!.firstName} ${selectedJournal!.lastName}",
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
-                    const SizedBox(height: 8),
-                    Text("Symbol: ${selectedJournal!.symbol} (${selectedJournal!.positionType})", style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
-                    Text("Entry: \$${selectedJournal!.entryPrice} | Exit: \$${selectedJournal!.exitPrice}", style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
+                        style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
                     const SizedBox(height: 10),
+                    Text("Symbol: ${selectedJournal!.symbol} (${selectedJournal!.positionType})", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w600)),
+                    Text("Entry: \$${selectedJournal!.entryPrice} | Exit: \$${selectedJournal!.exitPrice}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 12),
                     if (selectedJournal!.chartImageUrl != null) ...[
                       GestureDetector(
                         onTap: () => _launchURL(selectedJournal!.chartImageUrl!),
-                        child: const Text("📊 View Chart Screenshot", style: TextStyle(color: Colors.blueAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.bar_chart_rounded, size: 16, color: Colors.blueAccent),
+                            SizedBox(width: 6),
+                            Text("View Chart Screenshot", style: TextStyle(color: Colors.blueAccent, fontSize: 11, fontWeight: FontWeight.w900)),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 14),
                     ],
-                    const Text("Execution Score (0-100) *", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
+                    const Text("Execution Score (0-100) *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 6),
                     TextField(
                       controller: _scoreController,
                       keyboardType: TextInputType.number,
-                      style: const TextStyle(color: Colors.white, fontSize: 11),
+                      style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                       decoration: InputDecoration(
                         hintText: "Score (e.g. 95)",
-                        hintStyle: TextStyle(color: Colors.grey.shade700),
+                        hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                         filled: true,
-                        fillColor: Colors.black.withOpacity(0.5),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text("Academic Audit Feedback", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    TextField(
-                      controller: _feedbackController,
-                      maxLines: 3,
-                      style: const TextStyle(color: Colors.white, fontSize: 11),
-                      decoration: InputDecoration(
-                        hintText: "Tactical feedback...",
-                        hintStyle: TextStyle(color: Colors.grey.shade700),
-                        filled: true,
-                        fillColor: Colors.black.withOpacity(0.5),
-                        contentPadding: const EdgeInsets.all(10),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        fillColor: cardBorder.withOpacity(0.5),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                       ),
                     ),
                     const SizedBox(height: 16),
+                    const Text("Academic Audit Feedback", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _feedbackController,
+                      maxLines: 3,
+                      style: const TextStyle(color: textDark, fontSize: 12),
+                      decoration: InputDecoration(
+                        hintText: "Tactical feedback...",
+                        hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                        filled: true,
+                        fillColor: cardBorder.withOpacity(0.5),
+                        contentPadding: const EdgeInsets.all(14),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     Row(
                       children: [
                         Expanded(
                           child: TextButton(
+                            style: TextButton.styleFrom(foregroundColor: textGrey),
                             onPressed: () => setState(() => selectedJournal = null),
-                            child: const Text("Cancel", style: TextStyle(color: Colors.grey, fontSize: 11)),
+                            child: const Text("Cancel", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryPink,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            ),
                             onPressed: isSubmittingGrade ? null : _saveEvaluation,
-                            child: Text(isSubmittingGrade ? "Saving..." : "Save Audit", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                            child: Text(isSubmittingGrade ? "Saving..." : "Save Audit", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                           ),
                         ),
                       ],

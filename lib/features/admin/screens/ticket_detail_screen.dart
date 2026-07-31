@@ -22,6 +22,14 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   bool isSending = false;
   RealtimeChannel? _ticketChannel;
 
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
+
   @override
   void initState() {
     super.initState();
@@ -149,7 +157,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
       messageCtrl.clear();
 
-      // اگر تیکت باز بود ولی در حالت open اولیه بود، به in_progress تغییر دهیم
+      // آپدیت وضعیت تیکت به in_progress در صورت باز بودن اولیه
       if (ticket!['status'] == "open" || ticket!['status'] == "OPEN") {
         await supabase.from("tickets").update({'status': 'in_progress'}).eq("id", widget.ticketId);
         setState(() {
@@ -178,190 +186,221 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFF030305),
+        backgroundColor: surfaceWhite,
         body: Center(
-          child: CircularProgressIndicator(color: Colors.indigoAccent, strokeWidth: 2.5),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
+              const SizedBox(height: 14),
+              Text("LOADING TICKET CONVERSATION...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+            ],
+          ),
         ),
       );
     }
 
     if (ticket == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFF030305),
-        body: Center(child: Text("Ticket not found", style: TextStyle(color: Colors.white))),
+        backgroundColor: surfaceWhite,
+        body: const Center(child: Text("Ticket not found", style: TextStyle(color: textDark, fontWeight: FontWeight.bold))),
       );
     }
 
     bool isClosed = ticket!['status'] == "closed" || ticket!['status'] == "resolved";
 
     return Scaffold(
-      backgroundColor: const Color(0xFF030305),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Back & Header
-              Row(
+      backgroundColor: surfaceWhite,
+      resizeToAvoidBottomInset: true, // جلوگیری از به هم ریختگی صفحه با کیبورد گوشی
+      appBar: AppBar(
+        backgroundColor: surfaceWhite,
+        elevation: 0,
+        centerTitle: false,
+        automaticallyImplyLeading: false,
+        title: Row(
+          children: [
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: cardBorder,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: cardBorder, width: 1.5),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.arrow_back_rounded, color: textDark, size: 14),
+                    SizedBox(width: 4),
+                    Text("Back", style: TextStyle(color: textDark, fontSize: 10, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: Center(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isClosed ? Colors.green.withOpacity(0.12) : lightPinkBg,
+                  foregroundColor: isClosed ? Colors.green.shade700 : primaryPink,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: Text(isClosed ? "Reopen Ticket" : "Mark Resolved", style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900)),
+                onPressed: () => handleUpdateStatus(isClosed ? "open" : "closed"),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Subject Card
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: surfaceWhite,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: cardBorder, width: 1.5),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+              ),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.arrow_back, color: Colors.white70, size: 14),
-                          SizedBox(width: 6),
-                          Text("Back to Support", style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(ticket!['subject'], style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                        const SizedBox(height: 4),
+                        Text("Student: ${ticket!['profiles']?['first_name'] ?? ''} ${ticket!['profiles']?['last_name'] ?? ''}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500)),
+                      ],
                     ),
                   ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isClosed ? Colors.green.withOpacity(0.15) : Colors.red.withOpacity(0.15),
-                      foregroundColor: isClosed ? Colors.greenAccent : Colors.redAccent,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isClosed ? Colors.green.withOpacity(0.12) : lightPinkBg,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(isClosed ? "Reopen Ticket" : "Mark as Resolved", style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
-                    onPressed: () => handleUpdateStatus(isClosed ? "open" : "closed"),
+                    child: Text(
+                      ticket!['status'].toUpperCase(),
+                      style: TextStyle(color: isClosed ? Colors.green.shade700 : primaryPink, fontSize: 9, fontWeight: FontWeight.w900),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+            ),
+            const SizedBox(height: 12),
 
-              // Subject Card
+            // Chat Messages Container
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: cardBorder.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: cardBorder, width: 1.5),
+                ),
+                child: messages.isEmpty
+                    ? const Center(child: Text("No messages yet. Start the conversation!", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)))
+                    : ListView.builder(
+                        controller: _scrollController,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: messages.length,
+                        itemBuilder: (context, index) {
+                          final msg = messages[index];
+                          bool isAdmin = msg['profiles']?['role'] == "super_admin" || msg['sender_id'] != ticket!['student_id'];
+
+                          return Align(
+                            alignment: isAdmin ? Alignment.centerRight : Alignment.centerLeft,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              padding: const EdgeInsets.all(14),
+                              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+                              decoration: BoxDecoration(
+                                color: isAdmin ? lightPinkBg : surfaceWhite,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(color: isAdmin ? primaryPink.withOpacity(0.2) : cardBorder, width: 1.5),
+                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    isAdmin ? "Support Agent" : (msg['profiles']?['first_name'] ?? 'User'),
+                                    style: TextStyle(color: isAdmin ? primaryPink : textGrey, fontSize: 9, fontWeight: FontWeight.w900),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(msg['message_text'], style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w500)),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Reply Input Area
+            if (isClosed)
               Container(
                 padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0a0a0f),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: Colors.white.withOpacity(0.06)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(ticket!['subject'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
-                          const SizedBox(height: 2),
-                          Text("Student: ${ticket!['profiles']?['first_name'] ?? ''} ${ticket!['profiles']?['last_name'] ?? ''}", style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
-                        ],
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: Colors.red.withOpacity(0.08), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.redAccent.withOpacity(0.2), width: 1.5)),
+                child: const Text("This ticket is closed. Reopen it to send a message.", style: TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.w900)),
+              )
+            else
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: messageCtrl,
+                      style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                        hintText: "Type your official response...",
+                        hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                        filled: true,
+                        fillColor: cardBorder.withOpacity(0.5),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: isClosed ? Colors.green.withOpacity(0.15) : Colors.indigo.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(ticket!['status'].toUpperCase(), style: TextStyle(color: isClosed ? Colors.greenAccent : Colors.indigoAccent, fontSize: 8, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Chat Messages Container
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0a0a0f).withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withOpacity(0.06)),
                   ),
-                  child: messages.isEmpty
-                      ? const Center(child: Text("No messages yet.", style: TextStyle(color: Colors.grey, fontSize: 11)))
-                      : ListView.builder(
-                          controller: _scrollController,
-                          itemCount: messages.length,
-                          itemBuilder: (context, index) {
-                            final msg = messages[index];
-                            bool isAdmin = msg['profiles']?['role'] == "super_admin" || msg['sender_id'] != ticket!['student_id'];
-
-                            return Align(
-                              alignment: isAdmin ? Alignment.centerRight : Alignment.centerLeft,
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(vertical: 4),
-                                padding: const EdgeInsets.all(10),
-                                constraints: const BoxConstraints(maxWidth: 260),
-                                decoration: BoxDecoration(
-                                  color: isAdmin ? Colors.indigoAccent.withOpacity(0.2) : Colors.white.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: isAdmin ? Colors.indigoAccent.withOpacity(0.3) : Colors.white10),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(isAdmin ? "Support Agent" : (msg['profiles']?['first_name'] ?? 'User'), style: TextStyle(color: isAdmin ? Colors.indigoAccent : Colors.grey, fontSize: 8, fontWeight: FontWeight.bold)),
-                                    const SizedBox(height: 2),
-                                    Text(msg['message_text'], style: const TextStyle(color: Colors.white, fontSize: 11)),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                ),
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    height: 50,
+                    width: 50,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryPink,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: isSending ? null : handleSendMessage,
+                      child: isSending
+                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : const Icon(Icons.send_rounded, size: 18),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-
-              // Reply Input Area
-              if (isClosed)
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                  child: const Text("This ticket is closed. Reopen it to send a message.", style: TextStyle(color: Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold)),
-                )
-              else
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: messageCtrl,
-                        style: const TextStyle(color: Colors.white, fontSize: 11),
-                        decoration: InputDecoration(
-                          hintText: "Type your official response...",
-                          hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 10),
-                          filled: true,
-                          fillColor: Colors.white.withOpacity(0.04),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.08))),
-                          focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12)), borderSide: BorderSide(color: Colors.indigoAccent, width: 1.5)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      height: 44,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.indigoAccent,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: isSending ? null : handleSendMessage,
-                        child: isSending ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.send, size: 16),
-                      ),
-                    ),
-                  ],
-                ),
-            ],
-          ),
+            const SizedBox(height: 10),
+          ],
         ),
       ),
     );

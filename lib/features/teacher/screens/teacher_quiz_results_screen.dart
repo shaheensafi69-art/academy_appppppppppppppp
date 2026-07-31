@@ -52,6 +52,14 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
   bool isLoadingDetails = false;
   bool isSubmittingGrade = false;
 
+  // پالت رنگی لایت (سفید صدفی و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
+
   @override
   void initState() {
     super.initState();
@@ -204,45 +212,55 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFF030305),
-        body: const Center(child: CircularProgressIndicator(color: Colors.pink)),
+        backgroundColor: surfaceWhite,
+        body: const Center(child: CircularProgressIndicator(color: primaryPink)),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF030305),
+      backgroundColor: surfaceWhite,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF050508),
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(quizInfo?['title'] ?? 'Results', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+        backgroundColor: surfaceWhite,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: textDark),
+        title: Text(quizInfo?['title'] ?? 'Results', style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(color: cardBorder, height: 1),
+        ),
       ),
       body: Stack(
         children: [
           SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(20.0),
             physics: const BouncingScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Student Submissions", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
-                const SizedBox(height: 10),
+                const Text("Student Submissions", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                const SizedBox(height: 12),
 
                 attempts.isNotEmpty
                     ? ListView.separated(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: attempts.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final att = attempts[index];
                           bool isGraded = att.status == 'graded';
 
                           return Container(
-                            padding: const EdgeInsets.all(14),
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0a0a0f),
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: isGraded ? Colors.green.withOpacity(0.2) : Colors.amber.withOpacity(0.2)),
+                              color: surfaceWhite,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isGraded ? Colors.green.withOpacity(0.3) : Colors.amber.withOpacity(0.4),
+                                width: 1.5,
+                              ),
+                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -250,71 +268,88 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                                 Row(
                                   children: [
                                     CircleAvatar(
-                                      radius: 18,
-                                      backgroundColor: Colors.pink.withOpacity(0.2),
+                                      radius: 20,
+                                      backgroundColor: lightPinkBg,
                                       backgroundImage: att.avatarUrl != null ? NetworkImage(att.avatarUrl!) : null,
-                                      child: att.avatarUrl == null ? Text(att.firstName[0], style: const TextStyle(color: Colors.pinkAccent)) : null,
+                                      child: att.avatarUrl == null ? Text(att.firstName[0], style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold)) : null,
                                     ),
-                                    const SizedBox(width: 10),
+                                    const SizedBox(width: 12),
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text("${att.firstName} ${att.lastName}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                                        Text(isGraded ? "Score: ${att.score} | Grade: ${att.letterGrade}" : "Pending Review", style: TextStyle(color: isGraded ? Colors.greenAccent : Colors.amberAccent, fontSize: 9, fontWeight: FontWeight.bold)),
+                                        Text("${att.firstName} ${att.lastName}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          isGraded ? "Score: ${att.score} | Grade: ${att.letterGrade}" : "Pending Review",
+                                          style: TextStyle(
+                                            color: isGraded ? Colors.green.shade700 : Colors.amber.shade800,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ],
                                 ),
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: isGraded ? Colors.white12 : Colors.pink,
-                                    foregroundColor: Colors.white,
+                                    backgroundColor: isGraded ? cardBorder : primaryPink,
+                                    foregroundColor: isGraded ? textDark : Colors.white,
                                     elevation: 0,
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                   ),
                                   onPressed: () => _openGradingModal(att),
-                                  child: Text(isGraded ? "Review" : "Evaluate", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                                  child: Text(isGraded ? "Review" : "Evaluate", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                 ),
                               ],
                             ),
                           );
                         },
                       )
-                    : const Padding(
-                        padding: EdgeInsets.all(40.0),
-                        child: Text("No submissions found.", style: TextStyle(color: Colors.grey, fontSize: 11)),
+                    : Container(
+                        padding: const EdgeInsets.all(40),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: surfaceWhite,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: cardBorder),
+                        ),
+                        child: const Text("No submissions found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                       ),
               ],
             ),
           ),
 
-          // مودال تصحیح برگه آزمون
+          // ================= مودال تصحیح برگه آزمون =================
           if (selectedAttempt != null)
             Container(
-              color: Colors.black54,
+              color: Colors.black45,
               alignment: Alignment.center,
               padding: const EdgeInsets.all(16),
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(18),
+                padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0d0d14),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.pink.withOpacity(0.4)),
+                  color: surfaceWhite,
+                  borderRadius: BorderRadius.circular(26),
+                  border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                  boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 25, offset: const Offset(0, 10))],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Evaluate: ${selectedAttempt!.firstName} ${selectedAttempt!.lastName}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                    const SizedBox(height: 12),
+                    Text("Evaluate: ${selectedAttempt!.firstName} ${selectedAttempt!.lastName}",
+                        style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                    const SizedBox(height: 14),
                     isLoadingDetails
-                        ? const Center(child: CircularProgressIndicator(color: Colors.pink))
+                        ? const Center(child: Padding(padding: EdgeInsets.all(30), child: CircularProgressIndicator(color: primaryPink)))
                         : SizedBox(
-                            height: 250,
+                            height: 280,
                             child: ListView.builder(
                               shrinkWrap: true,
+                              physics: const BouncingScrollPhysics(),
                               itemCount: questions.length,
                               itemBuilder: (context, idx) {
                                 final q = questions[idx];
@@ -322,23 +357,29 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                                 int currentScore = gradingScores[q['id']] ?? 0;
 
                                 return Container(
-                                  margin: const EdgeInsets.only(bottom: 10),
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.4), borderRadius: BorderRadius.circular(12)),
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: cardBorder.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: cardBorder, width: 1.5),
+                                  ),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text("Q${idx + 1}: ${q['question_text']}", style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-                                      const SizedBox(height: 4),
-                                      Text("Answer: ${ans['student_answer_text'] ?? 'No Answer'}", style: TextStyle(color: Colors.grey.shade300, fontSize: 10)),
-                                      const SizedBox(height: 8),
+                                      Text("Q${idx + 1}: ${q['question_text']}",
+                                          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900)),
+                                      const SizedBox(height: 6),
+                                      Text("Answer: ${ans['student_answer_text'] ?? 'No Answer'}",
+                                          style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                                      const SizedBox(height: 10),
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.end,
                                         children: [
-                                          Text("Points (Max ${q['points']}): ", style: const TextStyle(color: Colors.grey, fontSize: 9)),
+                                          Text("Points (Max ${q['points']}): ", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                                           SizedBox(
-                                            width: 60,
-                                            height: 30,
+                                            width: 70,
+                                            height: 36,
                                             child: TextField(
                                               keyboardType: TextInputType.number,
                                               controller: TextEditingController(text: currentScore.toString()),
@@ -347,12 +388,14 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                                                 if (v > (q['points'] as int)) v = q['points'];
                                                 gradingScores[q['id']] = v;
                                               },
-                                              style: const TextStyle(color: Colors.white, fontSize: 11),
+                                              style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                                               decoration: InputDecoration(
                                                 filled: true,
-                                                fillColor: Colors.black,
-                                                contentPadding: const EdgeInsets.symmetric(horizontal: 6),
-                                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                                fillColor: surfaceWhite,
+                                                contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: cardBorder)),
+                                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: cardBorder)),
+                                                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                                               ),
                                             ),
                                           ),
@@ -364,21 +407,28 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                               },
                             ),
                           ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     Row(
                       children: [
                         Expanded(
                           child: TextButton(
+                            style: TextButton.styleFrom(foregroundColor: textGrey),
                             onPressed: () => setState(() => selectedAttempt = null),
-                            child: const Text("Cancel", style: TextStyle(color: Colors.grey, fontSize: 11)),
+                            child: const Text("Cancel", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.pink, foregroundColor: Colors.white),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryPink,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            ),
                             onPressed: isSubmittingGrade ? null : _saveGrades,
-                            child: Text(isSubmittingGrade ? "Saving..." : "Submit Grade", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                            child: Text(isSubmittingGrade ? "Saving..." : "Submit Grade", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                           ),
                         ),
                       ],

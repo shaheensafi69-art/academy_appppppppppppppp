@@ -4,8 +4,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 // ایمپورت صفحات اصلی پنل‌ها
 import '../../features/auth/screens/login_screen.dart' as login_screen;
 import '../../features/admin/screens/admin_main_layout.dart';
-import '../../features/dashboard/screens/student_main_layout.dart'; // 👈 ایمپورت پنل کامل دانشجو
-import '../../features/teacher/screens/teacher_main_layout.dart'; // 👈 ایمپورت لایوت کامل و پیشرفته استاد
+import '../../features/dashboard/screens/student_main_layout.dart';
+import '../../features/teacher/screens/teacher_main_layout.dart';
 
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
@@ -16,74 +16,97 @@ class AuthGate extends StatefulWidget {
 
 class _AuthGateState extends State<AuthGate> {
   final supabase = Supabase.instance.client;
+  bool _isLoading = true;
+  Widget _targetScreen = const login_screen.LoginScreen();
+
+  // رنگ اصلی صورتی غلیظ
+  static const Color primaryPink = Color(0xFFC2185B);
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAuthAndRole();
-    });
+    _resolveUserSessionAndRole();
   }
 
-  Future<void> _checkAuthAndRole() async {
-    final session = supabase.auth.currentSession;
-
-    // ۱. اگر کاربر لاگین نیست -> انتقال به صفحه لاگین
-    if (session == null) {
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement( 
-        MaterialPageRoute(builder: (_) => const login_screen.LoginScreen()),
-      );
-      return;
-    }
-
-    // ۲. اگر کاربر لاگین است -> گرفتن نقش از جدول profiles در دیتابیس
+  Future<void> _resolveUserSessionAndRole() async {
     try {
+      final session = supabase.auth.currentSession;
+
+      // ۱. اگر کاربر لاگین نیست
+      if (session == null) {
+        if (mounted) {
+          setState(() {
+            _targetScreen = const login_screen.LoginScreen();
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
+      // ۲. اگر کاربر لاگین است -> گرفتن نقش از جدول profiles
       final user = session.user;
       final response = await supabase
           .from('profiles')
           .select('role')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
-      final userRole = response['role'] ?? 'student';
+      final userRole = response?['role'] ?? 'student';
 
       if (!mounted) return;
 
-      // ۳. هدایت کاربر به پنل مخصوص خودش بر اساس فیلد role در دیتابیس
+      // ۳. تعیین پنل بر اساس نقش کاربر
+      Widget destination;
       if (userRole == 'super_admin' || userRole == 'admin') {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const AdminMainLayout()), 
-        );
+        destination = const AdminMainLayout();
       } else if (userRole == 'teacher') {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const TeacherMainLayout()), // 👈 هدایت استاد به لایوت حرفه‌ای
-        );
+        destination = const TeacherMainLayout();
       } else {
-        // حالت پیش‌فرض برای student (هدایت به پنل فول آپشن دانشجویی)
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const StudentMainLayout()),
-        );
+        destination = const StudentMainLayout();
       }
+
+      setState(() {
+        _targetScreen = destination;
+        _isLoading = false;
+      });
     } catch (e) {
-      // در صورت بروز هرگونه خطا برمی‌گردیم به صفحه لاگین
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement( 
-        MaterialPageRoute(builder: (_) => const login_screen.LoginScreen()),
-      );
+      // در صورت بروز خطا، بازگشت به صفحه لاگین جهت امنیت
+      if (mounted) {
+        setState(() {
+          _targetScreen = const login_screen.LoginScreen();
+          _isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // لودینگ اسکرین در هنگام بررسی سشن و نقش کاربر
-    return const Scaffold(
-      backgroundColor: Color(0xFF020202),
-      body: Center(
-        child: CircularProgressIndicator(
-          color: Colors.white,
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(color: primaryPink),
+              const SizedBox(height: 16),
+              Text(
+                "VERIFYING SESSION...",
+                style: TextStyle(
+                  // ignore: deprecated_member_use
+                  color: primaryPink.withOpacity(0.8),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    }
+
+    return _targetScreen;
   }
 }

@@ -2,7 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:image_picker/image_picker.dart'; // 👈 استفاده از پکیج image_picker
+import 'package:image_picker/image_picker.dart';
 
 class StudentItem {
   final String id;
@@ -64,6 +64,14 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
   final supabase = Supabase.instance.client;
   bool isLoading = true;
 
+  // پالت رنگی اختصاصی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
+
   List<StudentItem> students = [];
   List<CourseItem> courses = [];
   List<AwardItem> awards = [];
@@ -72,9 +80,8 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
   String? selectedStudentId;
   String? selectedCourseId;
   final TextEditingController _certCodeController = TextEditingController();
-  final TextEditingController _certUrlController = TextEditingControllerX();
+  final TextEditingController _certUrlController = TextEditingController();
   
-  // متغیر برای نگهداری عکس انتخاب شده با image_picker
   XFile? selectedImageFile; 
   bool isSubmittingCert = false;
   String studentSearchQuery = "";
@@ -107,7 +114,6 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
       if (user == null) return;
       final userId = user.id;
 
-      // ۱. دریافت کلاس‌های استاد
       final myClasses = await supabase
           .from("class_groups")
           .select("id, course_id")
@@ -117,7 +123,6 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
         final classIds = myClasses.map((c) => c['class_group_id'] ?? c['id']).toList();
         final courseIds = myClasses.map((c) => c['course_id']).where((id) => id != null).toSet().toList();
 
-        // ۲. دریافت دوره‌ها
         if (courseIds.isNotEmpty) {
           final coursesData = await supabase
               .from("courses")
@@ -130,7 +135,6 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
           }
         }
 
-        // ۳. دریافت شاگردان این استاد
         final classStudents = await supabase
             .from("class_students")
             .select("student_id")
@@ -160,7 +164,6 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
         }
       }
 
-      // ۴. دریافت لیست تمام نشان‌ها (Awards)
       final awardsData = await supabase
           .from("awards")
           .select()
@@ -190,7 +193,6 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
     });
   }
 
-  // انتخاب عکس گواهینامه با استفاده از ImagePicker
   Future<void> _pickImageFile() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
@@ -198,7 +200,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
     if (image != null) {
       setState(() {
         selectedImageFile = image;
-        _certUrlController.clear(); // پاک کردن لینک دستی اگر عکسی انتخاب شد
+        _certUrlController.clear();
       });
     }
   }
@@ -213,7 +215,6 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
     try {
       String finalUrl = _certUrlController.text.trim();
 
-      // آپلود فایل عکس در باکت certificates در صورت انتخاب
       if (selectedImageFile != null) {
         final fileBytes = await selectedImageFile!.readAsBytes();
         final fileExt = selectedImageFile!.name.split('.').lastOrNull ?? 'jpg';
@@ -283,7 +284,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Colors.amberAccent));
+      return const Center(child: CircularProgressIndicator(color: primaryPink));
     }
 
     final filteredStudents = students.where((s) {
@@ -292,191 +293,49 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
     }).toList();
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
       physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ================= هدر صفحه =================
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
+              gradient: LinearGradient(
+                colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryPink.withOpacity(0.08),
+                  blurRadius: 25,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: Colors.amber.withOpacity(0.15), borderRadius: BorderRadius.circular(14)),
-                  child: const Text("🏆", style: TextStyle(fontSize: 22)),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: primaryPink.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(Icons.emoji_events_rounded, color: primaryPink, size: 26),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
+                const SizedBox(width: 14),
+                const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Honors & Awards", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-                      const SizedBox(height: 2),
-                      Text("Issue official certificates and grant special awards to your top students.", style: TextStyle(fontSize: 9, color: Colors.grey.shade400)),
+                      Text("Honors & Awards", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                      SizedBox(height: 3),
+                      Text("Issue official certificates and grant special awards to top students.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                     ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // پیام سیستم (Toast)
-          if (messageText != null)
-            Container(
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: isSuccessMessage ? Colors.green.withOpacity(0.15) : Colors.red.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: isSuccessMessage ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3)),
-              ),
-              child: Row(
-                children: [
-                  Icon(isSuccessMessage ? Icons.check_circle : Icons.error, color: isSuccessMessage ? Colors.greenAccent : Colors.redAccent, size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(messageText!, style: TextStyle(color: isSuccessMessage ? Colors.greenAccent : Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold))),
-                ],
-              ),
-            ),
-
-          // ================= ۱. فرم صدور گواهینامه =================
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f).withOpacity(0.8),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("Issue Certificate", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15)),
-                const SizedBox(height: 14),
-
-                // انتخاب شاگرد با جستجو
-                const Text("Select Student *", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                TextField(
-                  onChanged: (val) => setState(() => studentSearchQuery = val),
-                  style: const TextStyle(color: Colors.white, fontSize: 11),
-                  decoration: InputDecoration(
-                    hintText: "Search student by name or email...",
-                    hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 10),
-                    prefixIcon: const Icon(Icons.search, color: Colors.grey, size: 16),
-                    filled: true,
-                    fillColor: Colors.black.withOpacity(0.4),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  value: selectedStudentId,
-                  dropdownColor: const Color(0xFF161622),
-                  style: const TextStyle(color: Colors.white, fontSize: 11),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.black.withOpacity(0.4),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-                  ),
-                  items: filteredStudents.map((s) => DropdownMenuItem(value: s.id, child: Text("${s.firstName} ${s.lastName} (${s.email})"))).toList(),
-                  onChanged: (val) => setState(() => selectedStudentId = val),
-                ),
-                const SizedBox(height: 12),
-
-                // انتخاب دوره
-                const Text("Related Course *", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                DropdownButtonFormField<String>(
-                  value: selectedCourseId,
-                  dropdownColor: const Color(0xFF161622),
-                  style: const TextStyle(color: Colors.white, fontSize: 11),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.black.withOpacity(0.4),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-                  ),
-                  items: courses.map((c) => DropdownMenuItem(value: c.id, child: Text(c.title))).toList(),
-                  onChanged: (val) => setState(() => selectedCourseId = val),
-                ),
-                const SizedBox(height: 12),
-
-                // کد گواهینامه با دکمه تولید خودکار
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("Certificate Code (ID) *", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                    GestureDetector(
-                      onTap: _generateAutoCode,
-                      child: const Text("✨ Auto Generate", style: TextStyle(color: Colors.indigoAccent, fontSize: 9, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                TextField(
-                  controller: _certCodeController,
-                  style: const TextStyle(color: Colors.white, fontSize: 11, fontFamily: 'monospace'),
-                  decoration: InputDecoration(
-                    hintText: "e.g. SAFI-2026-X89",
-                    hintStyle: TextStyle(color: Colors.grey.shade700),
-                    filled: true,
-                    fillColor: Colors.black.withOpacity(0.4),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // انتخاب عکس گواهینامه با ImagePicker
-                const Text("Upload Certificate Image", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                GestureDetector(
-                  onTap: _pickImageFile,
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.4),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withOpacity(0.1)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.image, color: Colors.indigoAccent, size: 16),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            selectedImageFile != null ? selectedImageFile!.name : "Tap to pick image from gallery...",
-                            style: TextStyle(color: selectedImageFile != null ? Colors.white : Colors.grey, fontSize: 10),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.indigo,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onPressed: isSubmittingCert ? null : _handleIssueCertificate,
-                    child: Text(isSubmittingCert ? "Issuing..." : "Issue Certificate 🚀", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
                   ),
                 ),
               ],
@@ -484,46 +343,231 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
           ),
           const SizedBox(height: 20),
 
-          // ================= ۲. فرم اعطای نشان (Grant Special Award) =================
+          // پیام سیستم (Toast)
+          if (messageText != null)
+            Container(
+              padding: const EdgeInsets.all(14),
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: isSuccessMessage ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: isSuccessMessage ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(isSuccessMessage ? Icons.check_circle_rounded : Icons.error_rounded, color: isSuccessMessage ? Colors.green : Colors.redAccent, size: 18),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(messageText!, style: TextStyle(color: isSuccessMessage ? Colors.green.shade800 : Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold))),
+                ],
+              ),
+            ),
+
+          // ================= ۱. فرم صدور گواهینامه =================
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f).withOpacity(0.8),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
+              color: surfaceWhite,
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(color: cardBorder, width: 1.5),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6)),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Grant Special Award", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15)),
-                const SizedBox(height: 14),
+                const Row(
+                  children: [
+                    Icon(Icons.card_membership_rounded, color: primaryPink, size: 20),
+                    SizedBox(width: 8),
+                    Text("Issue Certificate", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                  ],
+                ),
+                const SizedBox(height: 18),
 
-                const Text("Select Student *", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
+                // انتخاب شاگرد با جستجو
+                const Text("Select Student *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                TextField(
+                  onChanged: (val) => setState(() => studentSearchQuery = val),
+                  style: const TextStyle(color: textDark, fontSize: 12),
+                  decoration: InputDecoration(
+                    hintText: "Search student by name or email...",
+                    hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                    prefixIcon: const Icon(Icons.search_rounded, color: textGrey, size: 18),
+                    filled: true,
+                    fillColor: cardBorder.withOpacity(0.5),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: selectedAwardStudentId,
-                  dropdownColor: const Color(0xFF161622),
-                  style: const TextStyle(color: Colors.white, fontSize: 11),
+                  value: selectedStudentId,
+                  dropdownColor: surfaceWhite,
+                  style: const TextStyle(color: textDark, fontSize: 12),
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: Colors.black.withOpacity(0.4),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+                    fillColor: cardBorder.withOpacity(0.5),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                  ),
+                  items: filteredStudents.map((s) => DropdownMenuItem(value: s.id, child: Text("${s.firstName} ${s.lastName} (${s.email})"))).toList(),
+                  onChanged: (val) => setState(() => selectedStudentId = val),
+                ),
+                const SizedBox(height: 16),
+
+                // انتخاب دوره
+                const Text("Related Course *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  value: selectedCourseId,
+                  dropdownColor: surfaceWhite,
+                  style: const TextStyle(color: textDark, fontSize: 12),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: cardBorder.withOpacity(0.5),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                  ),
+                  items: courses.map((c) => DropdownMenuItem(value: c.id, child: Text(c.title))).toList(),
+                  onChanged: (val) => setState(() => selectedCourseId = val),
+                ),
+                const SizedBox(height: 16),
+
+                // کد گواهینامه
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Certificate Code (ID) *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                    GestureDetector(
+                      onTap: _generateAutoCode,
+                      child: const Text("✨ Auto Generate", style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _certCodeController,
+                  style: const TextStyle(color: textDark, fontSize: 12, fontFamily: 'monospace'),
+                  decoration: InputDecoration(
+                    hintText: "e.g. SAFI-2026-X89",
+                    hintStyle: const TextStyle(color: textGrey),
+                    filled: true,
+                    fillColor: cardBorder.withOpacity(0.5),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // آپلود عکس گواهینامه
+                const Text("Upload Certificate Image", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                GestureDetector(
+                  onTap: _pickImageFile,
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: cardBorder.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: cardBorder),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.image_rounded, color: primaryPink, size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            selectedImageFile != null ? selectedImageFile!.name : "Tap to pick image from gallery...",
+                            style: TextStyle(color: selectedImageFile != null ? textDark : textGrey, fontSize: 11),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 22),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryPink,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    onPressed: isSubmittingCert ? null : _handleIssueCertificate,
+                    child: Text(isSubmittingCert ? "Issuing..." : "Issue Certificate 🚀", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // ================= ۲. فرم اعطای نشان =================
+          Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: surfaceWhite,
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(color: cardBorder, width: 1.5),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6)),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.military_tech_rounded, color: Colors.amber, size: 22),
+                    SizedBox(width: 8),
+                    Text("Grant Special Award", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                  ],
+                ),
+                const SizedBox(height: 18),
+
+                const Text("Select Student *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  value: selectedAwardStudentId,
+                  dropdownColor: surfaceWhite,
+                  style: const TextStyle(color: textDark, fontSize: 12),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: cardBorder.withOpacity(0.5),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                   ),
                   items: students.map((s) => DropdownMenuItem(value: s.id, child: Text("${s.firstName} ${s.lastName}"))).toList(),
                   onChanged: (val) => setState(() => selectedAwardStudentId = val),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
 
-                const Text("Select Badge / Award *", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
+                const Text("Select Badge / Award *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 10),
 
                 awards.isNotEmpty
                     ? ListView.separated(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: awards.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           final award = awards[index];
                           bool isSelected = selectedAwardId == award.id;
@@ -531,58 +575,63 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                           return GestureDetector(
                             onTap: () => setState(() => selectedAwardId = award.id),
                             child: Container(
-                              padding: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: isSelected ? Colors.amber.withOpacity(0.15) : Colors.black.withOpacity(0.4),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: isSelected ? Colors.amberAccent : Colors.white.withOpacity(0.08)),
+                                color: isSelected ? lightPinkBg : cardBorder.withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: isSelected ? primaryPink : cardBorder, width: isSelected ? 1.5 : 1),
                               ),
                               child: Row(
                                 children: [
-                                  Text(award.iconUrl, style: const TextStyle(fontSize: 24)),
-                                  const SizedBox(width: 12),
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? primaryPink : primaryPink.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(award.iconUrl, style: const TextStyle(fontSize: 20)),
+                                  ),
+                                  const SizedBox(width: 14),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(award.title, style: TextStyle(color: isSelected ? Colors.amberAccent : Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                                        Text(award.title, style: TextStyle(color: isSelected ? primaryPink : textDark, fontWeight: FontWeight.bold, fontSize: 13)),
                                         const SizedBox(height: 2),
-                                        Text(award.description, style: TextStyle(color: Colors.grey.shade400, fontSize: 9)),
+                                        Text(award.description, style: const TextStyle(color: textGrey, fontSize: 10)),
                                       ],
                                     ),
                                   ),
-                                  if (isSelected) const Icon(Icons.check_circle, color: Colors.amberAccent, size: 16),
+                                  if (isSelected) const Icon(Icons.check_circle_rounded, color: primaryPink, size: 20),
                                 ],
                               ),
                             ),
                           );
                         },
                       )
-                    : const Text("No awards configured in database.", style: TextStyle(color: Colors.grey, fontSize: 10)),
-                const SizedBox(height: 16),
+                    : const Text("No awards configured in database.", style: TextStyle(color: textGrey, fontSize: 11)),
+                const SizedBox(height: 22),
 
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      backgroundColor: textDark,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     onPressed: isSubmittingAward ? null : _handleGrantAward,
-                    child: Text(isSubmittingAward ? "Granting..." : "Grant Award 🏆", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                    child: Text(isSubmittingAward ? "Granting..." : "Grant Award 🏆", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 40),
         ],
       ),
     );
   }
 }
-
-// کلاس کمکی برای کنترلر متنی URL گواهینامه
-class TextEditingControllerX extends TextEditingController {}

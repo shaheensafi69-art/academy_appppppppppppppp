@@ -40,6 +40,14 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
   List<QuizOverviewItem> quizzes = [];
   String filterType = "all"; // "all" | "regular" | "chance"
 
+  // پالت رنگی لایت (سفید صدفی و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
+
   @override
   void initState() {
     super.initState();
@@ -127,18 +135,29 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
     final filtered = quizzes.where((q) => filterType == "all" ? true : q.quizType == filterType).toList();
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
       physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // هدر صفحه
+          // ================= هدر صفحه =================
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
+              gradient: LinearGradient(
+                colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryPink.withOpacity(0.08),
+                  blurRadius: 25,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -146,31 +165,34 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(color: Colors.pink.withOpacity(0.15), borderRadius: BorderRadius.circular(14)),
-                      child: const Text("🎯", style: TextStyle(fontSize: 22)),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: primaryPink.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(Icons.track_changes_rounded, color: primaryPink, size: 26),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 14),
                     const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Exam Hub", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-                        SizedBox(height: 2),
-                        Text("Design exams, manage tests, and grade papers.", style: TextStyle(fontSize: 9, color: Colors.grey)),
+                        Text("Exam Hub", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                        SizedBox(height: 3),
+                        Text("Design exams, manage tests, and grade papers.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ],
                 ),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink,
+                    backgroundColor: primaryPink,
                     foregroundColor: Colors.white,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   ),
-                  icon: const Icon(Icons.add, size: 16),
-                  label: const Text("Deploy", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: const Text("Deploy", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                   onPressed: () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const TeacherCreateQuizScreen()))
                         .then((_) => _fetchTeacherQuizzes());
@@ -179,9 +201,9 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
-          // فیلتر تب‌ها
+          // ================= فیلتر تب‌ها =================
           Row(
             children: ['all', 'regular', 'chance'].map((tab) {
               bool isSel = filterType == tab;
@@ -189,36 +211,47 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
                 child: GestureDetector(
                   onTap: () => setState(() => filterType = tab),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
                     alignment: Alignment.center,
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
                     decoration: BoxDecoration(
-                      color: isSel ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.03),
-                      borderRadius: BorderRadius.circular(10),
+                      color: isSel ? primaryPink : cardBorder.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: isSel ? primaryPink : cardBorder, width: 1.5),
                     ),
-                    child: Text(tab.toUpperCase(), style: TextStyle(color: isSel ? Colors.white : Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      tab.toUpperCase(),
+                      style: TextStyle(
+                        color: isSel ? Colors.white : textDark,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                   ),
                 ),
               );
             }).toList(),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
+          // ================= لیست کوئیزها =================
           isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.pinkAccent))
+              ? const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator(color: primaryPink)))
               : filtered.isNotEmpty
                   ? ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: filtered.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      separatorBuilder: (_, __) => const SizedBox(height: 14),
                       itemBuilder: (context, index) {
-                        quizOverviewItem(quiz) => Container(
-                          padding: const EdgeInsets.all(16),
+                        final quiz = filtered[index];
+                        return Container(
+                          padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0a0a0f).withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white.withOpacity(0.06)),
+                            color: surfaceWhite,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: cardBorder, width: 1.5),
+                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,58 +259,71 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(quiz.courseName, style: const TextStyle(color: Colors.pinkAccent, fontSize: 9, fontWeight: FontWeight.bold)),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                                    child: Text(quiz.courseName.toUpperCase(), style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                  ),
                                   GestureDetector(
                                     onTap: () => _toggleStatus(quiz.id, quiz.isActive),
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                       decoration: BoxDecoration(
-                                        color: quiz.isActive ? Colors.green.withOpacity(0.15) : Colors.grey.withOpacity(0.15),
-                                        borderRadius: BorderRadius.circular(6),
+                                        color: quiz.isActive ? Colors.green.withOpacity(0.12) : Colors.grey.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: Text(quiz.isActive ? "Live" : "Draft", style: TextStyle(color: quiz.isActive ? Colors.greenAccent : Colors.grey, fontSize: 8, fontWeight: FontWeight.bold)),
+                                      child: Text(
+                                        quiz.isActive ? "● Live" : "○ Draft",
+                                        style: TextStyle(
+                                          color: quiz.isActive ? Colors.green.shade700 : textGrey,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 8),
-                              Text(quiz.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
+                              const SizedBox(height: 12),
+                              Text(quiz.title, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
                               const SizedBox(height: 4),
-                              Text("Pass Mark: ${quiz.passingScore}% | Type: ${quiz.quizType.toUpperCase()}", style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
+                              Text("Pass Mark: ${quiz.passingScore}% | Type: ${quiz.quizType.toUpperCase()}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
                               if (quiz.pendingReviews > 0) ...[
-                                const SizedBox(height: 6),
-                                Text("⏳ ${quiz.pendingReviews} Papers to Grade", style: const TextStyle(color: Colors.amberAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 8),
+                                Text("⏳ ${quiz.pendingReviews} Papers to Grade", style: const TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.w900)),
                               ],
-                              const SizedBox(height: 14),
+                              const SizedBox(height: 16),
                               Row(
                                 children: [
                                   Expanded(
                                     child: OutlinedButton(
                                       style: OutlinedButton.styleFrom(
-                                        foregroundColor: Colors.white,
-                                        side: BorderSide(color: Colors.white12),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                        foregroundColor: textDark,
+                                        side: const BorderSide(color: cardBorder, width: 1.5),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        padding: const EdgeInsets.symmetric(vertical: 10),
                                       ),
                                       onPressed: () {
                                         Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherQuizQuestionsScreen(quizId: quiz.id)));
                                       },
-                                      child: const Text("Questions", style: TextStyle(fontSize: 10)),
+                                      child: const Text("Questions", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 10),
                                   Expanded(
                                     child: ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: quiz.pendingReviews > 0 ? Colors.amber : Colors.pink,
-                                        foregroundColor: quiz.pendingReviews > 0 ? Colors.black : Colors.white,
+                                        backgroundColor: quiz.pendingReviews > 0 ? Colors.amber : primaryPink,
+                                        foregroundColor: quiz.pendingReviews > 0 ? textDark : Colors.white,
                                         elevation: 0,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        padding: const EdgeInsets.symmetric(vertical: 10),
                                       ),
                                       onPressed: () {
                                         Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherQuizResultsScreen(quizId: quiz.id)))
                                             .then((_) => _fetchTeacherQuizzes());
                                       },
-                                      child: Text(quiz.pendingReviews > 0 ? "Grade Papers" : "Results", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                                      child: Text(quiz.pendingReviews > 0 ? "Grade Papers" : "Results", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                     ),
                                   ),
                                 ],
@@ -285,16 +331,27 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
                             ],
                           ),
                         );
-                        return quizOverviewItem(filtered[index]);
                       },
                     )
                   : Container(
-                      padding: const EdgeInsets.all(30),
+                      padding: const EdgeInsets.all(40),
                       alignment: Alignment.center,
-                      decoration: BoxDecoration(color: const Color(0xFF0a0a0f), borderRadius: BorderRadius.circular(18)),
-                      child: const Text("No exams deployed yet.", style: TextStyle(color: Colors.grey, fontSize: 11)),
+                      decoration: BoxDecoration(
+                        color: surfaceWhite,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: cardBorder),
+                      ),
+                      child: const Column(
+                        children: [
+                          Icon(Icons.assignment_late_rounded, size: 36, color: textGrey),
+                          SizedBox(height: 10),
+                          Text("No Exams Deployed", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
+                          SizedBox(height: 4),
+                          Text("No exams deployed yet.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                        ],
+                      ),
                     ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 40),
         ],
       ),
     );

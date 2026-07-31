@@ -50,6 +50,14 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
   final TextEditingController _scoreController = TextEditingController();
   bool isScoring = false;
 
+  // پالت رنگی لایت (سفید صدفی و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
+
   @override
   void initState() {
     super.initState();
@@ -124,12 +132,19 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
     bool? confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF0a0a0f),
-        title: const Text("Remove Student", style: TextStyle(color: Colors.white, fontSize: 14)),
-        content: Text("Remove ${student.firstName} from this cohort?", style: const TextStyle(color: Colors.grey, fontSize: 11)),
+        backgroundColor: surfaceWhite,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Remove Student", style: TextStyle(color: textDark, fontSize: 15, fontWeight: FontWeight.w900)),
+        content: Text("Remove ${student.firstName} from this cohort?", style: const TextStyle(color: textGrey, fontSize: 12)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Remove", style: TextStyle(color: Colors.redAccent))),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Remove", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+          ),
         ],
       ),
     );
@@ -194,17 +209,26 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFF030305),
-        body: const Center(child: CircularProgressIndicator(color: Colors.pink)),
+        backgroundColor: surfaceWhite,
+        body: const Center(child: CircularProgressIndicator(color: primaryPink)),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF030305),
+      backgroundColor: surfaceWhite,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF050508),
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text("Roster: $className", style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+        backgroundColor: surfaceWhite,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: textDark),
+        title: Text(
+          "Roster: $className",
+          style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(color: cardBorder, height: 1),
+        ),
       ),
       body: Stack(
         children: [
@@ -214,7 +238,7 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Enrolled Students", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15)),
+                const Text("Enrolled Students", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
                 const SizedBox(height: 12),
 
                 enrolledStudents.isNotEmpty
@@ -222,15 +246,18 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: enrolledStudents.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final student = enrolledStudents[index];
                           return Container(
-                            padding: const EdgeInsets.all(14),
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0a0a0f),
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: Colors.white.withOpacity(0.06)),
+                              color: surfaceWhite,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: cardBorder, width: 1.5),
+                              boxShadow: [
+                                BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6)),
+                              ],
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -239,57 +266,78 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                                   children: [
                                     CircleAvatar(
                                       radius: 20,
-                                      backgroundColor: Colors.pink.withOpacity(0.2),
+                                      backgroundColor: lightPinkBg,
                                       backgroundImage: student.avatarUrl != null ? NetworkImage(student.avatarUrl!) : null,
-                                      child: student.avatarUrl == null ? Text(student.firstName[0], style: const TextStyle(color: Colors.pinkAccent)) : null,
+                                      child: student.avatarUrl == null
+                                          ? Text(student.firstName.isNotEmpty ? student.firstName[0] : 'S',
+                                              style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold))
+                                          : null,
                                     ),
-                                    const SizedBox(width: 10),
+                                    const SizedBox(width: 12),
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text("${student.firstName} ${student.lastName}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-                                        Text(student.email, style: TextStyle(color: Colors.grey.shade500, fontSize: 9)),
+                                        Text("${student.firstName} ${student.lastName}",
+                                            style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                        const SizedBox(height: 2),
+                                        Text(student.email, style: const TextStyle(color: textGrey, fontSize: 10)),
                                       ],
                                     ),
                                   ],
                                 ),
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white.withOpacity(0.08),
-                                    foregroundColor: Colors.white,
+                                    backgroundColor: primaryPink.withOpacity(0.1),
+                                    foregroundColor: primaryPink,
                                     elevation: 0,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                   ),
                                   onPressed: () => setState(() => selectedStudent = student),
-                                  child: const Text("Manage", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                                  child: const Text("Manage", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                 ),
                               ],
                             ),
                           );
                         },
                       )
-                    : const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(40.0),
-                          child: Text("No students enrolled in this class yet.", style: TextStyle(color: Colors.grey, fontSize: 11)),
+                    : Container(
+                        padding: const EdgeInsets.all(40),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: surfaceWhite,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: cardBorder),
+                        ),
+                        child: const Column(
+                          children: [
+                            Icon(Icons.group_off_rounded, size: 36, color: textGrey),
+                            SizedBox(height: 10),
+                            Text("No Students Enrolled", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
+                            SizedBox(height: 4),
+                            Text("No students are currently enrolled in this classroom.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                          ],
                         ),
                       ),
               ],
             ),
           ),
 
-          // مودال مدیریت پروفایل شاگرد
+          // مودال مدیریت پروفایل شاگرد (به صورت لایت و مدرن)
           if (selectedStudent != null)
             Container(
-              color: Colors.black54,
+              color: Colors.black45,
               alignment: Alignment.center,
               padding: const EdgeInsets.all(16),
               child: Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0d0d14),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.pink.withOpacity(0.4)),
+                  color: surfaceWhite,
+                  borderRadius: BorderRadius.circular(26),
+                  border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                  boxShadow: [
+                    BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 25, offset: const Offset(0, 10)),
+                  ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -298,52 +346,73 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("${selectedStudent!.firstName} ${selectedStudent!.lastName}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
-                        IconButton(icon: const Icon(Icons.close, color: Colors.grey, size: 18), onPressed: () => setState(() => selectedStudent = null)),
+                        Text("${selectedStudent!.firstName} ${selectedStudent!.lastName}",
+                            style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded, color: textGrey, size: 20),
+                          onPressed: () => setState(() => selectedStudent = null),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Text("Email: ${selectedStudent!.email}", style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
-                    Text("Phone: ${selectedStudent!.phoneNumber}", style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
-                    Text("Country: ${selectedStudent!.country}", style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
-                    Text("Total Score: ${selectedStudent!.totalScore} Pts", style: const TextStyle(color: Colors.amberAccent, fontSize: 11, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 14),
-
-                    const Text("Add Points", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
+                    Text("Email: ${selectedStudent!.email}", style: const TextStyle(color: textGrey, fontSize: 11)),
+                    Text("Phone: ${selectedStudent!.phoneNumber}", style: const TextStyle(color: textGrey, fontSize: 11)),
+                    Text("Country: ${selectedStudent!.country}", style: const TextStyle(color: textGrey, fontSize: 11)),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(color: Colors.amber.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+                      child: Text("Total Score: ${selectedStudent!.totalScore} Pts",
+                          style: const TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.w900)),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text("Add Points", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
                         Expanded(
                           child: TextField(
                             controller: _scoreController,
                             keyboardType: TextInputType.number,
-                            style: const TextStyle(color: Colors.white, fontSize: 11),
+                            style: const TextStyle(color: textDark, fontSize: 12),
                             decoration: InputDecoration(
-                              hintText: "Points...",
-                              hintStyle: TextStyle(color: Colors.grey.shade700),
+                              hintText: "Enter points...",
+                              hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                               filled: true,
-                              fillColor: Colors.black.withOpacity(0.5),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                              fillColor: cardBorder.withOpacity(0.5),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: cardBorder)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: cardBorder)),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 10),
                         ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.amber,
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
                           onPressed: isScoring ? null : _addScore,
-                          child: const Text("Add", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                          child: const Text("Add", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-
+                    const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(foregroundColor: Colors.redAccent, side: const BorderSide(color: Colors.redAccent)),
-                        icon: const Icon(Icons.delete, size: 14),
-                        label: const Text("Remove from Class", style: TextStyle(fontSize: 10)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.redAccent,
+                          side: const BorderSide(color: Colors.redAccent, width: 1.5),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        icon: const Icon(Icons.person_remove_rounded, size: 16),
+                        label: const Text("Remove from Class", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                         onPressed: () => _removeStudent(selectedStudent!),
                       ),
                     ),

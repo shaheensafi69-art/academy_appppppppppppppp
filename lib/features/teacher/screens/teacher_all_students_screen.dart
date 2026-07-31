@@ -50,6 +50,14 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
   String searchQuery = "";
   TeacherStudentProfileItem? selectedStudent;
 
+  // پالت رنگی اختصاصی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
+
   @override
   void initState() {
     super.initState();
@@ -134,6 +142,107 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
     }
   }
 
+  void _showStudentProfileModal(TeacherStudentProfileItem student) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: surfaceWhite,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(color: cardBorder, borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: lightPinkBg,
+                    backgroundImage: student.avatarUrl != null ? NetworkImage(student.avatarUrl!) : null,
+                    child: student.avatarUrl == null
+                        ? Text(student.firstName.isNotEmpty ? student.firstName[0] : 'S', style: const TextStyle(color: primaryPink, fontSize: 20, fontWeight: FontWeight.bold))
+                        : null,
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("${student.firstName} ${student.lastName}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 18)),
+                        const SizedBox(height: 2),
+                        Text(student.email, style: const TextStyle(color: textGrey, fontSize: 11)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              const Divider(color: cardBorder),
+              const SizedBox(height: 16),
+              _buildProfileDetailRow("Father's Name", student.fatherName),
+              _buildProfileDetailRow("Date of Birth", student.dateOfBirth),
+              _buildProfileDetailRow("Phone Number", student.phoneNumber),
+              _buildProfileDetailRow("Country", student.country),
+              _buildProfileDetailRow("Total Score", "${student.totalScore} Points"),
+              _buildProfileDetailRow("Wallet Balance", "\$${student.walletBalance.toStringAsFixed(2)}"),
+              const SizedBox(height: 12),
+              const Text("Biography", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
+              const SizedBox(height: 6),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: cardBorder.withOpacity(0.5), borderRadius: BorderRadius.circular(12)),
+                child: Text(student.bio, style: const TextStyle(color: textGrey, fontSize: 11)),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryPink,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Close Profile", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w600)),
+          Text(value, style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.w900)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final filteredStudents = students.where((s) {
@@ -145,85 +254,95 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
     }).toList();
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
       physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ================= هدر صفحه =================
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.pink.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: const Text("👥", style: TextStyle(fontSize: 22)),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("My Students",
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-                          const SizedBox(height: 2),
-                          Text("Global directory of all students enrolled across your classes (${students.length} Total).",
-                              style: TextStyle(fontSize: 9, color: Colors.grey.shade400)),
-                        ],
-                      ),
-                    ),
-                  ],
+              gradient: LinearGradient(
+                colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryPink.withOpacity(0.08),
+                  blurRadius: 25,
+                  offset: const Offset(0, 10),
                 ),
-                const SizedBox(height: 14),
-                TextField(
-                  onChanged: (val) => setState(() => searchQuery = val),
-                  style: const TextStyle(color: Colors.white, fontSize: 11),
-                  decoration: InputDecoration(
-                    hintText: "Search by name, email...",
-                    hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 10),
-                    prefixIcon: const Icon(Icons.search, color: Colors.grey, size: 16),
-                    filled: true,
-                    fillColor: Colors.black.withOpacity(0.4),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: primaryPink.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(Icons.group_rounded, color: primaryPink, size: 26),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("My Students", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                      const SizedBox(height: 3),
+                      Text("Global directory of all students enrolled across your classes (${students.length} Total).",
+                          style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
+
+          // سرچ‌بار مدرن
+          TextField(
+            onChanged: (val) => setState(() => searchQuery = val),
+            style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w600),
+            decoration: InputDecoration(
+              hintText: "Search by name, email, phone...",
+              hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+              prefixIcon: const Icon(Icons.search_rounded, color: textGrey, size: 20),
+              filled: true,
+              fillColor: cardBorder.withOpacity(0.5),
+              contentPadding: const EdgeInsets.symmetric(vertical: 14),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+            ),
+          ),
+          const SizedBox(height: 18),
 
           // ================= لیست شاگردان =================
           isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.pink))
+              ? const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator(color: primaryPink)))
               : filteredStudents.isNotEmpty
                   ? ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: filteredStudents.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final student = filteredStudents[index];
                         return Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0a0a0f).withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white.withOpacity(0.06)),
+                            color: surfaceWhite,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: cardBorder, width: 1.5),
+                            boxShadow: [
+                              BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6)),
+                            ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,71 +350,72 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                               Row(
                                 children: [
                                   CircleAvatar(
-                                    radius: 20,
-                                    backgroundColor: Colors.pink.withOpacity(0.2),
+                                    radius: 22,
+                                    backgroundColor: lightPinkBg,
                                     backgroundImage: student.avatarUrl != null ? NetworkImage(student.avatarUrl!) : null,
-                                    child: student.avatarUrl == null ? Text(student.firstName[0],
-                                            style: const TextStyle(color: Colors.pinkAccent))
-                                        : null, // Changed fuchsiaAccent to pinkAccent
+                                    child: student.avatarUrl == null
+                                        ? Text(student.firstName.isNotEmpty ? student.firstName[0] : 'S',
+                                            style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold))
+                                        : null,
                                   ),
-                                  const SizedBox(width: 10),
+                                  const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text("${student.firstName} ${student.lastName}",
-                                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-                                        Text(student.email, style: TextStyle(color: Colors.grey.shade500, fontSize: 9)),
+                                            style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                                        const SizedBox(height: 2),
+                                        Text(student.email, style: const TextStyle(color: textGrey, fontSize: 10)),
                                       ],
                                     ),
                                   ),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                     decoration: BoxDecoration(
-                                      color: Colors.amber.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: Colors.amber.withOpacity(0.2)),
+                                      color: Colors.amber.withOpacity(0.12),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(Icons.star, color: Colors.amberAccent, size: 10),
+                                        const Icon(Icons.star_rounded, color: Colors.amber, size: 14),
                                         const SizedBox(width: 3),
                                         Text("${student.totalScore}",
-                                            style: const TextStyle(color: Colors.amberAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                                            style: const TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.w900)),
                                       ],
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 12),
                               Wrap(
-                                spacing: 4,
-                                runSpacing: 4,
+                                spacing: 6,
+                                runSpacing: 6,
                                 children: student.enrolledClasses.map((cls) {
                                   return Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                     decoration: BoxDecoration(
-                                      color: Colors.purple.withOpacity(0.15),
-                                      borderRadius: BorderRadius.circular(6),
+                                      color: lightPinkBg,
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(cls,
-                                        style: const TextStyle(color: Colors.purpleAccent, fontSize: 8, fontWeight: FontWeight.bold)),
+                                        style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.bold)),
                                   );
                                 }).toList(),
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 14),
                               SizedBox(
                                 width: double.infinity,
-                                height: 34,
+                                height: 38,
                                 child: OutlinedButton.icon(
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    side: const BorderSide(color: Colors.white12),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    foregroundColor: textDark,
+                                    side: const BorderSide(color: cardBorder, width: 1.5),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
-                                  icon: Icon(Icons.visibility, size: 14, color: Colors.pink),
-                                  label: const Text("View Profile", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                                  onPressed: () => setState(() => selectedStudent = student),
+                                  icon: const Icon(Icons.visibility_rounded, size: 16, color: primaryPink),
+                                  label: const Text("View Profile", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                  onPressed: () => _showStudentProfileModal(student),
                                 ),
                               ),
                             ],
@@ -304,75 +424,26 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                       },
                     )
                   : Container(
-                      padding: const EdgeInsets.all(30),
+                      padding: const EdgeInsets.all(40),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0a0a0f),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withOpacity(0.06)),
+                        color: surfaceWhite,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: cardBorder),
                       ),
                       child: const Column(
                         children: [
-                          Text("🔍", style: TextStyle(fontSize: 32)),
+                          Icon(Icons.search_off_rounded, size: 36, color: textGrey),
                           SizedBox(height: 10),
                           Text("No Students Found",
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                              style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
                           SizedBox(height: 4),
                           Text("We couldn't find any students matching your criteria.",
-                              style: TextStyle(color: Colors.grey, fontSize: 10), textAlign: TextAlign.center),
+                              style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
                         ],
                       ),
                     ),
-          const SizedBox(height: 30),
-
-          // ================= مودال پروفایل کامل شاگرد =================
-          if (selectedStudent != null)
-            Container(
-              color: Colors.black54,
-              alignment: Alignment.center,
-              padding: const EdgeInsets.all(16),
-              child: Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0d0d14),
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: Colors.pink.withOpacity(0.4)),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("${selectedStudent!.firstName} ${selectedStudent!.lastName}",
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15)),
-                        IconButton(
-                            icon: const Icon(Icons.close, color: Colors.grey, size: 18),
-                            onPressed: () => setState(() => selectedStudent = null)),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text("Email: ${selectedStudent!.email}", style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
-                    Text("Phone: ${selectedStudent!.phoneNumber}", style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
-                    Text("Country: ${selectedStudent!.country}", style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
-                    Text("Wallet: \$${selectedStudent!.walletBalance}", style: const TextStyle(color: Colors.greenAccent, fontSize: 10, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 10),
-                    const Text("Biography:", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                    Text(selectedStudent!.bio, style: TextStyle(color: Colors.grey.shade300, fontSize: 10)),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.pink, foregroundColor: Colors.white),
-                        onPressed: () => setState(() => selectedStudent = null),
-                        child: const Text("Close", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          const SizedBox(height: 40),
         ],
       ),
     );

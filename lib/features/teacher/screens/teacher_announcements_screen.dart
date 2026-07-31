@@ -43,6 +43,14 @@ class _TeacherAnnouncementsScreenState extends State<TeacherAnnouncementsScreen>
   bool isLoading = true;
   List<AnnouncementItem> announcements = [];
 
+  // پالت رنگی اختصاصی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
+
   @override
   void initState() {
     super.initState();
@@ -110,54 +118,65 @@ class _TeacherAnnouncementsScreenState extends State<TeacherAnnouncementsScreen>
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
       physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ================= هدر صفحه استاد =================
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
+              gradient: LinearGradient(
+                colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryPink.withOpacity(0.08),
+                  blurRadius: 25,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.pink.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(14),
+                    color: primaryPink.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Text("📢", style: TextStyle(fontSize: 22)),
+                  child: const Icon(Icons.campaign_rounded, color: primaryPink, size: 26),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
+                const SizedBox(width: 14),
+                const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Official Announcements", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-                      const SizedBox(height: 2),
-                      Text("Stay updated with faculty notices, system upgrades, and academy news.", style: TextStyle(fontSize: 9, color: Colors.grey.shade400)),
+                      Text("Official Announcements", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                      SizedBox(height: 3),
+                      Text("Stay updated with faculty notices, system upgrades, and academy news.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
           // ================= لیست اعلانات استاد =================
           isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.pinkAccent))
+              ? const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator(color: primaryPink)))
               : announcements.isNotEmpty
                   ? ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: announcements.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, __) => const SizedBox(height: 14),
                       itemBuilder: (context, index) {
                         final item = announcements[index];
                         bool isRecent = false;
@@ -167,11 +186,14 @@ class _TeacherAnnouncementsScreenState extends State<TeacherAnnouncementsScreen>
                         } catch (_) {}
 
                         return Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0a0a0f).withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white.withOpacity(0.06)),
+                            color: surfaceWhite,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: cardBorder, width: 1.5),
+                            boxShadow: [
+                              BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6)),
+                            ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,39 +203,41 @@ class _TeacherAnnouncementsScreenState extends State<TeacherAnnouncementsScreen>
                                 children: [
                                   Row(
                                     children: [
-                                      const Icon(Icons.calendar_today, size: 12, color: Colors.pinkAccent),
+                                      const Icon(Icons.calendar_today_rounded, size: 12, color: primaryPink),
                                       const SizedBox(width: 4),
-                                      Text(_formatDate(item.createdAt), style: const TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                                      const SizedBox(width: 8),
-                                      const Icon(Icons.access_time, size: 12, color: Colors.pinkAccent),
+                                      Text(_formatDate(item.createdAt), style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                      const SizedBox(width: 10),
+                                      const Icon(Icons.access_time_rounded, size: 12, color: primaryPink),
                                       const SizedBox(width: 4),
-                                      Text(_formatTime(item.createdAt), style: const TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
+                                      Text(_formatTime(item.createdAt), style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                                     ],
                                   ),
                                   if (isRecent)
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                       decoration: BoxDecoration(
-                                        color: Colors.pink.withOpacity(0.2),
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(color: Colors.pink.withOpacity(0.3)),
+                                        color: lightPinkBg,
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: const Text("NEW UPDATE", style: TextStyle(color: Colors.pinkAccent, fontSize: 7, fontWeight: FontWeight.w900)),
+                                      child: const Text("NEW UPDATE", style: TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900)),
                                     ),
                                 ],
                               ),
-                              const SizedBox(height: 10),
-                              Text(item.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
-                              const SizedBox(height: 6),
-                              Text(item.message, style: TextStyle(color: Colors.grey.shade300, fontSize: 11, height: 1.4)),
                               const SizedBox(height: 12),
+                              Text(item.title, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                              const SizedBox(height: 6),
+                              Text(item.message, style: const TextStyle(color: textGrey, fontSize: 11, height: 1.4, fontWeight: FontWeight.w500)),
+                              const SizedBox(height: 14),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.04),
-                                  borderRadius: BorderRadius.circular(6),
+                                  color: cardBorder.withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Text("Target: ${item.targetRole == 'all' ? 'Entire Academy' : item.targetRole}", style: const TextStyle(color: Colors.grey, fontSize: 8, fontWeight: FontWeight.bold)),
+                                child: Text(
+                                  "Target: ${item.targetRole == 'all' ? 'Entire Academy' : item.targetRole}",
+                                  style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ],
                           ),
@@ -221,24 +245,24 @@ class _TeacherAnnouncementsScreenState extends State<TeacherAnnouncementsScreen>
                       },
                     )
                   : Container(
-                      padding: const EdgeInsets.all(30),
+                      padding: const EdgeInsets.all(40),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0a0a0f),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withOpacity(0.06)),
+                        color: surfaceWhite,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: cardBorder),
                       ),
                       child: const Column(
                         children: [
-                          Text("📭", style: TextStyle(fontSize: 32)),
+                          Icon(Icons.notifications_off_rounded, size: 36, color: textGrey),
                           SizedBox(height: 10),
-                          Text("No Announcements Yet", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text("No Announcements Yet", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
                           SizedBox(height: 4),
-                          Text("You're all caught up! Future faculty updates will appear here.", style: TextStyle(color: Colors.grey, fontSize: 10), textAlign: TextAlign.center),
+                          Text("You're all caught up! Future faculty updates will appear here.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
                         ],
                       ),
                     ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 40),
         ],
       ),
     );

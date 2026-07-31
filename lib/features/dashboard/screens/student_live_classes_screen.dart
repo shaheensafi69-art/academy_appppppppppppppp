@@ -60,8 +60,14 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
   final supabase = Supabase.instance.client;
   bool isLoading = true;
   List<ClassGroup> classes = [];
-  
-  get ascending => null;
+
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
 
   @override
   void initState() {
@@ -87,7 +93,7 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
       setState(() {
         classes = (response as List).map((cls) => ClassGroup.fromJson(cls, userId)).toList();
       });
-        } catch (e) {
+    } catch (e) {
       debugPrint("Error loading enrolled classes: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -103,244 +109,266 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        backgroundColor: surfaceWhite,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
+              const SizedBox(height: 14),
+              Text("LOADING LIVE CAMPUS...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+            ],
+          ),
+        ),
+      );
+    }
+
     final liveSessions = classes.where((c) => c.isActive).toList();
     final generalClasses = classes.where((c) => !c.isActive).toList();
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ================= هدر صفحه =================
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0a0a0f),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.indigo.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Text("🎓", style: TextStyle(fontSize: 22)),
+    return Scaffold(
+      backgroundColor: surfaceWhite,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ================= هدر صفحه =================
+            Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("Live Campus & Hubs", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
-                      const SizedBox(height: 2),
-                      Text("Access official Microsoft Teams corporate lecture rooms and sync with Signal encrypted operations.", style: TextStyle(fontSize: 9, color: Colors.grey.shade400)),
-                    ],
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                boxShadow: [
+                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: lightPinkBg,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                    ),
+                    child: const Icon(Icons.podcasts_rounded, color: primaryPink, size: 24),
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          isLoading
-              ? const Center(child: CircularProgressIndicator(color: Colors.indigoAccent))
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ================= ۱. بخش پخش زنده (Live Transmissions) =================
-                    Row(
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(width: 8, height: 8, decoration: const BoxDecoration(color: Colors.redAccent, shape: BoxShape.circle)),
-                        const SizedBox(width: 6),
-                        Text("Live Transmissions (${liveSessions.length})", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
+                        const Text("Live Campus & Hubs", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                        const SizedBox(height: 3),
+                        const Text("Access official Microsoft Teams corporate lecture rooms and sync with Signal encrypted operations.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
 
-                    liveSessions.isNotEmpty
-                        ? ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: liveSessions.length,
-                            separatorBuilder: (_, _) => const SizedBox(height: 12),
-                            itemBuilder: (context, index) {
-                              final room = liveSessions[index];
-                              return Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: room.isPaid ? const Color(0xFF1a0a0a).withOpacity(0.7) : const Color(0xFF0a0a0f).withOpacity(0.7),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: room.isPaid ? Colors.red.withOpacity(0.3) : Colors.white.withOpacity(0.06)),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        room.isPaid
-                                            ? Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                                decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(6)),
-                                                child: const Text("LIVE NOW", style: TextStyle(color: Colors.black, fontSize: 8, fontWeight: FontWeight.w900)),
-                                              )
-                                            : Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                                decoration: BoxDecoration(color: Colors.amber.withOpacity(0.1), borderRadius: BorderRadius.circular(6), border: Border.all(color: Colors.amber.withOpacity(0.3))),
-                                                child: const Text("PENDING PAYMENT VERIFICATION", style: TextStyle(color: Colors.amberAccent, fontSize: 8, fontWeight: FontWeight.w900)),
-                                              ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(room.className, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15)),
-                                    const SizedBox(height: 4),
-                                    Text("Instructor: ${room.teacher != null ? '${room.teacher!['first_name']} ${room.teacher!['last_name']}' : 'Faculty Member'}", style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
-                                    Text("Schedule: ${room.scheduleInfo}", style: TextStyle(color: Colors.grey.shade500, fontSize: 10)),
-                                    const SizedBox(height: 14),
+            // ================= ۱. بخش پخش زنده (Live Transmissions) =================
+            Row(
+              children: [
+                Container(width: 8, height: 8, decoration: const BoxDecoration(color: Colors.redAccent, shape: BoxShape.circle)),
+                const SizedBox(width: 6),
+                Text("Live Transmissions (${liveSessions.length})", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+              ],
+            ),
+            const SizedBox(height: 12),
 
-                                    room.isPaid
-                                        ? Column(
-                                            children: [
-                                              if (room.meetingLink != null)
-                                                SizedBox(
-                                                  width: double.infinity,
-                                                  child: ElevatedButton.icon(
-                                                    style: ElevatedButton.styleFrom(
-                                                      backgroundColor: Colors.red,
-                                                      foregroundColor: Colors.white,
-                                                      elevation: 0,
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                                      padding: const EdgeInsets.symmetric(vertical: 10),
-                                                    ),
-                                                    icon: const Icon(Icons.video_call, size: 16),
-                                                    label: const Text("Join Teams Lecture", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                                                    onPressed: () => _launchURL(room.meetingLink!),
-                                                  ),
-                                                ),
-                                              if (room.meetingLink != null && room.signalGroupLink != null) const SizedBox(height: 8),
-                                              if (room.signalGroupLink != null)
-                                                SizedBox(
-                                                  width: double.infinity,
-                                                  child: OutlinedButton.icon(
-                                                    style: OutlinedButton.styleFrom(
-                                                      foregroundColor: Colors.white,
-                                                      side: const BorderSide(color: Colors.white10),
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                                      padding: const EdgeInsets.symmetric(vertical: 10),
-                                                    ),
-                                                    icon: const Icon(Icons.message, color: Colors.indigoAccent, size: 16),
-                                                    label: const Text("Signal Operations", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                                                    onPressed: () => _launchURL(room.signalGroupLink!),
-                                                  ),
-                                                ),
-                                            ],
-                                          )
-                                        : Container(
-                                            padding: const EdgeInsets.all(12),
-                                            alignment: Alignment.center,
-                                            decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), borderRadius: BorderRadius.circular(12)),
-                                            child: const Text("Class channel is locked until support confirms tuition payment.", style: TextStyle(color: Colors.amberAccent, fontSize: 9, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-                                          ),
-                                  ],
-                                ),
-                              );
-                            },
-                          )
-                        : Container(
-                            padding: const EdgeInsets.all(20),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0a0a0f),
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: Colors.white.withOpacity(0.06)),
+            liveSessions.isNotEmpty
+                ? ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: liveSessions.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final room = liveSessions[index];
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: surfaceWhite,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: room.isPaid ? primaryPink.withOpacity(0.3) : cardBorder, width: 1.5),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                room.isPaid
+                                    ? Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(8)),
+                                        child: const Text("LIVE NOW", style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900)),
+                                      )
+                                    : Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8), border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5)),
+                                        child: const Text("PENDING PAYMENT VERIFICATION", style: TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900)),
+                                      ),
+                              ],
                             ),
-                            child: const Text("No live broadcasts running at this moment.", style: TextStyle(color: Colors.grey, fontSize: 11)),
-                          ),
-                    const SizedBox(height: 24),
+                            const SizedBox(height: 10),
+                            Text(room.className, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                            const SizedBox(height: 4),
+                            Text("Instructor: ${room.teacher != null ? '${room.teacher!['first_name']} ${room.teacher!['last_name']}' : 'Faculty Member'}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                            Text("Schedule: ${room.scheduleInfo}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 16),
 
-                    // ================= ۲. بخش کلاس‌های برنامه‌ریزی‌شده (Scheduled & Standby) =================
-                    const Text("Scheduled & Standby Channels", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
-                    const SizedBox(height: 10),
-
-                    generalClasses.isNotEmpty
-                        ? ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: generalClasses.length,
-                            separatorBuilder: (_, _) => const SizedBox(height: 12),
-                            itemBuilder: (context, index) {
-                              final room = generalClasses[index];
-                              return Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF0a0a0f).withOpacity(0.7),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: Colors.white.withOpacity(0.06)),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    room.isPaid
-                                        ? Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                            decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(6)),
-                                            child: const Text("STANDBY", style: TextStyle(color: Colors.grey, fontSize: 8, fontWeight: FontWeight.w900)),
-                                          )
-                                        : Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                            decoration: BoxDecoration(color: Colors.amber.withOpacity(0.1), borderRadius: BorderRadius.circular(6), border: Border.all(color: Colors.amber.withOpacity(0.3))),
-                                            child: const Text("LOCKED", style: TextStyle(color: Colors.amberAccent, fontSize: 8, fontWeight: FontWeight.w900)),
-                                          ),
-                                    const SizedBox(height: 8),
-                                    Text(room.className, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
-                                    const SizedBox(height: 4),
-                                    Text("Instructor: ${room.teacher != null ? '${room.teacher!['first_name']} ${room.teacher!['last_name']}' : 'Faculty Member'}", style: TextStyle(color: Colors.grey.shade400, fontSize: 10)),
-                                    Text("Schedule: ${room.scheduleInfo}", style: TextStyle(color: Colors.grey.shade500, fontSize: 10)),
-                                    const SizedBox(height: 12),
-                                    room.isPaid && room.signalGroupLink != null
-                                        ? SizedBox(
-                                            width: double.infinity,
-                                            child: OutlinedButton.icon(
-                                              style: OutlinedButton.styleFrom(
-                                                foregroundColor: Colors.white,
-                                                side: BorderSide(color: Colors.indigo.withOpacity(0.3)),
-                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                              ),
-                                              icon: const Icon(Icons.message, color: Colors.indigoAccent, size: 16),
-                                              label: const Text("Open Signal Hub", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                                              onPressed: () => _launchURL(room.signalGroupLink!),
+                            room.isPaid
+                                ? Column(
+                                    children: [
+                                      if (room.meetingLink != null)
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton.icon(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.redAccent,
+                                              foregroundColor: Colors.white,
+                                              elevation: 0,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
                                             ),
-                                          )
-                                        : Container(
-                                            padding: const EdgeInsets.all(10),
-                                            alignment: Alignment.center,
-                                            decoration: BoxDecoration(color: Colors.black.withOpacity(0.4), borderRadius: BorderRadius.circular(12)),
-                                            child: const Text("Awaiting payment validation from support team.", style: TextStyle(color: Colors.grey, fontSize: 9)),
+                                            icon: const Icon(Icons.video_call_rounded, size: 18),
+                                            label: const Text("Join Teams Lecture", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                            onPressed: () => _launchURL(room.meetingLink!),
                                           ),
-                                  ],
-                                ),
-                              );
-                            },
-                          )
-                        : Container(
-                            padding: const EdgeInsets.all(20),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0a0a0f),
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: Colors.white.withOpacity(0.06)),
-                            ),
-                            child: const Text("No upcoming or standby classes at the moment.", style: TextStyle(color: Colors.grey, fontSize: 11)),
-                          ),
-                  ],
-                ),
-          const SizedBox(height: 30),
-        ],
+                                        ),
+                                      if (room.meetingLink != null && room.signalGroupLink != null) const SizedBox(height: 10),
+                                      if (room.signalGroupLink != null)
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: OutlinedButton.icon(
+                                            style: OutlinedButton.styleFrom(
+                                              foregroundColor: textDark,
+                                              side: BorderSide(color: cardBorder, width: 1.5),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                            ),
+                                            icon: const Icon(Icons.message_rounded, color: primaryPink, size: 18),
+                                            label: const Text("Signal Operations", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                            onPressed: () => _launchURL(room.signalGroupLink!),
+                                          ),
+                                        ),
+                                    ],
+                                  )
+                                : Container(
+                                    padding: const EdgeInsets.all(12),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(14)),
+                                    child: const Text("Class channel is locked until support confirms tuition payment.", style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900), textAlign: TextAlign.center),
+                                  ),
+                          ],
+                        ),
+                      );
+                    },
+                  )
+                : Container(
+                    padding: const EdgeInsets.all(30),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                    ),
+                    child: const Text("No live broadcasts running at this moment.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                  ),
+            const SizedBox(height: 28),
+
+            // ================= ۲. بخش کلاس‌های برنامه‌ریزی‌شده (Scheduled & Standby) =================
+            const Text("Scheduled & Standby Channels", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+            const SizedBox(height: 12),
+
+            generalClasses.isNotEmpty
+                ? ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: generalClasses.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final room = generalClasses[index];
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: surfaceWhite,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: cardBorder, width: 1.5),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            room.isPaid
+                                ? Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(color: cardBorder, borderRadius: BorderRadius.circular(8)),
+                                    child: const Text("STANDBY", style: TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.w900)),
+                                  )
+                                : Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8), border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5)),
+                                    child: const Text("LOCKED", style: TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                  ),
+                            const SizedBox(height: 10),
+                            Text(room.className, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                            const SizedBox(height: 4),
+                            Text("Instructor: ${room.teacher != null ? '${room.teacher!['first_name']} ${room.teacher!['last_name']}' : 'Faculty Member'}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                            Text("Schedule: ${room.scheduleInfo}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 14),
+                            room.isPaid && room.signalGroupLink != null
+                                ? SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton.icon(
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: textDark,
+                                        side: BorderSide(color: cardBorder, width: 1.5),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                      ),
+                                      icon: const Icon(Icons.message_rounded, color: primaryPink, size: 18),
+                                      label: const Text("Open Signal Hub", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                      onPressed: () => _launchURL(room.signalGroupLink!),
+                                    ),
+                                  )
+                                : Container(
+                                    padding: const EdgeInsets.all(12),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(color: cardBorder.withOpacity(0.6), borderRadius: BorderRadius.circular(14)),
+                                    child: const Text("Awaiting payment validation from support team.", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                  ),
+                          ],
+                        ),
+                      );
+                    },
+                  )
+                : Container(
+                    padding: const EdgeInsets.all(30),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                    ),
+                    child: const Text("No upcoming or standby classes at the moment.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                  ),
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }

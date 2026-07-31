@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/routing/auth_gate.dart';
+
 final supabase = Supabase.instance.client;
+
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -42,6 +44,14 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
 
   late AnimationController _floatController;
   late Animation<Offset> _floatAnimation;
+
+  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textDark = Color(0xFF111827);
+  static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
 
   @override
   void initState() {
@@ -204,52 +214,55 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     final isDesktop = MediaQuery.of(context).size.width > 900;
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      backgroundColor: surfaceWhite,
+      resizeToAvoidBottomInset: false, // جلوگیری از به هم ریختن صفحه هنگام باز شدن کیبورد
       body: Stack(
         children: [
-          // 1. Pure Flutter Galaxy Background (بدون نیاز به عکس اینترنتی)
+          // پس‌زمینه لایت مدرن با افکت گرادیان ملایم صورتی
           Container(
-            decoration: const BoxDecoration(
-              gradient: RadialGradient(
-                center: Alignment(-0.5, -0.6),
-                radius: 1.5,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFF2A0845), // Deep Purple
-                  Color(0xFF100B29), // Dark Blue
-                  Color(0xFF020202), // Pitch Black
+                  surfaceWhite,
+                  lightPinkBg.withOpacity(0.3),
+                  surfaceWhite,
                 ],
               ),
-            ),
-          ),
-          Positioned.fill(
-            child: CustomPaint(
-              painter: StarryBackgroundPainter(),
             ),
           ),
           
           Row(
             children: [
-              // Left Column (Form)
+              // Left Column (Form - Fixed Layout بدون نیاز به اسکرول)
               Expanded(
                 flex: 1,
                 child: Center(
-                  child: SingleChildScrollView(
+                  child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    physics: const BouncingScrollPhysics(),
                     child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 380),
+                      constraints: const BoxConstraints(maxWidth: 400),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Header (فشرده و شیک)
-                          Image.asset('assets/logo-without-b.png', height: 45),
+                          // Header
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: lightPinkBg,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Image.asset('assets/logo-without-b.png', height: 34),
+                          ),
                           const SizedBox(height: 12),
-                          const Text("Create Account", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1)),
+                          const Text("Create Account", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark, letterSpacing: -0.5)),
                           const SizedBox(height: 4),
-                          const Text("Join Safi Academy digital ecosystem.", style: TextStyle(color: Colors.white60, fontSize: 11)),
-                          const SizedBox(height: 20),
+                          const Text("Join Safi Academy digital ecosystem.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                          const SizedBox(height: 18),
 
-                          // Step Indicators (نوار پیشرفت)
+                          // Step Indicators
                           if (successMsg == null)
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -261,40 +274,34 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                             ),
                           const SizedBox(height: 16),
 
-                          // Glassmorphism Form (کارت شیشه‌ای جمع‌وجور)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(28),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF0a0a0f).withOpacity(0.5),
-                                  border: Border.all(color: Colors.white.withOpacity(0.1)),
-                                  borderRadius: BorderRadius.circular(28),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.3),
-                                      blurRadius: 20,
-                                      spreadRadius: -5,
-                                    )
-                                  ]
-                                ),
-                                child: successMsg != null
-                                    ? _buildSuccessView()
-                                    : _buildFormSteps(),
-                              ),
+                          // Clean Light Card Form
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: surfaceWhite,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(color: cardBorder, width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: primaryPink.withOpacity(0.06),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 8),
+                                )
+                              ],
                             ),
+                            child: successMsg != null
+                                ? _buildSuccessView()
+                                : _buildFormSteps(),
                           ),
                           
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 18),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text("Already have an account? ", style: TextStyle(color: Colors.white60, fontSize: 11)),
+                              const Text("Already have an account? ", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
                               GestureDetector(
                                 onTap: () => Navigator.pop(context),
-                                child: const Text("Sign In", style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 11)),
+                                child: const Text("Sign In", style: TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 11)),
                               ),
                             ],
                           )
@@ -305,30 +312,39 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                 ),
               ),
 
-              // Right Column (3D Astronaut - Desktop Only)
+              // Right Column (Visual / Desktop Only)
               if (isDesktop)
                 Expanded(
                   flex: 1,
-                  child: Stack(
-                    children: [
-                      Center(
-                        child: SlideTransition(
-                          position: _floatAnimation,
-                          child: Image.network(
-                            'https://i.ibb.co/HTZ6DPsS/original-33b8479c324a5448d6145b3cad7c51e7-removebg-preview.png',
-                            width: 500,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [lightPinkBg.withOpacity(0.5), surfaceWhite],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        Center(
+                          child: SlideTransition(
+                            position: _floatAnimation,
+                            child: Image.network(
+                              'https://i.ibb.co/HTZ6DPsS/original-33b8479c324a5448d6145b3cad7c51e7-removebg-preview.png',
+                              width: 450,
+                            ),
                           ),
                         ),
-                      ),
-                      const Positioned(
-                        bottom: 60,
-                        left: 0,
-                        right: 0,
-                        child: TypewriterText(
-                          text: "“Create an account. A new chapter awaits in global digital architecture.”",
+                        const Positioned(
+                          bottom: 60,
+                          left: 40,
+                          right: 40,
+                          child: TypewriterText(
+                            text: "“Create an account. A new chapter awaits in global digital architecture.”",
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
             ],
@@ -343,10 +359,10 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.symmetric(horizontal: 4),
-      height: 4,
-      width: isActive ? 30 : 15,
+      height: 5,
+      width: isActive ? 28 : 14,
       decoration: BoxDecoration(
-        color: isActive ? Colors.amber : Colors.white24,
+        color: isActive ? primaryPink : cardBorder,
         borderRadius: BorderRadius.circular(10),
       ),
     );
@@ -354,14 +370,15 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
 
   Widget _buildSuccessView() {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.check_circle, color: Colors.greenAccent, size: 50),
+        const Icon(Icons.check_circle_rounded, color: Colors.green, size: 52),
         const SizedBox(height: 12),
-        const Text("Registration Complete!", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+        const Text("Registration Complete!", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
         const SizedBox(height: 6),
-        Text(successMsg!, style: const TextStyle(color: Colors.white60, fontSize: 11), textAlign: TextAlign.center),
-        const SizedBox(height: 16),
-        const CircularProgressIndicator(color: Colors.amber),
+        Text(successMsg!, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+        const SizedBox(height: 18),
+        const CircularProgressIndicator(color: primaryPink),
       ],
     );
   }
@@ -369,14 +386,19 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   Widget _buildFormSteps() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         if (errorMsg != null) ...[
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(color: Colors.redAccent.withOpacity(0.15), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.redAccent.withOpacity(0.3))),
-            child: Text(errorMsg!, style: const TextStyle(color: Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+            decoration: BoxDecoration(
+              color: Colors.redAccent.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.redAccent.withOpacity(0.3), width: 1.5),
+            ),
+            child: Text(errorMsg!, style: const TextStyle(color: Colors.redAccent, fontSize: 10, fontWeight: FontWeight.w900), textAlign: TextAlign.center),
           )
         ],
 
@@ -389,22 +411,22 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                 alignment: Alignment.bottomRight,
                 children: [
                   CircleAvatar(
-                    radius: 35,
-                    backgroundColor: Colors.white.withOpacity(0.05),
+                    radius: 34,
+                    backgroundColor: lightPinkBg,
                     backgroundImage: _photoFile != null ? FileImage(_photoFile!) : null,
-                    child: _photoFile == null ? const Icon(Icons.camera_alt, color: Colors.amber, size: 24) : null,
+                    child: _photoFile == null ? const Icon(Icons.camera_alt_rounded, color: primaryPink, size: 24) : null,
                   ),
                   if (_photoFile == null)
                     Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(color: Colors.amber, shape: BoxShape.circle),
-                      child: const Icon(Icons.add, color: Colors.black, size: 12),
+                      padding: const EdgeInsets.all(5),
+                      decoration: const BoxDecoration(color: primaryPink, shape: BoxShape.circle),
+                      child: const Icon(Icons.add_rounded, color: Colors.white, size: 12),
                     )
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Row(
             children: [
               Expanded(child: _buildTextField("FIRST NAME *", firstNameCtrl, "John")),
@@ -428,11 +450,11 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                       builder: (context, child) {
                         return Theme(
                           data: Theme.of(context).copyWith(
-                            colorScheme: const ColorScheme.dark(
-                              primary: Colors.amber,
-                              onPrimary: Colors.black,
-                              surface: Color(0xFF100B29),
-                              onSurface: Colors.white,
+                            colorScheme: const ColorScheme.light(
+                              primary: primaryPink,
+                              onPrimary: Colors.white,
+                              surface: surfaceWhite,
+                              onSurface: textDark,
                             ),
                           ),
                           child: child!,
@@ -470,23 +492,24 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           _buildTextField("CONFIRM PASSWORD *", confirmPasswordCtrl, "••••••••", isPassword: true, showObscure: showConfirmPassword, onToggleObscure: () => setState(() => showConfirmPassword = !showConfirmPassword)),
         ],
 
-        const SizedBox(height: 24),
+        const SizedBox(height: 18),
         Row(
           children: [
             if (step > 1)
               Expanded(
                 flex: 1,
                 child: SizedBox(
-                  height: 48,
+                  height: 44,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.05), 
+                      backgroundColor: cardBorder,
+                      foregroundColor: textDark,
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      side: BorderSide(color: Colors.white.withOpacity(0.1))
+                      side: const BorderSide(color: cardBorder, width: 1.5),
                     ),
-                    onPressed: _prevStep, // Corrected: Removed duplicate onPressed
-                    child: const Text("BACK", style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                    onPressed: _prevStep,
+                    child: const Text("BACK", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
                   ),
                 ),
               ),
@@ -494,19 +517,18 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
             Expanded(
               flex: 2,
               child: SizedBox(
-                height: 48,
+                height: 44,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber, 
-                    foregroundColor: Colors.black,
-                    elevation: 8,
-                    shadowColor: Colors.amber.withOpacity(0.5),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))
+                    backgroundColor: primaryPink,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: isLoading ? null : (step < 3 ? _nextStep : _handleRegister),
                   child: isLoading
-                      ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5))
-                      : Text(step < 3 ? "NEXT STEP" : "COMPLETE 🚀", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                      ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                      : Text(step < 3 ? "NEXT STEP" : "COMPLETE 🚀", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1)),
                 ),
               ),
             ),
@@ -519,30 +541,28 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   Widget _buildTextField(String label, TextEditingController controller, String hint, {bool isPassword = false, bool? showObscure, VoidCallback? onToggleObscure, int maxLines = 1, bool isPhone = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white70, letterSpacing: 1.2)),
-        const SizedBox(height: 6),
-        SizedBox(
-          // فقط در صورتی که تک خطی است، ارتفاع را فیکس می‌کنیم تا فشرده بماند
-          height: maxLines == 1 ? 48 : null, 
-          child: TextFormField(
-            controller: controller,
-            obscureText: isPassword && !(showObscure ?? false),
-            maxLines: maxLines,
-            keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
-            style: const TextStyle(color: Colors.white, fontSize: 13),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white.withOpacity(0.04),
-              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: maxLines == 1 ? 0 : 12),
-              suffixIcon: isPassword
-                  ? IconButton(icon: Icon((showObscure ?? false) ? Icons.visibility_off : Icons.visibility, color: Colors.white54, size: 18), onPressed: onToggleObscure)
-                  : null,
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.08))),
-              focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12)), borderSide: BorderSide(color: Colors.amber, width: 1.5)),
-              hintText: hint,
-              hintStyle: TextStyle(color: Colors.white.withOpacity(0.2), fontSize: 12)
-            ),
+        Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+        const SizedBox(height: 4),
+        TextFormField(
+          controller: controller,
+          obscureText: isPassword && !(showObscure ?? false),
+          maxLines: maxLines,
+          keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
+          style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: cardBorder.withOpacity(0.5),
+            contentPadding: maxLines > 1 ? const EdgeInsets.all(10) : const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            suffixIcon: isPassword
+                ? IconButton(icon: Icon((showObscure ?? false) ? Icons.visibility_off_rounded : Icons.visibility_rounded, color: textGrey, size: 16), onPressed: onToggleObscure)
+                : null,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+            hintText: hint,
+            hintStyle: const TextStyle(color: textGrey, fontSize: 10),
           ),
         ),
       ],
@@ -598,30 +618,11 @@ class _TypewriterTextState extends State<TypewriterText> {
         Text(
           displayedText,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white, fontStyle: FontStyle.italic),
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFF111827), fontStyle: FontStyle.italic),
         ),
-        const SizedBox(height: 6),
-        const Text("— Safi Ecosystem Core", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.amber, letterSpacing: 2)),
+        const SizedBox(height: 8),
+        const Text("— Safi Ecosystem Core", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFFC2185B), letterSpacing: 2)),
       ],
     );
   }
-}
-
-// ==========================================
-// نقاش سفارشی برای کشیدن ستاره‌های پس‌زمینه
-// ==========================================
-class StarryBackgroundPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withOpacity(0.15);
-    canvas.drawCircle(Offset(size.width * 0.2, size.height * 0.1), 1.5, paint);
-    canvas.drawCircle(Offset(size.width * 0.8, size.height * 0.3), 2.0, paint);
-    canvas.drawCircle(Offset(size.width * 0.1, size.height * 0.6), 1.0, paint);
-    canvas.drawCircle(Offset(size.width * 0.7, size.height * 0.8), 2.5, paint);
-    canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.5), 1.5, paint);
-    canvas.drawCircle(Offset(size.width * 0.9, size.height * 0.9), 1.0, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
