@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // ایمپورت دروازه احراز هویت و صفحه ولکام اسکرین
@@ -11,14 +10,10 @@ Future<void> main() async {
   // این خط به فلاتر می‌گوید قبل از اجرای اپلیکیشن، هسته اصلی را آماده کن
   WidgetsFlutterBinding.ensureInitialized();
 
-  // خواندن تمام کلیدها از فایل .env
-  await dotenv.load(fileName: ".env");
-
-  // اتصال به دیتابیس سوپابیس با استفاده از کلیدها
+  // 🚀 اتصال مستقیم و بدون وابستگی به فایل .env (مخصوص بیلد مطمئن روی موبایل)
   await Supabase.initialize(
-    url: dotenv.env['NEXT_PUBLIC_SUPABASE_URL']!,
-    // ignore: deprecated_member_use
-    anonKey: dotenv.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!,
+    url: 'https://enpuoypqpklndnnhndax.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVucHVveXBxcGtsbmRubmhuZGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNzg1MjgsImV4cCI6MjA5ODY1NDUyOH0.slU2vYIzM0BXG_3ksR5pcfvP-cpFH7IkwIyuzF1pNCo',
   );
 
   runApp(const SafiAcademyApp());
