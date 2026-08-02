@@ -367,7 +367,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: currentTeachers.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final teacher = currentTeachers[index];
                         return Container(
@@ -435,7 +435,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: studentPayments.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final tx = studentPayments[index];
                         return Container(
@@ -486,7 +486,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: payoutHistory.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final tx = payoutHistory[index];
                         return Container(

@@ -102,7 +102,7 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
           .single();
 
       String invitedByName = "";
-      if (profile != null && profile['referred_by'] != null) {
+      if (profile['referred_by'] != null) {
         final referrerData = await supabase
             .from("profiles")
             .select("first_name, last_name")
@@ -131,49 +131,47 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
       double totalRefRewards = 0;
       List<ReferralItem> formattedRefs = [];
 
-      if (profile != null) {
-        if (backupRefData != null && (backupRefData as List).isNotEmpty) {
-          final studentIds = backupRefData.map((ref) => ref['referred_student_id']).where((id) => id != null).toList();
+      if (backupRefData != null && (backupRefData as List).isNotEmpty) {
+        final studentIds = backupRefData.map((ref) => ref['referred_student_id']).where((id) => id != null).toList();
 
-          Map<String, String> profilesMap = {};
-          if (studentIds.isNotEmpty) {
-            final profilesData = await supabase
-                .from("profiles")
-                .select("id, first_name, last_name")
-                .inFilter("id", studentIds);
+        Map<String, String> profilesMap = {};
+        if (studentIds.isNotEmpty) {
+          final profilesData = await supabase
+              .from("profiles")
+              .select("id, first_name, last_name")
+              .inFilter("id", studentIds);
 
-            if (profilesData != null) {
-              for (var p in (profilesData as List)) {
-                profilesMap[p['id']] = "${p['first_name']} ${p['last_name']}";
-              }
+          if (profilesData != null) {
+            for (var p in (profilesData as List)) {
+              profilesMap[p['id']] = "${p['first_name']} ${p['last_name']}";
             }
-          }
-
-          for (var ref in (backupRefData as List)) {
-            final amt = (ref['reward_amount'] ?? 0).toDouble();
-            totalRefRewards += amt;
-            formattedRefs.add(ReferralItem(
-              id: ref['id'] ?? '',
-              rewardAmount: amt,
-              isPaid: ref['is_paid'] ?? false,
-              createdAt: ref['created_at'] ?? '',
-              referredName: profilesMap[ref['referred_student_id']] ?? 'Unknown Student',
-            ));
           }
         }
 
-        setState(() {
-          wallet = {
-            'balance': (profile['wallet_balance'] ?? 0).toDouble(),
-            'referralCode': profile['referral_code'] ?? 'SAFI-...',
-            'totalRewards': totalRefRewards,
-            'invitedBy': invitedByName,
-          };
-          transactions = (txData as List?)?.map((t) => TransactionItem.fromJson(t)).toList() ?? [];
-          referrals = formattedRefs;
-        });
+        for (var ref in (backupRefData as List)) {
+          final amt = (ref['reward_amount'] ?? 0).toDouble();
+          totalRefRewards += amt;
+          formattedRefs.add(ReferralItem(
+            id: ref['id'] ?? '',
+            rewardAmount: amt,
+            isPaid: ref['is_paid'] ?? false,
+            createdAt: ref['created_at'] ?? '',
+            referredName: profilesMap[ref['referred_student_id']] ?? 'Unknown Student',
+          ));
+        }
       }
-    } catch (e) {
+
+      setState(() {
+        wallet = {
+          'balance': (profile['wallet_balance'] ?? 0).toDouble(),
+          'referralCode': profile['referral_code'] ?? 'SAFI-...',
+          'totalRewards': totalRefRewards,
+          'invitedBy': invitedByName,
+        };
+        transactions = (txData as List?)?.map((t) => TransactionItem.fromJson(t)).toList() ?? [];
+        referrals = formattedRefs;
+      });
+        } catch (e) {
       debugPrint("Error fetching wallet data: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -535,7 +533,7 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: referrals.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           final ref = referrals[index];
                           return Container(
@@ -612,7 +610,7 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: transactions.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           final tx = transactions[index];
                           bool isPositive = tx.transactionType == 'DEPOSIT' || tx.transactionType == 'REFERRAL_REWARD';

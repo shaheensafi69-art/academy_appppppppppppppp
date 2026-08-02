@@ -46,6 +46,7 @@ class AssignmentItem {
   });
 }
 
+// ================= صفحه لیست تکالیف =================
 class StudentAssignmentsScreen extends StatefulWidget {
   const StudentAssignmentsScreen({super.key});
 
@@ -62,7 +63,6 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
 
   String? signingId;
 
-  // پالت رنگی لایت و مدرن همگام با سایر صفحات
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
   static const Color surfaceWhite = Colors.white;
@@ -85,7 +85,6 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
 
       final todayDate = DateTime.now().toIso8601String().split('T')[0];
 
-      // ۱. دریافت لاگ‌های حاضری امروز از جدول attendance_logs
       final myLogs = await supabase
           .from("attendance_logs")
           .select("class_group_id")
@@ -94,7 +93,6 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
 
       final signedClassIds = (myLogs as List?)?.map((log) => log['class_group_id'] as String).toList() ?? [];
 
-      // ۲. دریافت کلاس‌های ثبت‌نام شده شاگرد از جدول class_students و class_groups
       final enrollments = await supabase
           .from("class_students")
           .select("class_group_id, class_groups(id, class_name, meeting_link, signal_group_link)")
@@ -112,7 +110,6 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
         );
       }).toList();
     
-      // ۳. دریافت تکالیف متصل به دوره‌های شاگرد از جدول enrollments و assignments
       final assignmentEnrollments = await supabase
           .from("enrollments")
           .select("course_id, courses(title)")
@@ -227,7 +224,6 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // هدر صفحه
           Container(
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
@@ -269,7 +265,6 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
           ),
           const SizedBox(height: 20),
 
-          // ================= ۱. بخش حاضری امروز =================
           const Text("Today's Check-in", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
           const SizedBox(height: 10),
 
@@ -367,7 +362,6 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
                     ),
           const SizedBox(height: 24),
 
-          // ================= ۲. بخش تکالیف و پروژه‌ها =================
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -409,7 +403,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
 
                     return GestureDetector(
                       onTap: () {
-                        // انتقال به صفحه جدید جزئیات تکلیف
+                        // اتصال به صفحه جدید جزئیات تکلیف
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -581,6 +575,13 @@ class _StudentAssignmentDetailScreenState extends State<StudentAssignmentDetailS
     }
   }
 
+  Future<void> _launchURL(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url)) {
+      debugPrint('Could not launch $urlString');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -592,6 +593,7 @@ class _StudentAssignmentDetailScreenState extends State<StudentAssignmentDetailS
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // هدر صفحه جزئیات با دکمه بازگشت
               Row(
                 children: [
                   GestureDetector(
@@ -607,6 +609,8 @@ class _StudentAssignmentDetailScreenState extends State<StudentAssignmentDetailS
                 ],
               ),
               const SizedBox(height: 20),
+
+              // کارت اصلی اطلاعات تکلیف
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -651,6 +655,8 @@ class _StudentAssignmentDetailScreenState extends State<StudentAssignmentDetailS
                 ),
               ),
               const SizedBox(height: 20),
+
+              // بخش ارسال یا نمایش وضعیت تکلیف
               if (widget.assignment.status == "pending" || widget.assignment.status == "overdue") ...[
                 const Text("Submit Your Work", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                 const SizedBox(height: 10),

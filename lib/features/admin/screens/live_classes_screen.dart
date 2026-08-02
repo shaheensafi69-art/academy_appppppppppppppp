@@ -351,7 +351,7 @@ class _LiveClassesScreenState extends State<LiveClassesScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: currentFiltered.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final cls = currentFiltered[index];
                       return Container(
@@ -588,7 +588,7 @@ class _LiveClassesScreenState extends State<LiveClassesScreen> {
                         const Text("COHORT ACTIVE STATUS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                         Switch(
                           value: isClassActiveModal,
-                          activeColor: primaryPink,
+                          activeThumbColor: primaryPink,
                           onChanged: (val) => setState(() => isClassActiveModal = val),
                         ),
                       ],

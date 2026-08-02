@@ -89,7 +89,7 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
           .eq("class_group_id", widget.classId)
           .order("joined_at", ascending: false);
 
-      if (studentsData != null && (studentsData as List).isNotEmpty) {
+      if ((studentsData as List).isNotEmpty) {
         final studentIds = studentsData.map((s) => s['student_id']).toList();
 
         final profilesData = await supabase
@@ -246,7 +246,7 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: enrolledStudents.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        separatorBuilder: (_, _) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final student = enrolledStudents[index];
                           return Container(

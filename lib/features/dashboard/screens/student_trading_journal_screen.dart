@@ -169,31 +169,29 @@ class _StudentTradingJournalScreenState extends State<StudentTradingJournalScree
           .order("trade_date", ascending: false)
           .order("created_at", ascending: false);
 
-      if (journalData != null) {
-        final formatted = (journalData as List).map((j) => JournalEntry.fromJson(j)).toList();
+      final formatted = (journalData as List).map((j) => JournalEntry.fromJson(j)).toList();
 
-        int closedTrades = 0;
-        int winningTrades = 0;
-        double netProfitLoss = 0;
+      int closedTrades = 0;
+      int winningTrades = 0;
+      double netProfitLoss = 0;
 
-        for (var entry in formatted) {
-          if (entry.profitLossUsd != null) {
-            closedTrades++;
-            netProfitLoss += entry.profitLossUsd!;
-            if (entry.profitLossUsd! > 0) winningTrades++;
-          }
+      for (var entry in formatted) {
+        if (entry.profitLossUsd != null) {
+          closedTrades++;
+          netProfitLoss += entry.profitLossUsd!;
+          if (entry.profitLossUsd! > 0) winningTrades++;
         }
-
-        setState(() {
-          entries = formatted;
-          stats = {
-            'totalTrades': formatted.length,
-            'winRate': closedTrades > 0 ? ((winningTrades / closedTrades) * 100).round() : 0,
-            'totalProfitLoss': netProfitLoss,
-          };
-        });
       }
-    } catch (e) {
+
+      setState(() {
+        entries = formatted;
+        stats = {
+          'totalTrades': formatted.length,
+          'winRate': closedTrades > 0 ? ((winningTrades / closedTrades) * 100).round() : 0,
+          'totalProfitLoss': netProfitLoss,
+        };
+      });
+        } catch (e) {
       debugPrint("Error fetching journal: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -482,7 +480,7 @@ class _StudentTradingJournalScreenState extends State<StudentTradingJournalScree
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: filteredEntries.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final entry = filteredEntries[index];
                       bool isOpen = entry.profitLossUsd == null;

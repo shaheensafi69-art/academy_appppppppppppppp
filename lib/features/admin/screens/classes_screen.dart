@@ -280,7 +280,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: courseClasses.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 12),
+                            separatorBuilder: (_, _) => const SizedBox(height: 12),
                             itemBuilder: (context, classIndex) {
                               final cls = courseClasses[classIndex];
                               final isNew = _isClassNew(cls.createdAt);

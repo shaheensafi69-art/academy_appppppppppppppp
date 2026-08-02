@@ -535,7 +535,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: currentFiltered.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final t = currentFiltered[index];
                       bool isOpen = t.status == 'OPEN';

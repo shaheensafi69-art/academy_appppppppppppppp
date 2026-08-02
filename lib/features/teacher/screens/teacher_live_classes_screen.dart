@@ -68,27 +68,25 @@ class _TeacherLiveClassesScreenState extends State<TeacherLiveClassesScreen> {
           .eq("teacher_id", user.id)
           .order("is_active", ascending: false);
 
-      if (classesData != null) {
-        classGroups = (classesData as List).map((cls) {
-          final courseObj = cls['courses'];
-          final courseData = courseObj is List ? (courseObj.isNotEmpty ? courseObj[0] : null) : courseObj;
-          final students = cls['class_students'] as List?;
+      classGroups = (classesData as List).map((cls) {
+        final courseObj = cls['courses'];
+        final courseData = courseObj is List ? (courseObj.isNotEmpty ? courseObj[0] : null) : courseObj;
+        final students = cls['class_students'] as List?;
 
-          return LiveClassItem(
-            id: cls['id'] ?? '',
-            className: cls['class_name'] ?? '',
-            classDays: cls['class_days'] ?? 'Not Set',
-            classTime: cls['class_time'] ?? 'Not Set',
-            meetingLink: cls['meeting_link'],
-            signalGroupLink: cls['signal_group_link'],
-            isActive: cls['is_active'] ?? false,
-            studentCount: students != null ? students.length : 0,
-            thumbnailUrl: courseData?['thumbnail_url'],
-            category: courseData?['category'] ?? 'Live Cohort',
-          );
-        }).toList();
-      }
-    } catch (e) {
+        return LiveClassItem(
+          id: cls['id'] ?? '',
+          className: cls['class_name'] ?? '',
+          classDays: cls['class_days'] ?? 'Not Set',
+          classTime: cls['class_time'] ?? 'Not Set',
+          meetingLink: cls['meeting_link'],
+          signalGroupLink: cls['signal_group_link'],
+          isActive: cls['is_active'] ?? false,
+          studentCount: students != null ? students.length : 0,
+          thumbnailUrl: courseData?['thumbnail_url'],
+          category: courseData?['category'] ?? 'Live Cohort',
+        );
+      }).toList();
+        } catch (e) {
       debugPrint("Error syncing live classes: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -179,7 +177,7 @@ class _TeacherLiveClassesScreenState extends State<TeacherLiveClassesScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: classGroups.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 14),
+                      separatorBuilder: (_, _) => const SizedBox(height: 14),
                       itemBuilder: (context, index) {
                         final cls = classGroups[index];
                         return Container(

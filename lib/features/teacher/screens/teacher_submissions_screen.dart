@@ -80,17 +80,15 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
           .eq("id", widget.assignmentId)
           .single();
 
-      if (assignData != null) {
-        assignmentInfo = assignData;
-      }
-
+      assignmentInfo = assignData;
+    
       final subData = await supabase
           .from("assignment_submissions")
           .select("id, student_id, file_url, grade, feedback, submitted_at")
           .eq("assignment_id", widget.assignmentId)
           .order("submitted_at", ascending: false);
 
-      if (subData != null && (subData as List).isNotEmpty) {
+      if ((subData as List).isNotEmpty) {
         final studentIds = subData.map((s) => s['student_id']).toList();
 
         final profilesData = await supabase
@@ -264,7 +262,7 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: submissions.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 14),
+                        separatorBuilder: (_, _) => const SizedBox(height: 14),
                         itemBuilder: (context, index) {
                           final sub = submissions[index];
                           bool isGraded = sub.grade != null;

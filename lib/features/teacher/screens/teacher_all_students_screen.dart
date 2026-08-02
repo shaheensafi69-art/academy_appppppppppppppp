@@ -77,7 +77,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
           .select("id, class_name")
           .eq("teacher_id", teacherId);
 
-      if (teacherClasses == null || (teacherClasses as List).isEmpty) {
+      if ((teacherClasses as List).isEmpty) {
         setState(() {
           students = [];
           isLoading = false;
@@ -93,7 +93,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
           .select("student_id, class_group_id")
           .inFilter("class_group_id", classIds);
 
-      if (classStudentsData == null || (classStudentsData as List).isEmpty) {
+      if ((classStudentsData as List).isEmpty) {
         setState(() {
           students = [];
           isLoading = false;
@@ -109,33 +109,31 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
           .select("id, first_name, last_name, father_name, date_of_birth, email, phone_number, country, avatar_url, total_score, wallet_balance, bio, referral_code")
           .inFilter("id", uniqueStudentIds);
 
-      if (profilesData != null) {
-        students = (profilesData as List).map((p) {
-          final studentClassRelations = (classStudentsData as List).where((cs) => cs['student_id'] == p['id']);
-          final enrolledClassNames = studentClassRelations.map((rel) {
-            final cls = (teacherClasses as List).firstWhere((c) => c['id'] == rel['class_group_id'], orElse: () => null);
-            return cls != null ? cls['class_name'] : "Unknown Class";
-          }).toList();
-
-          return TeacherStudentProfileItem(
-            id: p['id'] ?? '',
-            firstName: p['first_name'] ?? 'Unknown',
-            lastName: p['last_name'] ?? '',
-            fatherName: p['father_name'] ?? 'Not specified',
-            dateOfBirth: p['date_of_birth'] ?? 'Not specified',
-            email: p['email'] ?? 'No email',
-            phoneNumber: p['phone_number'] ?? 'No phone',
-            country: p['country'] ?? 'Not specified',
-            avatarUrl: p['avatar_url'],
-            totalScore: p['total_score'] ?? 0,
-            walletBalance: (p['wallet_balance'] ?? 0).toDouble(),
-            bio: p['bio'] ?? 'No biography provided.',
-            referralCode: p['referral_code'] ?? '-',
-            enrolledClasses: enrolledClassNames.cast<String>().toSet().toList(),
-          );
+      students = (profilesData as List).map((p) {
+        final studentClassRelations = (classStudentsData as List).where((cs) => cs['student_id'] == p['id']);
+        final enrolledClassNames = studentClassRelations.map((rel) {
+          final cls = (teacherClasses as List).firstWhere((c) => c['id'] == rel['class_group_id'], orElse: () => null);
+          return cls != null ? cls['class_name'] : "Unknown Class";
         }).toList();
-      }
-    } catch (e) {
+
+        return TeacherStudentProfileItem(
+          id: p['id'] ?? '',
+          firstName: p['first_name'] ?? 'Unknown',
+          lastName: p['last_name'] ?? '',
+          fatherName: p['father_name'] ?? 'Not specified',
+          dateOfBirth: p['date_of_birth'] ?? 'Not specified',
+          email: p['email'] ?? 'No email',
+          phoneNumber: p['phone_number'] ?? 'No phone',
+          country: p['country'] ?? 'Not specified',
+          avatarUrl: p['avatar_url'],
+          totalScore: p['total_score'] ?? 0,
+          walletBalance: (p['wallet_balance'] ?? 0).toDouble(),
+          bio: p['bio'] ?? 'No biography provided.',
+          referralCode: p['referral_code'] ?? '-',
+          enrolledClasses: enrolledClassNames.cast<String>().toSet().toList(),
+        );
+      }).toList();
+        } catch (e) {
       debugPrint("Error fetching teacher roster: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -331,7 +329,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: filteredStudents.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final student = filteredStudents[index];
                         return Container(

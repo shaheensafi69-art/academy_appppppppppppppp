@@ -245,7 +245,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: recentActivities.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final act = recentActivities[index];
                       bool isCompleted = act['status'] == 'COMPLETED';

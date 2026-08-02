@@ -58,7 +58,7 @@ class _TeacherCreateAssignmentScreenState extends State<TeacherCreateAssignmentS
           .select("id, class_name, course_id")
           .eq("teacher_id", user.id);
 
-      if (data != null && (data as List).isNotEmpty) {
+      if ((data as List).isNotEmpty) {
         setState(() {
           classes = List<Map<String, dynamic>>.from(data);
           selectedClassId = classes[0]['id'].toString();
@@ -144,7 +144,7 @@ class _TeacherCreateAssignmentScreenState extends State<TeacherCreateAssignmentS
             const SizedBox(height: 6),
             classes.isNotEmpty
                 ? DropdownButtonFormField<String>(
-                    value: selectedClassId,
+                    initialValue: selectedClassId,
                     dropdownColor: surfaceWhite,
                     style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                     decoration: InputDecoration(

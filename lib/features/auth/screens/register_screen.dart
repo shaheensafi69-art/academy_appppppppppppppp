@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/routing/auth_gate.dart';
-
-final supabase = Supabase.instance.client;
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -17,7 +14,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProviderStateMixin {
   final supabase = Supabase.instance.client;
-  
+
   // State Management
   int step = 1;
   bool isLoading = false;
@@ -25,7 +22,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   String? successMsg;
   bool showPassword = false;
   bool showConfirmPassword = false;
-  
+
   File? _photoFile;
   final ImagePicker _picker = ImagePicker();
 
@@ -34,7 +31,8 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   final lastNameCtrl = TextEditingController();
   final fatherNameCtrl = TextEditingController();
   final dobCtrl = TextEditingController();
-  final countryCtrl = TextEditingController();
+  final countryCtrl = TextEditingController(text: 'Afghanistan');
+  final languageCtrl = TextEditingController(text: 'English');
   final phoneCtrl = TextEditingController();
   final bioCtrl = TextEditingController();
   final refCodeCtrl = TextEditingController();
@@ -42,16 +40,26 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   final passwordCtrl = TextEditingController();
   final confirmPasswordCtrl = TextEditingController();
 
+  final List<String> _selectedLearningGoals = [];
+  final List<String> _availableGoals = [
+    'Trading & Finance',
+    'Coding & Mobile Dev',
+    'Artificial Intelligence',
+    'Foreign Languages',
+    'Digital Marketing',
+    'Design & UI/UX',
+  ];
+
   late AnimationController _floatController;
   late Animation<Offset> _floatAnimation;
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  // Color Palette (Clean Light Surface & Rich Pink Accent)
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
-  static const Color cardBorder = Color(0xFFF3F4F6);
+  static const Color cardBorder = Color(0xFFE5E7EB);
 
   @override
   void initState() {
@@ -60,10 +68,10 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       vsync: this,
       duration: const Duration(seconds: 3),
     )..repeat(reverse: true);
-    
+
     _floatAnimation = Tween<Offset>(
       begin: Offset.zero,
-      end: const Offset(0, -0.05),
+      end: const Offset(0, -0.04),
     ).animate(CurvedAnimation(parent: _floatController, curve: Curves.easeInOut));
   }
 
@@ -75,6 +83,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     fatherNameCtrl.dispose();
     dobCtrl.dispose();
     countryCtrl.dispose();
+    languageCtrl.dispose();
     phoneCtrl.dispose();
     bioCtrl.dispose();
     refCodeCtrl.dispose();
@@ -85,11 +94,18 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   }
 
   Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _photoFile = File(pickedFile.path);
-      });
+    try {
+      final pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+      if (pickedFile != null) {
+        setState(() {
+          _photoFile = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      setState(() => errorMsg = "Error selecting image. Please try again.");
     }
   }
 
@@ -97,16 +113,19 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     setState(() => errorMsg = null);
     if (step == 1) {
       if (_photoFile == null) {
-        setState(() => errorMsg = "ID profile photo is required.");
+        setState(() => errorMsg = "Profile photo is required.");
         return;
       }
-      if (firstNameCtrl.text.isEmpty || lastNameCtrl.text.isEmpty || fatherNameCtrl.text.isEmpty || dobCtrl.text.isEmpty) {
+      if (firstNameCtrl.text.trim().isEmpty ||
+          lastNameCtrl.text.trim().isEmpty ||
+          fatherNameCtrl.text.trim().isEmpty ||
+          dobCtrl.text.trim().isEmpty) {
         setState(() => errorMsg = "Please fill in all personal details.");
         return;
       }
     } else if (step == 2) {
-      if (countryCtrl.text.isEmpty || phoneCtrl.text.isEmpty) {
-        setState(() => errorMsg = "Location and phone are required.");
+      if (countryCtrl.text.trim().isEmpty || phoneCtrl.text.trim().isEmpty) {
+        setState(() => errorMsg = "Country and phone number are required.");
         return;
       }
     }
@@ -134,18 +153,26 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       return;
     }
 
+    if (passwordCtrl.text.length < 6) {
+      setState(() {
+        errorMsg = "Password must be at least 6 characters.";
+        isLoading = false;
+      });
+      return;
+    }
+
     try {
       String? validReferrerId;
 
-      if (refCodeCtrl.text.isNotEmpty) {
+      if (refCodeCtrl.text.trim().isNotEmpty) {
         final refData = await supabase
             .from('profiles')
             .select('id')
             .eq('referral_code', refCodeCtrl.text.trim().toUpperCase())
             .maybeSingle();
-            
+
         if (refData == null) {
-          throw "Invalid Referral Code. Check it or leave blank.";
+          throw "Invalid referral code. Please check or leave blank.";
         }
         validReferrerId = refData['id'];
       }
@@ -156,13 +183,13 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       );
 
       final userId = authResponse.user?.id;
-      if (userId == null) throw "Failed to create secure user ID.";
+      if (userId == null) throw "Failed to create user auth ID.";
 
       String avatarUrl = "";
       if (_photoFile != null) {
         final fileExt = _photoFile!.path.split('.').last;
         final fileName = '$userId-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
-        
+
         await supabase.storage.from('avatars').upload(fileName, _photoFile!);
         avatarUrl = supabase.storage.from('avatars').getPublicUrl(fileName);
       }
@@ -192,7 +219,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       }
 
       setState(() {
-        successMsg = "Identity Verified! 🚀 Redirecting...";
+        successMsg = "Registration complete! 🚀 Redirecting to dashboard...";
       });
 
       Future.delayed(const Duration(seconds: 2), () {
@@ -201,7 +228,6 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           MaterialPageRoute(builder: (_) => const AuthGate()),
         );
       });
-
     } catch (e) {
       setState(() => errorMsg = e.toString());
     } finally {
@@ -211,145 +237,169 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width > 900;
-
     return Scaffold(
       backgroundColor: surfaceWhite,
-      resizeToAvoidBottomInset: false, // جلوگیری از به هم ریختن صفحه هنگام باز شدن کیبورد
-      body: Stack(
-        children: [
-          // پس‌زمینه لایت مدرن با افکت گرادیان ملایم صورتی
-          Container(
+      resizeToAvoidBottomInset: true,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isDesktop = constraints.maxWidth > 850;
+
+          return Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
                   surfaceWhite,
-                  lightPinkBg.withOpacity(0.3),
+                  lightPinkBg.withOpacity(0.35),
                   surfaceWhite,
                 ],
               ),
             ),
-          ),
-          
-          Row(
-            children: [
-              // Left Column (Form - Fixed Layout بدون نیاز به اسکرول)
-              Expanded(
-                flex: 1,
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 400),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Header
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: lightPinkBg,
-                              borderRadius: BorderRadius.circular(14),
+            child: Row(
+              children: [
+                // Form Container
+                Expanded(
+                  flex: 1,
+                  child: Center(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 420),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Header Logo
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: lightPinkBg,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: primaryPink.withOpacity(0.18), width: 1.5),
+                              ),
+                              child: Image.asset(
+                                'assets/logo-without-b.png',
+                                height: 42,
+                                errorBuilder: (context, error, stackTrace) => const Icon(
+                                  Icons.school_rounded,
+                                  size: 42,
+                                  color: primaryPink,
+                                ),
+                              ),
                             ),
-                            child: Image.asset('assets/logo-without-b.png', height: 34),
-                          ),
-                          const SizedBox(height: 12),
-                          const Text("Create Account", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark, letterSpacing: -0.5)),
-                          const SizedBox(height: 4),
-                          const Text("Join Safi Academy digital ecosystem.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
-                          const SizedBox(height: 18),
+                            const SizedBox(height: 12),
+                            const Text(
+                              "Create Account",
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: textDark,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              "Join Safi Academy digital ecosystem.",
+                              style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(height: 18),
 
-                          // Step Indicators
-                          if (successMsg == null)
+                            // Step Indicators
+                            if (successMsg == null)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  _buildStepDot(1),
+                                  _buildStepDot(2),
+                                  _buildStepDot(3),
+                                ],
+                              ),
+                            const SizedBox(height: 16),
+
+                            // Card Form Container
+                            Container(
+                              padding: const EdgeInsets.all(22),
+                              decoration: BoxDecoration(
+                                color: surfaceWhite,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(color: cardBorder, width: 1.5),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: primaryPink.withOpacity(0.06),
+                                    blurRadius: 24,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: successMsg != null
+                                  ? _buildSuccessView()
+                                  : _buildFormSteps(),
+                            ),
+
+                            const SizedBox(height: 18),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                _buildStepDot(1),
-                                _buildStepDot(2),
-                                _buildStepDot(3),
+                                const Text("Already have an account? ", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                                GestureDetector(
+                                  onTap: () => Navigator.pop(context),
+                                  child: const Text("Sign In", style: TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 11)),
+                                ),
                               ],
                             ),
-                          const SizedBox(height: 16),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
 
-                          // Clean Light Card Form
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: surfaceWhite,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: cardBorder, width: 1.5),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: primaryPink.withOpacity(0.06),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 8),
-                                )
-                              ],
-                            ),
-                            child: successMsg != null
-                                ? _buildSuccessView()
-                                : _buildFormSteps(),
-                          ),
-                          
-                          const SizedBox(height: 18),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text("Already have an account? ", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
-                              GestureDetector(
-                                onTap: () => Navigator.pop(context),
-                                child: const Text("Sign In", style: TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 11)),
+                // Right Column (Desktop Banner & Typewriter Text)
+                if (isDesktop)
+                  Expanded(
+                    flex: 1,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [lightPinkBg.withOpacity(0.5), surfaceWhite],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Stack(
+                        children: [
+                          Center(
+                            child: SlideTransition(
+                              position: _floatAnimation,
+                              child: Image.network(
+                                'https://i.ibb.co/HTZ6DPsS/original-33b8479c324a5448d6145b3cad7c51e7-removebg-preview.png',
+                                width: 450,
+                                errorBuilder: (context, error, stackTrace) => const Icon(
+                                  Icons.school_outlined,
+                                  size: 140,
+                                  color: primaryPink,
+                                ),
                               ),
-                            ],
-                          )
+                            ),
+                          ),
+                          const Positioned(
+                            bottom: 60,
+                            left: 40,
+                            right: 40,
+                            child: TypewriterText(
+                              text: "“Create an account. A new chapter awaits in global digital architecture.”",
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ),
-                ),
-              ),
-
-              // Right Column (Visual / Desktop Only)
-              if (isDesktop)
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [lightPinkBg.withOpacity(0.5), surfaceWhite],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Stack(
-                      children: [
-                        Center(
-                          child: SlideTransition(
-                            position: _floatAnimation,
-                            child: Image.network(
-                              'https://i.ibb.co/HTZ6DPsS/original-33b8479c324a5448d6145b3cad7c51e7-removebg-preview.png',
-                              width: 450,
-                            ),
-                          ),
-                        ),
-                        const Positioned(
-                          bottom: 60,
-                          left: 40,
-                          right: 40,
-                          child: TypewriterText(
-                            text: "“Create an account. A new chapter awaits in global digital architecture.”",
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -411,17 +461,16 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                 alignment: Alignment.bottomRight,
                 children: [
                   CircleAvatar(
-                    radius: 34,
+                    radius: 36,
                     backgroundColor: lightPinkBg,
                     backgroundImage: _photoFile != null ? FileImage(_photoFile!) : null,
-                    child: _photoFile == null ? const Icon(Icons.camera_alt_rounded, color: primaryPink, size: 24) : null,
+                    child: _photoFile == null ? const Icon(Icons.camera_alt_rounded, color: primaryPink, size: 26) : null,
                   ),
-                  if (_photoFile == null)
-                    Container(
-                      padding: const EdgeInsets.all(5),
-                      decoration: const BoxDecoration(color: primaryPink, shape: BoxShape.circle),
-                      child: const Icon(Icons.add_rounded, color: Colors.white, size: 12),
-                    )
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: const BoxDecoration(color: primaryPink, shape: BoxShape.circle),
+                    child: const Icon(Icons.add_rounded, color: Colors.white, size: 14),
+                  )
                 ],
               ),
             ),
@@ -450,6 +499,10 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                       builder: (context, child) {
                         return Theme(
                           data: Theme.of(context).copyWith(
+                            textTheme: Theme.of(context).textTheme.copyWith(
+                              bodyLarge: const TextStyle(color: textDark),
+                              bodyMedium: const TextStyle(color: textDark),
+                            ),
                             colorScheme: const ColorScheme.light(
                               primary: primaryPink,
                               onPrimary: Colors.white,
@@ -471,13 +524,43 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
             ],
           ),
         ] else if (step == 2) ...[
-          // Step 2: Location & Bio
+          // Step 2: Location, Language & Goals
           Row(
             children: [
-              Expanded(child: _buildTextField("COUNTRY *", countryCtrl, "UK")),
+              Expanded(child: _buildTextField("COUNTRY *", countryCtrl, "Afghanistan")),
               const SizedBox(width: 8),
-              Expanded(child: _buildTextField("PHONE *", phoneCtrl, "+44...", isPhone: true)),
+              Expanded(child: _buildTextField("PHONE *", phoneCtrl, "+93...", isPhone: true)),
             ],
+          ),
+          const SizedBox(height: 10),
+          _buildTextField("PREFERRED LANGUAGE *", languageCtrl, "English / Dari / Pashto"),
+          const SizedBox(height: 10),
+
+          // Learning Goals Chips
+          const Text("LEARNING GOALS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: _availableGoals.map((goal) {
+              final isSelected = _selectedLearningGoals.contains(goal);
+              return ChoiceChip(
+                label: Text(goal, style: TextStyle(fontSize: 10, color: isSelected ? Colors.white : textDark, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+                selected: isSelected,
+                selectedColor: primaryPink,
+                backgroundColor: cardBorder.withOpacity(0.4),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                onSelected: (val) {
+                  setState(() {
+                    if (val) {
+                      _selectedLearningGoals.add(goal);
+                    } else {
+                      _selectedLearningGoals.remove(goal);
+                    }
+                  });
+                },
+              );
+            }).toList(),
           ),
           const SizedBox(height: 10),
           _buildTextField("BIOGRAPHY", bioCtrl, "Brief background...", maxLines: 2),
@@ -538,7 +621,16 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, String hint, {bool isPassword = false, bool? showObscure, VoidCallback? onToggleObscure, int maxLines = 1, bool isPhone = false}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    String hint, {
+    bool isPassword = false,
+    bool? showObscure,
+    VoidCallback? onToggleObscure,
+    int maxLines = 1,
+    bool isPhone = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -553,10 +645,13 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             filled: true,
-            fillColor: cardBorder.withOpacity(0.5),
+            fillColor: cardBorder.withOpacity(0.4),
             contentPadding: maxLines > 1 ? const EdgeInsets.all(10) : const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             suffixIcon: isPassword
-                ? IconButton(icon: Icon((showObscure ?? false) ? Icons.visibility_off_rounded : Icons.visibility_rounded, color: textGrey, size: 16), onPressed: onToggleObscure)
+                ? IconButton(
+                    icon: Icon((showObscure ?? false) ? Icons.visibility_off_rounded : Icons.visibility_rounded, color: textGrey, size: 16),
+                    onPressed: onToggleObscure,
+                  )
                 : null,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
@@ -595,10 +690,12 @@ class _TypewriterTextState extends State<TypewriterText> {
   void _startTyping() {
     _timer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
       if (charIndex < widget.text.length) {
-        setState(() {
-          displayedText += widget.text[charIndex];
-          charIndex++;
-        });
+        if (mounted) {
+          setState(() {
+            displayedText += widget.text[charIndex];
+            charIndex++;
+          });
+        }
       } else {
         timer.cancel();
       }
@@ -618,7 +715,7 @@ class _TypewriterTextState extends State<TypewriterText> {
         Text(
           displayedText,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFF111827), fontStyle: FontStyle.italic),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFF111827), fontStyle: FontStyle.italic),
         ),
         const SizedBox(height: 8),
         const Text("— Safi Ecosystem Core", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFFC2185B), letterSpacing: 2)),

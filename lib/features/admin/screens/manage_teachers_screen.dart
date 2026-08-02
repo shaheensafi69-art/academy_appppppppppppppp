@@ -288,7 +288,7 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: currentFiltered.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final teacher = currentFiltered[index];
                       return Container(

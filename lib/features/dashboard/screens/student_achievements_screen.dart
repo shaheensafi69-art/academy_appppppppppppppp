@@ -114,8 +114,8 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
           .eq("student_id", userId)
           .order("issue_date", ascending: false);
 
-      if (certData != null && certData is List) {
-        certificates = certData.map((cert) => CertificateItem.fromJson(cert as Map<String, dynamic>)).toList();
+      if (certData is List) {
+        certificates = certData.map((cert) => CertificateItem.fromJson(cert)).toList();
       }
 
       // ۳. دریافت نشان‌ها و افتخارات
@@ -125,8 +125,8 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
           .eq("student_id", userId)
           .order("awarded_at", ascending: false);
 
-      if (awardData != null && awardData is List) {
-        awards = awardData.map((item) => AwardItem.fromJson(item as Map<String, dynamic>)).toList();
+      if (awardData is List) {
+        awards = awardData.map((item) => AwardItem.fromJson(item)).toList();
       }
     } catch (e) {
       debugPrint("Error fetching achievements: $e");
@@ -246,7 +246,7 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: certificates.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final cert = certificates[index];
                       return Container(

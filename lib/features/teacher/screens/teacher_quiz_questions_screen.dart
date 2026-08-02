@@ -85,7 +85,7 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
           .eq("id", widget.quizId)
           .single();
 
-      if (quizData != null) quizTitle = quizData['title'] ?? '';
+      quizTitle = quizData['title'] ?? '';
 
       final qData = await supabase
           .from("quiz_questions")
@@ -93,20 +93,18 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
           .eq("quiz_id", widget.quizId)
           .order("created_at", ascending: true);
 
-      if (qData != null) {
-        questions = (qData as List).map((q) => QuestionBankItem(
-              id: q['id'] ?? '',
-              quizId: q['quiz_id'] ?? '',
-              questionText: q['question_text'] ?? '',
-              points: q['points'] ?? 10,
-              optionA: q['option_a'],
-              optionB: q['option_b'],
-              optionC: q['option_c'],
-              optionD: q['option_d'],
-              correctOption: q['correct_option'],
-            )).toList();
-      }
-    } catch (e) {
+      questions = (qData as List).map((q) => QuestionBankItem(
+            id: q['id'] ?? '',
+            quizId: q['quiz_id'] ?? '',
+            questionText: q['question_text'] ?? '',
+            points: q['points'] ?? 10,
+            optionA: q['option_a'],
+            optionB: q['option_b'],
+            optionC: q['option_c'],
+            optionD: q['option_d'],
+            correctOption: q['correct_option'],
+          )).toList();
+        } catch (e) {
       debugPrint("Error fetching question bank: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -131,27 +129,25 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
         'correct_option': isMCQ ? selectedCorrectOption : 'A',
       }).select("id, quiz_id, question_text, points, option_a, option_b, option_c, option_d, correct_option").single();
 
-      if (data != null) {
-        setState(() {
-          questions.add(QuestionBankItem(
-            id: data['id'],
-            quizId: data['quiz_id'],
-            questionText: data['question_text'],
-            points: data['points'],
-            optionA: data['option_a'],
-            optionB: data['option_b'],
-            optionC: data['option_c'],
-            optionD: data['option_d'],
-            correctOption: data['correct_option'],
-          ));
-          _textController.clear();
-          _optAController.clear();
-          _optBController.clear();
-          _optCController.clear();
-          _optDController.clear();
-        });
-      }
-    } catch (e) {
+      setState(() {
+        questions.add(QuestionBankItem(
+          id: data['id'],
+          quizId: data['quiz_id'],
+          questionText: data['question_text'],
+          points: data['points'],
+          optionA: data['option_a'],
+          optionB: data['option_b'],
+          optionC: data['option_c'],
+          optionD: data['option_d'],
+          correctOption: data['correct_option'],
+        ));
+        _textController.clear();
+        _optAController.clear();
+        _optBController.clear();
+        _optCController.clear();
+        _optDController.clear();
+      });
+        } catch (e) {
       debugPrint("Failed to add question: $e");
     } finally {
       if (mounted) setState(() => isSubmitting = false);
@@ -238,7 +234,7 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
 
                   // انتخاب نوع سوال
                   DropdownButtonFormField<String>(
-                    value: selectedQuestionType,
+                    initialValue: selectedQuestionType,
                     dropdownColor: surfaceWhite,
                     style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                     decoration: InputDecoration(
@@ -348,7 +344,7 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: questions.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final q = questions[index];
                       bool isMCQ = q.optionA != null && q.optionA != 'Descriptive';

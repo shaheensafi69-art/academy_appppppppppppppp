@@ -68,7 +68,7 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
           .select("id, class_name, course_id")
           .eq("teacher_id", user.id);
 
-      if (data != null && (data as List).isNotEmpty) {
+      if ((data as List).isNotEmpty) {
         setState(() {
           classes = List<Map<String, dynamic>>.from(data);
           selectedClassGroupId = classes[0]['id'].toString();
@@ -164,7 +164,7 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
             const Text("Target Cohort *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             DropdownButtonFormField<String>(
-              value: selectedClassGroupId,
+              initialValue: selectedClassGroupId,
               dropdownColor: surfaceWhite,
               style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
@@ -280,7 +280,7 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: questions.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 14),
+              separatorBuilder: (_, _) => const SizedBox(height: 14),
               itemBuilder: (context, index) {
                 final q = questions[index];
                 bool isMCQ = q['type'] == 'multiple_choice';
@@ -429,7 +429,7 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
                 title: const Text("Status: Online / Live", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900)),
                 subtitle: const Text("Make this assessment active for students.", style: TextStyle(color: textGrey, fontSize: 10)),
                 value: isActive,
-                activeColor: primaryPink,
+                activeThumbColor: primaryPink,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) => setState(() => isActive = val),
               ),

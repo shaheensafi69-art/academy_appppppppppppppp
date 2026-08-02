@@ -67,25 +67,23 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
           .eq("teacher_id", user.id)
           .order("created_at", ascending: false);
 
-      if (classesData != null) {
-        classGroups = (classesData as List).map((cls) {
-          final courseObj = cls['courses'];
-          final courseData = courseObj is List ? (courseObj.isNotEmpty ? courseObj[0] : null) : courseObj;
-          final students = cls['class_students'] as List?;
+      classGroups = (classesData as List).map((cls) {
+        final courseObj = cls['courses'];
+        final courseData = courseObj is List ? (courseObj.isNotEmpty ? courseObj[0] : null) : courseObj;
+        final students = cls['class_students'] as List?;
 
-          return ClassGroupItem(
-            id: cls['id'] ?? '',
-            className: cls['class_name'] ?? '',
-            classDays: cls['class_days'] ?? 'Not Set',
-            classTime: cls['class_time'] ?? 'Not Set',
-            isActive: cls['is_active'] ?? false,
-            studentCount: students != null ? students.length : 0,
-            thumbnailUrl: courseData?['thumbnail_url'],
-            category: courseData?['category'] ?? 'Academy Cohort',
-          );
-        }).toList();
-      }
-    } catch (e) {
+        return ClassGroupItem(
+          id: cls['id'] ?? '',
+          className: cls['class_name'] ?? '',
+          classDays: cls['class_days'] ?? 'Not Set',
+          classTime: cls['class_time'] ?? 'Not Set',
+          isActive: cls['is_active'] ?? false,
+          studentCount: students != null ? students.length : 0,
+          thumbnailUrl: courseData?['thumbnail_url'],
+          category: courseData?['category'] ?? 'Academy Cohort',
+        );
+      }).toList();
+        } catch (e) {
       debugPrint("DB Sync Error: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -214,7 +212,7 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: classGroups.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 14),
+                      separatorBuilder: (_, _) => const SizedBox(height: 14),
                       itemBuilder: (context, index) {
                         final cls = classGroups[index];
                         return Container(

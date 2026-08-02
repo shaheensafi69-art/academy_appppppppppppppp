@@ -76,12 +76,10 @@ class _TeacherCoursesCurriculumScreenState extends State<TeacherCoursesCurriculu
           .eq("teacher_id", user.id)
           .order("created_at", ascending: false);
 
-      if (data != null) {
-        setState(() {
-          courses = (data as List).map((c) => CourseCurriculumItem.fromJson(c)).toList();
-        });
-      }
-    } catch (e) {
+      setState(() {
+        courses = (data as List).map((c) => CourseCurriculumItem.fromJson(c)).toList();
+      });
+        } catch (e) {
       debugPrint("Error fetching curriculum courses: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);

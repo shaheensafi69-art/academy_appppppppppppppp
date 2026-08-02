@@ -79,12 +79,10 @@ class _TeacherAnnouncementsScreenState extends State<TeacherAnnouncementsScreen>
           .inFilter("target_role", ["all", userRole])
           .order("created_at", ascending: false);
 
-      if (announcementsData != null) {
-        setState(() {
-          announcements = (announcementsData as List).map((a) => AnnouncementItem.fromJson(a)).toList();
-        });
-      }
-    } catch (e) {
+      setState(() {
+        announcements = (announcementsData as List).map((a) => AnnouncementItem.fromJson(a)).toList();
+      });
+        } catch (e) {
       debugPrint("Error fetching announcements: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -176,7 +174,7 @@ class _TeacherAnnouncementsScreenState extends State<TeacherAnnouncementsScreen>
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: announcements.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 14),
+                      separatorBuilder: (_, _) => const SizedBox(height: 14),
                       itemBuilder: (context, index) {
                         final item = announcements[index];
                         bool isRecent = false;

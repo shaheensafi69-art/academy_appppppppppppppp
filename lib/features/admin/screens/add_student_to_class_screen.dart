@@ -246,7 +246,7 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
                     : ListView.separated(
                         physics: const BouncingScrollPhysics(),
                         itemCount: currentFiltered.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           final student = currentFiltered[index];
                           final studentId = student['id'];

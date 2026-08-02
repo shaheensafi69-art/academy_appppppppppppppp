@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'login_screen.dart'; // هدایت به صفحه لاگین پس از اتمام مراحل
 

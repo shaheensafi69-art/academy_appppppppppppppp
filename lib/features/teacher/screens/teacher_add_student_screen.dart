@@ -74,27 +74,23 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
           .select("id, first_name, last_name, email, phone_number, avatar_url")
           .eq("role", "student");
 
-      if (profilesData != null) {
-        allStudents = (profilesData as List).map((p) => GlobalStudentItem(
-              id: p['id'],
-              firstName: p['first_name'] ?? '',
-              lastName: p['last_name'] ?? '',
-              email: p['email'] ?? '',
-              phoneNumber: p['phone_number'] ?? '',
-              avatarUrl: p['avatar_url'],
-            )).toList();
-      }
-
+      allStudents = (profilesData as List).map((p) => GlobalStudentItem(
+            id: p['id'],
+            firstName: p['first_name'] ?? '',
+            lastName: p['last_name'] ?? '',
+            email: p['email'] ?? '',
+            phoneNumber: p['phone_number'] ?? '',
+            avatarUrl: p['avatar_url'],
+          )).toList();
+    
       // ۳. بررسی دانشجویانی که از قبل عضو این کلاس هستند
       final enrolledData = await supabase
           .from("class_students")
           .select("student_id")
           .eq("class_group_id", widget.classId);
 
-      if (enrolledData != null) {
-        enrolledIds = Set<String>.from((enrolledData as List).map((e) => e['student_id']));
-      }
-    } catch (e) {
+      enrolledIds = Set<String>.from((enrolledData as List).map((e) => e['student_id']));
+        } catch (e) {
       debugPrint("Error fetching global roster: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -217,7 +213,7 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: filtered.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final student = filtered[index];
                       bool isEnrolled = enrolledIds.contains(student.id);

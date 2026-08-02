@@ -72,22 +72,20 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
           .eq("id", user.id)
           .single();
 
-      if (profileData != null) {
-        setState(() {
-          profile = {
-            'first_name': profileData['first_name'] ?? '',
-            'last_name': profileData['last_name'] ?? '',
-            'father_name': profileData['father_name'] ?? '',
-            'date_of_birth': profileData['date_of_birth'] ?? '',
-            'email': user.email ?? profileData['email'] ?? '',
-            'phone_number': profileData['phone_number'] ?? '',
-            'country': profileData['country'] ?? '',
-            'bio': profileData['bio'] ?? '',
-            'avatar_url': profileData['avatar_url'] ?? '',
-          };
-        });
-      }
-    } catch (e) {
+      setState(() {
+        profile = {
+          'first_name': profileData['first_name'] ?? '',
+          'last_name': profileData['last_name'] ?? '',
+          'father_name': profileData['father_name'] ?? '',
+          'date_of_birth': profileData['date_of_birth'] ?? '',
+          'email': user.email ?? profileData['email'] ?? '',
+          'phone_number': profileData['phone_number'] ?? '',
+          'country': profileData['country'] ?? '',
+          'bio': profileData['bio'] ?? '',
+          'avatar_url': profileData['avatar_url'] ?? '',
+        };
+      });
+        } catch (e) {
       debugPrint("Error fetching user data: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -454,7 +452,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
           title: const Text("Academy Updates & Emails", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
           subtitle: const Text("Receive instant alerts about your live classes and grades.", style: TextStyle(color: textGrey, fontSize: 10)),
           value: academyUpdates,
-          activeColor: primaryPink,
+          activeThumbColor: primaryPink,
           onChanged: (val) => setState(() => academyUpdates = val),
         ),
         const Divider(color: cardBorder, height: 20),
@@ -463,7 +461,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
           title: const Text("Marketing & Exclusive Offers", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
           subtitle: const Text("Get notified about new courses and discounts.", style: TextStyle(color: textGrey, fontSize: 10)),
           value: marketingOffers,
-          activeColor: primaryPink,
+          activeThumbColor: primaryPink,
           onChanged: (val) => setState(() => marketingOffers = val),
         ),
       ],

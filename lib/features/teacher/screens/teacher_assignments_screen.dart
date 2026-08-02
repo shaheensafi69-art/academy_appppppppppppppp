@@ -67,7 +67,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
           .select("id, class_name")
           .eq("teacher_id", user.id);
 
-      if (classesData != null && (classesData as List).isNotEmpty) {
+      if ((classesData as List).isNotEmpty) {
         classes = List<Map<String, dynamic>>.from(classesData);
         final classIds = classes.map((c) => c['id']).toList();
 
@@ -77,25 +77,23 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
             .inFilter("class_group_id", classIds)
             .order("created_at", ascending: false);
 
-        if (assignmentsData != null) {
-          assignments = (assignmentsData as List).map((item) {
-            final targetClass = classes.firstWhere(
-              (c) => c['id'] == item['class_group_id'],
-              orElse: () => {'class_name': 'Unknown Class'},
-            );
-            return AssignmentItem(
-              id: item['id'],
-              classGroupId: item['class_group_id'],
-              className: targetClass['class_name'],
-              title: item['title'] ?? '',
-              description: item['description'] ?? 'No description provided.',
-              deadline: item['deadline'],
-              maxScore: item['max_score'] ?? 100,
-              createdAt: item['created_at'] ?? '',
-            );
-          }).toList();
-        }
-      }
+        assignments = (assignmentsData as List).map((item) {
+          final targetClass = classes.firstWhere(
+            (c) => c['id'] == item['class_group_id'],
+            orElse: () => {'class_name': 'Unknown Class'},
+          );
+          return AssignmentItem(
+            id: item['id'],
+            classGroupId: item['class_group_id'],
+            className: targetClass['class_name'],
+            title: item['title'] ?? '',
+            description: item['description'] ?? 'No description provided.',
+            deadline: item['deadline'],
+            maxScore: item['max_score'] ?? 100,
+            createdAt: item['created_at'] ?? '',
+          );
+        }).toList();
+            }
     } catch (e) {
       debugPrint("Error fetching assignments: $e");
     } finally {
@@ -274,7 +272,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
 
           // فیلتر کلاس
           DropdownButtonFormField<String>(
-            value: selectedClassFilter,
+            initialValue: selectedClassFilter,
             dropdownColor: surfaceWhite,
             style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w600),
             decoration: InputDecoration(
@@ -301,7 +299,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: filteredAssignments.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 14),
+                      separatorBuilder: (_, _) => const SizedBox(height: 14),
                       itemBuilder: (context, index) {
                         final task = filteredAssignments[index];
                         bool isExpired = false;

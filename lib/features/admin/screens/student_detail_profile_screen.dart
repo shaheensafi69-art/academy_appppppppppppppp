@@ -371,7 +371,7 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
                     const Text("SYSTEM ROLE & PROMOTION", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<String>(
-                      value: selectedRole,
+                      initialValue: selectedRole,
                       dropdownColor: surfaceWhite,
                       isExpanded: true,
                       style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),

@@ -65,7 +65,7 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
           .select("id, class_name, course_id")
           .eq("teacher_id", user.id);
 
-      if (myClasses == null || (myClasses as List).isEmpty) {
+      if ((myClasses as List).isEmpty) {
         setState(() => isLoading = false);
         return;
       }
@@ -89,27 +89,25 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
           ? await supabase.from("quiz_attempts").select("quiz_id, status").inFilter("quiz_id", quizIds)
           : [];
 
-      if (allQuizzes != null) {
-        quizzes = allQuizzes.map((quiz) {
-          final classData = (myClasses as List).firstWhere((c) => c['id'] == quiz['class_group_id'], orElse: () => null);
-          final courseData = (courses as List?)?.firstWhere((c) => c['id'] == classData?['course_id'], orElse: () => null);
+      quizzes = allQuizzes.map((quiz) {
+        final classData = (myClasses as List).firstWhere((c) => c['id'] == quiz['class_group_id'], orElse: () => null);
+        final courseData = (courses as List?)?.firstWhere((c) => c['id'] == classData?['course_id'], orElse: () => null);
 
-          final quizAttempts = (allAttempts as List).where((a) => a['quiz_id'] == quiz['id']).toList();
-          final pendingCount = quizAttempts.where((a) => a['status'] == "pending_review").length;
+        final quizAttempts = (allAttempts as List).where((a) => a['quiz_id'] == quiz['id']).toList();
+        final pendingCount = quizAttempts.where((a) => a['status'] == "pending_review").length;
 
-          return QuizOverviewItem(
-            id: quiz['id'] ?? '',
-            title: quiz['title'] ?? '',
-            courseName: courseData?['title'] ?? classData?['class_name'] ?? 'Unknown Course',
-            passingScore: quiz['passing_score'] ?? 70,
-            isActive: quiz['is_active'] ?? false,
-            quizType: quiz['quiz_type'] ?? 'regular',
-            totalAttempts: quizAttempts.length,
-            pendingReviews: pendingCount,
-          );
-        }).toList();
-      }
-    } catch (e) {
+        return QuizOverviewItem(
+          id: quiz['id'] ?? '',
+          title: quiz['title'] ?? '',
+          courseName: courseData?['title'] ?? classData?['class_name'] ?? 'Unknown Course',
+          passingScore: quiz['passing_score'] ?? 70,
+          isActive: quiz['is_active'] ?? false,
+          quizType: quiz['quiz_type'] ?? 'regular',
+          totalAttempts: quizAttempts.length,
+          pendingReviews: pendingCount,
+        );
+      }).toList();
+        } catch (e) {
       debugPrint("Error fetching exams: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -242,7 +240,7 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: filtered.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 14),
+                      separatorBuilder: (_, _) => const SizedBox(height: 14),
                       itemBuilder: (context, index) {
                         final quiz = filtered[index];
                         return Container(

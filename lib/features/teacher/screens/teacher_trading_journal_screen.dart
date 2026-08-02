@@ -109,7 +109,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
           .eq("teacher_id", user.id)
           .eq("course_id", forexCourseId);
 
-      if (forexClassGroups == null || (forexClassGroups as List).isEmpty) {
+      if ((forexClassGroups as List).isEmpty) {
         setState(() {
           hasAccess = false;
           isLoading = false;
@@ -126,7 +126,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
           .select("student_id")
           .inFilter("class_group_id", classIds);
 
-      if (classStudents == null || (classStudents as List).isEmpty) {
+      if ((classStudents as List).isEmpty) {
         setState(() {
           journals = [];
           isLoading = false;
@@ -148,40 +148,38 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
           .inFilter("student_id", studentIds)
           .order("trade_date", ascending: false);
 
-      if (journalsData != null) {
-        journals = (journalsData as List).map((j) {
-          final p = (profiles as List?)?.firstWhere(
-            (prof) => prof['id'] == j['student_id'],
-            orElse: () => null,
-          );
+      journals = (journalsData as List).map((j) {
+        final p = (profiles as List?)?.firstWhere(
+          (prof) => prof['id'] == j['student_id'],
+          orElse: () => null,
+        );
 
-          return TradingJournalItem(
-            id: j['id'] ?? '',
-            studentId: j['student_id'] ?? '',
-            tradeDate: j['trade_date'] ?? '',
-            symbol: j['symbol'] ?? 'EURUSD',
-            positionType: j['position_type'] ?? 'BUY',
-            setupStrategy: j['setup_strategy'] ?? '',
-            lotSize: (j['lot_size'] ?? 0).toDouble(),
-            entryPrice: (j['entry_price'] ?? 0).toDouble(),
-            stopLoss: (j['stop_loss'] ?? 0).toDouble(),
-            takeProfit: (j['take_profit'] ?? 0).toDouble(),
-            exitPrice: (j['exit_price'] ?? 0).toDouble(),
-            profitLossUsd: (j['profit_loss_usd'] ?? 0).toDouble(),
-            rrMultiple: (j['rr_multiple'] ?? 0).toDouble(),
-            emotions: j['emotions'] ?? '',
-            analysisNotes: j['analysis_notes'] ?? '',
-            chartImageUrl: j['chart_image_url'],
-            teacherScore: j['teacher_score'],
-            teacherFeedback: j['teacher_feedback'],
-            firstName: p?['first_name'] ?? 'Unknown',
-            lastName: p?['last_name'] ?? 'Scholar',
-            email: p?['email'] ?? '',
-            avatarUrl: p?['avatar_url'],
-          );
-        }).toList();
-      }
-    } catch (e) {
+        return TradingJournalItem(
+          id: j['id'] ?? '',
+          studentId: j['student_id'] ?? '',
+          tradeDate: j['trade_date'] ?? '',
+          symbol: j['symbol'] ?? 'EURUSD',
+          positionType: j['position_type'] ?? 'BUY',
+          setupStrategy: j['setup_strategy'] ?? '',
+          lotSize: (j['lot_size'] ?? 0).toDouble(),
+          entryPrice: (j['entry_price'] ?? 0).toDouble(),
+          stopLoss: (j['stop_loss'] ?? 0).toDouble(),
+          takeProfit: (j['take_profit'] ?? 0).toDouble(),
+          exitPrice: (j['exit_price'] ?? 0).toDouble(),
+          profitLossUsd: (j['profit_loss_usd'] ?? 0).toDouble(),
+          rrMultiple: (j['rr_multiple'] ?? 0).toDouble(),
+          emotions: j['emotions'] ?? '',
+          analysisNotes: j['analysis_notes'] ?? '',
+          chartImageUrl: j['chart_image_url'],
+          teacherScore: j['teacher_score'],
+          teacherFeedback: j['teacher_feedback'],
+          firstName: p?['first_name'] ?? 'Unknown',
+          lastName: p?['last_name'] ?? 'Scholar',
+          email: p?['email'] ?? '',
+          avatarUrl: p?['avatar_url'],
+        );
+      }).toList();
+        } catch (e) {
       debugPrint("Error loading trading journals: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -359,7 +357,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: filteredJournals.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 14),
+                        separatorBuilder: (_, _) => const SizedBox(height: 14),
                         itemBuilder: (context, index) {
                           final journal = filteredJournals[index];
                           bool isWin = journal.profitLossUsd >= 0;

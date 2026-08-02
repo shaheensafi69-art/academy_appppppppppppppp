@@ -332,7 +332,7 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
                 const Text("SELECT INSTRUCTOR *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                 const SizedBox(height: 6),
                 DropdownButtonFormField<String>(
-                  value: selectedTeacherId,
+                  initialValue: selectedTeacherId,
                   dropdownColor: surfaceWhite,
                   style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                   decoration: InputDecoration(
@@ -369,7 +369,7 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
                 const Text("CATEGORY (AUTO-MATCHED) *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                 const SizedBox(height: 6),
                 DropdownButtonFormField<String>(
-                  value: selectedCategory,
+                  initialValue: selectedCategory,
                   dropdownColor: surfaceWhite,
                   style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                   decoration: InputDecoration(
@@ -396,7 +396,7 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
                           const Text("LANGUAGE", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<String>(
-                            value: selectedLanguage,
+                            initialValue: selectedLanguage,
                             dropdownColor: surfaceWhite,
                             style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                             decoration: InputDecoration(
@@ -423,7 +423,7 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
                           const Text("STATUS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<bool>(
-                            value: isPublished,
+                            initialValue: isPublished,
                             dropdownColor: surfaceWhite,
                             style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                             decoration: InputDecoration(

@@ -115,23 +115,21 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
       int totalStudentsCount = 0;
       List<String> classIds = [];
 
-      if (classData != null) {
-        classIds = (classData as List).map((c) => c['id'].toString()).toList();
-        classes = (classData as List).map((cls) {
-          final item = ClassGroupItem.fromJson(cls);
-          totalStudentsCount += item.enrolledCount;
-          return item;
-        }).toList();
-      }
-
+      classIds = (classData as List).map((c) => c['id'].toString()).toList();
+      classes = (classData as List).map((cls) {
+        final item = ClassGroupItem.fromJson(cls);
+        totalStudentsCount += item.enrolledCount;
+        return item;
+      }).toList();
+    
       int pendingCount = 0;
       final myCourses = await supabase.from("courses").select("id").eq("teacher_id", userId);
 
-      if (myCourses != null && (myCourses as List).isNotEmpty) {
+      if ((myCourses as List).isNotEmpty) {
         final courseIds = myCourses.map((c) => c['id']).toList();
         final myAssignments = await supabase.from("assignments").select("id").inFilter("course_id", courseIds);
 
-        if (myAssignments != null && (myAssignments as List).isNotEmpty) {
+        if ((myAssignments as List).isNotEmpty) {
           final assignmentIds = myAssignments.map((a) => a['id']).toList();
           final countRes = await supabase
               .from("assignment_submissions")
@@ -335,7 +333,7 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: classes.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  separatorBuilder: (_, _) => const SizedBox(height: 16),
                   itemBuilder: (context, index) {
                     final room = classes[index];
                     return Container(

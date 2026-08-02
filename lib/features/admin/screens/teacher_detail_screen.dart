@@ -585,7 +585,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                   const Text("SYSTEM ROLE", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
-                    value: selectedRole,
+                    initialValue: selectedRole,
                     dropdownColor: surfaceWhite,
                     style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                     decoration: _inputFieldDecoration("Select role"),
@@ -639,7 +639,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: teacherCourses.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final crs = teacherCourses[index];
                       return Container(
@@ -683,7 +683,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: classes.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final cls = classes[index];
                       return Container(

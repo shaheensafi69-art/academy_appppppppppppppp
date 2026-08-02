@@ -12,7 +12,16 @@ import '../screens/student_trading_journal_screen.dart';
 import '../screens/student_wallet_screen.dart';
 import '../screens/student_achievements_screen.dart';
 import '../screens/student_support_screen.dart';
-import '../screens/student_settings_screen.dart';
+import 'student_profile_screen.dart';
+
+import 'certificates_screen.dart';
+import 'wishlist_screen.dart';
+import 'payments_screen.dart';
+import 'scholarships_screen.dart';
+import 'discussion_forum_screen.dart';
+import 'settings_screen.dart';
+import 'help_center_screen.dart';
+
 import '../../../core/routing/auth_gate.dart';
 
 class StudentMainLayout extends StatefulWidget {
@@ -30,7 +39,6 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
   int _currentIndex = 0;
   Map<String, dynamic>? _userProfile;
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color backgroundWhite = Colors.white;
   static const Color surfaceColor = Colors.white;
@@ -39,36 +47,46 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
   static const Color borderColor = Color(0xFFF3F4F6);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
 
-  // لیست کامل صفحات پنل دانشجو به ترتیب منو
   late final List<Widget> _screens = [
-    const StudentOverviewScreen(),         // 0: Overview
-    const StudentAnnouncementsScreen(),    // 1: Announcements
-    const StudentCoursesScreen(),          // 2: My Courses
-    const StudentLiveClassesScreen(),      // 3: Live Campus
-    const StudentAssignmentsScreen(),      // 4: Assignments
-    const StudentQuizzesScreen(),          // 5: Exams & Quizzes
-    const StudentTradingJournalScreen(), // 6: Trading Journal
-    const StudentWalletScreen(),           // 7: Wallet & Referral
-    const StudentAchievementsScreen(),     // 8: Achievements
-    _buildPlaceholderScreen("AI Assistant", Icons.smart_toy_rounded, "Smart assistant for your trading & studies."), // 9: AI Assistant
-    const StudentSupportScreen(),          // 10: Support Tickets
-    const StudentSettingsScreen(),         // 11: Settings
+    const StudentOverviewScreen(),
+    const StudentAnnouncementsScreen(),
+    const StudentCoursesScreen(),
+    const WishlistScreen(),
+    const StudentLiveClassesScreen(),
+    const StudentAssignmentsScreen(),
+    const StudentQuizzesScreen(),
+    const CertificatesScreen(),
+    const ScholarshipsScreen(),
+    const PaymentsScreen(),
+    const StudentTradingJournalScreen(),
+    const DiscussionForumScreen(),
+    const StudentWalletScreen(),
+    const StudentAchievementsScreen(),
+    _buildPlaceholderScreen("AI Assistant", Icons.smart_toy_rounded, "Smart assistant for your trading & studies."),
+    const HelpCenterScreen(),
+    const StudentSupportScreen(),
+    const SettingsScreen(),
   ];
 
-  // دیتای منو به سبک پنل استادی (لیستی، حرفه‌ای و بدون ایموجی)
   final List<Map<String, Object>> _menuItems = [
     {"index": 0, "name": "Overview", "icon": Icons.dashboard_rounded},
     {"index": 1, "name": "Announcements", "icon": Icons.campaign_rounded},
     {"index": 2, "name": "My Courses", "icon": Icons.menu_book_rounded},
-    {"index": 3, "name": "Live Campus", "icon": Icons.podcasts_rounded},
-    {"index": 4, "name": "Assignments", "icon": Icons.assignment_rounded},
-    {"index": 5, "name": "Exams & Quizzes", "icon": Icons.quiz_rounded},
-    {"index": 6, "name": "Trading Journal", "icon": Icons.show_chart_rounded},
-    {"index": 7, "name": "Wallet & Referral", "icon": Icons.account_balance_wallet_rounded},
-    {"index": 8, "name": "Achievements", "icon": Icons.emoji_events_rounded},
-    {"index": 9, "name": "AI Assistant (Soon)", "icon": Icons.smart_toy_rounded, "soon": true},
-    {"index": 10, "name": "Support Tickets", "icon": Icons.support_agent_rounded},
-    {"index": 11, "name": "Settings", "icon": Icons.settings_rounded},
+    {"index": 3, "name": "Wishlist", "icon": Icons.favorite_rounded},
+    {"index": 4, "name": "Live Campus", "icon": Icons.podcasts_rounded},
+    {"index": 5, "name": "Assignments", "icon": Icons.assignment_rounded},
+    {"index": 6, "name": "Exams & Quizzes", "icon": Icons.quiz_rounded},
+    {"index": 7, "name": "Certificates", "icon": Icons.workspace_premium_rounded},
+    {"index": 8, "name": "Scholarships", "icon": Icons.school_rounded},
+    {"index": 9, "name": "Payments & Invoices", "icon": Icons.receipt_long_rounded},
+    {"index": 10, "name": "Trading Journal", "icon": Icons.show_chart_rounded},
+    {"index": 11, "name": "Discussion Forum", "icon": Icons.forum_rounded},
+    {"index": 12, "name": "Wallet & Referral", "icon": Icons.account_balance_wallet_rounded},
+    {"index": 13, "name": "Achievements", "icon": Icons.emoji_events_rounded},
+    {"index": 14, "name": "AI Assistant (Soon)", "icon": Icons.smart_toy_rounded, "soon": true},
+    {"index": 15, "name": "Help Center", "icon": Icons.help_outline_rounded},
+    {"index": 16, "name": "Support Tickets", "icon": Icons.support_agent_rounded},
+    {"index": 17, "name": "Settings", "icon": Icons.settings_rounded},
   ];
 
   @override
@@ -174,7 +192,6 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
       extendBody: true,
       body: Stack(
         children: [
-          // ۱. محتوای صفحات فول‌اسکرین (بدون هدر بالا)
           Positioned.fill(
             child: Padding(
               padding: EdgeInsets.only(
@@ -187,16 +204,12 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
               ),
             ),
           ),
-
-          // ۲. نوار ناوبری پایین شناور هوشمند با ۴ دکمه اصلی و منو
           Positioned(
             bottom: floatBottomMargin,
             left: 16,
             right: 16,
             child: _buildFloatingBottomNav(),
           ),
-
-          // ۳. منوی تمام‌صفحه لیستی و حرفه‌ای
           if (_isMobileMenuOpen)
             Positioned.fill(
               child: _buildFullScreenMenu(),
@@ -227,8 +240,8 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
             children: [
               Expanded(child: _buildNavItem(0, "Overview", Icons.dashboard_rounded)),
               Expanded(child: _buildNavItem(2, "Courses", Icons.menu_book_rounded)),
-              Expanded(child: _buildNavItem(3, "Live", Icons.podcasts_rounded)),
-              Expanded(child: _buildNavItem(7, "Wallet", Icons.account_balance_wallet_rounded)),
+              Expanded(child: _buildNavItem(4, "Live", Icons.podcasts_rounded)),
+              Expanded(child: _buildNavItem(12, "Wallet", Icons.account_balance_wallet_rounded)),
               Expanded(
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
@@ -296,7 +309,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                 children: [
                   // هدر منو
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -304,21 +317,21 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                         GestureDetector(
                           onTap: () => setState(() => _isMobileMenuOpen = false),
                           child: Container(
-                            padding: const EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(color: primaryPink.withOpacity(0.15), shape: BoxShape.circle),
-                            child: const Icon(Icons.close, color: primaryPink, size: 18),
+                            child: const Icon(Icons.close, color: primaryPink, size: 16),
                           ),
                         ),
                       ],
                     ),
                   ),
                   
-                  // لیست منوها به صورت لیستی و حرفه‌ای
+                  // لیست منوها
                   Expanded(
                     child: ListView.separated(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       itemCount: _menuItems.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      separatorBuilder: (_, _) => const SizedBox(height: 6),
                       itemBuilder: (context, index) {
                         final item = _menuItems[index];
                         final int screenIndex = item['index'] as int;
@@ -335,36 +348,33 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                             }
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                             decoration: BoxDecoration(
                               color: isSelected ? primaryPink.withOpacity(0.15) : Colors.grey.shade50,
                               border: Border.all(color: isSelected ? primaryPink.withOpacity(0.4) : borderColor, width: 1.5),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             child: Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(8),
+                                  padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
                                     color: isSelected ? primaryPink : Colors.white,
-                                    borderRadius: BorderRadius.circular(10),
-                                    boxShadow: [
-                                      BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4, offset: const Offset(0, 2)),
-                                    ],
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(
                                     item['icon'] as IconData,
-                                    size: 18,
+                                    size: 16,
                                     color: isSelected ? Colors.white : primaryPink,
                                   ),
                                 ),
-                                const SizedBox(width: 14),
+                                const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
                                     item['name'] as String,
                                     style: TextStyle(
                                       color: isSelected ? primaryPink : textColor,
-                                      fontSize: 13,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w900,
                                     ),
                                   ),
@@ -378,7 +388,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                                 else
                                   Icon(
                                     Icons.arrow_forward_ios_rounded,
-                                    size: 14,
+                                    size: 12,
                                     color: isSelected ? primaryPink : subTextColor,
                                   ),
                               ],
@@ -389,52 +399,48 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                     ),
                   ),
 
-                  // بخش پروفایل و خروج در پایین منو
+                  // بخش کوچک، زیبا و فشرده‌ی پروفایل و خروج در پایین منو
                   Container(
-                    margin: const EdgeInsets.all(16),
-                    padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: borderColor, width: 1.5),
                     ),
-                    child: Column(
+                    child: Row(
                       children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 20,
-                              backgroundColor: primaryPink.withOpacity(0.15),
-                              backgroundImage: _userProfile?['avatar_url'] != null ? NetworkImage(_userProfile!['avatar_url']) : null,
-                              child: _userProfile?['avatar_url'] == null ? const Icon(Icons.person, color: primaryPink, size: 20) : null,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("${_userProfile?['first_name'] ?? 'Student'} ${_userProfile?['last_name'] ?? ''}", style: const TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13)),
-                                  const SizedBox(height: 2),
-                                  Text("BALANCE: \$${_userProfile?['wallet_balance'] != null ? NumberFormatField(_userProfile!['wallet_balance']) : '0.00'}", style: const TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
-                                ],
-                              ),
-                            ),
-                          ],
+                        CircleAvatar(
+                          radius: 16,
+                          backgroundColor: primaryPink.withOpacity(0.15),
+                          backgroundImage: _userProfile?['avatar_url'] != null ? NetworkImage(_userProfile!['avatar_url']) : null,
+                          child: _userProfile?['avatar_url'] == null ? const Icon(Icons.person, color: primaryPink, size: 16) : null,
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("${_userProfile?['first_name'] ?? 'Student'} ${_userProfile?['last_name'] ?? ''}", style: const TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
+                              const SizedBox(height: 1),
+                              Text("BAL: \$${_formatNumber(_userProfile?['wallet_balance'])}", style: const TextStyle(color: Colors.green, fontSize: 8, fontWeight: FontWeight.w900)),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
                         SizedBox(
-                          width: double.infinity,
+                          height: 32,
                           child: ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.redAccent.withOpacity(0.15),
+                              backgroundColor: Colors.redAccent.withOpacity(0.12),
                               foregroundColor: Colors.redAccent,
                               elevation: 0,
-                              side: BorderSide(color: Colors.redAccent.withOpacity(0.3), width: 1.5),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              side: BorderSide(color: Colors.redAccent.withOpacity(0.3), width: 1.2),
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             ),
-                            icon: const Icon(Icons.logout_rounded, size: 16),
-                            label: const Text("SECURE SIGN OUT", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                            icon: const Icon(Icons.logout_rounded, size: 14),
+                            label: const Text("LOG OUT", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
                             onPressed: _logout,
                           ),
                         ),
@@ -450,7 +456,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
     );
   }
 
-  String NumberFormatField(dynamic val) {
+  String _formatNumber(dynamic val) {
     try {
       return (val ?? 0).toDouble().toStringAsFixed(2);
     } catch (_) {

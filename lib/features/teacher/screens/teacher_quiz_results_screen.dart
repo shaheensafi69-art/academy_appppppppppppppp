@@ -75,7 +75,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
           .eq("id", widget.quizId)
           .single();
 
-      if (quizData != null) quizInfo = quizData;
+      quizInfo = quizData;
 
       final qData = await supabase
           .from("quiz_questions")
@@ -83,7 +83,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
           .eq("quiz_id", widget.quizId)
           .order("created_at", ascending: true);
 
-      if (qData != null) questions = List<Map<String, dynamic>>.from(qData);
+      questions = List<Map<String, dynamic>>.from(qData);
 
       final attemptsData = await supabase
           .from("quiz_attempts")
@@ -91,7 +91,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
           .eq("quiz_id", widget.quizId)
           .order("attempted_at", ascending: false);
 
-      if (attemptsData != null && (attemptsData as List).isNotEmpty) {
+      if ((attemptsData as List).isNotEmpty) {
         final studentIds = attemptsData.map((a) => a['student_id']).toList();
         final profilesData = await supabase
             .from("profiles")
@@ -139,13 +139,11 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
           .select("*")
           .eq("attempt_id", attempt.id);
 
-      if (answersData != null) {
-        studentAnswers = List<Map<String, dynamic>>.from(answersData);
-        for (var ans in studentAnswers) {
-          gradingScores[ans['question_id']] = ans['points_earned'] ?? 0;
-        }
+      studentAnswers = List<Map<String, dynamic>>.from(answersData);
+      for (var ans in studentAnswers) {
+        gradingScores[ans['question_id']] = ans['points_earned'] ?? 0;
       }
-    } catch (e) {
+        } catch (e) {
       debugPrint("Failed to load student answers: $e");
     } finally {
       if (mounted) setState(() => isLoadingDetails = false);
@@ -246,7 +244,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: attempts.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        separatorBuilder: (_, _) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final att = attempts[index];
                           bool isGraded = att.status == 'graded';

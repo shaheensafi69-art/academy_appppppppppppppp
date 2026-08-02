@@ -295,7 +295,7 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: filteredGroups.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final group = filteredGroups[index];
                       bool hasSignal = group.signalGroupLink != null && group.signalGroupLink!.isNotEmpty;

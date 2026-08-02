@@ -63,21 +63,19 @@ class _TeacherEditClassScreenState extends State<TeacherEditClassScreen> {
           .eq("id", widget.classId)
           .single();
 
-      if (data != null) {
-        _classNameController.text = data['class_name'] ?? '';
-        _scheduleController.text = data['schedule_info'] ?? '';
-        _timeController.text = data['class_time'] ?? '';
-        _meetingLinkController.text = data['meeting_link'] ?? '';
-        _signalLinkController.text = data['signal_group_link'] ?? '';
-        _startDateController.text = data['start_date'] ?? '';
-        _endDateController.text = data['end_date'] ?? '';
-        isActive = data['is_active'] ?? true;
+      _classNameController.text = data['class_name'] ?? '';
+      _scheduleController.text = data['schedule_info'] ?? '';
+      _timeController.text = data['class_time'] ?? '';
+      _meetingLinkController.text = data['meeting_link'] ?? '';
+      _signalLinkController.text = data['signal_group_link'] ?? '';
+      _startDateController.text = data['start_date'] ?? '';
+      _endDateController.text = data['end_date'] ?? '';
+      isActive = data['is_active'] ?? true;
 
-        if (data['class_days'] != null) {
-          selectedDays = (data['class_days'] as String).split(", ").map((d) => d.trim()).toList();
-        }
+      if (data['class_days'] != null) {
+        selectedDays = (data['class_days'] as String).split(", ").map((d) => d.trim()).toList();
       }
-    } catch (e) {
+        } catch (e) {
       debugPrint("Error loading class config: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -338,7 +336,7 @@ class _TeacherEditClassScreenState extends State<TeacherEditClassScreen> {
                 title: const Text("Cohort Broadcast Status", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900)),
                 subtitle: const Text("Toggle whether students can see this stream active.", style: TextStyle(color: textGrey, fontSize: 10)),
                 value: isActive,
-                activeColor: primaryPink,
+                activeThumbColor: primaryPink,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) => setState(() => isActive = val),
               ),

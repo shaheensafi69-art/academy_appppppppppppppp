@@ -265,7 +265,7 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
             const Text("Language", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             DropdownButtonFormField<String>(
-              value: selectedLanguage,
+              initialValue: selectedLanguage,
               dropdownColor: surfaceWhite,
               style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
@@ -429,7 +429,7 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                 title: const Text("Publish Course", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900)),
                 subtitle: const Text("Make it visible to academy students.", style: TextStyle(color: textGrey, fontSize: 10)),
                 value: isPublished,
-                activeColor: primaryPink,
+                activeThumbColor: primaryPink,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) => setState(() => isPublished = val),
               ),

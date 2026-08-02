@@ -108,17 +108,15 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
           .eq("student_id", userId) 
           .order("created_at", ascending: false);
 
-      if (ticketsData != null) {
-        final allTickets = (ticketsData as List).map((t) => TicketItem.fromJson(t)).toList();
-        int openCount = allTickets.where((t) => t.status == "open").length;
-        int answeredCount = allTickets.where((t) => t.status == "answered").length;
+      final allTickets = (ticketsData as List).map((t) => TicketItem.fromJson(t)).toList();
+      int openCount = allTickets.where((t) => t.status == "open").length;
+      int answeredCount = allTickets.where((t) => t.status == "answered").length;
 
-        setState(() {
-          tickets = allTickets;
-          stats = {'open': openCount, 'answered': answeredCount, 'total': allTickets.length};
-        });
-      }
-    } catch (e) {
+      setState(() {
+        tickets = allTickets;
+        stats = {'open': openCount, 'answered': answeredCount, 'total': allTickets.length};
+      });
+        } catch (e) {
       debugPrint("Error fetching support data: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -420,7 +418,7 @@ $message
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: tickets.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final t = tickets[index];
                       bool isOpen = t.status == 'open';

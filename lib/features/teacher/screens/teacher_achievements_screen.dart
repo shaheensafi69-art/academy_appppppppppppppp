@@ -119,7 +119,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
           .select("id, course_id")
           .eq("teacher_id", userId);
 
-      if (myClasses != null && (myClasses as List).isNotEmpty) {
+      if ((myClasses as List).isNotEmpty) {
         final classIds = myClasses.map((c) => c['class_group_id'] ?? c['id']).toList();
         final courseIds = myClasses.map((c) => c['course_id']).where((id) => id != null).toSet().toList();
 
@@ -129,39 +129,35 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
               .select("id, title")
               .inFilter("id", courseIds);
 
-          if (coursesData != null) {
-            courses = (coursesData as List).map((c) => CourseItem(id: c['id'], title: c['title'])).toList();
-            if (courses.isNotEmpty) selectedCourseId = courses[0].id;
-          }
-        }
+          courses = (coursesData as List).map((c) => CourseItem(id: c['id'], title: c['title'])).toList();
+          if (courses.isNotEmpty) selectedCourseId = courses[0].id;
+                }
 
         final classStudents = await supabase
             .from("class_students")
             .select("student_id")
             .inFilter("class_group_id", classIds);
 
-        if (classStudents != null && (classStudents as List).isNotEmpty) {
+        if ((classStudents as List).isNotEmpty) {
           final studentIds = classStudents.map((cs) => cs['student_id']).toSet().toList();
           final profiles = await supabase
               .from("profiles")
               .select("id, first_name, last_name, email, avatar_url")
               .inFilter("id", studentIds);
 
-          if (profiles != null) {
-            students = (profiles as List).map((p) => StudentItem(
-                  id: p['id'],
-                  firstName: p['first_name'] ?? '',
-                  lastName: p['last_name'] ?? '',
-                  email: p['email'] ?? '',
-                  avatarUrl: p['avatar_url'],
-                )).toList();
+          students = (profiles as List).map((p) => StudentItem(
+                id: p['id'],
+                firstName: p['first_name'] ?? '',
+                lastName: p['last_name'] ?? '',
+                email: p['email'] ?? '',
+                avatarUrl: p['avatar_url'],
+              )).toList();
 
-            if (students.isNotEmpty) {
-              selectedStudentId = students[0].id;
-              selectedAwardStudentId = students[0].id;
-            }
+          if (students.isNotEmpty) {
+            selectedStudentId = students[0].id;
+            selectedAwardStudentId = students[0].id;
           }
-        }
+                }
       }
 
       final awardsData = await supabase
@@ -169,11 +165,9 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
           .select()
           .order("points_required", ascending: true);
 
-      if (awardsData != null) {
-        awards = (awardsData as List).map((a) => AwardItem.fromJson(a)).toList();
-        if (awards.isNotEmpty) selectedAwardId = awards[0].id;
-      }
-    } catch (e) {
+      awards = (awardsData as List).map((a) => AwardItem.fromJson(a)).toList();
+      if (awards.isNotEmpty) selectedAwardId = awards[0].id;
+        } catch (e) {
       debugPrint("Error fetching achievements data: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -405,7 +399,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: selectedStudentId,
+                  initialValue: selectedStudentId,
                   dropdownColor: surfaceWhite,
                   style: const TextStyle(color: textDark, fontSize: 12),
                   decoration: InputDecoration(
@@ -425,7 +419,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                 const Text("Related Course *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 6),
                 DropdownButtonFormField<String>(
-                  value: selectedCourseId,
+                  initialValue: selectedCourseId,
                   dropdownColor: surfaceWhite,
                   style: const TextStyle(color: textDark, fontSize: 12),
                   decoration: InputDecoration(
@@ -543,7 +537,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                 const Text("Select Student *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 6),
                 DropdownButtonFormField<String>(
-                  value: selectedAwardStudentId,
+                  initialValue: selectedAwardStudentId,
                   dropdownColor: surfaceWhite,
                   style: const TextStyle(color: textDark, fontSize: 12),
                   decoration: InputDecoration(
@@ -567,7 +561,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: awards.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           final award = awards[index];
                           bool isSelected = selectedAwardId == award.id;

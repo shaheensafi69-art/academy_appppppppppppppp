@@ -419,7 +419,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                   const Text("SYSTEM ROLE", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
-                    value: role,
+                    initialValue: role,
                     dropdownColor: surfaceWhite,
                     style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                     decoration: _inputFieldDecoration("Select role"),
@@ -495,7 +495,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: teacherCourses.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          separatorBuilder: (_, _) => const SizedBox(height: 8),
                           itemBuilder: (context, index) {
                             final crs = teacherCourses[index];
                             return Container(
@@ -528,7 +528,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: teacherClasses.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          separatorBuilder: (_, _) => const SizedBox(height: 8),
                           itemBuilder: (context, index) {
                             final cls = teacherClasses[index];
                             return Container(
