@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// ایمپورت صفحات اصلی پنل‌ها و صفحه خوش‌آمدگویی
-import '../../features/auth/screens/welcome_screen.dart'; // <--- صفحه خوش‌آمدگویی (یا نام دلخواه شما)
-import '../../features/auth/screens/login_screen.dart' as login_screen;
+import '../../features/auth/screens/welcome_screen.dart';
 import '../../features/admin/screens/admin_main_layout.dart';
 import '../../features/dashboard/screens/student_main_layout.dart';
 import '../../features/teacher/screens/teacher_main_layout.dart';
@@ -18,9 +16,8 @@ class AuthGate extends StatefulWidget {
 class _AuthGateState extends State<AuthGate> {
   final supabase = Supabase.instance.client;
   bool _isLoading = true;
-  Widget _targetScreen = const WelcomeScreen(); // پیش‌فرض صفحه خوش‌آمدگویی است
+  Widget _targetScreen = const WelcomeScreen();
 
-  // رنگ اصلی صورتی غلیظ
   static const Color primaryPink = Color(0xFFC2185B);
 
   @override
@@ -29,12 +26,9 @@ class _AuthGateState extends State<AuthGate> {
     _initializeAuthListener();
   }
 
-  /// گوش دادن به تغییرات نشست (Auth State Changes) برای پایداری ۱۰۰٪ لاگین
   void _initializeAuthListener() {
-    // بررسی اولیه نشست موجود
     _resolveUserSessionAndRole(supabase.auth.currentSession);
 
-    // گوش دادن به تغییرات بعدی (مانند باز شدن مجدد اپلیکیشن یا قطع و وصل شبکه)
     supabase.auth.onAuthStateChange.listen((data) {
       final AuthChangeEvent event = data.event;
       final Session? session = data.session;
@@ -44,7 +38,7 @@ class _AuthGateState extends State<AuthGate> {
       } else if (event == AuthChangeEvent.signedOut) {
         if (mounted) {
           setState(() {
-            _targetScreen = const WelcomeScreen(); // بازگشت به ویلکم اسکرین در صورت لاگ اوت دستی
+            _targetScreen = const WelcomeScreen();
             _isLoading = false;
           });
         }
@@ -54,7 +48,7 @@ class _AuthGateState extends State<AuthGate> {
 
   Future<void> _resolveUserSessionAndRole(Session? session) async {
     try {
-      // ۱. اگر کاربر لاگین نیست -> هدایت به صفحه خوش‌آمدگویی (WelcomeScreen)
+      // ۱. اگر کاربر لاگین نیست
       if (session == null) {
         if (mounted) {
           setState(() {
@@ -65,20 +59,29 @@ class _AuthGateState extends State<AuthGate> {
         return;
       }
 
-      // ۲. اگر کاربر لاگین است -> گرفتن نقش از جدول profiles با مکانیزم ایمن در برابر خطا
+      // ۲. گرفتن نقش کاربر از جدول profiles
       final user = session.user;
-      final response = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .maybeSingle();
+      String userRole = 'student'; // پیش‌فرض
 
-      // اگر پروفایل هنوز کامل ساخته نشده بود یا خطای موقت شبکه داد، نقش پیش‌فرض را student در نظر می‌گیریم تا لاگ‌اوت نشود
-      final userRole = response?['role'] ?? 'student';
+      try {
+        final response = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle();
+
+        if (response != null && response['role'] != null) {
+          userRole = response['role'].toString();
+        }
+      } catch (dbError) {
+        debugPrint("Database profile fetch warning: $dbError");
+        // اگر اینترنت ضعیف بود یا جدول خطا داد، کاربر را پیش‌فرض به پنل استودنت می‌بریم تا کرش نکند
+        userRole = 'student';
+      }
 
       if (!mounted) return;
 
-      // ۳. تعیین پنل بر اساس نقش کاربر
+      // ۳. هدایت به پنل مربوطه
       Widget destination;
       if (userRole == 'super_admin' || userRole == 'admin') {
         destination = const AdminMainLayout();
@@ -93,11 +96,11 @@ class _AuthGateState extends State<AuthGate> {
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint("Auth Resolution Error: $e");
-      // در صورت بروز خطای اینترنت، اگر نشست معتبر است، کاربر را لاگ‌اوت نکنیم بلکه به پنل پیش‌فرض هدایتش کنیم
+      debugPrint("Auth Resolution Critical Error: $e");
+      // محافظت کامل در برابر کرش: در صورت بروز خطای ناشناخته، کاربر به صفحه Welcome هدایت شود تا اپ بسته نشود
       if (mounted) {
         setState(() {
-          // اگر کاربر سشن معتبر دارد اما خطای اینترنت رخ داده، او را به پنل استیودنت یا آخرین وضعیت هدایت کن تا بیرون پرت نشود
+          _targetScreen = const WelcomeScreen();
           _isLoading = false;
         });
       }
