@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -22,16 +21,18 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
   List<Map<String, dynamic>> payouts = [];
   int totalStudents = 0;
 
-  // Controllers برای پروفایل (جدول profiles)
+  // Controllers برای اطلاعات شخصی (قفل‌شده)
   final firstNameCtrl = TextEditingController();
   final lastNameCtrl = TextEditingController();
   final emailCtrl = TextEditingController();
   final phoneCtrl = TextEditingController();
+
+  // Controllers برای اطلاعات قابل ویرایش ادمین
   final walletCtrl = TextEditingController();
   final scoreCtrl = TextEditingController();
   String selectedRole = 'teacher';
 
-  // Controllers برای اطلاعات تکمیلی (جدول teacher_info)
+  // Controllers برای اطلاعات تکمیلی (teacher_info)
   final infoBioCtrl = TextEditingController();
   final achievementsCtrl = TextEditingController();
 
@@ -72,14 +73,12 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
   Future<void> _fetchTeacherFullData() async {
     setState(() => isLoading = true);
     try {
-      // ۱. اطلاعات پروفایل از جدول profiles
       final profileData = await supabase
           .from("profiles")
           .select("*")
           .eq("id", widget.teacherId)
           .single();
 
-      // ۲. اطلاعات تکمیلی از جدول teacher_info (در صورت وجود)
       Map<String, dynamic>? infoData;
       try {
         infoData = await supabase
@@ -91,7 +90,6 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
         infoData = null;
       }
 
-      // ۳. کلاس‌های استاد از جدول class_groups
       final classesData = await supabase
           .from("class_groups")
           .select("id, class_name, is_active, course:courses(title), class_students(student_id)")
@@ -115,7 +113,6 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
         });
       }
 
-      // ۴. دوره‌های تخصصی استاد از جدول teacher_info_courses
       List<Map<String, dynamic>> assignedCourses = [];
       if (infoData != null) {
         final tCourses = await supabase
@@ -125,8 +122,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
         
         assignedCourses = (tCourses as List).map((tc) => tc['course'] as Map<String, dynamic>).toList();
       }
-    
-      // ۵. تاریخچه پرداختی‌ها از جدول transactions
+
       final transactionsData = await supabase
           .from("transactions")
           .select("id, amount, status, created_at")
@@ -174,29 +170,21 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
     try {
       String fName = firstNameCtrl.text.trim();
       String lName = lastNameCtrl.text.trim();
-      String email = emailCtrl.text.trim();
-      String phone = phoneCtrl.text.trim();
       String bio = infoBioCtrl.text.trim();
       String achievements = achievementsCtrl.text.trim();
-      double newWallet = double.tryParse(walletCtrl.text.trim()) ?? 0;
+      double newWallet = double.tryParse(walletCtrl.text.trim()) ?? 0.0;
       int newScore = int.tryParse(scoreCtrl.text.trim()) ?? 0;
 
-      // آپدیت جدول profiles
       await supabase
           .from("profiles")
           .update({
-            'first_name': fName,
-            'last_name': lName,
-            'email': email,
-            'phone_number': phone.isNotEmpty ? phone : null,
-            'bio': bio.isNotEmpty ? bio : null,
             'wallet_balance': newWallet,
             'total_score': newScore,
             'role': selectedRole,
+            'bio': bio.isNotEmpty ? bio : null,
           })
           .eq("id", widget.teacherId);
 
-      // آپدیت یا درج در جدول teacher_info
       await supabase.from("teacher_info").upsert({
         'id': widget.teacherId,
         'first_name': fName,
@@ -208,19 +196,17 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
       });
 
       setState(() {
-        teacher!['first_name'] = fName;
-        teacher!['last_name'] = lName;
-        teacher!['email'] = email;
         teacher!['wallet_balance'] = newWallet;
         teacher!['total_score'] = newScore;
         teacher!['role'] = selectedRole;
+        teacher!['bio'] = bio;
 
-        messageText = 'Instructor profile, info & role successfully updated! 🚀';
+        messageText = 'Instructor profile & admin controls successfully synchronized! 🚀';
         isSuccessMessage = true;
       });
 
       Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) setState(() => messageText = null);
+        if (mounted) Navigator.pop(context, true);
       });
     } catch (e) {
       setState(() {
@@ -341,384 +327,417 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
 
     return Scaffold(
       backgroundColor: surfaceWhite,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Back Button
-            GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: cardBorder,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: cardBorder, width: 1.5),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.arrow_back_rounded, color: textDark, size: 14),
-                    SizedBox(width: 6),
-                    Text("Back to Faculty", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Profile Header Card
-            Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
-                boxShadow: [
-                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
-                ],
-              ),
-              child: Row(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+          physics: const BouncingScrollPhysics(),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 800),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    radius: 32,
-                    backgroundColor: lightPinkBg,
-                    backgroundImage: avatarUrl != null && avatarUrl.toString().isNotEmpty ? NetworkImage(avatarUrl) : null,
-                    child: (avatarUrl == null || avatarUrl.toString().isEmpty)
-                        ? Text(firstNameCtrl.text.isNotEmpty ? firstNameCtrl.text[0] : 'T', style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 20))
-                        : null,
+                  // Back Button
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: cardBorder,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: cardBorder, width: 1.5),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.arrow_back_rounded, color: textDark, size: 14),
+                          SizedBox(width: 6),
+                          Text("Back to Faculty", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 16),
+
+                  // Profile Header Card
+                  Container(
+                    padding: const EdgeInsets.all(22),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                      boxShadow: [
+                        BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                      ],
+                    ),
+                    child: Row(
                       children: [
-                        Text("${firstNameCtrl.text} ${lastNameCtrl.text}", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: textDark)),
-                        const SizedBox(height: 4),
-                        Text(emailCtrl.text, style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500)),
+                        CircleAvatar(
+                          radius: 32,
+                          backgroundColor: lightPinkBg,
+                          backgroundImage: avatarUrl != null && avatarUrl.toString().isNotEmpty ? NetworkImage(avatarUrl) : null,
+                          child: (avatarUrl == null || avatarUrl.toString().isEmpty)
+                              ? Text(firstNameCtrl.text.isNotEmpty ? firstNameCtrl.text[0] : 'T', style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 20))
+                              : null,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("${firstNameCtrl.text} ${lastNameCtrl.text}", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: textDark)),
+                              const SizedBox(height: 4),
+                              Text(emailCtrl.text, style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500)),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-            // Metrics
-            Row(
-              children: [
-                Expanded(child: _buildMiniStat("Assigned Classes", classes.length.toString(), Icons.menu_book_rounded)),
-                const SizedBox(width: 12),
-                Expanded(child: _buildMiniStat("Total Students", totalStudents.toString(), Icons.group_rounded)),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Wallet & Payout Card
-            Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                color: surfaceWhite,
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: cardBorder, width: 1.5),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("WALLET BALANCE & PAYOUTS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("\$${walletBalance.toStringAsFixed(2)}", style: TextStyle(color: Colors.green.shade700, fontSize: 22, fontWeight: FontWeight.w900)),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green.shade700,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: walletBalance > 0 ? () {
-                          setState(() {
-                            payoutAmount = walletBalance;
-                            messageText = null;
-                            isPayoutModalOpen = true;
-                          });
-                        } : null,
-                        child: const Text("Process Payout", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            if (messageText != null) ...[
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isSuccessMessage ? Colors.green.withOpacity(0.12) : Colors.redAccent.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: isSuccessMessage ? Colors.green.withOpacity(0.3) : Colors.redAccent.withOpacity(0.3), width: 1.5),
-                ),
-                child: Row(
-                  children: [
-                    Icon(isSuccessMessage ? Icons.check_circle_rounded : Icons.error_rounded, color: isSuccessMessage ? Colors.green.shade700 : Colors.redAccent, size: 18),
-                    const SizedBox(width: 10),
-                    Expanded(child: Text(messageText!, style: TextStyle(color: isSuccessMessage ? Colors.green.shade700 : Colors.redAccent, fontSize: 11, fontWeight: FontWeight.w900))),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
-
-            // Edit Profile Form Container (Profiles & Teacher Info Integration)
-            Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                color: surfaceWhite,
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: cardBorder, width: 1.5),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("EDIT PROFILES & TEACHER INFO", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
-                  const SizedBox(height: 16),
-
+                  // Metrics
                   Row(
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text("FIRST NAME", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                            const SizedBox(height: 6),
-                            TextField(controller: firstNameCtrl, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("First Name")),
-                          ],
-                        ),
-                      ),
+                      Expanded(child: _buildMiniStat("Assigned Classes", classes.length.toString(), Icons.menu_book_rounded)),
                       const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text("LAST NAME", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                            const SizedBox(height: 6),
-                            TextField(controller: lastNameCtrl, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("Last Name")),
-                          ],
-                        ),
-                      ),
+                      Expanded(child: _buildMiniStat("Total Students", totalStudents.toString(), Icons.group_rounded)),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
-                  const Text("EMAIL ADDRESS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                  const SizedBox(height: 6),
-                  TextField(controller: emailCtrl, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("Email address")),
-                  const SizedBox(height: 16),
-
-                  const Text("PHONE NUMBER", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                  const SizedBox(height: 6),
-                  TextField(controller: phoneCtrl, keyboardType: TextInputType.phone, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("Phone number")),
-                  const SizedBox(height: 16),
-
-                  // بیوگرافی چندخطی بزرگ (هم در profiles و هم در teacher_info)
-                  const Text("BIOGRAPHY (TEACHER INFO)", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: infoBioCtrl,
-                    maxLines: 5,
-                    style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.bold),
-                    decoration: _inputFieldDecoration("Write comprehensive faculty biography..."),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // دستاوردها (teacher_info)
-                  const Text("ACHIEVEMENTS (TEACHER INFO)", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: achievementsCtrl,
-                    maxLines: 3,
-                    style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                    decoration: _inputFieldDecoration("List awards, certifications or achievements..."),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text("WALLET BALANCE (\$)", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                            const SizedBox(height: 6),
-                            TextField(controller: walletCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true), style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("0.00")),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text("ACADEMIC SCORE (PTS)", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                            const SizedBox(height: 6),
-                            TextField(controller: scoreCtrl, keyboardType: TextInputType.number, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("0")),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  const Text("SYSTEM ROLE", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                  const SizedBox(height: 6),
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedRole,
-                    dropdownColor: surfaceWhite,
-                    style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                    decoration: _inputFieldDecoration("Select role"),
-                    items: const [
-                      DropdownMenuItem(value: 'student', child: Text("Student (Demote)")),
-                      DropdownMenuItem(value: 'teacher', child: Text("Instructor / Mentor (Teacher)")),
-                      DropdownMenuItem(value: 'super_admin', child: Text("Administrator (Super Admin)")),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) setState(() => selectedRole = val);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryPink,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                onPressed: isSaving ? null : handleUpdateProfile,
-                child: isSaving
-                    ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                    : const Text("SAVE CHANGES & SYNC PROFILE 🚀", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
-              ),
-            ),
-            const SizedBox(height: 30),
-
-            // Assigned Courses / Specialties Section (teacher_info_courses)
-            const Text("SPECIALIZED COURSES (TEACHER INFO COURSES)", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.5)),
-            const SizedBox(height: 12),
-            teacherCourses.isEmpty
-                ? Container(
-                    padding: const EdgeInsets.all(20),
-                    alignment: Alignment.center,
+                  // Wallet & Payout Card
+                  Container(
+                    padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
                       color: surfaceWhite,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(28),
                       border: Border.all(color: cardBorder, width: 1.5),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
                     ),
-                    child: const Text("No specialized courses linked.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
-                  )
-                : ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: teacherCourses.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final crs = teacherCourses[index];
-                      return Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: surfaceWhite,
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: cardBorder, width: 1.5),
-                        ),
-                        child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("WALLET BALANCE & PAYOUTS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                        const SizedBox(height: 12),
+                        Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(crs['title'] ?? 'Course', style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                              child: Text(crs['category'] ?? 'Tech', style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                            Text("\$${walletBalance.toStringAsFixed(2)}", style: TextStyle(color: Colors.green.shade700, fontSize: 22, fontWeight: FontWeight.w900)),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green.shade700,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              onPressed: walletBalance > 0 ? () {
+                                setState(() {
+                                  payoutAmount = walletBalance;
+                                  messageText = null;
+                                  isPayoutModalOpen = true;
+                                });
+                              } : null,
+                              child: const Text("Process Payout", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
                             ),
                           ],
                         ),
-                      );
-                    },
+                      ],
+                    ),
                   ),
-            const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
-            // Assigned Classes Section (class_groups)
-            const Text("ASSIGNED COHORTS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.5)),
-            const SizedBox(height: 12),
-            classes.isEmpty
-                ? Container(
-                    padding: const EdgeInsets.all(30),
-                    alignment: Alignment.center,
+                  if (messageText != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isSuccessMessage ? Colors.green.withOpacity(0.12) : Colors.redAccent.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: isSuccessMessage ? Colors.green.withOpacity(0.3) : Colors.redAccent.withOpacity(0.3), width: 1.5),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(isSuccessMessage ? Icons.check_circle_rounded : Icons.error_rounded, color: isSuccessMessage ? Colors.green.shade700 : Colors.redAccent, size: 18),
+                          const SizedBox(width: 10),
+                          Expanded(child: Text(messageText!, style: TextStyle(color: isSuccessMessage ? Colors.green.shade700 : Colors.redAccent, fontSize: 11, fontWeight: FontWeight.w900))),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  // بخش اول: اطلاعات شخصی (قفل‌شده)
+                  Container(
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: surfaceWhite,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(28),
                       border: Border.all(color: cardBorder, width: 1.5),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
                     ),
-                    child: const Text("No assigned classes.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
-                  )
-                : ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: classes.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 10),
-                    itemBuilder: (context, index) {
-                      final cls = classes[index];
-                      return Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: surfaceWhite,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: cardBorder, width: 1.5),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
                           children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            Icon(Icons.lock_outline_rounded, color: textGrey, size: 14),
+                            SizedBox(width: 6),
+                            Text("PERSONAL DETAILS (LOCKED)", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(child: _buildLockedInput("FIRST NAME", firstNameCtrl)),
+                            const SizedBox(width: 12),
+                            Expanded(child: _buildLockedInput("LAST NAME", lastNameCtrl)),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        _buildLockedInput("EMAIL ADDRESS", emailCtrl),
+                        const SizedBox(height: 14),
+                        _buildLockedInput("PHONE NUMBER", phoneCtrl),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // بخش دوم: کنترل‌های ادمین و اطلاعات تکمیلی قابل ویرایش
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: primaryPink.withOpacity(0.25), width: 1.5),
+                      boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 6))],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 16),
+                            SizedBox(width: 6),
+                            Text("ADMIN CONTROLS & TEACHER INFO", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2)),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        Row(
+                          children: [
+                            Expanded(child: _buildEditableInput("WALLET BALANCE (\$)", walletCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true))),
+                            const SizedBox(width: 12),
+                            Expanded(child: _buildEditableInput("ACADEMIC SCORE (PTS)", scoreCtrl, keyboardType: TextInputType.number)),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        const Text("SYSTEM ROLE & PROMOTION", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                        const SizedBox(height: 6),
+                        
+                        // منوی کشویی لوکس و شیک
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: cardBorder.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: selectedRole,
+                              dropdownColor: surfaceWhite,
+                              isExpanded: true,
+                              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: primaryPink),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'student',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.school_rounded, color: Color(0xFF00897B), size: 18),
+                                      SizedBox(width: 12),
+                                      Text("Student (Demote)", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'teacher',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.psychology_rounded, color: Color(0xFF3949AB), size: 18),
+                                      SizedBox(width: 12),
+                                      Text("Instructor / Mentor", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'super_admin',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 18),
+                                      SizedBox(width: 12),
+                                      Text("Administrator (Super Admin)", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              onChanged: (val) {
+                                if (val != null) setState(() => selectedRole = val);
+                              },
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        const Text("BIOGRAPHY (TEACHER INFO)", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: infoBioCtrl,
+                          maxLines: 4,
+                          cursorColor: primaryPink,
+                          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                          decoration: _inputFieldDecoration("Write comprehensive faculty biography..."),
+                        ),
+                        const SizedBox(height: 16),
+
+                        const Text("ACHIEVEMENTS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: achievementsCtrl,
+                          maxLines: 3,
+                          cursorColor: primaryPink,
+                          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                          decoration: _inputFieldDecoration("List awards, certifications or achievements..."),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryPink,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: isSaving ? null : handleUpdateProfile,
+                      child: isSaving
+                          ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                          : const Text("SAVE CHANGES & SYNC PROFILE 🚀", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Assigned Courses / Specialties Section
+                  const Text("SPECIALIZED COURSES", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.5)),
+                  const SizedBox(height: 12),
+                  teacherCourses.isEmpty
+                      ? Container(
+                          padding: const EdgeInsets.all(20),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: surfaceWhite,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: cardBorder, width: 1.5),
+                          ),
+                          child: const Text("No specialized courses linked.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                        )
+                      : ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: teacherCourses.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final crs = teacherCourses[index];
+                            return Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: surfaceWhite,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(color: cardBorder, width: 1.5),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(cls['class_name'], style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
-                                  const SizedBox(height: 2),
-                                  Text("Course: ${cls['course_title']}", style: const TextStyle(color: textGrey, fontSize: 10)),
+                                  Text(crs['title'] ?? 'Course', style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                                    child: Text(crs['category'] ?? 'Tech', style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                  ),
                                 ],
                               ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                              child: Text("${cls['students_count']} Students", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
-                            ),
-                          ],
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
-            const SizedBox(height: 40),
-          ],
+                  const SizedBox(height: 24),
+
+                  // Assigned Classes Section
+                  const Text("ASSIGNED COHORTS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.5)),
+                  const SizedBox(height: 12),
+                  classes.isEmpty
+                      ? Container(
+                          padding: const EdgeInsets.all(30),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: surfaceWhite,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: cardBorder, width: 1.5),
+                          ),
+                          child: const Text("No assigned classes.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                        )
+                      : ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: classes.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final cls = classes[index];
+                            return Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: surfaceWhite,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: cardBorder, width: 1.5),
+                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(cls['class_name'], style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                        const SizedBox(height: 2),
+                                        Text("Course: ${cls['course_title']}", style: const TextStyle(color: textGrey, fontSize: 10)),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                                    child: Text("${cls['students_count']} Students", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
 
@@ -749,7 +768,6 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-
                   const Text("PAYOUT AMOUNT (USD)", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                   const SizedBox(height: 6),
                   TextField(
@@ -765,7 +783,6 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -789,6 +806,55 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
     );
   }
 
+  Widget _buildLockedInput(String label, TextEditingController controller, {int maxLines = 1}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          maxLines: maxLines,
+          readOnly: true,
+          style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.bold),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: cardBorder.withOpacity(0.8),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+            suffixIcon: const Icon(Icons.lock_rounded, size: 14, color: textGrey),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEditableInput(String label, TextEditingController controller, {TextInputType keyboardType = TextInputType.text}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 0.8)),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+          cursorColor: primaryPink,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: cardBorder.withOpacity(0.5),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+          ),
+        ),
+      ],
+    );
+  }
+
   InputDecoration _inputFieldDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
@@ -804,16 +870,23 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
 
   Widget _buildMiniStat(String title, String value, IconData icon) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
       decoration: BoxDecoration(
         color: surfaceWhite,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
       ),
       child: Row(
         children: [
-          Icon(icon, color: primaryPink, size: 20),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: lightPinkBg,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: primaryPink, size: 18),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -821,7 +894,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
               children: [
                 Text(title.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                 const SizedBox(height: 2),
-                Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: textDark)),
+                Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
               ],
             ),
           ),

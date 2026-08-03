@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:local_auth/local_auth.dart';
 import '../../../core/routing/auth_gate.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -12,16 +13,20 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final supabase = Supabase.instance.client;
+  final LocalAuthentication auth = LocalAuthentication();
+
   bool isLoading = true;
   bool isSaving = false;
 
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _bioController = TextEditingController();
+  // فیلد رمز عبور جدید
+  final TextEditingController _newPasswordController = TextEditingController();
 
+  // تنظیمات امنیتی و اپ
   String _selectedLanguage = 'English';
   bool _notificationsEnabled = true;
+  bool _biometricEnabled = false;
+  bool _pinLockEnabled = false;
+  String _userPin = "";
 
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
@@ -33,57 +38,167 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchProfileData();
+    _fetchSecuritySettings();
   }
 
-  Future<void> _fetchProfileData() async {
+  @override
+  void dispose() {
+    _newPasswordController.dispose();
+    super.dispose();
+  }
+
+  // دریافت تنظیمات امنیتی دانشجو از جدول student_security_settings
+  Future<void> _fetchSecuritySettings() async {
     setState(() => isLoading = true);
     try {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
       final res = await supabase
-          .from('profiles')
-          .select('first_name, last_name, phone_number, bio')
-          .eq('id', user.id)
+          .from('student_security_settings')
+          .select('pin_code, is_biometric_enabled')
+          .eq('student_id', user.id)
           .maybeSingle();
 
       if (res != null) {
-        _firstNameController.text = res['first_name'] ?? '';
-        _lastNameController.text = res['last_name'] ?? '';
-        _phoneController.text = res['phone_number'] ?? '';
-        _bioController.text = res['bio'] ?? '';
+        setState(() {
+          _userPin = res['pin_code'] ?? '';
+          _pinLockEnabled = _userPin.isNotEmpty;
+          _biometricEnabled = res['is_biometric_enabled'] ?? false;
+        });
       }
     } catch (e) {
-      debugPrint("Error fetching profile: $e");
+      debugPrint("Error fetching security settings: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
   }
 
-  Future<void> _updateProfile() async {
-    setState(() => isSaving = true);
+  // به‌روزرسانی تنظیمات امنیتی در دیتابیس
+  Future<void> _saveSecuritySettingsToDb({String? pin, bool? biometric}) async {
     try {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
-      await supabase.from('profiles').update({
-        'first_name': _firstNameController.text.trim(),
-        'last_name': _lastNameController.text.trim(),
-        'phone_number': _phoneController.text.trim(),
-        'bio': _bioController.text.trim(),
-      }).eq('id', user.id);
+      final updateData = {
+        'student_id': user.id,
+        if (pin != null) 'pin_code': pin,
+        if (biometric != null) 'is_biometric_enabled': biometric,
+        'updated_at': DateTime.now().toIso8601String(),
+      };
 
+      await supabase.from('student_security_settings').upsert(updateData);
+    } catch (e) {
+      debugPrint("Error saving security settings: $e");
+    }
+  }
+
+  // تغییر رمز عبور امن
+  Future<void> _changePassword() async {
+    if (_newPasswordController.text.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Password must be at least 6 characters."), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    try {
+      await supabase.auth.updateUser(
+        UserAttributes(password: _newPasswordController.text.trim()),
+      );
+      _newPasswordController.clear();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Settings updated successfully!")),
+          const SnackBar(content: Text("Password changed successfully! 🔒"), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
-      debugPrint("Error updating profile: $e");
-    } finally {
-      if (mounted) setState(() => isSaving = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error changing password: $e"), backgroundColor: Colors.red),
+        );
+      }
     }
+  }
+
+  // احراز هویت بیومتریک (اثر انگشت / تشخیص چهره)
+  Future<void> _toggleBiometric(bool value) async {
+    try {
+      if (value) {
+        bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
+        bool canAuthenticate = canAuthenticateWithBiometrics || await auth.isDeviceSupported();
+
+        if (canAuthenticate) {
+          bool authenticated = await auth.authenticate(
+            localizedReason: 'Authenticate to enable biometric security',
+            biometricOnly: true,
+          );
+          if (authenticated) {
+            setState(() => _biometricEnabled = true);
+            await _saveSecuritySettingsToDb(biometric: true);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Biometric login enabled! 🔓"), backgroundColor: Colors.green));
+            }
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Biometrics not supported on this device."), backgroundColor: Colors.red));
+          }
+        }
+      } else {
+        setState(() => _biometricEnabled = false);
+        await _saveSecuritySettingsToDb(biometric: false);
+      }
+    } catch (e) {
+      debugPrint("Biometric error: $e");
+    }
+  }
+
+  // تنظیم پین‌کد امنیتی (PIN Lock)
+  void _showSetPinDialog() {
+    TextEditingController pinController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Set Security PIN", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+        content: TextField(
+          controller: pinController,
+          keyboardType: TextInputType.number,
+          maxLength: 4,
+          obscureText: true,
+          decoration: InputDecoration(
+            hintText: "Enter 4-digit PIN",
+            filled: true,
+            fillColor: cardBorder,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel", style: TextStyle(color: textGrey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: primaryPink, foregroundColor: Colors.white, elevation: 0),
+            onPressed: () async {
+              if (pinController.text.length == 4) {
+                setState(() {
+                  _userPin = pinController.text;
+                  _pinLockEnabled = true;
+                });
+                await _saveSecuritySettingsToDb(pin: _userPin);
+                Navigator.pop(context);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PIN code successfully saved! 🔑"), backgroundColor: Colors.green));
+                }
+              }
+            },
+            child: const Text("Save PIN"),
+          ),
+        ],
+      ),
+    );
   }
 
   void _logout() async {
@@ -144,9 +259,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Account Settings", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                          Text("App Settings", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
                           SizedBox(height: 3),
-                          Text("Manage your profile details, app preferences, and security.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
+                          Text("Manage your app preferences, security, and credentials.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
                         ],
                       ),
                     ),
@@ -155,9 +270,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 20),
 
-              const Text("Personal Information", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+              // ================= ۱. بخش امنیت و رمز عبور =================
+              const Text("Security & Passwords", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
               const SizedBox(height: 12),
-
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
@@ -168,42 +283,79 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 child: Column(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(child: _buildTextField("First Name", _firstNameController)),
-                        const SizedBox(width: 12),
-                        Expanded(child: _buildTextField("Last Name", _lastNameController)),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    _buildTextField("Phone Number", _phoneController, keyboardType: TextInputType.phone),
-                    const SizedBox(height: 14),
-                    _buildTextField("Bio / About Me", _bioController, maxLines: 3),
+                    _buildTextField("New Password", _newPasswordController, obscureText: true),
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryPink,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: primaryPink,
+                          side: const BorderSide(color: primaryPink, width: 1.5),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        onPressed: isSaving ? null : _updateProfile,
-                        child: isSaving
-                            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                            : const Text("SAVE CHANGES 💾", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+                        onPressed: _changePassword,
+                        child: const Text("UPDATE PASSWORD 🔒", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                       ),
+                    ),
+                    const Divider(height: 30, color: cardBorder),
+
+                    // تنظیمات بیومتریک (اثر انگشت)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.fingerprint_rounded, color: primaryPink, size: 20),
+                            SizedBox(width: 10),
+                            Text("Biometric Login", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 12)),
+                          ],
+                        ),
+                        Switch(
+                          value: _biometricEnabled,
+                          activeThumbColor: primaryPink,
+                          onChanged: _toggleBiometric,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+
+                    // تنظیمات پین‌کد (PIN Lock)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.lock_outline_rounded, color: primaryPink, size: 20),
+                            SizedBox(width: 10),
+                            Text("App PIN Lock", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 12)),
+                          ],
+                        ),
+                        Switch(
+                          value: _pinLockEnabled,
+                          activeThumbColor: primaryPink,
+                          onChanged: (val) {
+                            if (val) {
+                              _showSetPinDialog();
+                            } else {
+                              setState(() {
+                                _pinLockEnabled = false;
+                                _userPin = "";
+                              });
+                              _saveSecuritySettingsToDb(pin: "");
+                            }
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
 
+              // ================= ۲. بخش تنظیمات اپلیکیشن =================
               const Text("App Preferences", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
               const SizedBox(height: 12),
-
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
@@ -237,7 +389,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         const Text("Push Notifications", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 12)),
                         Switch(
                           value: _notificationsEnabled,
-                          activeColor: primaryPink,
+                          activeThumbColor: primaryPink,
                           onChanged: (val) => setState(() => _notificationsEnabled = val),
                         ),
                       ],
@@ -247,6 +399,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 24),
 
+              // خروج امن
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -271,7 +424,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {int maxLines = 1, TextInputType keyboardType = TextInputType.text}) {
+  Widget _buildTextField(String label, TextEditingController controller, {int maxLines = 1, TextInputType keyboardType = TextInputType.text, bool obscureText = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -281,6 +434,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           controller: controller,
           maxLines: maxLines,
           keyboardType: keyboardType,
+          obscureText: obscureText,
           style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w600),
           decoration: InputDecoration(
             filled: true,

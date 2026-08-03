@@ -280,7 +280,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: todayClasses.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final cls = todayClasses[index];
                         return Container(
@@ -402,7 +402,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: filteredAssignments.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final task = filteredAssignments[index];
                     final color = _getStatusColor(task.status);

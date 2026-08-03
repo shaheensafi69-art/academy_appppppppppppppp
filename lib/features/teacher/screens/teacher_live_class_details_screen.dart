@@ -53,7 +53,6 @@ class _TeacherLiveClassDetailsScreenState extends State<TeacherLiveClassDetailsS
   bool isLoading = true;
   LiveClassDetailsItem? details;
 
-  // پالت رنگی لایت (سفید صدفی و صورتی غلیظ خالص)
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
   static const Color surfaceWhite = Colors.white;
@@ -148,187 +147,225 @@ class _TeacherLiveClassDetailsScreenState extends State<TeacherLiveClassDetailsS
           child: Container(color: cardBorder, height: 1),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ================= باکس وضعیت و نام کورس =================
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: surfaceWhite,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: details!.isActive ? primaryPink : cardBorder, width: details!.isActive ? 2 : 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: details!.isActive ? primaryPink.withOpacity(0.12) : Colors.black.withOpacity(0.04),
-                    blurRadius: 15,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          physics: const BouncingScrollPhysics(),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 800),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                        child: Text(details!.courseTitle, style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: details!.isActive ? Colors.green.withOpacity(0.12) : Colors.grey.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
+                  // ================= باکس وضعیت و نام کورس =================
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: details!.isActive ? primaryPink : cardBorder, width: details!.isActive ? 2 : 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: details!.isActive ? primaryPink.withOpacity(0.12) : Colors.black.withOpacity(0.04),
+                          blurRadius: 15,
+                          offset: const Offset(0, 6),
                         ),
-                        child: Text(
-                          details!.isActive ? "● Broadcast Active" : "○ Standby Mode",
-                          style: TextStyle(
-                            color: details!.isActive ? Colors.green.shade700 : textGrey,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      const Icon(Icons.calendar_today_rounded, size: 14, color: primaryPink),
-                      const SizedBox(width: 6),
-                      Text(details!.classDays, style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.w600)),
-                      const SizedBox(width: 16),
-                      const Icon(Icons.access_time_rounded, size: 14, color: primaryPink),
-                      const SizedBox(width: 6),
-                      Text(details!.classTime, style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.w600)),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    children: [
-                      if (details!.meetingLink != null)
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: details!.isActive ? primaryPink : textDark,
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            icon: const Icon(Icons.video_call_rounded, size: 18),
-                            label: const Text("Launch Room", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                            onPressed: () => _launchURL(details!.meetingLink!),
-                          ),
-                        ),
-                      if (details!.meetingLink != null && details!.signalGroupLink != null) const SizedBox(width: 10),
-                      if (details!.signalGroupLink != null)
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: textDark,
-                              side: const BorderSide(color: cardBorder, width: 1.5),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            icon: const Icon(Icons.chat_bubble_rounded, size: 16, color: primaryPink),
-                            label: const Text("Open Signal", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                            onPressed: () => _launchURL(details!.signalGroupLink!),
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // ================= دکمه‌های ابزارهای سریع =================
-            const Text("Quick Operations", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: cardBorder.withOpacity(0.5),
-                      foregroundColor: textDark,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      ],
                     ),
-                    icon: const Icon(Icons.group_rounded, size: 16, color: primaryPink),
-                    label: const Text("Manage Roster", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherClassStudentsScreen(classId: widget.classId)));
-                    },
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: cardBorder.withOpacity(0.5),
-                      foregroundColor: textDark,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    icon: const Icon(Icons.settings_rounded, size: 16, color: primaryPink),
-                    label: const Text("Class Settings", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherEditClassScreen(classId: widget.classId)))
-                          .then((_) => _fetchDetails());
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 28),
-
-            // ================= اساتید کلاس =================
-            const Text("Assigned Faculty Instructors", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: surfaceWhite,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: cardBorder, width: 1.5),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: lightPinkBg,
-                    backgroundImage: details!.instructorImageUrl != null ? NetworkImage(details!.instructorImageUrl!) : null,
-                    child: details!.instructorImageUrl == null ? const Icon(Icons.person_rounded, color: primaryPink) : null,
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("PRIMARY INSTRUCTOR", style: TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900)),
-                        const SizedBox(height: 2),
-                        Text(details!.instructorName ?? 'Verified Faculty', style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
-                        const SizedBox(height: 2),
-                        Text(details!.instructorBio ?? 'Academy Instructor', style: const TextStyle(color: textGrey, fontSize: 10), maxLines: 2, overflow: TextOverflow.ellipsis),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                              child: Text(details!.courseTitle, style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: details!.isActive ? Colors.green.withOpacity(0.12) : Colors.grey.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                details!.isActive ? "● Broadcast Active" : "○ Standby Mode",
+                                style: TextStyle(
+                                  color: details!.isActive ? Colors.green.shade700 : textGrey,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            const Icon(Icons.calendar_today_rounded, size: 14, color: primaryPink),
+                            const SizedBox(width: 6),
+                            Expanded(child: Text(details!.classDays, style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.w600))),
+                            const SizedBox(width: 10),
+                            const Icon(Icons.access_time_rounded, size: 14, color: primaryPink),
+                            const SizedBox(width: 6),
+                            Text(details!.classTime, style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                        
+                        // ریسپانسیو کردن دکمه‌های لانچ روم و ساینال برای صفحات کوچک
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            bool isWide = constraints.maxWidth > 400;
+                            return Flex(
+                              direction: isWide ? Axis.horizontal : Axis.vertical,
+                              children: [
+                                if (details!.meetingLink != null)
+                                  Expanded(
+                                    flex: isWide ? 1 : 0,
+                                    child: SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton.icon(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: details!.isActive ? primaryPink : textDark,
+                                          foregroundColor: Colors.white,
+                                          elevation: 0,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                          padding: const EdgeInsets.symmetric(vertical: 12),
+                                        ),
+                                        icon: const Icon(Icons.video_call_rounded, size: 18),
+                                        label: const Text("Launch Room", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                        onPressed: () => _launchURL(details!.meetingLink!),
+                                      ),
+                                    ),
+                                  ),
+                                if (details!.meetingLink != null && details!.signalGroupLink != null)
+                                  SizedBox(width: isWide ? 10 : 0, height: isWide ? 0 : 8),
+                                if (details!.signalGroupLink != null)
+                                  Expanded(
+                                    flex: isWide ? 1 : 0,
+                                    child: SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton.icon(
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: textDark,
+                                          side: const BorderSide(color: cardBorder, width: 1.5),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                          padding: const EdgeInsets.symmetric(vertical: 12),
+                                        ),
+                                        icon: const Icon(Icons.chat_bubble_rounded, size: 16, color: primaryPink),
+                                        label: const Text("Open Signal", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                        onPressed: () => _launchURL(details!.signalGroupLink!),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ),
+                  const SizedBox(height: 24),
+
+                  // ================= دکمه‌های ابزارهای سریع (ریسپانسیو) =================
+                  const Text("Quick Operations", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                  const SizedBox(height: 10),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      bool isWide = constraints.maxWidth > 400;
+                      return Flex(
+                        direction: isWide ? Axis.horizontal : Axis.vertical,
+                        children: [
+                          Expanded(
+                            flex: isWide ? 1 : 0,
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: cardBorder.withOpacity(0.5),
+                                  foregroundColor: textDark,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                                icon: const Icon(Icons.group_rounded, size: 16, color: primaryPink),
+                                label: const Text("Manage Roster", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                onPressed: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherClassStudentsScreen(classId: widget.classId)));
+                                },
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: isWide ? 10 : 0, height: isWide ? 0 : 8),
+                          Expanded(
+                            flex: isWide ? 1 : 0,
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: cardBorder.withOpacity(0.5),
+                                  foregroundColor: textDark,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                                icon: const Icon(Icons.settings_rounded, size: 16, color: primaryPink),
+                                label: const Text("Class Settings", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                onPressed: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherEditClassScreen(classId: widget.classId)))
+                                      .then((_) => _fetchDetails());
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 28),
+
+                  // ================= اساتید کلاس =================
+                  const Text("Assigned Faculty Instructors", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: lightPinkBg,
+                          backgroundImage: details!.instructorImageUrl != null ? NetworkImage(details!.instructorImageUrl!) : null,
+                          child: details!.instructorImageUrl == null ? const Icon(Icons.person_rounded, color: primaryPink) : null,
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("PRIMARY INSTRUCTOR", style: TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900)),
+                              const SizedBox(height: 2),
+                              Text(details!.instructorName ?? 'Verified Faculty', style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                              const SizedBox(height: 2),
+                              Text(details!.instructorBio ?? 'Academy Instructor', style: const TextStyle(color: textGrey, fontSize: 10), maxLines: 2, overflow: TextOverflow.ellipsis),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
-            const SizedBox(height: 40),
-          ],
+          ),
         ),
       ),
     );

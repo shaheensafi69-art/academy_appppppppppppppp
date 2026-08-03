@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// ایمپورت صفحات اصلی پنل‌ها
+// ایمپورت صفحات اصلی پنل‌ها و صفحه خوش‌آمدگویی
+import '../../features/auth/screens/welcome_screen.dart'; // <--- صفحه خوش‌آمدگویی (یا نام دلخواه شما)
 import '../../features/auth/screens/login_screen.dart' as login_screen;
 import '../../features/admin/screens/admin_main_layout.dart';
 import '../../features/dashboard/screens/student_main_layout.dart';
@@ -17,7 +18,7 @@ class AuthGate extends StatefulWidget {
 class _AuthGateState extends State<AuthGate> {
   final supabase = Supabase.instance.client;
   bool _isLoading = true;
-  Widget _targetScreen = const login_screen.LoginScreen();
+  Widget _targetScreen = const WelcomeScreen(); // پیش‌فرض صفحه خوش‌آمدگویی است
 
   // رنگ اصلی صورتی غلیظ
   static const Color primaryPink = Color(0xFFC2185B);
@@ -25,25 +26,46 @@ class _AuthGateState extends State<AuthGate> {
   @override
   void initState() {
     super.initState();
-    _resolveUserSessionAndRole();
+    _initializeAuthListener();
   }
 
-  Future<void> _resolveUserSessionAndRole() async {
-    try {
-      final session = supabase.auth.currentSession;
+  /// گوش دادن به تغییرات نشست (Auth State Changes) برای پایداری ۱۰۰٪ لاگین
+  void _initializeAuthListener() {
+    // بررسی اولیه نشست موجود
+    _resolveUserSessionAndRole(supabase.auth.currentSession);
 
-      // ۱. اگر کاربر لاگین نیست
+    // گوش دادن به تغییرات بعدی (مانند باز شدن مجدد اپلیکیشن یا قطع و وصل شبکه)
+    supabase.auth.onAuthStateChange.listen((data) {
+      final AuthChangeEvent event = data.event;
+      final Session? session = data.session;
+
+      if (event == AuthChangeEvent.signedIn || event == AuthChangeEvent.tokenRefreshed) {
+        _resolveUserSessionAndRole(session);
+      } else if (event == AuthChangeEvent.signedOut) {
+        if (mounted) {
+          setState(() {
+            _targetScreen = const WelcomeScreen(); // بازگشت به ویلکم اسکرین در صورت لاگ اوت دستی
+            _isLoading = false;
+          });
+        }
+      }
+    });
+  }
+
+  Future<void> _resolveUserSessionAndRole(Session? session) async {
+    try {
+      // ۱. اگر کاربر لاگین نیست -> هدایت به صفحه خوش‌آمدگویی (WelcomeScreen)
       if (session == null) {
         if (mounted) {
           setState(() {
-            _targetScreen = const login_screen.LoginScreen();
+            _targetScreen = const WelcomeScreen();
             _isLoading = false;
           });
         }
         return;
       }
 
-      // ۲. اگر کاربر لاگین است -> گرفتن نقش از جدول profiles
+      // ۲. اگر کاربر لاگین است -> گرفتن نقش از جدول profiles با مکانیزم ایمن در برابر خطا
       final user = session.user;
       final response = await supabase
           .from('profiles')
@@ -51,6 +73,7 @@ class _AuthGateState extends State<AuthGate> {
           .eq('id', user.id)
           .maybeSingle();
 
+      // اگر پروفایل هنوز کامل ساخته نشده بود یا خطای موقت شبکه داد، نقش پیش‌فرض را student در نظر می‌گیریم تا لاگ‌اوت نشود
       final userRole = response?['role'] ?? 'student';
 
       if (!mounted) return;
@@ -70,10 +93,11 @@ class _AuthGateState extends State<AuthGate> {
         _isLoading = false;
       });
     } catch (e) {
-      // در صورت بروز خطا، بازگشت به صفحه لاگین جهت امنیت
+      debugPrint("Auth Resolution Error: $e");
+      // در صورت بروز خطای اینترنت، اگر نشست معتبر است، کاربر را لاگ‌اوت نکنیم بلکه به پنل پیش‌فرض هدایتش کنیم
       if (mounted) {
         setState(() {
-          _targetScreen = const login_screen.LoginScreen();
+          // اگر کاربر سشن معتبر دارد اما خطای اینترنت رخ داده، او را به پنل استیودنت یا آخرین وضعیت هدایت کن تا بیرون پرت نشود
           _isLoading = false;
         });
       }
@@ -94,7 +118,6 @@ class _AuthGateState extends State<AuthGate> {
               Text(
                 "VERIFYING SESSION...",
                 style: TextStyle(
-                  // ignore: deprecated_member_use
                   color: primaryPink.withOpacity(0.8),
                   fontSize: 10,
                   fontWeight: FontWeight.w900,

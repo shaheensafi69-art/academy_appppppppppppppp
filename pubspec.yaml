@@ -18,7 +18,12 @@ dependencies:
   url_launcher: ^6.3.2
   file_picker: ^11.0.3
   local_auth: ^3.0.1         # پکیج جدید برای قفل پین و اثر انگشت / بیومتریک
-  device_info_plus: ^13.2.0    # پکیج جدید برای شناسایی نوع و مدل دیوایس
+  device_info_plus: ^11.2.0    # پکیج جدید برای شناسایی نوع و مدل دیوایس
+  dio: ^5.4.0                  # برای دانلود فایل‌ها در پس‌زمینه
+  path_provider: ^2.1.2       # برای دسترسی به مسیرهای ذخیره‌سازی موبایل
+  permission_handler: ^11.3.1  # برای مدیریت مجوزهای دسترسی حافظه
+  flutter_pdfview: ^1.4.0      # برای نمایش فایل‌های PDF در داخل اپلیکیشن برای مدیریت مجوزهای دسترسی حافظهی نوع و مدل دیوایس
+  dropdown_search: ^7.0.0
 
 dev_dependencies:
   flutter_test:
@@ -32,7 +37,12 @@ flutter:
   assets:
     - .env
     - assets/logo-without-b.png
-    - assets/icon/
+    - assets/logo.png
+    - assets/facebook.com-logo.webp
+    - assets/intagram.com-logo.webp
+    - assets/linkedin.com-logo.webp
+    - assets/whatsapp.com-logo.webp
+    - assets/x.com-logo.webp
 
 # 🔥 تنظیمات خودکار آیکون اپلیکیشن (بر اساس عکس‌های پوشه icon)
 flutter_launcher_icons:

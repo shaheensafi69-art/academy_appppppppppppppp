@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -16,6 +15,7 @@ class TeacherStudentProfileItem {
   final double walletBalance;
   final String bio;
   final String referralCode;
+  final List<String> enrolledCourses;
   final List<String> enrolledClasses;
 
   TeacherStudentProfileItem({
@@ -32,6 +32,7 @@ class TeacherStudentProfileItem {
     required this.walletBalance,
     required this.bio,
     required this.referralCode,
+    required this.enrolledCourses,
     required this.enrolledClasses,
   });
 }
@@ -47,10 +48,15 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
   final supabase = Supabase.instance.client;
   bool isLoading = true;
   List<TeacherStudentProfileItem> students = [];
-  String searchQuery = "";
-  TeacherStudentProfileItem? selectedStudent;
+  
+  // لیست دوره‌ها و کلاس‌های استاد برای فیلتر
+  List<Map<String, dynamic>> teacherCourses = [];
+  List<Map<String, dynamic>> teacherClasses = [];
 
-  // پالت رنگی اختصاصی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  String? selectedCourseId; // فیلتر دوره
+  String? selectedClassId;  // فیلتر کلاس
+  String searchQuery = "";
+
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
   static const Color surfaceWhite = Colors.white;
@@ -61,23 +67,33 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchAllTeacherStudents();
+    _fetchTeacherStudentsAndFilters();
   }
 
-  Future<void> _fetchAllTeacherStudents() async {
+  Future<void> _fetchTeacherStudentsAndFilters() async {
     setState(() => isLoading = true);
     try {
       final user = supabase.auth.currentUser;
       if (user == null) return;
       final teacherId = user.id;
 
-      // ۱. پیدا کردن تمام کلاس‌های این استاد
-      final teacherClasses = await supabase
-          .from("class_groups")
-          .select("id, class_name")
+      // ۱. خواندن دوره‌های متعلق به این استاد از جدول courses
+      final coursesRes = await supabase
+          .from("courses")
+          .select("id, title")
           .eq("teacher_id", teacherId);
+      teacherCourses = List<Map<String, dynamic>>.from(coursesRes);
+      final courseIds = teacherCourses.map((c) => c['id']).toList();
 
-      if ((teacherClasses as List).isEmpty) {
+      // ۲. خواندن کلاس‌های متعلق به این استاد از جدول class_groups
+      final classesRes = await supabase
+          .from("class_groups")
+          .select("id, class_name, course_id")
+          .eq("teacher_id", teacherId);
+      teacherClasses = List<Map<String, dynamic>>.from(classesRes);
+      final classIds = teacherClasses.map((c) => c['id']).toList();
+
+      if (courseIds.isEmpty && classIds.isEmpty) {
         setState(() {
           students = [];
           isLoading = false;
@@ -85,15 +101,34 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
         return;
       }
 
-      final classIds = (teacherClasses as List).map((c) => c['id']).toList();
+      // ۳. واکشی جدول enrollments برای پیدا کردن دانشجویان دوره‌ها
+      List<dynamic> enrollmentsData = [];
+      if (courseIds.isNotEmpty) {
+        enrollmentsData = await supabase
+            .from("enrollments")
+            .select("student_id, course_id, courses(title)")
+            .inFilter("course_id", courseIds);
+      }
 
-      // ۲. پیدا کردن رکوردهای شاگردان این کلاس‌ها
-      final classStudentsData = await supabase
-          .from("class_students")
-          .select("student_id, class_group_id")
-          .inFilter("class_group_id", classIds);
+      // ۴. واکشی جدول class_students برای پیدا کردن دانشجویان کلاس‌ها
+      List<dynamic> classStudentsData = [];
+      if (classIds.isNotEmpty) {
+        classStudentsData = await supabase
+            .from("class_students")
+            .select("student_id, class_group_id")
+            .inFilter("class_group_id", classIds);
+      }
 
-      if ((classStudentsData as List).isEmpty) {
+      // استخراج شناسه‌های یکتای تمام دانشجویان مرتبط
+      final studentIdsSet = <String>{};
+      for (var en in enrollmentsData) {
+        if (en['student_id'] != null) studentIdsSet.add(en['student_id'].toString());
+      }
+      for (var cs in classStudentsData) {
+        if (cs['student_id'] != null) studentIdsSet.add(cs['student_id'].toString());
+      }
+
+      if (studentIdsSet.isEmpty) {
         setState(() {
           students = [];
           isLoading = false;
@@ -101,23 +136,32 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
         return;
       }
 
-      final uniqueStudentIds = (classStudentsData as List).map((item) => item['student_id']).toSet().toList();
-
-      // ۳. واکشی پروفایل کامل این شاگردان
+      // ۵. خواندن اطلاعات کامل پروفایل شاگردان از جدول profiles
       final profilesData = await supabase
           .from("profiles")
           .select("id, first_name, last_name, father_name, date_of_birth, email, phone_number, country, avatar_url, total_score, wallet_balance, bio, referral_code")
-          .inFilter("id", uniqueStudentIds);
+          .inFilter("id", studentIdsSet.toList());
 
       students = (profilesData as List).map((p) {
-        final studentClassRelations = (classStudentsData as List).where((cs) => cs['student_id'] == p['id']);
-        final enrolledClassNames = studentClassRelations.map((rel) {
-          final cls = (teacherClasses as List).firstWhere((c) => c['id'] == rel['class_group_id'], orElse: () => null);
-          return cls != null ? cls['class_name'] : "Unknown Class";
-        }).toList();
+        final pId = p['id'];
+
+        // دوره‌های ثبت‌نام شده‌ی این شاگرد
+        final myEnrollments = enrollmentsData.where((en) => en['student_id'] == pId);
+        final courseNames = myEnrollments.map((en) {
+          final cObj = en['courses'];
+          if (cObj is Map) return cObj['title']?.toString() ?? 'Course';
+          return 'Course';
+        }).toSet().toList();
+
+        // کلاس‌های این شاگرد
+        final myClasses = classStudentsData.where((cs) => cs['student_id'] == pId);
+        final classNames = myClasses.map((cs) {
+          final matchCls = teacherClasses.firstWhere((tc) => tc['id'] == cs['class_group_id'], orElse: () => {});
+          return matchCls['class_name']?.toString() ?? 'Class';
+        }).toSet().toList();
 
         return TeacherStudentProfileItem(
-          id: p['id'] ?? '',
+          id: pId ?? '',
           firstName: p['first_name'] ?? 'Unknown',
           lastName: p['last_name'] ?? '',
           fatherName: p['father_name'] ?? 'Not specified',
@@ -130,11 +174,12 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
           walletBalance: (p['wallet_balance'] ?? 0).toDouble(),
           bio: p['bio'] ?? 'No biography provided.',
           referralCode: p['referral_code'] ?? '-',
-          enrolledClasses: enrolledClassNames.cast<String>().toSet().toList(),
+          enrolledCourses: courseNames,
+          enrolledClasses: classNames,
         );
       }).toList();
-        } catch (e) {
-      debugPrint("Error fetching teacher roster: $e");
+    } catch (e) {
+      debugPrint("Error fetching students data: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -241,14 +286,172 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
     );
   }
 
+  // دیالوگ کشویی بسیار زیبا و حرفه‌ای برای فیلتر بر اساس نام کورس و کلاس
+  void _showFilterBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: surfaceWhite,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Filter Directory", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: textGrey),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const Text("Filter students by specific course and class group.", style: TextStyle(color: textGrey, fontSize: 11)),
+                  const SizedBox(height: 20),
+
+                  // انتخاب کورس (Course)
+                  const Text("Course Filter", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String?>(
+                    value: selectedCourseId,
+                    dropdownColor: surfaceWhite,
+                    isExpanded: true,
+                    style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: cardBorder.withOpacity(0.5),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                    ),
+                    items: [
+                      const DropdownMenuItem<String?>(value: null, child: Text("All Courses (Clear)")),
+                      ...teacherCourses.map((crs) => DropdownMenuItem<String?>(
+                            value: crs['id'].toString(),
+                            child: Text(crs['title'] ?? 'Course Title'),
+                          )),
+                    ],
+                    onChanged: (val) {
+                      setModalState(() {
+                        setState(() {
+                          selectedCourseId = val;
+                          selectedClassId = null; // ریست کلاس با تغییر کورس
+                        });
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // انتخاب کلاس (Class Group)
+                  const Text("Class Group Filter", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String?>(
+                    value: selectedClassId,
+                    dropdownColor: surfaceWhite,
+                    isExpanded: true,
+                    style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: cardBorder.withOpacity(0.5),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                    ),
+                    items: [
+                      const DropdownMenuItem<String?>(value: null, child: Text("All Classes (Clear)")),
+                      ...teacherClasses
+                          .where((cls) => selectedCourseId == null || cls['course_id'].toString() == selectedCourseId.toString())
+                          .map((cls) => DropdownMenuItem<String?>(
+                                value: cls['id'].toString(),
+                                child: Text(cls['class_name'] ?? 'Class Name'),
+                              )),
+                    ],
+                    onChanged: (val) {
+                      setModalState(() {
+                        setState(() => selectedClassId = val);
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 28),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            side: const BorderSide(color: cardBorder, width: 1.5),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              selectedCourseId = null;
+                              selectedClassId = null;
+                            });
+                            Navigator.pop(context);
+                          },
+                          child: const Text("Reset Filters", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 11)),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryPink,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("Apply Filter", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // فیلتر کردن هوشمند شاگردان بر اساس سرچ، دوره و کلاس انتخاب‌شده
     final filteredStudents = students.where((s) {
       final q = searchQuery.toLowerCase();
-      return s.firstName.toLowerCase().contains(q) ||
+      bool matchesSearch = s.firstName.toLowerCase().contains(q) ||
           s.lastName.toLowerCase().contains(q) ||
           s.email.toLowerCase().contains(q) ||
           s.phoneNumber.contains(q);
+
+      bool matchesCourse = true;
+      if (selectedCourseId != null) {
+        final crsObj = teacherCourses.firstWhere((c) => c['id'].toString() == selectedCourseId.toString(), orElse: () => {});
+        final crsTitle = crsObj['title'] ?? '';
+        matchesCourse = s.enrolledCourses.contains(crsTitle);
+      }
+
+      bool matchesClass = true;
+      if (selectedClassId != null) {
+        final clsObj = teacherClasses.firstWhere((c) => c['id'].toString() == selectedClassId.toString(), orElse: () => {});
+        final clsName = clsObj['class_name'] ?? '';
+        matchesClass = s.enrolledClasses.contains(clsName);
+      }
+
+      return matchesSearch && matchesCourse && matchesClass;
     }).toList();
 
     return SingleChildScrollView(
@@ -293,7 +496,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                     children: [
                       const Text("My Students", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
                       const SizedBox(height: 3),
-                      Text("Global directory of all students enrolled across your classes (${students.length} Total).",
+                      Text("Global directory of all students enrolled across your courses & classes (${filteredStudents.length} Visible).",
                           style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                     ],
                   ),
@@ -303,21 +506,41 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
           ),
           const SizedBox(height: 20),
 
-          // سرچ‌بار مدرن
-          TextField(
-            onChanged: (val) => setState(() => searchQuery = val),
-            style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w600),
-            decoration: InputDecoration(
-              hintText: "Search by name, email, phone...",
-              hintStyle: const TextStyle(color: textGrey, fontSize: 11),
-              prefixIcon: const Icon(Icons.search_rounded, color: textGrey, size: 20),
-              filled: true,
-              fillColor: cardBorder.withOpacity(0.5),
-              contentPadding: const EdgeInsets.symmetric(vertical: 14),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
-            ),
+          // ================= ابزار جستجو و دکمه فیلتر پیشرفته =================
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  onChanged: (val) => setState(() => searchQuery = val),
+                  style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w600),
+                  decoration: InputDecoration(
+                    hintText: "Search by name, email, phone...",
+                    hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                    prefixIcon: const Icon(Icons.search_rounded, color: textGrey, size: 20),
+                    filled: true,
+                    fillColor: cardBorder.withOpacity(0.5),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              GestureDetector(
+                onTap: _showFilterBottomSheet,
+                child: Container(
+                  padding: const EdgeInsets.all(13),
+                  decoration: BoxDecoration(
+                    color: (selectedCourseId != null || selectedClassId != null) ? primaryPink : cardBorder.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: (selectedCourseId != null || selectedClassId != null) ? primaryPink : cardBorder, width: 1.5),
+                  ),
+                  child: Icon(Icons.filter_list_rounded,
+                      color: (selectedCourseId != null || selectedClassId != null) ? Colors.white : textDark, size: 22),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 18),
 
@@ -329,7 +552,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: filteredStudents.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 12),
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final student = filteredStudents[index];
                         return Container(
@@ -389,17 +612,26 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                               Wrap(
                                 spacing: 6,
                                 runSpacing: 6,
-                                children: student.enrolledClasses.map((cls) {
-                                  return Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: lightPinkBg,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(cls,
-                                        style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.bold)),
-                                  );
-                                }).toList(),
+                                children: [
+                                  ...student.enrolledCourses.map((crs) => Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: primaryPink.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text("Course: $crs",
+                                            style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.bold)),
+                                      )),
+                                  ...student.enrolledClasses.map((cls) => Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: lightPinkBg,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text("Class: $cls",
+                                            style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.bold)),
+                                      )),
+                                ],
                               ),
                               const SizedBox(height: 14),
                               SizedBox(

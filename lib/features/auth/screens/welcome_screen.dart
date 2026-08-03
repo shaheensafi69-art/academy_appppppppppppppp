@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'login_screen.dart'; // هدایت به صفحه لاگین پس از اتمام مراحل
+import 'login_screen.dart';   // هدایت به صفحه لاگین
+import 'register_screen.dart'; // هدایت به صفحه ثبت‌نام (نام فایل ثبت‌نام خود را در صورت نیاز اینجا تنظیم کنید)
 
 class OnboardingItem {
   final String title;
@@ -32,7 +33,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   static const Color textGrey = Color(0xFF6B7280);
   static const Color cardBorder = Color(0xFFF3F4F6);
 
-  // لیست ۵ مرحله ویلکم اسکرین بدون ایموجی و با آیکون‌های متریال
+  // لیست مراحل ویلکم اسکرین
   final List<OnboardingItem> _pages = [
     OnboardingItem(
       title: "Welcome to Safi Academy",
@@ -68,164 +69,235 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   void _onNext() {
-    if (_currentIndex < _pages.length - 1) {
+    if (_currentIndex < _pages.length) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
     }
+  }
+
+  void _navigateToLogin() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+  }
+
+  void _navigateToRegister() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const RegisterScreen()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    // تعداد کل صفحات شامل اسلایدرها + ۱ صفحه نهایی لوگو و دکمه‌ها
+    final int totalPages = _pages.length + 1;
+
     return Scaffold(
       backgroundColor: surfaceWhite,
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Column(
-              children: [
-                // هدر بالای صفحه (دکمه Skip)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // هدر بالای صفحه (برند و دکمه Skip)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
                     children: [
-                      Row(
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: lightPinkBg,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.school_rounded, color: primaryPink, size: 16),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text("SAFI ACADEMY", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5)),
+                    ],
+                  ),
+                  if (_currentIndex < totalPages - 1)
+                    TextButton(
+                      onPressed: _navigateToLogin,
+                      child: const Text("Skip", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                    ),
+                ],
+              ),
+            ),
+
+            // بدنه اصلی (PageView شامل مراحل و صفحه نهایی)
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: totalPages,
+                onPageChanged: (index) {
+                  setState(() => _currentIndex = index);
+                },
+                itemBuilder: (context, index) {
+                  // بررسی اینکه آیا صفحه نهایی است یا خیر
+                  if (index == _pages.length) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          // لوگوی بزرگ اکادمی در وسط صفحه
                           Container(
-                            padding: const EdgeInsets.all(6),
+                            width: 140,
+                            height: 140,
                             decoration: BoxDecoration(
-                              color: lightPinkBg,
-                              borderRadius: BorderRadius.circular(10),
+                              gradient: LinearGradient(
+                                colors: [lightPinkBg, surfaceWhite],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(38),
+                              border: Border.all(color: primaryPink.withOpacity(0.3), width: 2),
+                              boxShadow: [
+                                BoxShadow(color: primaryPink.withOpacity(0.12), blurRadius: 30, offset: const Offset(0, 12)),
+                              ],
                             ),
-                            child: const Icon(Icons.school_rounded, color: primaryPink, size: 16),
+                            alignment: Alignment.center,
+                            child: const Icon(Icons.school_rounded, size: 70, color: primaryPink),
                           ),
-                          const SizedBox(width: 8),
-                          const Text("SAFI ACADEMY", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5)),
+                          const SizedBox(height: 30),
+                          const Text(
+                            "Ready to Begin?",
+                            style: TextStyle(color: textDark, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "Log in to your account or create a new one to access elite training and live campus tools.",
+                            style: TextStyle(color: textGrey, fontSize: 12, height: 1.5, fontWeight: FontWeight.w500),
+                            textAlign: TextAlign.center,
+                          ),
                         ],
                       ),
-                      if (_currentIndex < _pages.length - 1)
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (_) => const LoginScreen()),
-                            );
-                          },
-                          child: const Text("Skip", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
-                        ),
-                    ],
-                  ),
-                ),
+                    );
+                  }
 
-                // صفحات اسلایدر (PageView)
-                Expanded(
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: _pages.length,
-                    onPageChanged: (index) {
-                      setState(() => _currentIndex = index);
-                    },
-                    itemBuilder: (context, index) {
-                      final item = _pages[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // قاب آیکون بزرگ با استایل لایت و صورتی
-                            Container(
-                              width: 130,
-                              height: 130,
-                              decoration: BoxDecoration(
-                                color: surfaceWhite,
-                                borderRadius: BorderRadius.circular(32),
-                                border: Border.all(color: cardBorder, width: 2),
-                                boxShadow: [
-                                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
-                                ],
-                              ),
-                              alignment: Alignment.center,
-                              child: Icon(item.iconData, size: 56, color: primaryPink),
-                            ),
-                            const SizedBox(height: 40),
-
-                            // عنوان مرحله
-                            Text(
-                              item.title,
-                              style: const TextStyle(color: textDark, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 14),
-
-                            // توضیحات مرحله
-                            Text(
-                              item.subtitle,
-                              style: const TextStyle(color: textGrey, fontSize: 12, height: 1.5, fontWeight: FontWeight.w500),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-                // فوتر پایین صفحه (نشانگرهای دات و دکمه Next / Get Started)
-                Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    children: [
-                      // نشانگرهای صفحات (Dots Indicator)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          _pages.length,
-                          (index) => AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            width: _currentIndex == index ? 24 : 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: _currentIndex == index ? primaryPink : cardBorder,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
+                  // صفحات مراحل اسلایدر
+                  final item = _pages[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 130,
+                          height: 130,
+                          decoration: BoxDecoration(
+                            color: surfaceWhite,
+                            borderRadius: BorderRadius.circular(32),
+                            border: Border.all(color: cardBorder, width: 2),
+                            boxShadow: [
+                              BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                            ],
                           ),
+                          alignment: Alignment.center,
+                          child: Icon(item.iconData, size: 56, color: primaryPink),
                         ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // دکمه ادامه / ورود
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryPink,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          ),
-                          onPressed: _onNext,
-                          child: Text(
-                            _currentIndex == _pages.length - 1 ? "Get Started 🚀" : "Continue",
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1),
-                          ),
+                        const SizedBox(height: 40),
+                        Text(
+                          item.title,
+                          style: const TextStyle(color: textDark, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                          textAlign: TextAlign.center,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                        const SizedBox(height: 14),
+                        Text(
+                          item.subtitle,
+                          style: const TextStyle(color: textGrey, fontSize: 12, height: 1.5, fontWeight: FontWeight.w500),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+
+            // فوتر پایین صفحه (نشانگرهای دات و باکس دکمه‌ها)
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                children: [
+                  // نشانگرهای صفحات (Dots Indicator)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      totalPages,
+                      (index) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: _currentIndex == index ? 24 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: _currentIndex == index ? primaryPink : cardBorder,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // اگر در صفحه آخر بودیم، دو باکس دکمه زیبا (Login & Register) نمایش داده شود
+                  if (_currentIndex == totalPages - 1) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryPink,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        onPressed: _navigateToLogin, // دکمه لاگین -> هدایت به صفحه لاگین
+                        child: const Text("Login to Account 🚀", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: primaryPink,
+                          side: const BorderSide(color: primaryPink, width: 1.5),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        onPressed: _navigateToRegister, // دکمه ثبت‌نام -> هدایت به صفحه ریجستر
+                        child: const Text("Create New Account", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                      ),
+                    ),
+                  ] else ...[
+                    // دکمه Continue معمولی برای مراحل قبل
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryPink,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        onPressed: _onNext,
+                        child: const Text("Continue", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

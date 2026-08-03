@@ -1,7 +1,7 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'teacher_todo_detail_screen.dart';
 
 class ClassGroupItem {
   final String id;
@@ -50,7 +50,6 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
   final supabase = Supabase.instance.client;
   bool isLoading = true;
 
-  // پالت رنگی جدید، لوکس و مدرن لایت (سفید صدفی و صورتی غلیظ خالص)
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
   static const Color surfaceWhite = Colors.white;
@@ -74,11 +73,20 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
   };
 
   List<ClassGroupItem> classes = [];
+  List<Map<String, dynamic>> todoList = [];
+  final TextEditingController _todoController = TextEditingController();
+  DateTime? _selectedDueDate;
 
   @override
   void initState() {
     super.initState();
     _fetchDashboardData();
+  }
+
+  @override
+  void dispose() {
+    _todoController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchDashboardData() async {
@@ -154,6 +162,14 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
         todayAttCount = (attRes as List?)?.length ?? 0;
       }
 
+      // واکشی لیست تو-دوها و مرتب‌سازی هوشمند بر اساس زمان سررسید و وضعیت تکمیل
+      final todosRes = await supabase
+          .from("teacher_todos")
+          .select("*")
+          .eq("teacher_id", userId)
+          .order("is_completed", ascending: true)
+          .order("due_time", ascending: true);
+
       setState(() {
         stats = {
           'totalStudents': totalStudentsCount,
@@ -161,11 +177,73 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
           'pendingGrading': pendingCount,
           'todayAttendance': todayAttCount,
         };
+        todoList = List<Map<String, dynamic>>.from(todosRes);
       });
     } catch (e) {
       debugPrint("Error loading teacher dashboard: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _pickDueDate() async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (pickedDate != null) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+      if (pickedTime != null) {
+        setState(() {
+          _selectedDueDate = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+        });
+      }
+    }
+  }
+
+  Future<void> _addTodoItem() async {
+    final text = _todoController.text.trim();
+    if (text.isEmpty) return;
+
+    try {
+      final user = supabase.auth.currentUser;
+      if (user == null) return;
+
+      await supabase.from("teacher_todos").insert({
+        'teacher_id': user.id,
+        'task_text': text,
+        'is_completed': false,
+        'due_time': _selectedDueDate?.toIso8601String(),
+      });
+
+      _todoController.clear();
+      _selectedDueDate = null;
+      _fetchDashboardData();
+    } catch (e) {
+      debugPrint("Error adding todo: $e");
+    }
+  }
+
+  Future<void> _toggleTodoStatus(String id, bool currentStatus) async {
+    try {
+      await supabase.from("teacher_todos").update({
+        'is_completed': !currentStatus,
+      }).eq('id', id);
+
+      _fetchDashboardData();
+    } catch (e) {
+      debugPrint("Error updating todo: $e");
     }
   }
 
@@ -257,7 +335,6 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                // بخش کیف پول شیک و مدرن
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
@@ -282,7 +359,7 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
           ),
           const SizedBox(height: 28),
 
-          // ================= ۲. آمار زنده (کارت‌های مدرن و مینیمال) =================
+          // ================= ۲. آمار زنده =================
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -311,7 +388,163 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
           ),
           const SizedBox(height: 32),
 
-          // ================= ۳. فرماندهی کلاس‌ها (Command Center) =================
+          // ================= ۳. لیست کارهای روزانه همراه با انتخاب تایم و هشدار رنگی =================
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("FACULTY TO-DO LIST & ALERTS", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2)),
+              Text("${todoList.where((t) => t['is_completed'] == true).length}/${todoList.length} Done", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: surfaceWhite,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: cardBorder),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _todoController,
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textDark),
+                        decoration: InputDecoration(
+                          hintText: "Add urgent task...",
+                          hintStyle: const TextStyle(fontSize: 11, color: textGrey),
+                          filled: true,
+                          fillColor: cardBorder.withOpacity(0.5),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: Icon(Icons.access_time_rounded, color: _selectedDueDate != null ? primaryPink : textGrey),
+                      onPressed: _pickDueDate,
+                      tooltip: "Set Due Time",
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryPink,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      onPressed: _addTodoItem,
+                      child: const Icon(Icons.add_rounded, size: 20),
+                    ),
+                  ],
+                ),
+                if (_selectedDueDate != null) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.timer_rounded, size: 14, color: primaryPink),
+                      const SizedBox(width: 6),
+                      Text("Due: ${_selectedDueDate.toString().split('.')[0]}", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: primaryPink)),
+                    ],
+                  ),
+                ],
+                if (todoList.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: todoList.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      final task = todoList[index];
+                      final isCompleted = task['is_completed'] ?? false;
+                      final dueTimeString = task['due_time'];
+
+                      bool isAlert = false;
+                      if (!isCompleted && dueTimeString != null) {
+                        final dueDate = DateTime.parse(dueTimeString);
+                        if (DateTime.now().isAfter(dueDate.subtract(const Duration(hours: 2)))) {
+                          isAlert = true; // اگر کمتر از ۲ ساعت مانده باشد یا وقتش گذشته باشد
+                        }
+                      }
+
+                      return GestureDetector(
+                        onTap: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => TeacherTodoDetailScreen(todoItem: task)),
+                          );
+                          if (result == true) {
+                            _fetchDashboardData();
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: isCompleted 
+                                ? Colors.green.withOpacity(0.05) 
+                                : (isAlert ? Colors.amber.withOpacity(0.2) : cardBorder.withOpacity(0.3)),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isCompleted 
+                                  ? Colors.green.withOpacity(0.2) 
+                                  : (isAlert ? Colors.amber.shade700 : cardBorder),
+                              width: isAlert ? 1.5 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Checkbox(
+                                value: isCompleted,
+                                activeColor: primaryPink,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                onChanged: (val) => _toggleTodoStatus(task['id'], isCompleted),
+                              ),
+                              if (isAlert) ...[
+                                const Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 16),
+                                const SizedBox(width: 6),
+                              ],
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      task['task_text'] ?? '',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: isCompleted ? textGrey : textDark,
+                                        decoration: isCompleted ? TextDecoration.lineThrough : null,
+                                      ),
+                                    ),
+                                    if (dueTimeString != null) ...[
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        "Due: ${dueTimeString.split('T')[0]} ${dueTimeString.split('T')[1].substring(0, 5)}",
+                                        style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: isAlert ? Colors.amber.shade900 : textGrey),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: textGrey),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          // ================= ۴. فرماندهی کلاس‌ها (Command Center) =================
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -395,7 +628,6 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                             ],
                           ),
                           const SizedBox(height: 18),
-                          // دکمه‌های اکشن فوق‌العاده مدرن داخل باکس کلاس
                           Row(
                             children: [
                               if (room.meetingLink != null)

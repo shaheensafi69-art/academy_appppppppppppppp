@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -19,14 +18,16 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
   String? messageText;
   bool isSuccessMessage = false;
 
+  // فیلدهای اطلاعاتی (قفل‌شده)
   final firstNameCtrl = TextEditingController();
   final lastNameCtrl = TextEditingController();
   final emailCtrl = TextEditingController();
   final phoneCtrl = TextEditingController();
   final bioCtrl = TextEditingController();
+
+  // فیلدهای قابل ویرایش و مدیریت ادمین (کیف پول، امتیاز و نقش)
   final walletCtrl = TextEditingController();
   final scoreCtrl = TextEditingController();
-
   String selectedRole = 'student';
 
   static const Color primaryPink = Color(0xFFC2185B);
@@ -61,9 +62,9 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
           .from("profiles")
           .select("*")
           .eq("id", widget.studentId)
-          .single();
+          .maybeSingle();
 
-      if (mounted) {
+      if (mounted && response != null) {
         setState(() {
           studentData = response;
           firstNameCtrl.text = response['first_name'] ?? '';
@@ -71,6 +72,7 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
           emailCtrl.text = response['email'] ?? '';
           phoneCtrl.text = response['phone_number'] ?? '';
           bioCtrl.text = response['bio'] ?? '';
+          
           walletCtrl.text = (response['wallet_balance'] ?? 0).toString();
           scoreCtrl.text = (response['total_score'] ?? 0).toString();
 
@@ -79,6 +81,8 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
 
           isLoading = false;
         });
+      } else {
+        setState(() => isLoading = false);
       }
     } catch (e) {
       debugPrint("Error fetching student profile: $e");
@@ -94,37 +98,31 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
     });
 
     try {
-      String fName = firstNameCtrl.text.trim();
-      String lName = lastNameCtrl.text.trim();
-      String email = emailCtrl.text.trim();
-      String phone = phoneCtrl.text.trim();
-      String bio = bioCtrl.text.trim();
       double newWallet = double.tryParse(walletCtrl.text.trim()) ?? 0.0;
       int newScore = int.tryParse(scoreCtrl.text.trim()) ?? 0;
 
-      // حذف فیلد updated_at برای جلوگیری از ارور دیتابیس
+      // فراخوانی تابع RPC اصلاح شده در دیتابیس
+      await supabase.rpc(
+        'admin_update_user_profile',
+        params: {
+          'target_user_id': widget.studentId,
+          'new_wallet': newWallet,
+          'new_score': newScore,
+          'new_role': selectedRole,
+        },
+      );
+
+      // دریافت اطلاعات جدید برای اطمینان از اعمال تغییرات
       final updatedData = await supabase
           .from("profiles")
-          .update({
-            'first_name': fName,
-            'last_name': lName,
-            'email': email,
-            'phone_number': phone.isNotEmpty ? phone : null,
-            'bio': bio.isNotEmpty ? bio : null,
-            'wallet_balance': newWallet,
-            'total_score': newScore,
-            'role': selectedRole,
-          })
+          .select("*")
           .eq("id", widget.studentId)
-          .select()
-          .single();
+          .maybeSingle();
 
       if (mounted) {
         setState(() {
-          studentData = updatedData;
-          messageText = selectedRole != 'student'
-              ? 'Profile updated & successfully promoted to ${selectedRole.toUpperCase()}! 🚀'
-              : 'Student profile updated in database successfully!';
+          if (updatedData != null) studentData = updatedData;
+          messageText = 'Admin changes successfully synchronized with database! ✅';
           isSuccessMessage = true;
         });
       }
@@ -194,227 +192,271 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
           physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: cardBorder,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: cardBorder, width: 1.5),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.arrow_back_rounded, color: textDark, size: 16),
-                      SizedBox(width: 6),
-                      Text("Back to Students", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
-                  boxShadow: [
-                    BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: lightPinkBg,
-                      backgroundImage: avatarUrl != null && avatarUrl.toString().isNotEmpty ? NetworkImage(avatarUrl) : null,
-                      child: (avatarUrl == null || avatarUrl.toString().isEmpty)
-                          ? Text(
-                              firstNameCtrl.text.isNotEmpty ? firstNameCtrl.text[0] : 'S',
-                              style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 20),
-                            )
-                          : null,
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 800),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: cardBorder,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: cardBorder, width: 1.5),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            "${firstNameCtrl.text} ${lastNameCtrl.text}",
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          Icon(Icons.arrow_back_rounded, color: textDark, size: 16),
+                          SizedBox(width: 6),
+                          Text("Back to Students", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // هدر پروفایل
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                      boxShadow: [
+                        BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: lightPinkBg,
+                          backgroundImage: avatarUrl != null && avatarUrl.toString().isNotEmpty ? NetworkImage(avatarUrl) : null,
+                          child: (avatarUrl == null || avatarUrl.toString().isEmpty)
+                              ? Text(
+                                  firstNameCtrl.text.isNotEmpty ? firstNameCtrl.text[0] : 'S',
+                                  style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 20),
+                                )
+                              : null,
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${firstNameCtrl.text} ${lastNameCtrl.text}",
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                emailCtrl.text,
+                                style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 3),
-                          Text(
-                            emailCtrl.text,
-                            style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        )
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  if (messageText != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isSuccessMessage ? Colors.green.withOpacity(0.12) : Colors.redAccent.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: isSuccessMessage ? Colors.green.withOpacity(0.3) : Colors.redAccent.withOpacity(0.3), width: 1.5),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isSuccessMessage ? Icons.check_circle_rounded : Icons.error_rounded,
+                            color: isSuccessMessage ? Colors.green.shade700 : Colors.redAccent,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              messageText!,
+                              style: TextStyle(color: isSuccessMessage ? Colors.green.shade700 : Colors.redAccent, fontSize: 11, fontWeight: FontWeight.w900),
+                            ),
                           ),
                         ],
                       ),
-                    )
+                    ),
+                    const SizedBox(height: 20),
                   ],
-                ),
-              ),
-              const SizedBox(height: 20),
 
-              if (messageText != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: isSuccessMessage ? Colors.green.withOpacity(0.12) : Colors.redAccent.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: isSuccessMessage ? Colors.green.withOpacity(0.3) : Colors.redAccent.withOpacity(0.3), width: 1.5),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        isSuccessMessage ? Icons.check_circle_rounded : Icons.error_rounded,
-                        color: isSuccessMessage ? Colors.green.shade700 : Colors.redAccent,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          messageText!,
-                          style: TextStyle(color: isSuccessMessage ? Colors.green.shade700 : Colors.redAccent, fontSize: 11, fontWeight: FontWeight.w900),
+                  // اطلاعات شخصی (قفل‌شده)
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.lock_outline_rounded, color: textGrey, size: 14),
+                            SizedBox(width: 6),
+                            Text("PERSONAL DETAILS (LOCKED)", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
+                        const SizedBox(height: 16),
 
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: surfaceWhite,
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: cardBorder, width: 1.5),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("PROFILE SPECIFICATIONS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
-                    const SizedBox(height: 16),
-
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        bool isSmall = constraints.maxWidth < 340;
-                        if (isSmall) {
-                          return Column(
-                            children: [
-                              _buildLabeledInput("FIRST NAME", firstNameCtrl, "First Name"),
-                              const SizedBox(height: 14),
-                              _buildLabeledInput("LAST NAME", lastNameCtrl, "Last Name"),
-                            ],
-                          );
-                        }
-                        return Row(
+                        Row(
                           children: [
-                            Expanded(child: _buildLabeledInput("FIRST NAME", firstNameCtrl, "First Name")),
+                            Expanded(child: _buildLockedInput("FIRST NAME", firstNameCtrl)),
                             const SizedBox(width: 12),
-                            Expanded(child: _buildLabeledInput("LAST NAME", lastNameCtrl, "Last Name")),
+                            Expanded(child: _buildLockedInput("LAST NAME", lastNameCtrl)),
                           ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 14),
-
-                    _buildLabeledInput("EMAIL ADDRESS", emailCtrl, "Email address"),
-                    const SizedBox(height: 14),
-
-                    _buildLabeledInput("PHONE NUMBER", phoneCtrl, "Phone number", keyboardType: TextInputType.phone),
-                    const SizedBox(height: 14),
-
-                    _buildLabeledInput("BIOGRAPHY", bioCtrl, "Write comprehensive student biography...", maxLines: 4),
-                    const SizedBox(height: 14),
-
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        bool isSmall = constraints.maxWidth < 340;
-                        if (isSmall) {
-                          return Column(
-                            children: [
-                              _buildLabeledInput("WALLET BALANCE (\$)", walletCtrl, "0.00", keyboardType: const TextInputType.numberWithOptions(decimal: true)),
-                              const SizedBox(height: 14),
-                              _buildLabeledInput("ACADEMIC SCORE (PTS)", scoreCtrl, "0", keyboardType: TextInputType.number),
-                            ],
-                          );
-                        }
-                        return Row(
-                          children: [
-                            Expanded(child: _buildLabeledInput("WALLET BALANCE (\$)", walletCtrl, "0.00", keyboardType: const TextInputType.numberWithOptions(decimal: true))),
-                            const SizedBox(width: 12),
-                            Expanded(child: _buildLabeledInput("ACADEMIC SCORE (PTS)", scoreCtrl, "0", keyboardType: TextInputType.number)),
-                          ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 14),
-
-                    const Text("SYSTEM ROLE & PROMOTION", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                    const SizedBox(height: 6),
-                    DropdownButtonFormField<String>(
-                      initialValue: selectedRole,
-                      dropdownColor: surfaceWhite,
-                      isExpanded: true,
-                      style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                      decoration: _inputFieldDecoration("Select role"),
-                      items: const [
-                        DropdownMenuItem(value: 'student', child: Text("Student (Normal)", overflow: TextOverflow.ellipsis)),
-                        DropdownMenuItem(value: 'teacher', child: Text("Instructor / Mentor", overflow: TextOverflow.ellipsis)),
-                        DropdownMenuItem(value: 'super_admin', child: Text("Administrator", overflow: TextOverflow.ellipsis)),
+                        ),
+                        const SizedBox(height: 14),
+                        _buildLockedInput("EMAIL ADDRESS", emailCtrl),
+                        const SizedBox(height: 14),
+                        _buildLockedInput("PHONE NUMBER", phoneCtrl),
+                        const SizedBox(height: 14),
+                        _buildLockedInput("BIOGRAPHY", bioCtrl, maxLines: 3),
                       ],
-                      onChanged: (val) {
-                        if (val != null) setState(() => selectedRole = val);
-                      },
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryPink,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
-                  onPressed: isSaving ? null : handleUpdateProfile,
-                  child: isSaving
-                      ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                      : const Text("SAVE CHANGES & UPDATE DATABASE 🚀", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
-                ),
+                  const SizedBox(height: 20),
+
+                  // کنترل‌های ادمین (کیف پول، امتیاز و انتخاب رول با دیزاین لوکس)
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: primaryPink.withOpacity(0.25), width: 1.5),
+                      boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 6))],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 16),
+                            SizedBox(width: 6),
+                            Text("ADMIN CONTROLS & DATABASE SYNC", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2)),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        Row(
+                          children: [
+                            Expanded(child: _buildEditableInput("WALLET BALANCE (\$)", walletCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true))),
+                            const SizedBox(width: 12),
+                            Expanded(child: _buildEditableInput("ACADEMIC SCORE (PTS)", scoreCtrl, keyboardType: TextInputType.number)),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        const Text("SYSTEM ROLE & PROMOTION", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                        const SizedBox(height: 6),
+                        
+                        // منوی کشویی جدید با استایل و آیکون‌های بسیار شیک
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: cardBorder.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: selectedRole,
+                              dropdownColor: surfaceWhite,
+                              isExpanded: true,
+                              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: primaryPink),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'student',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.school_rounded, color: Color(0xFF00897B), size: 18),
+                                      SizedBox(width: 12),
+                                      Text("Student (Normal Access)", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'teacher',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.psychology_rounded, color: Color(0xFF3949AB), size: 18),
+                                      SizedBox(width: 12),
+                                      Text("Instructor / Mentor", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'super_admin',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 18),
+                                      SizedBox(width: 12),
+                                      Text("Administrator (Full Access)", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              onChanged: (val) {
+                                if (val != null) setState(() => selectedRole = val);
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryPink,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: isSaving ? null : handleUpdateProfile,
+                      child: isSaving
+                          ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                          : const Text("SYNC CHANGES TO DATABASE 🚀", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                ],
               ),
-              const SizedBox(height: 40),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildLabeledInput(String label, TextEditingController controller, String hint, {TextInputType keyboardType = TextInputType.text, int maxLines = 1}) {
+  Widget _buildLockedInput(String label, TextEditingController controller, {int maxLines = 1}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -423,24 +465,43 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
         TextField(
           controller: controller,
           maxLines: maxLines,
-          keyboardType: keyboardType,
-          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-          decoration: _inputFieldDecoration(hint),
+          readOnly: true,
+          style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.bold),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: cardBorder.withOpacity(0.8),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+            suffixIcon: const Icon(Icons.lock_rounded, size: 14, color: textGrey),
+          ),
         ),
       ],
     );
   }
 
-  InputDecoration _inputFieldDecoration(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: const TextStyle(color: textGrey, fontSize: 11),
-      filled: true,
-      fillColor: cardBorder.withOpacity(0.5),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+  Widget _buildEditableInput(String label, TextEditingController controller, {TextInputType keyboardType = TextInputType.text}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 0.8)),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+          cursorColor: primaryPink,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: cardBorder.withOpacity(0.5),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+          ),
+        ),
+      ],
     );
   }
 }

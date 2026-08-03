@@ -114,10 +114,8 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
           .eq("student_id", userId)
           .order("issue_date", ascending: false);
 
-      if (certData is List) {
-        certificates = certData.map((cert) => CertificateItem.fromJson(cert)).toList();
-      }
-
+      certificates = certData.map((cert) => CertificateItem.fromJson(cert)).toList();
+    
       // ۳. دریافت نشان‌ها و افتخارات
       final awardData = await supabase
           .from("student_awards")
@@ -125,10 +123,8 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
           .eq("student_id", userId)
           .order("awarded_at", ascending: false);
 
-      if (awardData is List) {
-        awards = awardData.map((item) => AwardItem.fromJson(item)).toList();
-      }
-    } catch (e) {
+      awards = awardData.map((item) => AwardItem.fromJson(item)).toList();
+        } catch (e) {
       debugPrint("Error fetching achievements: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);

@@ -437,7 +437,7 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: upcomingClasses.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final liveClass = upcomingClasses[index];
                   bool isMissed = liveClass['isMissed'];

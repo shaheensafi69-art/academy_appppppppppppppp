@@ -71,7 +71,7 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
           .eq("is_active", true);
 
       List<Map<String, dynamic>> groups = [];
-      if (groupsRes != null && groupsRes is List) {
+      if (groupsRes is List) {
         groups = List<Map<String, dynamic>>.from(groupsRes);
       }
 
@@ -226,7 +226,7 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                   height: 200,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(height: 200, color: cardBorder),
+                  errorBuilder: (_, _, _) => Container(height: 200, color: cardBorder),
                 ),
               ),
               const SizedBox(height: 16),
@@ -493,7 +493,7 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(14),
               child: imageUrl != null && imageUrl.isNotEmpty
-                  ? Image.network(imageUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.person, color: primaryPink))
+                  ? Image.network(imageUrl, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(Icons.person, color: primaryPink))
                   : const Icon(Icons.person, color: primaryPink),
             ),
           ),

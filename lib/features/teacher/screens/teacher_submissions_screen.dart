@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -44,13 +43,11 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
   Map<String, dynamic>? assignmentInfo;
   List<SubmissionItem> submissions = [];
 
-  // مودال نمره‌دهی
   SubmissionItem? selectedSubmission;
   final TextEditingController _gradeController = TextEditingController();
   final TextEditingController _feedbackController = TextEditingController();
   bool isSavingGrade = false;
 
-  // پالت رنگی لایت (سفید صدفی و صورتی غلیظ خالص)
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
   static const Color surfaceWhite = Colors.white;
@@ -218,248 +215,282 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
       ),
       body: Stack(
         children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(20.0),
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ================= اطلاعات تکلیف =================
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: surfaceWhite,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: cardBorder, width: 1.5),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
-                  ),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20.0),
+              physics: const BouncingScrollPhysics(),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 800),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(assignmentInfo?['description'] ?? 'No instructions provided.', style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
-                      const SizedBox(height: 14),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(color: Colors.amber.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
-                            child: Text("Max Score: ${assignmentInfo?['max_score'] ?? 100} Pts", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w900, fontSize: 10)),
-                          ),
-                          Text("Due: ${assignmentInfo?['deadline']?.toString().split('T')[0] ?? 'No Deadline'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                const Text("Received Submissions", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
-                const SizedBox(height: 12),
-
-                submissions.isNotEmpty
-                    ? ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: submissions.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 14),
-                        itemBuilder: (context, index) {
-                          final sub = submissions[index];
-                          bool isGraded = sub.grade != null;
-
-                          return Container(
-                            padding: const EdgeInsets.all(18),
-                            decoration: BoxDecoration(
-                              color: surfaceWhite,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(
-                                color: isGraded ? Colors.green.withOpacity(0.3) : primaryPink.withOpacity(0.2),
-                                width: 1.5,
-                              ),
-                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 20,
-                                          backgroundColor: lightPinkBg,
-                                          backgroundImage: sub.avatarUrl != null ? NetworkImage(sub.avatarUrl!) : null,
-                                          child: sub.avatarUrl == null ? Text(sub.firstName[0], style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 12)) : null,
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text("${sub.firstName} ${sub.lastName}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
-                                            const SizedBox(height: 2),
-                                            Text(sub.email, style: const TextStyle(color: textGrey, fontSize: 9)),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: isGraded ? Colors.green.withOpacity(0.12) : lightPinkBg,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        isGraded ? "Graded (${sub.grade})" : "● Pending",
-                                        style: TextStyle(
-                                          color: isGraded ? Colors.green.shade700 : primaryPink,
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 14),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    sub.fileUrl != null
-                                        ? GestureDetector(
-                                            onTap: () => _launchURL(sub.fileUrl!),
-                                            child: const Row(
-                                              children: [
-                                                Icon(Icons.folder_open_rounded, size: 14, color: Colors.blueAccent),
-                                                SizedBox(width: 5),
-                                                Text("View Attached File", style: TextStyle(color: Colors.blueAccent, fontSize: 11, fontWeight: FontWeight.w900)),
-                                              ],
-                                            ),
-                                          )
-                                        : const Text("No file attached", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: primaryPink,
-                                        foregroundColor: Colors.white,
-                                        elevation: 0,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                      ),
-                                      onPressed: () => _openGradeModal(sub),
-                                      child: const Text("Evaluate", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      )
-                    : Container(
-                        padding: const EdgeInsets.all(40),
-                        alignment: Alignment.center,
+                      // ================= اطلاعات تکلیف (ریسپانسیو) =================
+                      Container(
+                        padding: const EdgeInsets.all(22),
                         decoration: BoxDecoration(
                           color: surfaceWhite,
                           borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: cardBorder),
+                          border: Border.all(color: cardBorder, width: 1.5),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
                         ),
-                        child: const Column(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.folder_off_rounded, size: 36, color: textGrey),
-                            SizedBox(height: 10),
-                            Text("No Submissions", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
-                            SizedBox(height: 4),
-                            Text("No student submissions received yet.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                            Text(assignmentInfo?['description'] ?? 'No instructions provided.', style: const TextStyle(color: textGrey, fontSize: 11, height: 1.4, fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 16),
+                            const Divider(color: cardBorder),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(color: Colors.amber.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+                                  child: Text("Max Score: ${assignmentInfo?['max_score'] ?? 100} Pts", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w900, fontSize: 10)),
+                                ),
+                                Text("Due: ${assignmentInfo?['deadline']?.toString().split('T')[0] ?? 'No Deadline'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
                           ],
                         ),
                       ),
-            ],
-          ),
-        ),
+                      const SizedBox(height: 24),
 
-          // ================= مودال نمره‌دهی =================
+                      const Text("Received Submissions", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                      const SizedBox(height: 12),
+
+                      submissions.isNotEmpty
+                          ? ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: submissions.length,
+                              separatorBuilder: (_, __) => const SizedBox(height: 14),
+                              itemBuilder: (context, index) {
+                                final sub = submissions[index];
+                                bool isGraded = sub.grade != null;
+
+                                return Container(
+                                  padding: const EdgeInsets.all(18),
+                                  decoration: BoxDecoration(
+                                    color: surfaceWhite,
+                                    borderRadius: BorderRadius.circular(24),
+                                    border: Border.all(
+                                      color: isGraded ? Colors.green.withOpacity(0.3) : primaryPink.withOpacity(0.2),
+                                      width: 1.5,
+                                    ),
+                                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Row(
+                                              children: [
+                                                CircleAvatar(
+                                                  radius: 20,
+                                                  backgroundColor: lightPinkBg,
+                                                  backgroundImage: sub.avatarUrl != null ? NetworkImage(sub.avatarUrl!) : null,
+                                                  child: sub.avatarUrl == null ? Text(sub.firstName[0], style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 12)) : null,
+                                                ),
+                                                const SizedBox(width: 12),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text("${sub.firstName} ${sub.lastName}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                                      const SizedBox(height: 2),
+                                                      Text(sub.email, style: const TextStyle(color: textGrey, fontSize: 9), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: isGraded ? Colors.green.withOpacity(0.12) : lightPinkBg,
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              isGraded ? "Graded (${sub.grade})" : "● Pending",
+                                              style: TextStyle(
+                                                color: isGraded ? Colors.green.shade700 : primaryPink,
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w900,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 14),
+                                      const Divider(color: cardBorder, height: 1),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          sub.fileUrl != null
+                                              ? GestureDetector(
+                                                  onTap: () => _launchURL(sub.fileUrl!),
+                                                  child: const Row(
+                                                    children: [
+                                                      Icon(Icons.folder_open_rounded, size: 14, color: Colors.blueAccent),
+                                                      SizedBox(width: 5),
+                                                      Text("View Attached File", style: TextStyle(color: Colors.blueAccent, fontSize: 11, fontWeight: FontWeight.w900)),
+                                                    ],
+                                                  ),
+                                                )
+                                              : const Text("No file attached", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: primaryPink,
+                                              foregroundColor: Colors.white,
+                                              elevation: 0,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                            ),
+                                            onPressed: () => _openGradeModal(sub),
+                                            child: const Text("Evaluate", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            )
+                          : Container(
+                              padding: const EdgeInsets.all(40),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: surfaceWhite,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(color: cardBorder),
+                              ),
+                              child: const Column(
+                                children: [
+                                  Icon(Icons.folder_off_rounded, size: 36, color: textGrey),
+                                  SizedBox(height: 10),
+                                  Text("No Submissions", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
+                                  SizedBox(height: 4),
+                                  Text("No student submissions received yet.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                                ],
+                              ),
+                            ),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // ================= مودال نمره‌دهی (ریسپانسیو و فیکس‌شده) =================
           if (selectedSubmission != null)
             Container(
               color: Colors.black45,
               alignment: Alignment.center,
               padding: const EdgeInsets.all(16),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  color: surfaceWhite,
-                  borderRadius: BorderRadius.circular(26),
-                  border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
-                  boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 25, offset: const Offset(0, 10))],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Evaluate Work: ${selectedSubmission!.firstName}",
-                        style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
-                    const SizedBox(height: 16),
-                    const Text("Award Points *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: _gradeController,
-                      keyboardType: TextInputType.number,
-                      style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                      decoration: InputDecoration(
-                        hintText: "Score (e.g. 95)",
-                        hintStyle: const TextStyle(color: textGrey, fontSize: 11),
-                        filled: true,
-                        fillColor: cardBorder.withOpacity(0.5),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text("Teacher Feedback", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: _feedbackController,
-                      maxLines: 3,
-                      style: const TextStyle(color: textDark, fontSize: 12),
-                      decoration: InputDecoration(
-                        hintText: "Constructive comments...",
-                        hintStyle: const TextStyle(color: textGrey, fontSize: 11),
-                        filled: true,
-                        fillColor: cardBorder.withOpacity(0.5),
-                        contentPadding: const EdgeInsets.all(14),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    color: surfaceWhite,
+                    borderRadius: BorderRadius.circular(26),
+                    border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                    boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 25, offset: const Offset(0, 10))],
+                  ),
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: TextButton(
-                            style: TextButton.styleFrom(foregroundColor: textGrey),
-                            onPressed: () => setState(() => selectedSubmission = null),
-                            child: const Text("Cancel", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text("Evaluate Work: ${selectedSubmission!.firstName}",
+                                  style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close_rounded, color: textGrey, size: 20),
+                              onPressed: () => setState(() => selectedSubmission = null),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        const Text("Award Points *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: _gradeController,
+                          keyboardType: TextInputType.number,
+                          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                          decoration: InputDecoration(
+                            hintText: "Score (e.g. 95)",
+                            hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                            filled: true,
+                            fillColor: cardBorder.withOpacity(0.5),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryPink,
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                            ),
-                            onPressed: isSavingGrade ? null : _saveGrade,
-                            child: Text(isSavingGrade ? "Saving..." : "Save Grade", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                        const SizedBox(height: 16),
+                        const Text("Teacher Feedback", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: _feedbackController,
+                          maxLines: 3,
+                          style: const TextStyle(color: textDark, fontSize: 12),
+                          decoration: InputDecoration(
+                            hintText: "Constructive comments...",
+                            hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                            filled: true,
+                            fillColor: cardBorder.withOpacity(0.5),
+                            contentPadding: const EdgeInsets.all(14),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                           ),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextButton(
+                                style: TextButton.styleFrom(foregroundColor: textGrey),
+                                onPressed: () => setState(() => selectedSubmission = null),
+                                child: const Text("Cancel", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: primaryPink,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                ),
+                                onPressed: isSavingGrade ? null : _saveGrade,
+                                child: Text(isSavingGrade ? "Saving..." : "Save Grade", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),

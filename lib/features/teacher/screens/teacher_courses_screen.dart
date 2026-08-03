@@ -1,47 +1,23 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'teacher_create_class_screen.dart';
-import 'teacher_create_course_screen.dart';
-import 'teacher_class_students_screen.dart';
-import 'teacher_add_student_screen.dart';
-import 'teacher_courses_curriculum_screen.dart'; // 👈 ایمپورت صفحه مدیریت دوره‌ها
 
-class ClassGroupItem {
-  final String id;
-  final String className;
-  final String classDays;
-  final String classTime;
-  final bool isActive;
-  final int studentCount;
-  final String? thumbnailUrl;
-  final String category;
+class CourseDetailScreen extends StatefulWidget {
+  final String courseId;
+  final String courseTitle;
 
-  ClassGroupItem({
-    required this.id,
-    required this.className,
-    required this.classDays,
-    required this.classTime,
-    required this.isActive,
-    required this.studentCount,
-    this.thumbnailUrl,
-    required this.category,
-  });
-}
-
-class TeacherCoursesScreen extends StatefulWidget {
-  const TeacherCoursesScreen({super.key});
+  const CourseDetailScreen({super.key, required this.courseId, required this.courseTitle});
 
   @override
-  State<TeacherCoursesScreen> createState() => _TeacherCoursesScreenState();
+  State<CourseDetailScreen> createState() => _CourseDetailScreenState();
 }
 
-class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
+class _CourseDetailScreenState extends State<CourseDetailScreen> {
   final supabase = Supabase.instance.client;
   bool isLoading = true;
-  List<ClassGroupItem> classGroups = [];
+  Map<String, dynamic>? courseData;
+  List<Map<String, dynamic>> classGroups = [];
+  List<Map<String, dynamic>> enrolledStudents = [];
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
   static const Color surfaceWhite = Colors.white;
@@ -52,39 +28,54 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchActiveClasses();
+    _fetchCompleteCourseData();
   }
 
-  Future<void> _fetchActiveClasses() async {
+  Future<void> _fetchCompleteCourseData() async {
     setState(() => isLoading = true);
     try {
-      final user = supabase.auth.currentUser;
-      if (user == null) return;
+      // ۱. واکشی اطلاعات کامل دوره
+      final courseRes = await supabase
+          .from("courses")
+          .select("*")
+          .eq("id", widget.courseId)
+          .maybeSingle();
 
-      final classesData = await supabase
+      // ۲. واکشی گروه‌های کلاسی مرتبط با این دوره (از جدول class_groups)
+      final classesRes = await supabase
           .from("class_groups")
-          .select("id, class_name, class_days, class_time, is_active, class_students(student_id), courses(thumbnail_url, category)")
-          .eq("teacher_id", user.id)
-          .order("created_at", ascending: false);
+          .select("id, class_name, schedule_info, is_active, start_date")
+          .eq("course_id", widget.courseId);
 
-      classGroups = (classesData as List).map((cls) {
-        final courseObj = cls['courses'];
-        final courseData = courseObj is List ? (courseObj.isNotEmpty ? courseObj[0] : null) : courseObj;
-        final students = cls['class_students'] as List?;
+      List<Map<String, dynamic>> fetchedClasses = List<Map<String, dynamic>>.from(classesRes);
 
-        return ClassGroupItem(
-          id: cls['id'] ?? '',
-          className: cls['class_name'] ?? '',
-          classDays: cls['class_days'] ?? 'Not Set',
-          classTime: cls['class_time'] ?? 'Not Set',
-          isActive: cls['is_active'] ?? false,
-          studentCount: students != null ? students.length : 0,
-          thumbnailUrl: courseData?['thumbnail_url'],
-          category: courseData?['category'] ?? 'Academy Cohort',
-        );
-      }).toList();
+      // ۳. برای هر گروه کلاسی، دانشجویان داخل جدول class_students را به صورت جداگانه واکشی می‌کنیم تا پالیسی‌های RLS تداخل ایجاد نکنند
+      for (var cls in fetchedClasses) {
+        try {
+          final studentsRes = await supabase
+              .from("class_students")
+              .select("student_id, profiles(first_name, last_name, email, avatar_url)")
+              .eq("class_group_id", cls['id']);
+          cls['students_list'] = studentsRes;
         } catch (e) {
-      debugPrint("DB Sync Error: $e");
+          debugPrint("Error fetching class students for group ${cls['id']}: $e");
+          cls['students_list'] = [];
+        }
+      }
+
+      // ۴. واکشی دانشجویان ثبت‌نام شده از جدول enrollments
+      final enrollmentsRes = await supabase
+          .from("enrollments")
+          .select("id, progress_percentage, enrolled_at, student_id, profiles(first_name, last_name, email, avatar_url)")
+          .eq("course_id", widget.courseId);
+
+      setState(() {
+        courseData = courseRes;
+        classGroups = fetchedClasses;
+        enrolledStudents = List<Map<String, dynamic>>.from(enrollmentsRes);
+      });
+    } catch (e) {
+      debugPrint("Error fetching complete course data: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -92,244 +83,248 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ================= هدر صفحه =================
-          Container(
-            padding: const EdgeInsets.all(22),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
-              boxShadow: [
-                BoxShadow(
-                  color: primaryPink.withOpacity(0.08),
-                  blurRadius: 25,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: primaryPink.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(16),
+    return Scaffold(
+      backgroundColor: surfaceWhite,
+      appBar: AppBar(
+        backgroundColor: surfaceWhite,
+        elevation: 0,
+        title: Text(widget.courseTitle, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+        iconTheme: const IconThemeData(color: primaryPink),
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator(color: primaryPink))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              physics: const BouncingScrollPhysics(),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 900),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ================= هدر اطلاعات دوره =================
+                      Container(
+                        padding: const EdgeInsets.all(22),
+                        decoration: BoxDecoration(
+                          color: surfaceWhite,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: cardBorder, width: 1.5),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                                  child: Text((courseData?['category'] ?? 'GENERAL').toUpperCase(), style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                ),
+                                Text("\$${(courseData?['price'] ?? 0).toStringAsFixed(2)}", style: const TextStyle(color: Colors.green, fontSize: 14, fontWeight: FontWeight.w900)),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Text(courseData?['title'] ?? widget.courseTitle, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 18)),
+                            const SizedBox(height: 6),
+                            Text(courseData?['description'] ?? 'No description provided for this course.', style: const TextStyle(color: textGrey, fontSize: 11, height: 1.4)),
+                            const SizedBox(height: 16),
+                            const Divider(color: cardBorder),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("Language: ${courseData?['language'] ?? 'English'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                Text("Status: ${courseData?['is_published'] == true ? 'Published ✅' : 'Draft 📌'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                      child: const Icon(Icons.class_rounded, color: primaryPink, size: 26),
-                    ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      const SizedBox(height: 24),
+
+                      // ================= بخش کلاس‌ها و کوهورت‌ها (Class Groups & Students) =================
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text("Class Scheduler", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                          SizedBox(height: 3),
-                          Text("Manage class timings and cohort enrollment.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                          const Text("Associated Class Groups & Students", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(10)),
+                            child: Text("${classGroups.length} Groups", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
+                          ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                // دکمه‌های عملیاتی کامل
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: textDark,
-                          side: const BorderSide(color: cardBorder, width: 1.5),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const TeacherCreateClassScreen()))
-                              .then((_) => _fetchActiveClasses());
-                        },
-                        child: const Text("Create Class", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                      const SizedBox(height: 12),
+
+                      classGroups.isNotEmpty
+                          ? ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: classGroups.length,
+                              separatorBuilder: (_, __) => const SizedBox(height: 14),
+                              itemBuilder: (context, index) {
+                                final group = classGroups[index];
+                                final studentsList = group['students_list'] as List? ?? [];
+                                final isActive = group['is_active'] ?? false;
+
+                                return Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: surfaceWhite,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: isActive ? primaryPink : cardBorder, width: isActive ? 1.5 : 1),
+                                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Text(group['class_name'] ?? 'Class Group', style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(color: isActive ? Colors.green.withOpacity(0.1) : Colors.grey.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                            child: Text(isActive ? "● Active" : "○ Standby", style: TextStyle(color: isActive ? Colors.green.shade700 : textGrey, fontSize: 9, fontWeight: FontWeight.w900)),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text("Schedule: ${group['schedule_info'] ?? 'Not set'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500)),
+                                      const SizedBox(height: 12),
+                                      const Divider(color: cardBorder),
+                                      const SizedBox(height: 8),
+                                      Text("Students in this group (${studentsList.length}):", style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 11)),
+                                      const SizedBox(height: 8),
+                                      studentsList.isNotEmpty
+                                          ? ListView.separated(
+                                              shrinkWrap: true,
+                                              physics: const NeverScrollableScrollPhysics(),
+                                              itemCount: studentsList.length,
+                                              separatorBuilder: (_, __) => const SizedBox(height: 6),
+                                              itemBuilder: (context, sIndex) {
+                                                final studentEntry = studentsList[sIndex];
+                                                final profile = studentEntry['profiles'] as Map<String, dynamic>?;
+                                                final sName = profile != null ? "${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}".trim() : "Student";
+                                                final sEmail = profile?['email'] ?? '';
+                                                final sAvatar = profile?['avatar_url'];
+
+                                                return Row(
+                                                  children: [
+                                                    CircleAvatar(
+                                                      radius: 14,
+                                                      backgroundColor: lightPinkBg,
+                                                      backgroundImage: sAvatar != null && sAvatar.isNotEmpty ? NetworkImage(sAvatar) : null,
+                                                      child: sAvatar == null || sAvatar.isEmpty ? const Icon(Icons.person, color: primaryPink, size: 12) : null,
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Expanded(
+                                                      child: Text(sName.isNotEmpty ? sName : "Student", style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
+                                                    ),
+                                                    Text(sEmail, style: const TextStyle(color: textGrey, fontSize: 9)),
+                                                  ],
+                                                );
+                                              },
+                                            )
+                                          : const Text("No students in this group yet.", style: TextStyle(color: textGrey, fontSize: 10)),
+                                    ],
+                                  ),
+                                );
+                              },
+                            )
+                          : Container(
+                              padding: const EdgeInsets.all(20),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(color: surfaceWhite, borderRadius: BorderRadius.circular(18), border: Border.all(color: cardBorder)),
+                              child: const Text("No class groups assigned to this course yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                            ),
+                      const SizedBox(height: 24),
+
+                      // ================= لیست کل دانشجویان ثبت‌نام‌شده در دوره (Enrollments) =================
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text("All Enrolled Students (Enrollments)", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(10)),
+                            child: Text("${enrolledStudents.length} Students", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryPink,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const TeacherCreateCourseScreen()))
-                              .then((_) => _fetchActiveClasses());
-                        },
-                        child: const Text("Create Course", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // دکمه میانبر برای رفتن به صفحه مدیریت لیست دوره‌ها (Curriculum)
-                SizedBox(
-                  width: double.infinity,
-                  child: TextButton.icon(
-                    style: TextButton.styleFrom(foregroundColor: primaryPink),
-                    icon: const Icon(Icons.library_books_rounded, size: 16),
-                    label: const Text("View All Courses Curriculum ➔", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const TeacherCoursesCurriculumScreen()),
-                      );
-                    },
+                      const SizedBox(height: 12),
+
+                      enrolledStudents.isNotEmpty
+                          ? ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: enrolledStudents.length,
+                              separatorBuilder: (_, __) => const SizedBox(height: 10),
+                              itemBuilder: (context, index) {
+                                final enrollment = enrolledStudents[index];
+                                final profile = enrollment['profiles'] as Map<String, dynamic>?;
+                                final studentName = profile != null ? "${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}".trim() : "Student";
+                                final studentEmail = profile?['email'] ?? 'No email';
+                                final avatarUrl = profile?['avatar_url'];
+                                final progress = enrollment['progress_percentage'] ?? 0;
+
+                                return Container(
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: surfaceWhite,
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(color: cardBorder, width: 1.5),
+                                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 20,
+                                        backgroundColor: lightPinkBg,
+                                        backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+                                        child: avatarUrl == null || avatarUrl.isEmpty ? const Icon(Icons.person, color: primaryPink, size: 18) : null,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(studentName.isNotEmpty ? studentName : "Enrolled Student", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
+                                            const SizedBox(height: 2),
+                                            Text(studentEmail, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500)),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                        child: Text("$progress% Done", style: const TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.w900)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            )
+                          : Container(
+                              padding: const EdgeInsets.all(30),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: surfaceWhite,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(color: cardBorder),
+                              ),
+                              child: const Text("No students enrolled in this course yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                            ),
+                      const SizedBox(height: 40),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-
-          const Text("Active Cohorts", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
-          const SizedBox(height: 12),
-
-          isLoading
-              ? const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator(color: primaryPink)))
-              : classGroups.isNotEmpty
-                  ? ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: classGroups.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 14),
-                      itemBuilder: (context, index) {
-                        final cls = classGroups[index];
-                        return Container(
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            color: surfaceWhite,
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: cls.isActive ? primaryPink : cardBorder,
-                              width: cls.isActive ? 2 : 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: cls.isActive ? primaryPink.withOpacity(0.12) : Colors.black.withOpacity(0.04),
-                                blurRadius: 15,
-                                offset: const Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                                    child: Text(cls.category.toUpperCase(), style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: cls.isActive ? Colors.green.withOpacity(0.12) : Colors.grey.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      cls.isActive ? "● Active" : "○ Standby",
-                                      style: TextStyle(
-                                        color: cls.isActive ? Colors.green.shade700 : textGrey,
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Text(cls.className, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  const Icon(Icons.schedule_rounded, size: 14, color: textGrey),
-                                  const SizedBox(width: 6),
-                                  Text("${cls.classDays} | ${cls.classTime}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.people_alt_rounded, size: 14, color: textGrey),
-                                      const SizedBox(width: 5),
-                                      Text("${cls.studentCount} Students Enrolled", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w700)),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      TextButton.icon(
-                                        style: TextButton.styleFrom(foregroundColor: primaryPink),
-                                        icon: const Icon(Icons.person_add_rounded, size: 14),
-                                        label: const Text("Add", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                                        onPressed: () {
-                                          Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherAddStudentScreen(classId: cls.id)));
-                                        },
-                                      ),
-                                      const SizedBox(width: 4),
-                                      TextButton.icon(
-                                        style: TextButton.styleFrom(foregroundColor: textDark),
-                                        icon: const Icon(Icons.settings_rounded, size: 14),
-                                        label: const Text("Manage", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                                        onPressed: () {
-                                          Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherClassStudentsScreen(classId: cls.id)));
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    )
-                  : Container(
-                      padding: const EdgeInsets.all(40),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: surfaceWhite,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: cardBorder),
-                      ),
-                      child: const Column(
-                        children: [
-                          Icon(Icons.event_busy_rounded, size: 36, color: textGrey),
-                          SizedBox(height: 10),
-                          Text("No Active Cohorts", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
-                          SizedBox(height: 4),
-                          Text("No active classroom schedules found.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
-                        ],
-                      ),
-                    ),
-          const SizedBox(height: 40),
-        ],
-      ),
     );
   }
 }

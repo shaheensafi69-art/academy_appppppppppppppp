@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/routing/auth_gate.dart';
@@ -249,341 +248,349 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
         physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ================= HEADER =================
-            Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
-                boxShadow: [
-                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: lightPinkBg,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Text(
-                          "SYSTEM SETTINGS & PROFILE",
-                          style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
-                        ),
-                      ),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent.withOpacity(0.12),
-                          foregroundColor: Colors.redAccent,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          side: BorderSide(color: Colors.redAccent.withOpacity(0.3), width: 1.5),
-                        ),
-                        icon: isLoggingOut ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(color: Colors.redAccent, strokeWidth: 2)) : const Icon(Icons.logout_rounded, size: 16),
-                        label: Text(isLoggingOut ? "Logging out..." : "Logout", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
-                        onPressed: isLoggingOut ? null : handleLogoutButton,
-                      ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ================= HEADER (ریسپانسیو برای جلوگیری از اورفلو) =================
+                Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                    boxShadow: [
+                      BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    "Faculty & System Control",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    "Manage your master profile, teacher info, specialized courses & classes.",
-                    style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            if (message != null) ...[
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: message!['type'] == 'success' ? Colors.green.withOpacity(0.12) : Colors.redAccent.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: message!['type'] == 'success' ? Colors.green.withOpacity(0.3) : Colors.redAccent.withOpacity(0.3), width: 1.5),
-                ),
-                child: Row(
-                  children: [
-                    Icon(message!['type'] == 'success' ? Icons.check_circle_rounded : Icons.error_rounded, color: message!['type'] == 'success' ? Colors.green.shade700 : Colors.redAccent, size: 18),
-                    const SizedBox(width: 10),
-                    Expanded(child: Text(message!['text']!, style: TextStyle(color: message!['type'] == 'success' ? Colors.green.shade700 : Colors.redAccent, fontSize: 11, fontWeight: FontWeight.w900))),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
-
-            // ================= SECTION 1: IDENTITY & PROFILES =================
-            Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                color: surfaceWhite,
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: cardBorder, width: 1.5),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("FACULTY IDENTITY & ROLE", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
-                  const SizedBox(height: 16),
-
-                  // Avatar
-                  Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      CircleAvatar(
-                        radius: 28,
-                        backgroundColor: lightPinkBg,
-                        backgroundImage: avatarCtrl.text.trim().isNotEmpty ? NetworkImage(avatarCtrl.text.trim()) : null,
-                        child: avatarCtrl.text.trim().isEmpty ? Text(firstNameCtrl.text.isNotEmpty ? firstNameCtrl.text[0] : 'T', style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 16)) : null,
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text("AVATAR URL", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                            const SizedBox(height: 6),
-                            TextField(
-                              controller: avatarCtrl,
-                              onChanged: (_) => setState(() {}),
-                              style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                              decoration: _inputFieldDecoration("https://..."),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: lightPinkBg,
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                          ],
-                        ),
+                            child: const Text(
+                              "SYSTEM SETTINGS & PROFILE",
+                              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.redAccent.withOpacity(0.12),
+                              foregroundColor: Colors.redAccent,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              side: BorderSide(color: Colors.redAccent.withOpacity(0.3), width: 1.5),
+                            ),
+                            icon: isLoggingOut ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(color: Colors.redAccent, strokeWidth: 2)) : const Icon(Icons.logout_rounded, size: 16),
+                            label: Text(isLoggingOut ? "Logging out..." : "Logout", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                            onPressed: isLoggingOut ? null : handleLogoutButton,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      const Text(
+                        "Faculty & System Control",
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        "Manage your master profile, teacher info, specialized courses & classes.",
+                        style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-
-                  // Names
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text("FIRST NAME *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                            const SizedBox(height: 6),
-                            TextField(controller: firstNameCtrl, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("First Name")),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text("LAST NAME *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                            const SizedBox(height: 6),
-                            TextField(controller: lastNameCtrl, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("Last Name")),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  const Text("EMAIL ADDRESS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                  const SizedBox(height: 6),
-                  TextField(controller: emailCtrl, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("Email address")),
-                  const SizedBox(height: 16),
-
-                  const Text("PHONE NUMBER", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                  const SizedBox(height: 6),
-                  TextField(controller: phoneCtrl, keyboardType: TextInputType.phone, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("Phone number")),
-                  const SizedBox(height: 16),
-
-                  // System Role Dropdown
-                  const Text("SYSTEM ROLE", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                  const SizedBox(height: 6),
-                  DropdownButtonFormField<String>(
-                    initialValue: role,
-                    dropdownColor: surfaceWhite,
-                    style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                    decoration: _inputFieldDecoration("Select role"),
-                    items: const [
-                      DropdownMenuItem(value: 'teacher', child: Text("Instructor / Mentor (Teacher)")),
-                      DropdownMenuItem(value: 'super_admin', child: Text("Administrator (Super Admin)")),
-                      DropdownMenuItem(value: 'student', child: Text("Student (Normal)")),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) setState(() => role = val);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // ================= SECTION 2: TEACHER INFO (BIO & ACHIEVEMENTS) =================
-            Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                color: surfaceWhite,
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: cardBorder, width: 1.5),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("TEACHER INFO & CREDENTIALS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
-                  const SizedBox(height: 16),
-
-                  const Text("BIOGRAPHY", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: bioCtrl,
-                    maxLines: 4,
-                    style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                    decoration: _inputFieldDecoration("Write comprehensive professional biography..."),
-                  ),
-                  const SizedBox(height: 16),
-
-                  const Text("ACHIEVEMENTS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: achievementsCtrl,
-                    maxLines: 3,
-                    style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                    decoration: _inputFieldDecoration("List certifications, awards or milestones..."),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // ================= SECTION 3: SPECIALIZED COURSES & CLASSES =================
-            Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                color: surfaceWhite,
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: cardBorder, width: 1.5),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("SPECIALIZED COURSES (TEACHER INFO COURSES)", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
-                  const SizedBox(height: 12),
-                  teacherCourses.isEmpty
-                      ? const Text("No specialized courses linked.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold))
-                      : ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: teacherCourses.length,
-                          separatorBuilder: (_, _) => const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
-                            final crs = teacherCourses[index];
-                            return Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: cardBorder.withOpacity(0.5),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(crs['title'] ?? 'Course', style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                                    child: Text(crs['category'] ?? 'General', style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                  const SizedBox(height: 20),
-
-                  const Text("ASSIGNED CLASSES (CLASS GROUPS)", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
-                  const SizedBox(height: 12),
-                  teacherClasses.isEmpty
-                      ? const Text("No active classes assigned.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold))
-                      : ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: teacherClasses.length,
-                          separatorBuilder: (_, _) => const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
-                            final cls = teacherClasses[index];
-                            return Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: cardBorder.withOpacity(0.5),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(cls['class_name'], style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
-                                        const SizedBox(height: 2),
-                                        Text("Course: ${cls['course_title']}", style: const TextStyle(color: textGrey, fontSize: 10)),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                                    child: Text("${cls['students_count']} Students", style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Save Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryPink,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
-                onPressed: isSaving ? null : handleSaveChanges,
-                child: isSaving
-                    ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                    : const Text("SAVE CONFIGURATION & SYNC 🚀", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
-              ),
+                const SizedBox(height: 24),
+
+                if (message != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: message!['type'] == 'success' ? Colors.green.withOpacity(0.12) : Colors.redAccent.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: message!['type'] == 'success' ? Colors.green.withOpacity(0.3) : Colors.redAccent.withOpacity(0.3), width: 1.5),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(message!['type'] == 'success' ? Icons.check_circle_rounded : Icons.error_rounded, color: message!['type'] == 'success' ? Colors.green.shade700 : Colors.redAccent, size: 18),
+                        const SizedBox(width: 10),
+                        Expanded(child: Text(message!['text']!, style: TextStyle(color: message!['type'] == 'success' ? Colors.green.shade700 : Colors.redAccent, fontSize: 11, fontWeight: FontWeight.w900))),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+
+                // ================= SECTION 1: IDENTITY & PROFILES =================
+                Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    color: surfaceWhite,
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(color: cardBorder, width: 1.5),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("FACULTY IDENTITY & ROLE", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                      const SizedBox(height: 16),
+
+                      // Avatar
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 28,
+                            backgroundColor: lightPinkBg,
+                            backgroundImage: avatarCtrl.text.trim().isNotEmpty ? NetworkImage(avatarCtrl.text.trim()) : null,
+                            child: avatarCtrl.text.trim().isEmpty ? Text(firstNameCtrl.text.isNotEmpty ? firstNameCtrl.text[0] : 'T', style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 16)) : null,
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text("AVATAR URL", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                                const SizedBox(height: 6),
+                                TextField(
+                                  controller: avatarCtrl,
+                                  onChanged: (_) => setState(() {}),
+                                  style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                                  decoration: _inputFieldDecoration("https://..."),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Names
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text("FIRST NAME *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                                const SizedBox(height: 6),
+                                TextField(controller: firstNameCtrl, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("First Name")),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text("LAST NAME *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                                const SizedBox(height: 6),
+                                TextField(controller: lastNameCtrl, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("Last Name")),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      const Text("EMAIL ADDRESS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                      const SizedBox(height: 6),
+                      TextField(controller: emailCtrl, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("Email address")),
+                      const SizedBox(height: 16),
+
+                      const Text("PHONE NUMBER", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                      const SizedBox(height: 6),
+                      TextField(controller: phoneCtrl, keyboardType: TextInputType.phone, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("Phone number")),
+                      const SizedBox(height: 16),
+
+                      // System Role Dropdown
+                      const Text("SYSTEM ROLE", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                      const SizedBox(height: 6),
+                      DropdownButtonFormField<String>(
+                        value: role,
+                        dropdownColor: surfaceWhite,
+                        style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                        decoration: _inputFieldDecoration("Select role"),
+                        items: const [
+                          DropdownMenuItem(value: 'teacher', child: Text("Instructor / Mentor (Teacher)")),
+                          DropdownMenuItem(value: 'super_admin', child: Text("Administrator (Super Admin)")),
+                          DropdownMenuItem(value: 'student', child: Text("Student (Normal)")),
+                        ],
+                        onChanged: (val) {
+                          if (val != null) setState(() => role = val);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // ================= SECTION 2: TEACHER INFO =================
+                Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    color: surfaceWhite,
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(color: cardBorder, width: 1.5),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("TEACHER INFO & CREDENTIALS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                      const SizedBox(height: 16),
+
+                      const Text("BIOGRAPHY", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: bioCtrl,
+                        maxLines: 4,
+                        style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                        decoration: _inputFieldDecoration("Write comprehensive professional biography..."),
+                      ),
+                      const SizedBox(height: 16),
+
+                      const Text("ACHIEVEMENTS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: achievementsCtrl,
+                        maxLines: 3,
+                        style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                        decoration: _inputFieldDecoration("List certifications, awards or milestones..."),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // ================= SECTION 3: SPECIALIZED COURSES & CLASSES =================
+                Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    color: surfaceWhite,
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(color: cardBorder, width: 1.5),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("SPECIALIZED COURSES (TEACHER INFO COURSES)", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                      const SizedBox(height: 12),
+                      teacherCourses.isEmpty
+                          ? const Text("No specialized courses linked.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold))
+                          : ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: teacherCourses.length,
+                              separatorBuilder: (_, _) => const SizedBox(height: 8),
+                              itemBuilder: (context, index) {
+                                final crs = teacherCourses[index];
+                                return Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: cardBorder.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(child: Text(crs['title'] ?? 'Course', style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12))),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                                        child: Text(crs['category'] ?? 'General', style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                      const SizedBox(height: 20),
+
+                      const Text("ASSIGNED CLASSES (CLASS GROUPS)", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                      const SizedBox(height: 12),
+                      teacherClasses.isEmpty
+                          ? const Text("No active classes assigned.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold))
+                          : ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: teacherClasses.length,
+                              separatorBuilder: (_, _) => const SizedBox(height: 8),
+                              itemBuilder: (context, index) {
+                                final cls = teacherClasses[index];
+                                return Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: cardBorder.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(cls['class_name'], style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
+                                            const SizedBox(height: 2),
+                                            Text("Course: ${cls['course_title']}", style: const TextStyle(color: textGrey, fontSize: 10)),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                                        child: Text("${cls['students_count']} Students", style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Save Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryPink,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    onPressed: isSaving ? null : handleSaveChanges,
+                    child: isSaving
+                        ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                        : const Text("SAVE CONFIGURATION & SYNC 🚀", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
             ),
-            const SizedBox(height: 40),
-          ],
+          ),
         ),
       ),
     );

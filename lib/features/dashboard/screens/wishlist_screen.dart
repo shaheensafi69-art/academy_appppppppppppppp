@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'student_course_detail_screen.dart'; // ایمپورت صفحه جزئیات دوره
 
 class WishlistItem {
   final String id;
@@ -65,7 +66,6 @@ class _WishlistScreenState extends State<WishlistScreen> {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
-      // واکشی دوره‌های علاقه‌مندی شاگرد از جدول wishlists (یا جداول مرتبط دوره‌های محبوب)
       final res = await supabase
           .from("wishlists")
           .select("id, course_id, courses(*)")
@@ -167,55 +167,69 @@ class _WishlistScreenState extends State<WishlistScreen> {
                           separatorBuilder: (_, __) => const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             final item = wishlist[index];
-                            return Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: surfaceWhite,
-                                borderRadius: BorderRadius.circular(24),
-                                border: Border.all(color: cardBorder, width: 1.5),
-                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 70,
-                                    height: 70,
-                                    decoration: BoxDecoration(
-                                      color: lightPinkBg,
-                                      borderRadius: BorderRadius.circular(16),
-                                      image: item.thumbnailUrl != null
-                                          ? DecorationImage(image: NetworkImage(item.thumbnailUrl!), fit: BoxFit.cover)
+                            return GestureDetector(
+                              onTap: () {
+                                // هدایت شاگرد به صفحه جزئیات دوره هنگام کلیک روی کارت
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => StudentCourseDetailScreen(courseId: item.courseId),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: surfaceWhite,
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(color: cardBorder, width: 1.5),
+                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 70,
+                                      height: 70,
+                                      decoration: BoxDecoration(
+                                        color: lightPinkBg,
+                                        borderRadius: BorderRadius.circular(16),
+                                        image: item.thumbnailUrl != null
+                                            ? DecorationImage(image: NetworkImage(item.thumbnailUrl!), fit: BoxFit.cover)
+                                            : null,
+                                      ),
+                                      child: item.thumbnailUrl == null
+                                          ? const Icon(Icons.menu_book_rounded, color: primaryPink, size: 28)
                                           : null,
                                     ),
-                                    child: item.thumbnailUrl == null
-                                        ? const Icon(Icons.menu_book_rounded, color: primaryPink, size: 28)
-                                        : null,
-                                  ),
-                                  const SizedBox(width: 14),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(item.category.toUpperCase(), style: const TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900)),
-                                            GestureDetector(
-                                              onTap: () => _removeFromWishlist(item.id),
-                                              child: const Icon(Icons.favorite_rounded, color: primaryPink, size: 18),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(item.title, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                        const SizedBox(height: 2),
-                                        Text("Instructor: ${item.instructorName}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                                        const SizedBox(height: 8),
-                                        Text("\$${item.price.toStringAsFixed(2)}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
-                                      ],
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(item.category.toUpperCase(), style: const TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900)),
+                                              GestureDetector(
+                                                onTap: () => _removeFromWishlist(item.id),
+                                                child: const Padding(
+                                                  padding: EdgeInsets.all(4),
+                                                  child: Icon(Icons.favorite_rounded, color: primaryPink, size: 18),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(item.title, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                          const SizedBox(height: 2),
+                                          Text("Instructor: ${item.instructorName}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                          const SizedBox(height: 8),
+                                          Text("\$${item.price.toStringAsFixed(2)}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             );
                           },

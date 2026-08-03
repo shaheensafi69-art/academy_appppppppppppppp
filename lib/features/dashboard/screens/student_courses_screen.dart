@@ -57,7 +57,8 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
   
   List<CourseModel> allCourses = [];
   Set<String> enrolledCourseIds = {};
-  String activeTab = "explore"; // "explore" یا "my_courses"
+  Set<String> wishlistCourseIds = {}; // ذخیره شناسه دوره‌های ویشلیست
+  String activeTab = "explore"; 
   String searchQuery = "";
 
   final TextEditingController _searchController = TextEditingController();
@@ -72,7 +73,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchCoursesAndEnrollments();
+    _fetchCoursesAndData();
   }
 
   @override
@@ -81,21 +82,19 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
     super.dispose();
   }
 
-  Future<void> _fetchCoursesAndEnrollments() async {
+  Future<void> _fetchCoursesAndData() async {
     setState(() => isLoading = true);
     try {
-      // ۱. واکشی امن و کامل تمام دوره‌ها از جدول courses
       final response = await supabase.from("courses").select();
-      debugPrint("Fetched Courses Raw: $response");
-
       List<CourseModel> loadedCourses = [];
-      if (response != null && response is List) {
+      if (response is List) {
         loadedCourses = response.map((item) => CourseModel.fromJson(item)).toList();
       }
 
-      // ۲. واکشی دوره‌های ثبت‌نام شده دانشجو از جدول enrollments
       Set<String> enrolledIds = {};
+      Set<String> wishlistIds = {};
       final user = supabase.auth.currentUser;
+      
       if (user != null) {
         try {
           final enrollmentsRes = await supabase
@@ -103,7 +102,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
               .select("course_id")
               .eq("student_id", user.id);
 
-          if (enrollmentsRes != null && enrollmentsRes is List) {
+          if (enrollmentsRes is List) {
             for (var item in enrollmentsRes) {
               if (item['course_id'] != null) {
                 enrolledIds.add(item['course_id'].toString());
@@ -113,16 +112,75 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
         } catch (e) {
           debugPrint("Note: Enrolled check error: $e");
         }
+
+        // واکشی علاقه‌مندی‌ها از جدول wishlists
+        try {
+          final wishlistRes = await supabase
+              .from("wishlists")
+              .select("course_id")
+              .eq("student_id", user.id);
+
+          if (wishlistRes is List) {
+            for (var item in wishlistRes) {
+              if (item['course_id'] != null) {
+                wishlistIds.add(item['course_id'].toString());
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint("Note: Wishlist check error: $e");
+        }
       }
 
       setState(() {
         allCourses = loadedCourses;
         enrolledCourseIds = enrolledIds;
+        wishlistCourseIds = wishlistIds;
         isLoading = false;
       });
     } catch (e) {
       debugPrint("Error loading courses: $e");
       if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _toggleWishlist(String courseId) async {
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+
+    bool isWishlisted = wishlistCourseIds.contains(courseId);
+
+    setState(() {
+      if (isWishlisted) {
+        wishlistCourseIds.remove(courseId);
+      } else {
+        wishlistCourseIds.add(courseId);
+      }
+    });
+
+    try {
+      if (isWishlisted) {
+        await supabase
+            .from("wishlists")
+            .delete()
+            .eq("student_id", user.id)
+            .eq("course_id", courseId);
+      } else {
+        await supabase.from("wishlists").insert({
+          "student_id": user.id,
+          "course_id": courseId,
+        });
+      }
+    } catch (e) {
+      debugPrint("Error toggling wishlist: $e");
+      // برگرداندن تغییر در صورت بروز خطا
+      setState(() {
+        if (isWishlisted) {
+          wishlistCourseIds.add(courseId);
+        } else {
+          wishlistCourseIds.remove(courseId);
+        }
+      });
     }
   }
 
@@ -161,7 +219,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ================= هدر صفحه =================
+              // هدر صفحه
               Container(
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
@@ -203,7 +261,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
               ),
               const SizedBox(height: 20),
 
-              // ================= سوئیچ بین Explore و My Enrolled =================
+              // سوئیچ تب‌ها
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
@@ -249,7 +307,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
               ),
               const SizedBox(height: 20),
 
-              // ================= نوار جستجو =================
+              // نوار جستجو
               TextField(
                 controller: _searchController,
                 onChanged: (val) => setState(() => searchQuery = val),
@@ -277,16 +335,17 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
               ),
               const SizedBox(height: 20),
 
-              // ================= لیست دوره‌ها =================
+              // لیست دوره‌ها
               displayedCourses.isNotEmpty
                   ? ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: displayedCourses.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 14),
+                      separatorBuilder: (_, _) => const SizedBox(height: 14),
                       itemBuilder: (context, index) {
                         final course = displayedCourses[index];
                         final isAlreadyEnrolled = enrolledCourseIds.contains(course.id);
+                        final isWishlisted = wishlistCourseIds.contains(course.id);
 
                         return Container(
                           decoration: BoxDecoration(
@@ -307,7 +366,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                                       height: 150,
                                       width: double.infinity,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Container(height: 150, color: cardBorder),
+                                      errorBuilder: (_, _, _) => Container(height: 150, color: cardBorder),
                                     ),
                                   ),
                                   Positioned(
@@ -319,9 +378,30 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                                       child: Text(course.category.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.white)),
                                     ),
                                   ),
+                                  // قلبک علاقه‌مندی‌ها (Wishlist Heart Button)
+                                  Positioned(
+                                    top: 12,
+                                    right: 12,
+                                    child: GestureDetector(
+                                      onTap: () => _toggleWishlist(course.id),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.9),
+                                          shape: BoxShape.circle,
+                                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 6)],
+                                        ),
+                                        child: Icon(
+                                          isWishlisted ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                                          color: primaryPink,
+                                          size: 18,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                   if (isAlreadyEnrolled)
                                     Positioned(
-                                      top: 12,
+                                      bottom: 12,
                                       right: 12,
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -361,7 +441,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                                               MaterialPageRoute(builder: (_) => StudentCourseDetailScreen(courseId: course.id)),
                                             );
                                             if (result == true) {
-                                              _fetchCoursesAndEnrollments();
+                                              _fetchCoursesAndData();
                                             }
                                           },
                                           child: Text(isAlreadyEnrolled ? "View Hub 🚀" : "View Details 🚀", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),

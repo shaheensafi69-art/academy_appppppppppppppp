@@ -348,7 +348,7 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
                 padding: const EdgeInsets.all(16),
                 physics: const BouncingScrollPhysics(),
                 itemCount: questions.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 16),
+                separatorBuilder: (_, _) => const SizedBox(height: 16),
                 itemBuilder: (context, index) {
                   final q = questions[index];
                   bool isDescriptive = q.isDescriptive;

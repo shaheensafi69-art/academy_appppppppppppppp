@@ -185,6 +185,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             const SizedBox(height: 14),
             TextField(
               controller: resetEmailCtrl,
+              cursorColor: primaryPink,
               keyboardType: TextInputType.emailAddress,
               style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
@@ -444,19 +445,34 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   ),
                                   const SizedBox(height: 12),
 
-                                  // Remember Me Checkbox Row
+                                  // Remember Me Checkbox Row (با بردهای صورتی و ظاهر شیک)
                                   Row(
                                     children: [
                                       SizedBox(
                                         height: 20,
                                         width: 20,
-                                        child: Checkbox(
-                                          value: rememberMe,
-                                          activeColor: primaryPink,
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                          onChanged: (val) {
-                                            setState(() => rememberMe = val ?? false);
-                                          },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(4),
+                                            border: Border.all(color: primaryPink, width: 1.5),
+                                          ),
+                                          child: Theme(
+                                            data: ThemeData(
+                                              checkboxTheme: CheckboxThemeData(
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                                                side: BorderSide.none,
+                                              ),
+                                            ),
+                                            child: Checkbox(
+                                              value: rememberMe,
+                                              activeColor: primaryPink,
+                                              checkColor: Colors.white,
+                                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                              onChanged: (val) {
+                                                setState(() => rememberMe = val ?? false);
+                                              },
+                                            ),
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
@@ -595,6 +611,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           controller: controller,
           onChanged: onChanged,
           obscureText: isPassword && !showPassword,
+          cursorColor: primaryPink, // کرسر صورتی رنگ
           style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             filled: true,

@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'admin_dashboard_screen.dart'; 
+import 'admin_dashboard_screen.dart';
 import 'manage_students_screen.dart';
 import 'manage_teachers_screen.dart';
 import 'courses_screen.dart';
@@ -30,14 +30,15 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   int _currentIndex = 0;
   Map<String, dynamic>? _userProfile;
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  // پالت رنگی حرفه‌ای هماهنگ با پنل‌های دیگر
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
-  static const Color cardBorder = Color(0xFFF3F4F6);
+  static const Color cardBorder = Color(0xFFE5E7EB);
 
+  // لیست اسکرین‌های ادمین
   late final List<Widget> _screens = [
     const AdminDashboardScreen(), // 0: Overview
     const ManageStudentsScreen(), // 1: Students
@@ -52,18 +53,19 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     const AdminSettingsScreen(),  // 10: Settings
   ];
 
+  // لیست گزینه‌های منوی کامل ادمین
   final List<Map<String, dynamic>> _menuItems = [
-    {"name": "Overview", "icon": Icons.dashboard_rounded, "color": primaryPink},
-    {"name": "Students", "icon": Icons.school_rounded, "color": Colors.green},
-    {"name": "Faculty", "icon": Icons.psychology_rounded, "color": Colors.indigo},
-    {"name": "Courses", "icon": Icons.menu_book_rounded, "color": Colors.purple},
-    {"name": "Classes", "icon": Icons.class_rounded, "color": Colors.cyan},
-    {"name": "Finance", "icon": Icons.payments_rounded, "color": Colors.teal},
-    {"name": "Honors", "icon": Icons.emoji_events_rounded, "color": Colors.amber},
-    {"name": "Notices", "icon": Icons.campaign_rounded, "color": Colors.orange},
-    {"name": "Live Studio", "icon": Icons.live_tv_rounded, "color": Colors.redAccent},
-    {"name": "Tickets", "icon": "🎧", "color": primaryPink},
-    {"name": "Settings", "icon": "⚙️", "color": textGrey},
+    {"name": "Overview", "icon": Icons.dashboard_rounded, "index": 0, "color": primaryPink},
+    {"name": "Students", "icon": Icons.school_rounded, "index": 1, "color": const Color(0xFF00897B)},
+    {"name": "Faculty", "icon": Icons.psychology_rounded, "index": 2, "color": const Color(0xFF3949AB)},
+    {"name": "Courses", "icon": Icons.menu_book_rounded, "index": 3, "color": const Color(0xFF7B1FA2)},
+    {"name": "Classes", "icon": Icons.class_rounded, "index": 4, "color": const Color(0xFF00ACC1)},
+    {"name": "Finance", "icon": Icons.payments_rounded, "index": 5, "color": const Color(0xFF2E7D32)},
+    {"name": "Honors", "icon": Icons.emoji_events_rounded, "index": 6, "color": const Color(0xFFFFA000)},
+    {"name": "Notices", "icon": Icons.campaign_rounded, "index": 7, "color": const Color(0xFFFB8C00)},
+    {"name": "Live Studio", "icon": Icons.live_tv_rounded, "index": 8, "color": const Color(0xFFE53935)},
+    {"name": "Support", "icon": Icons.headset_mic_rounded, "index": 9, "color": primaryPink},
+    {"name": "Settings", "icon": Icons.settings_rounded, "index": 10, "color": textGrey},
   ];
 
   @override
@@ -97,6 +99,8 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
           _userProfile = profile;
           _isLoading = false;
         });
+      } else {
+        _logout();
       }
     } catch (e) {
       _logout();
@@ -121,7 +125,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: primaryPink),
+              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 16),
               Text(
                 "INITIALIZING COMMAND CENTER...",
@@ -134,19 +138,18 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     }
 
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    final contentTopPadding = 16.0;
     final contentBottomPadding = bottomPadding + 85;
 
     return Scaffold(
       backgroundColor: surfaceWhite,
-      extendBody: true, 
+      extendBody: true,
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // 1. محتوای صفحات
+          // 1. محتوای اصلی صفحات
           Positioned.fill(
             child: Padding(
-              padding: EdgeInsets.only(top: contentTopPadding, bottom: contentBottomPadding),
+              padding: EdgeInsets.only(bottom: contentBottomPadding),
               child: IndexedStack(
                 index: _currentIndex,
                 children: _screens,
@@ -154,65 +157,84 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
             ),
           ),
 
-          // 2. نوار ناوبری پایین کاملاً فیکس‌شده برای تمام سایزها
+          // 2. نوار ناوبری پایین اختصاصی (دقیقاً شامل 4 دکمه: Overview, Students, Faculty, Menu)
           Positioned(
-            bottom: bottomPadding > 0 ? bottomPadding + 6 : 16.0,
-            left: 12,
-            right: 12,
-            child: _buildFloatingBottomNav(),
+            bottom: bottomPadding > 0 ? bottomPadding + 8 : 16.0,
+            left: 16,
+            right: 16,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: _buildModernBottomNav(),
+              ),
+            ),
           ),
 
-          // 3. منوی شیشه‌ای تمام‌صفحه پیشرفته
+          // 3. منوی تمام‌صفحه جدید با دیزاین لوکس
           if (_isMenuOpen)
             Positioned.fill(
-              child: _buildFullScreenMenu(),
+              child: _buildModernFullScreenMenu(),
             ),
         ],
       ),
     );
   }
 
-  Widget _buildFloatingBottomNav() {
+  // طراحی جدید و فیکس‌شده نوار ناوبری با ۴ دکمه اصلی
+  Widget _buildModernBottomNav() {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
         child: Container(
-          height: 64,
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          height: 68,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
-            color: surfaceWhite.withOpacity(0.95),
-            border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
-            borderRadius: BorderRadius.circular(28),
+            color: surfaceWhite.withOpacity(0.92),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: cardBorder, width: 1.5),
             boxShadow: [
-              BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 25, offset: const Offset(0, 10)),
+              BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 20, offset: const Offset(0, 8)),
             ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Expanded(child: _buildNavItem(0, "Overview", Icons.dashboard_rounded)),
-              Expanded(child: _buildNavItem(1, "Students", Icons.school_rounded)),
-              Expanded(child: _buildNavItem(2, "Faculty", Icons.psychology_rounded)),
-              Expanded(child: _buildNavItem(3, "Courses", Icons.menu_book_rounded)),
-              // دکمه منوی اصلی فیکس‌شده
+              // 1. Overview Button
+              Expanded(child: _buildNavTab(0, "Overview", Icons.dashboard_rounded)),
+              
+              // 2. Students Button
+              Expanded(child: _buildNavTab(1, "Students", Icons.school_rounded)),
+              
+              // 3. Faculty Button
+              Expanded(child: _buildNavTab(2, "Faculty", Icons.psychology_rounded)),
+              
+              // 4. Menu Button (برای دسترسی به بقیه بخش‌ها)
               Expanded(
                 child: GestureDetector(
                   onTap: () => setState(() => _isMenuOpen = true),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    padding: const EdgeInsets.symmetric(vertical: 6),
                     decoration: BoxDecoration(
-                      color: primaryPink,
-                      borderRadius: BorderRadius.circular(18),
-                      boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+                      color: _isMenuOpen ? lightPinkBg : Colors.transparent,
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Column(
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.grid_view_rounded, color: Colors.white, size: 20),
-                        SizedBox(height: 2),
-                        Text("MENU", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.8)),
+                        const Icon(Icons.grid_view_rounded, color: primaryPink, size: 22),
+                        const SizedBox(height: 3),
+                        Text(
+                          "MENU",
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                            color: primaryPink,
+                            letterSpacing: 0.8,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ],
                     ),
                   ),
@@ -225,14 +247,18 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     );
   }
 
-  Widget _buildNavItem(int index, String title, IconData icon) {
-    bool isActive = _currentIndex == index;
+  // ویجت کمکی برای تب‌های ناوبری
+  Widget _buildNavTab(int index, String title, IconData icon) {
+    bool isActive = _currentIndex == index && !_isMenuOpen;
     return GestureDetector(
-      onTap: () => setState(() => _currentIndex = index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
+      onTap: () {
+        setState(() {
+          _currentIndex = index;
+          _isMenuOpen = false;
+        });
+      },
+      child: Container(
         padding: const EdgeInsets.symmetric(vertical: 6),
-        margin: const EdgeInsets.symmetric(horizontal: 2),
         decoration: BoxDecoration(
           color: isActive ? lightPinkBg : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
@@ -240,15 +266,19 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: isActive ? primaryPink : textGrey, size: isActive ? 22 : 19),
-            const SizedBox(height: 2),
+            Icon(
+              icon,
+              color: isActive ? primaryPink : textGrey,
+              size: isActive ? 22 : 20,
+            ),
+            const SizedBox(height: 3),
             Text(
               title.toUpperCase(),
               style: TextStyle(
-                fontSize: 7,
+                fontSize: 8,
                 fontWeight: FontWeight.w900,
                 color: isActive ? primaryPink : textGrey,
-                letterSpacing: 0.3,
+                letterSpacing: 0.5,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -259,132 +289,192 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     );
   }
 
-  Widget _buildFullScreenMenu() {
+  // دیزاین کاملاً جدید و یکدست برای منوی تمام‌صفحه ادمین
+  Widget _buildModernFullScreenMenu() {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: ClipRRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
-          child: Container(
-            color: surfaceWhite.withOpacity(0.98),
-            child: SafeArea(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("COMMAND CENTER MENU", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
-                        GestureDetector(
-                          onTap: () => setState(() => _isMenuOpen = false),
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(color: cardBorder, shape: BoxShape.circle),
-                            child: const Icon(Icons.close_rounded, color: textDark, size: 20),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-
-                  Expanded(
-                    child: GridView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 1.7,
-                        crossAxisSpacing: 14,
-                        mainAxisSpacing: 14,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
+              child: Container(color: surfaceWhite.withOpacity(0.97)),
+            ),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                // هدر منو
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("COMMAND CENTER", style: TextStyle(color: textDark, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
+                          SizedBox(height: 2),
+                          Text("Select a management module", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500)),
+                        ],
                       ),
-                      itemCount: _menuItems.length,
-                      itemBuilder: (context, index) {
-                        final item = _menuItems[index];
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _currentIndex = index;
-                              _isMenuOpen = false;
-                            });
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: surfaceWhite,
-                              border: Border.all(color: cardBorder, width: 1.5),
-                              borderRadius: BorderRadius.circular(22),
-                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                item['icon'] is IconData
-                                    ? Icon(item['icon'], color: item['color'], size: 28)
-                                    : Text(item['icon'], style: const TextStyle(fontSize: 26)),
-                                const SizedBox(height: 8),
-                                Text(item['name'].toUpperCase(), style: TextStyle(color: item['color'], fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                      GestureDetector(
+                        onTap: () => setState(() => _isMenuOpen = false),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(color: cardBorder, shape: BoxShape.circle),
+                          child: const Icon(Icons.close_rounded, color: textDark, size: 20),
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+                
+                // لیست شبکه‌ای تمام گزینه‌های منو
+                Expanded(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 800),
+                      child: GridView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 1.7,
+                          crossAxisSpacing: 14,
+                          mainAxisSpacing: 14,
+                        ),
+                        itemCount: _menuItems.length,
+                        itemBuilder: (context, index) {
+                          final item = _menuItems[index];
+                          final int targetIndex = item['index'];
+                          bool isActive = _currentIndex == targetIndex;
 
-                  Container(
-                    margin: const EdgeInsets.all(20),
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: lightPinkBg.withOpacity(0.4),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.5),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 20,
-                              backgroundColor: lightPinkBg,
-                              backgroundImage: _userProfile?['avatar_url'] != null ? NetworkImage(_userProfile!['avatar_url']) : null,
-                              child: _userProfile?['avatar_url'] == null ? const Icon(Icons.person, color: primaryPink, size: 20) : null,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _currentIndex = targetIndex;
+                                _isMenuOpen = false;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: isActive ? primaryPink : surfaceWhite,
+                                borderRadius: BorderRadius.circular(22),
+                                border: Border.all(color: isActive ? primaryPink : cardBorder, width: 1.5),
+                                boxShadow: [
+                                  if (!isActive)
+                                    BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+                                ],
+                              ),
+                              child: Row(
                                 children: [
-                                  Text("${_userProfile?['first_name']} ${_userProfile?['last_name']}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
-                                  Text(_userProfile?['role']?.toString().toUpperCase() ?? 'ADMIN', style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: isActive ? Colors.white.withOpacity(0.2) : item['color'].withOpacity(0.12),
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    child: Icon(item['icon'], color: isActive ? Colors.white : item['color'], size: 22),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          item['name'],
+                                          style: TextStyle(
+                                            color: isActive ? Colors.white : textDark,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          "Module",
+                                          style: TextStyle(
+                                            color: isActive ? Colors.white70 : textGrey,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.redAccent.withOpacity(0.1),
-                              foregroundColor: Colors.redAccent,
-                              elevation: 0,
-                              side: const BorderSide(color: Colors.redAccent, width: 1.5),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            ),
-                            icon: const Icon(Icons.logout_rounded, size: 18),
-                            label: const Text("SECURE SIGN OUT", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1)),
-                            onPressed: _logout,
-                          ),
-                        ),
-                      ],
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ],
-              ),
+                ),
+                
+                // پروفایل و دکمه خروج در پایین منو
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 800),
+                    child: Container(
+                      margin: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: lightPinkBg.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.5),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 20,
+                                backgroundColor: lightPinkBg,
+                                backgroundImage: _userProfile?['avatar_url'] != null ? NetworkImage(_userProfile!['avatar_url']) : null,
+                                child: _userProfile?['avatar_url'] == null ? const Icon(Icons.person, color: primaryPink, size: 20) : null,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("${_userProfile?['first_name'] ?? ''} ${_userProfile?['last_name'] ?? ''}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                    Text(_userProfile?['role']?.toString().toUpperCase() ?? 'ADMINISTRATOR', style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.redAccent.withOpacity(0.1),
+                                foregroundColor: Colors.redAccent,
+                                elevation: 0,
+                                side: const BorderSide(color: Colors.redAccent, width: 1.5),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
+                              icon: const Icon(Icons.logout_rounded, size: 18),
+                              label: const Text("SIGN OUT SESSION", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                              onPressed: _logout,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }

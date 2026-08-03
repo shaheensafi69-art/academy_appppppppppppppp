@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// ایمپورت صفحات پنل استاد
+// ایمپورت صفحات اصلی و جدید پنل استاد
 import '../screens/teacher_overview_screen.dart';
 import '../screens/teacher_announcements_screen.dart';
 import '../screens/teacher_courses_curriculum_screen.dart';
@@ -12,6 +12,9 @@ import '../screens/teacher_assignments_screen.dart';
 import '../screens/teacher_quizzes_overview_screen.dart';
 import '../screens/teacher_trading_journal_screen.dart';
 import '../screens/teacher_achievements_screen.dart';
+import '../screens/teacher_certificates_screen.dart';
+import '../screens/teacher_about_help_center_screen.dart';
+import '../screens/teacher_profile_screen.dart';
 import '../screens/teacher_settings_screen.dart';
 import '../../../core/routing/auth_gate.dart';
 
@@ -30,8 +33,9 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
   int _currentIndex = 0;
   Map<String, dynamic>? _userProfile;
 
-  // پالت رنگی اختصاصی لایت (سفید و صورتی غلیظ)
+  // پالت رنگی اختصاصی لایت
   static const Color primaryPink = Color(0xFFC2185B);
+  static const Color lightPinkBg = Color(0xFFFCE4EC); // تعریف صحیح رنگ
   static const Color backgroundWhite = Colors.white;
   static const Color surfaceColor = Colors.white;
   static const Color textColor = Color(0xFF1A1A1A);
@@ -49,10 +53,13 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
     const TeacherQuizzesOverviewScreen(),   // 6: Exams & Quizzes
     const TeacherTradingJournalScreen(),    // 7: Trading Journal
     const TeacherAchievementsScreen(),      // 8: Achievements
-    const TeacherSettingsScreen(),          // 9: Settings
+    const TeacherCertificatesScreen(),      // 9: Certificates
+    const TeacherAboutHelpCenterScreen(),   // 10: Help Center
+    const TeacherProfileScreen(),           // 11: My Profile
+    const TeacherSettingsScreen(),          // 12: App Settings
   ];
 
-  // دیتای منو
+  // دیتای منو شامل تمامی بخش‌ها
   final List<Map<String, Object>> _menuItems = [
     {"index": 0, "name": "Overview", "icon": Icons.dashboard_rounded},
     {"index": 1, "name": "Announcements", "icon": Icons.campaign_rounded},
@@ -63,7 +70,10 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
     {"index": 6, "name": "Exams & Quizzes", "icon": Icons.quiz_rounded},
     {"index": 7, "name": "Trading Journal", "icon": Icons.trending_up_rounded},
     {"index": 8, "name": "Achievements", "icon": Icons.emoji_events_rounded},
-    {"index": 9, "name": "Settings", "icon": Icons.settings_rounded},
+    {"index": 9, "name": "Certificates", "icon": Icons.workspace_premium_rounded},
+    {"index": 10, "name": "About & Help Center", "icon": Icons.help_outline_rounded},
+    {"index": 11, "name": "My Profile", "icon": Icons.person_rounded},
+    {"index": 12, "name": "App Settings", "icon": Icons.settings_rounded},
   ];
 
   @override
@@ -137,7 +147,6 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
       extendBody: true,
       body: Stack(
         children: [
-          // هاله نوری ملایم صورتی در پس‌زمینه سفید
           Positioned(
             top: -60,
             left: -60,
@@ -152,8 +161,6 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
               ),
             ),
           ),
-
-          // ۱. محتوای صفحات
           Positioned.fill(
             child: Padding(
               padding: EdgeInsets.only(
@@ -166,16 +173,12 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
               ),
             ),
           ),
-
-          // ۲. نوار ناوبری پایین با ۴ دکمه فیکس و منظم
           Positioned(
             bottom: floatBottomMargin,
             left: 16,
             right: 16,
             child: _buildFloatingBottomNav(),
           ),
-
-          // ۳. منوی تمام‌صفحه
           if (_isMobileMenuOpen)
             Positioned.fill(
               child: _buildFullScreenMenu(),
@@ -185,7 +188,6 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
     );
   }
 
-  // استفاده از Expanded برای توزیع کاملاً مساوی و فیکس ۴ آیتم نویگیشن بار
   Widget _buildFloatingBottomNav() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(30),
@@ -272,7 +274,6 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
             child: SafeArea(
               child: Column(
                 children: [
-                  // هدر منو
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                     child: Row(
@@ -290,8 +291,6 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                       ],
                     ),
                   ),
-                  
-                  // لیست منوها
                   Expanded(
                     child: ListView.separated(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -356,57 +355,63 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                       },
                     ),
                   ),
-
-                  // بخش پروفایل و خروج
-                  Container(
-                    margin: const EdgeInsets.all(16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: borderColor),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 20,
-                              backgroundColor: primaryPink.withOpacity(0.15),
-                              backgroundImage: _userProfile?['avatar_url'] != null ? NetworkImage(_userProfile!['avatar_url']) : null,
-                              child: _userProfile?['avatar_url'] == null ? const Icon(Icons.person, color: primaryPink, size: 20) : null,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("${_userProfile?['first_name'] ?? ''} ${_userProfile?['last_name'] ?? ''}", style: const TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13)),
-                                  const SizedBox(height: 2),
-                                  Text("BALANCE: \$${_userProfile?['wallet_balance'] != null ? (_userProfile!['wallet_balance'] as num).toDouble().toStringAsFixed(2) : '0.00'}", style: const TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
-                                ],
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _currentIndex = 11; // پروفایل استاد
+                        _isMobileMenuOpen = false;
+                      });
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: lightPinkBg.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 20,
+                                backgroundColor: primaryPink.withOpacity(0.2),
+                                backgroundImage: _userProfile?['avatar_url'] != null ? NetworkImage(_userProfile!['avatar_url']) : null,
+                                child: _userProfile?['avatar_url'] == null ? const Icon(Icons.person, color: primaryPink, size: 20) : null,
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.redAccent.withOpacity(0.15),
-                              foregroundColor: Colors.redAccent,
-                              elevation: 0,
-                              side: BorderSide(color: Colors.redAccent.withOpacity(0.3)),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                            ),
-                            icon: const Icon(Icons.logout_rounded, size: 16),
-                            label: const Text("SECURE SIGN OUT", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
-                            onPressed: _logout,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("${_userProfile?['first_name'] ?? 'Instructor'} ${_userProfile?['last_name'] ?? ''}", style: const TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13)),
+                                    const SizedBox(height: 2),
+                                    Text("BALANCE: \$${_userProfile?['wallet_balance'] != null ? (_userProfile!['wallet_balance'] as num).toDouble().toStringAsFixed(2) : '0.00'}", style: const TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.redAccent.withOpacity(0.15),
+                                foregroundColor: Colors.redAccent,
+                                elevation: 0,
+                                side: BorderSide(color: Colors.redAccent.withOpacity(0.3)),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              ),
+                              icon: const Icon(Icons.logout_rounded, size: 16),
+                              label: const Text("SECURE SIGN OUT", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                              onPressed: _logout,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

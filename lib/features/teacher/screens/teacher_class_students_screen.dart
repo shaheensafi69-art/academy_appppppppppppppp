@@ -1,6 +1,6 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'teacher_add_student_screen.dart';
 
 class EnrolledStudentItem {
   final String recordId;
@@ -50,7 +50,6 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
   final TextEditingController _scoreController = TextEditingController();
   bool isScoring = false;
 
-  // پالت رنگی لایت (سفید صدفی و صورتی غلیظ خالص)
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
   static const Color surfaceWhite = Colors.white;
@@ -61,7 +60,7 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
   @override
   void initState() {
     super.initState();
-    _fetchClassData();
+    _fetchClassAndStudentsData();
   }
 
   @override
@@ -70,59 +69,93 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
     super.dispose();
   }
 
-  Future<void> _fetchClassData() async {
+  Future<void> _fetchClassAndStudentsData() async {
     setState(() => isLoading = true);
     try {
+      // ۱. واکشی اطلاعات کلاس (class_groups) و شناسه دوره مربوطه (course_id)
       final classData = await supabase
           .from("class_groups")
-          .select("class_name")
+          .select("class_name, course_id")
           .eq("id", widget.classId)
           .maybeSingle();
 
       if (classData != null) {
         className = classData['class_name'] ?? 'Classroom';
-      }
+        final courseId = classData['course_id'];
 
-      final studentsData = await supabase
-          .from("class_students")
-          .select("id, student_id, joined_at")
-          .eq("class_group_id", widget.classId)
-          .order("joined_at", ascending: false);
+        // ۲. واکشی مستقیم از جدول class_students برای این کلاس
+        final classStudentsRes = await supabase
+            .from("class_students")
+            .select("id, student_id, joined_at")
+            .eq("class_group_id", widget.classId);
 
-      if ((studentsData as List).isNotEmpty) {
-        final studentIds = studentsData.map((s) => s['student_id']).toList();
+        final studentIdsSet = <String>{};
+        final studentRecordsMap = <String, Map<String, dynamic>>{};
 
-        final profilesData = await supabase
-            .from("profiles")
-            .select("id, first_name, last_name, email, phone_number, country, avatar_url, total_score, wallet_balance, bio")
-            .inFilter("id", studentIds);
+        for (var cs in (classStudentsRes as List)) {
+          final sId = cs['student_id']?.toString();
+          if (sId != null) {
+            studentIdsSet.add(sId);
+            studentRecordsMap[sId] = {
+              'recordId': cs['id'] ?? '',
+              'joinedAt': cs['joined_at'] ?? '',
+            };
+          }
+        }
 
-        enrolledStudents = studentsData.map((item) {
-          final p = (profilesData as List?)?.firstWhere(
-            (prof) => prof['id'] == item['student_id'],
-            orElse: () => null,
-          );
+        // ۳. اگر دوره (course_id) وجود داشت، شاگردان جدول enrollments را هم بررسی می‌کنیم تا لیست کامل باشد
+        if (courseId != null) {
+          final enrollmentsRes = await supabase
+              .from("enrollments")
+              .select("student_id, enrolled_at")
+              .eq("course_id", courseId);
 
-          return EnrolledStudentItem(
-            recordId: item['id'] ?? '',
-            studentId: item['student_id'] ?? '',
-            joinedAt: item['joined_at'] ?? '',
-            firstName: p?['first_name'] ?? 'Unknown',
-            lastName: p?['last_name'] ?? '',
-            email: p?['email'] ?? '',
-            phoneNumber: p?['phone_number'] ?? '',
-            country: p?['country'] ?? '',
-            avatarUrl: p?['avatar_url'],
-            totalScore: p?['total_score'] ?? 0,
-            walletBalance: (p?['wallet_balance'] ?? 0).toDouble(),
-            bio: p?['bio'] ?? '',
-          );
-        }).toList();
-      } else {
-        enrolledStudents = [];
+          for (var en in (enrollmentsRes as List)) {
+            final sId = en['student_id']?.toString();
+            if (sId != null) {
+              studentIdsSet.add(sId);
+              if (!studentRecordsMap.containsKey(sId)) {
+                studentRecordsMap[sId] = {
+                  'recordId': 'enrolled_${en['student_id']}', // شناسه مجازی برای ان‌رول‌ها
+                  'joinedAt': en['enrolled_at'] ?? '',
+                };
+              }
+            }
+          }
+        }
+
+        if (studentIdsSet.isNotEmpty) {
+          // ۴. خواندن پروفایل کامل شاگردان از جدول profiles
+          final profilesData = await supabase
+              .from("profiles")
+              .select("id, first_name, last_name, email, phone_number, country, avatar_url, total_score, wallet_balance, bio")
+              .inFilter("id", studentIdsSet.toList());
+
+          enrolledStudents = (profilesData as List).map((p) {
+            final pId = p['id'].toString();
+            final recInfo = studentRecordsMap[pId] ?? {'recordId': '', 'joinedAt': ''};
+
+            return EnrolledStudentItem(
+              recordId: recInfo['recordId'],
+              studentId: pId,
+              joinedAt: recInfo['joinedAt'],
+              firstName: p['first_name'] ?? 'Unknown',
+              lastName: p['last_name'] ?? '',
+              email: p['email'] ?? '',
+              phoneNumber: p['phone_number'] ?? '',
+              country: p['country'] ?? '',
+              avatarUrl: p['avatar_url'],
+              totalScore: p['total_score'] ?? 0,
+              walletBalance: (p['wallet_balance'] ?? 0).toDouble(),
+              bio: p['bio'] ?? '',
+            );
+          }).toList();
+        } else {
+          enrolledStudents = [];
+        }
       }
     } catch (e) {
-      debugPrint("Error fetching class students: $e");
+      debugPrint("Error fetching class students data: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -135,7 +168,7 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
         backgroundColor: surfaceWhite,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text("Remove Student", style: TextStyle(color: textDark, fontSize: 15, fontWeight: FontWeight.w900)),
-        content: Text("Remove ${student.firstName} from this cohort?", style: const TextStyle(color: textGrey, fontSize: 12)),
+        content: Text("Remove ${student.firstName} from this classroom?", style: const TextStyle(color: textGrey, fontSize: 12)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -152,9 +185,11 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
     if (confirm != true) return;
 
     try {
-      await supabase.from("class_students").delete().eq("id", student.recordId);
+      if (!student.recordId.startsWith('enrolled_')) {
+        await supabase.from("class_students").delete().eq("id", student.recordId);
+      }
       setState(() {
-        enrolledStudents.removeWhere((s) => s.recordId == student.recordId);
+        enrolledStudents.removeWhere((s) => s.studentId == student.studentId);
         selectedStudent = null;
       });
     } catch (e) {
@@ -235,188 +270,276 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
           SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("Enrolled Students", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
-                const SizedBox(height: 12),
-
-                enrolledStudents.isNotEmpty
-                    ? ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: enrolledStudents.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final student = enrolledStudents[index];
-                          return Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: surfaceWhite,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: cardBorder, width: 1.5),
-                              boxShadow: [
-                                BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6)),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 20,
-                                      backgroundColor: lightPinkBg,
-                                      backgroundImage: student.avatarUrl != null ? NetworkImage(student.avatarUrl!) : null,
-                                      child: student.avatarUrl == null
-                                          ? Text(student.firstName.isNotEmpty ? student.firstName[0] : 'S',
-                                              style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold))
-                                          : null,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 800),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ================= هدر صفحه با دکمه Add Student =================
+                    Container(
+                      padding: const EdgeInsets.all(22),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(28),
+                        border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                        boxShadow: [
+                          BoxShadow(color: primaryPink.withOpacity(0.06), blurRadius: 20, offset: const Offset(0, 8)),
+                        ],
+                      ),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          bool isWide = constraints.maxWidth > 400;
+                          return Flex(
+                            direction: isWide ? Axis.horizontal : Axis.vertical,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: isWide ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: primaryPink.withOpacity(0.12),
+                                      borderRadius: BorderRadius.circular(16),
                                     ),
-                                    const SizedBox(width: 12),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text("${student.firstName} ${student.lastName}",
-                                            style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
-                                        const SizedBox(height: 2),
-                                        Text(student.email, style: const TextStyle(color: textGrey, fontSize: 10)),
-                                      ],
+                                    child: const Icon(Icons.people_alt_rounded, color: primaryPink, size: 26),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text("Class Roster", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
+                                      const SizedBox(height: 3),
+                                      Text("${enrolledStudents.length} Students Enrolled", style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w600)),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: isWide ? 0 : 16),
+                              ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: primaryPink,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                ),
+                                icon: const Icon(Icons.person_add_rounded, size: 18),
+                                label: const Text("Add Student", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => TeacherAddStudentScreen(classId: widget.classId)),
+                                  ).then((_) => _fetchClassAndStudentsData());
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    const Text("Enrolled Students Directory", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                    const SizedBox(height: 12),
+
+                    enrolledStudents.isNotEmpty
+                        ? ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: enrolledStudents.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 12),
+                            itemBuilder: (context, index) {
+                              final student = enrolledStudents[index];
+                              return Container(
+                                padding: const EdgeInsets.all(18),
+                                decoration: BoxDecoration(
+                                  color: surfaceWhite,
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(color: cardBorder, width: 1.5),
+                                  boxShadow: [
+                                    BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6)),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Row(
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 22,
+                                            backgroundColor: lightPinkBg,
+                                            backgroundImage: student.avatarUrl != null ? NetworkImage(student.avatarUrl!) : null,
+                                            child: student.avatarUrl == null
+                                                ? Text(student.firstName.isNotEmpty ? student.firstName[0] : 'S',
+                                                    style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900))
+                                                : null,
+                                          ),
+                                          const SizedBox(width: 14),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text("${student.firstName} ${student.lastName}",
+                                                    style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                                                const SizedBox(height: 2),
+                                                Text(student.email, style: const TextStyle(color: textGrey, fontSize: 10)),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: primaryPink.withOpacity(0.1),
+                                        foregroundColor: primaryPink,
+                                        elevation: 0,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                      ),
+                                      onPressed: () => setState(() => selectedStudent = student),
+                                      child: const Text("Manage", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                     ),
                                   ],
                                 ),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: primaryPink.withOpacity(0.1),
-                                    foregroundColor: primaryPink,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                  ),
-                                  onPressed: () => setState(() => selectedStudent = student),
-                                  child: const Text("Manage", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
-                                ),
+                              );
+                            },
+                          )
+                        : Container(
+                            padding: const EdgeInsets.all(40),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: surfaceWhite,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(color: cardBorder),
+                            ),
+                            child: const Column(
+                              children: [
+                                Icon(Icons.group_off_rounded, size: 36, color: textGrey),
+                                SizedBox(height: 10),
+                                Text("No Students Enrolled", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
+                                SizedBox(height: 4),
+                                Text("No students are currently enrolled in this classroom.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
                               ],
                             ),
-                          );
-                        },
-                      )
-                    : Container(
-                        padding: const EdgeInsets.all(40),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: surfaceWhite,
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: cardBorder),
-                        ),
-                        child: const Column(
-                          children: [
-                            Icon(Icons.group_off_rounded, size: 36, color: textGrey),
-                            SizedBox(height: 10),
-                            Text("No Students Enrolled", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
-                            SizedBox(height: 4),
-                            Text("No students are currently enrolled in this classroom.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
-                          ],
-                        ),
-                      ),
-              ],
+                          ),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
             ),
           ),
 
-          // مودال مدیریت پروفایل شاگرد (به صورت لایت و مدرن)
+          // مودال مدیریت پروفایل و امتیازات شاگرد
           if (selectedStudent != null)
             Container(
               color: Colors.black45,
               alignment: Alignment.center,
               padding: const EdgeInsets.all(16),
-              child: Container(
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  color: surfaceWhite,
-                  borderRadius: BorderRadius.circular(26),
-                  border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
-                  boxShadow: [
-                    BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 25, offset: const Offset(0, 10)),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    color: surfaceWhite,
+                    borderRadius: BorderRadius.circular(26),
+                    border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                    boxShadow: [
+                      BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 25, offset: const Offset(0, 10)),
+                    ],
+                  ),
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("${selectedStudent!.firstName} ${selectedStudent!.lastName}",
-                            style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
-                        IconButton(
-                          icon: const Icon(Icons.close_rounded, color: textGrey, size: 20),
-                          onPressed: () => setState(() => selectedStudent = null),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text("Email: ${selectedStudent!.email}", style: const TextStyle(color: textGrey, fontSize: 11)),
-                    Text("Phone: ${selectedStudent!.phoneNumber}", style: const TextStyle(color: textGrey, fontSize: 11)),
-                    Text("Country: ${selectedStudent!.country}", style: const TextStyle(color: textGrey, fontSize: 11)),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(color: Colors.amber.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
-                      child: Text("Total Score: ${selectedStudent!.totalScore} Pts",
-                          style: const TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.w900)),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text("Add Points", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _scoreController,
-                            keyboardType: TextInputType.number,
-                            style: const TextStyle(color: textDark, fontSize: 12),
-                            decoration: InputDecoration(
-                              hintText: "Enter points...",
-                              hintStyle: const TextStyle(color: textGrey, fontSize: 11),
-                              filled: true,
-                              fillColor: cardBorder.withOpacity(0.5),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: cardBorder)),
-                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: cardBorder)),
-                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text("${selectedStudent!.firstName} ${selectedStudent!.lastName}",
+                                  style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
                             ),
-                          ),
+                            IconButton(
+                              icon: const Icon(Icons.close_rounded, color: textGrey, size: 20),
+                              onPressed: () => setState(() => selectedStudent = null),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 10),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.amber,
-                            foregroundColor: Colors.black,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        const SizedBox(height: 10),
+                        Text("Email: ${selectedStudent!.email}", style: const TextStyle(color: textGrey, fontSize: 11)),
+                        Text("Phone: ${selectedStudent!.phoneNumber}", style: const TextStyle(color: textGrey, fontSize: 11)),
+                        Text("Country: ${selectedStudent!.country}", style: const TextStyle(color: textGrey, fontSize: 11)),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(color: Colors.amber.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+                          child: Text("Total Score: ${selectedStudent!.totalScore} Pts",
+                              style: const TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.w900)),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text("Add Points", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _scoreController,
+                                keyboardType: TextInputType.number,
+                                style: const TextStyle(color: textDark, fontSize: 12),
+                                decoration: InputDecoration(
+                                  hintText: "Enter points...",
+                                  hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                                  filled: true,
+                                  fillColor: cardBorder.withOpacity(0.5),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: cardBorder)),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: cardBorder)),
+                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.amber,
+                                foregroundColor: Colors.black,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              onPressed: isScoring ? null : _addScore,
+                              child: const Text("Add", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.redAccent,
+                              side: const BorderSide(color: Colors.redAccent, width: 1.5),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            icon: const Icon(Icons.person_remove_rounded, size: 16),
+                            label: const Text("Remove from Class", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                            onPressed: () => _removeStudent(selectedStudent!),
                           ),
-                          onPressed: isScoring ? null : _addScore,
-                          child: const Text("Add", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.redAccent,
-                          side: const BorderSide(color: Colors.redAccent, width: 1.5),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        icon: const Icon(Icons.person_remove_rounded, size: 16),
-                        label: const Text("Remove from Class", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
-                        onPressed: () => _removeStudent(selectedStudent!),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

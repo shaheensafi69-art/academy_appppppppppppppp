@@ -12,15 +12,15 @@ import '../screens/student_trading_journal_screen.dart';
 import '../screens/student_wallet_screen.dart';
 import '../screens/student_achievements_screen.dart';
 import '../screens/student_support_screen.dart';
-import 'student_profile_screen.dart';
 
 import 'certificates_screen.dart';
 import 'wishlist_screen.dart';
 import 'payments_screen.dart';
 import 'scholarships_screen.dart';
 import 'discussion_forum_screen.dart';
-import 'settings_screen.dart';
+import 'settings_screen.dart';         // صفحه تنظیمات اپلیکیشن
 import 'help_center_screen.dart';
+import 'student_profile_screen.dart'; // صفحه پروفایل شخصی و اطلاعات کامل
 
 import '../../../core/routing/auth_gate.dart';
 
@@ -47,27 +47,30 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
   static const Color borderColor = Color(0xFFF3F4F6);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
 
+  // لیست صفحات پورتال (ترتیب ایندکس‌ها باید با _menuItems همخوانی داشته باشد)
   late final List<Widget> _screens = [
-    const StudentOverviewScreen(),
-    const StudentAnnouncementsScreen(),
-    const StudentCoursesScreen(),
-    const WishlistScreen(),
-    const StudentLiveClassesScreen(),
-    const StudentAssignmentsScreen(),
-    const StudentQuizzesScreen(),
-    const CertificatesScreen(),
-    const ScholarshipsScreen(),
-    const PaymentsScreen(),
-    const StudentTradingJournalScreen(),
-    const DiscussionForumScreen(),
-    const StudentWalletScreen(),
-    const StudentAchievementsScreen(),
-    _buildPlaceholderScreen("AI Assistant", Icons.smart_toy_rounded, "Smart assistant for your trading & studies."),
-    const HelpCenterScreen(),
-    const StudentSupportScreen(),
-    const SettingsScreen(),
+    const StudentOverviewScreen(),          // 0
+    const StudentAnnouncementsScreen(),     // 1
+    const StudentCoursesScreen(),           // 2
+    const WishlistScreen(),                 // 3
+    const StudentLiveClassesScreen(),       // 4
+    const StudentAssignmentsScreen(),       // 5
+    const StudentQuizzesScreen(),           // 6
+    const CertificatesScreen(),             // 7
+    const ScholarshipsScreen(),             // 8
+    const PaymentsScreen(),                 // 9
+    const StudentTradingJournalScreen(),    // 10
+    const DiscussionForumScreen(),          // 11
+    const StudentWalletScreen(),            // 12
+    const StudentAchievementsScreen(),      // 13
+    _buildPlaceholderScreen("AI Assistant", Icons.smart_toy_rounded, "Smart assistant for your trading & studies."), // 14
+    const HelpCenterScreen(),               // 15
+    const StudentSupportScreen(),           // 16
+    const StudentSettingsScreen(),          // 17 - صفحه پروفایل شخصی کامل
+    const SettingsScreen(),                 // 18 - صفحه تنظیمات اپلیکیشن و امنیت
   ];
 
+  // لیست منوها شامل پروفایل و تنظیمات به صورت مجزا
   final List<Map<String, Object>> _menuItems = [
     {"index": 0, "name": "Overview", "icon": Icons.dashboard_rounded},
     {"index": 1, "name": "Announcements", "icon": Icons.campaign_rounded},
@@ -86,7 +89,8 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
     {"index": 14, "name": "AI Assistant (Soon)", "icon": Icons.smart_toy_rounded, "soon": true},
     {"index": 15, "name": "Help Center", "icon": Icons.help_outline_rounded},
     {"index": 16, "name": "Support Tickets", "icon": Icons.support_agent_rounded},
-    {"index": 17, "name": "Settings", "icon": Icons.settings_rounded},
+    {"index": 17, "name": "My Profile", "icon": Icons.person_rounded},         // ایندکس ۱۷ برای پروفایل
+    {"index": 18, "name": "App Settings", "icon": Icons.settings_rounded},   // ایندکس ۱۸ برای تنظیمات
   ];
 
   @override
@@ -142,7 +146,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
             children: [
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
+                decoration: const BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
                 child: Icon(icon, size: 40, color: primaryPink),
               ),
               const SizedBox(height: 16),
@@ -399,52 +403,60 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                     ),
                   ),
 
-                  // بخش کوچک، زیبا و فشرده‌ی پروفایل و خروج در پایین منو
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: borderColor, width: 1.5),
-                    ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 16,
-                          backgroundColor: primaryPink.withOpacity(0.15),
-                          backgroundImage: _userProfile?['avatar_url'] != null ? NetworkImage(_userProfile!['avatar_url']) : null,
-                          child: _userProfile?['avatar_url'] == null ? const Icon(Icons.person, color: primaryPink, size: 16) : null,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("${_userProfile?['first_name'] ?? 'Student'} ${_userProfile?['last_name'] ?? ''}", style: const TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
-                              const SizedBox(height: 1),
-                              Text("BAL: \$${_formatNumber(_userProfile?['wallet_balance'])}", style: const TextStyle(color: Colors.green, fontSize: 8, fontWeight: FontWeight.w900)),
-                            ],
+                  // کارت پروفایل کاملاً فعال و کلیک‌پذیر در پایین منو
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _currentIndex = 17; // رفتن به صفحه پروفایل (StudentSettingsScreen)
+                        _isMobileMenuOpen = false;
+                      });
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: lightPinkBg.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                      ),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 16,
+                            backgroundColor: primaryPink.withOpacity(0.2),
+                            backgroundImage: _userProfile?['avatar_url'] != null ? NetworkImage(_userProfile!['avatar_url']) : null,
+                            child: _userProfile?['avatar_url'] == null ? const Icon(Icons.person, color: primaryPink, size: 16) : null,
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          height: 32,
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.redAccent.withOpacity(0.12),
-                              foregroundColor: Colors.redAccent,
-                              elevation: 0,
-                              side: BorderSide(color: Colors.redAccent.withOpacity(0.3), width: 1.2),
-                              padding: const EdgeInsets.symmetric(horizontal: 10),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("${_userProfile?['first_name'] ?? 'Student'} ${_userProfile?['last_name'] ?? ''}", style: const TextStyle(color: textColor, fontWeight: FontWeight.w900, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                const SizedBox(height: 1),
+                                Text("BAL: \$${_formatNumber(_userProfile?['wallet_balance'])}", style: const TextStyle(color: Colors.green, fontSize: 8, fontWeight: FontWeight.w900)),
+                              ],
                             ),
-                            icon: const Icon(Icons.logout_rounded, size: 14),
-                            label: const Text("LOG OUT", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
-                            onPressed: _logout,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          SizedBox(
+                            height: 32,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.redAccent.withOpacity(0.12),
+                                foregroundColor: Colors.redAccent,
+                                elevation: 0,
+                                side: BorderSide(color: Colors.redAccent.withOpacity(0.3), width: 1.2),
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              icon: const Icon(Icons.logout_rounded, size: 14),
+                              label: const Text("LOG OUT", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                              onPressed: _logout,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

@@ -131,7 +131,7 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
       double totalRefRewards = 0;
       List<ReferralItem> formattedRefs = [];
 
-      if (backupRefData != null && (backupRefData as List).isNotEmpty) {
+      if ((backupRefData as List).isNotEmpty) {
         final studentIds = backupRefData.map((ref) => ref['referred_student_id']).where((id) => id != null).toList();
 
         Map<String, String> profilesMap = {};
@@ -141,12 +141,10 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
               .select("id, first_name, last_name")
               .inFilter("id", studentIds);
 
-          if (profilesData != null) {
-            for (var p in (profilesData as List)) {
-              profilesMap[p['id']] = "${p['first_name']} ${p['last_name']}";
-            }
+          for (var p in (profilesData as List)) {
+            profilesMap[p['id']] = "${p['first_name']} ${p['last_name']}";
           }
-        }
+                }
 
         for (var ref in (backupRefData as List)) {
           final amt = (ref['reward_amount'] ?? 0).toDouble();

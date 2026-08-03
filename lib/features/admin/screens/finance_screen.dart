@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -107,7 +106,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
   Future<void> _fetchFinanceData() async {
     setState(() => isLoading = true);
     try {
-      // 1. Fetch Teachers Wallets از جدول profiles
       final facultyData = await supabase
           .from("profiles")
           .select("id, first_name, last_name, email, avatar_url, wallet_balance")
@@ -116,7 +114,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
       teachers = (facultyData as List).map((t) => TeacherWallet.fromJson(t)).toList();
     
-      // 2. Fetch All Transactions از جدول transactions
       final txData = await supabase
           .from("transactions")
           .select("id, amount, transaction_type, status, created_at, user:profiles!student_id(first_name, last_name, email, avatar_url)")
@@ -240,294 +237,304 @@ class _FinanceScreenState extends State<FinanceScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
         physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ================= HEADER =================
-            Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
-                boxShadow: [
-                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: lightPinkBg,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Text(
-                          "FINANCIAL LEDGER",
-                          style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
-                        ),
-                      ),
-                      const Icon(Icons.account_balance_wallet_rounded, color: primaryPink, size: 22),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ================= HEADER =================
+                Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                    boxShadow: [
+                      BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    "Financial Ledger",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    "Audit global platform revenue and manage faculty payouts securely.",
-                    style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // ================= METRICS GRID =================
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.3,
-              children: [
-                _buildMetricCard("Gross Revenue", "\$${currentStats['totalGrossRevenue']!.toStringAsFixed(0)}", Icons.trending_up_rounded, Colors.green.shade700),
-                _buildMetricCard("Faculty Liability", "\$${currentStats['totalFacultyLiability']!.toStringAsFixed(0)}", Icons.wallet_rounded, Colors.amber.shade800),
-                _buildMetricCard("Distributed Payouts", "\$${currentStats['totalPayoutsDistributed']!.toStringAsFixed(0)}", Icons.credit_card_rounded, Colors.indigo),
-                _buildMetricCard("Net Profit (Est.)", "\$${currentStats['platformNetProfit']!.toStringAsFixed(0)}", Icons.business_center_rounded, primaryPink),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // ================= TABS NAVIGATION =================
-            Row(
-              children: [
-                Expanded(child: _buildTabButton("Faculty", "faculty")),
-                const SizedBox(width: 8),
-                Expanded(child: _buildTabButton("Inflows", "inflows")),
-                const SizedBox(width: 8),
-                Expanded(child: _buildTabButton("Outflows", "outflows")),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // ================= TAB CONTENTS =================
-            if (activeTab == "faculty") ...[
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  color: cardBorder.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: cardBorder, width: 1.5),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.search_rounded, color: primaryPink, size: 18),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextField(
-                        onChanged: (val) => setState(() => searchQuery = val),
-                        style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                        decoration: InputDecoration(
-                          hintText: "Find instructor...",
-                          hintStyle: const TextStyle(color: textGrey, fontSize: 11),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: lightPinkBg,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Text(
+                              "FINANCIAL LEDGER",
+                              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
+                            ),
+                          ),
+                          const Icon(Icons.account_balance_wallet_rounded, color: primaryPink, size: 22),
+                        ],
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        "Financial Ledger",
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        "Audit global platform revenue and manage faculty payouts securely.",
+                        style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ================= METRICS GRID (ریسپانسیو و فیکس برای هر سایز) =================
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    bool isWide = constraints.maxWidth > 500;
+                    return GridView.count(
+                      crossAxisCount: isWide ? 4 : 2,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 1.2,
+                      children: [
+                        _buildMetricCard("Gross Revenue", "\$${currentStats['totalGrossRevenue']!.toStringAsFixed(0)}", Icons.trending_up_rounded, Colors.green.shade700),
+                        _buildMetricCard("Faculty Liability", "\$${currentStats['totalFacultyLiability']!.toStringAsFixed(0)}", Icons.wallet_rounded, Colors.amber.shade800),
+                        _buildMetricCard("Distributed Payouts", "\$${currentStats['totalPayoutsDistributed']!.toStringAsFixed(0)}", Icons.credit_card_rounded, Colors.indigo),
+                        _buildMetricCard("Net Profit", "\$${currentStats['platformNetProfit']!.toStringAsFixed(0)}", Icons.business_center_rounded, primaryPink),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
+
+                // ================= TABS NAVIGATION =================
+                Row(
+                  children: [
+                    Expanded(child: _buildTabButton("Faculty", "faculty")),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildTabButton("Inflows", "inflows")),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildTabButton("Outflows", "outflows")),
                   ],
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              currentTeachers.isEmpty
-                  ? Container(
-                      padding: const EdgeInsets.all(30),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: surfaceWhite,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: cardBorder, width: 1.5),
-                      ),
-                      child: const Text("No instructors found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
-                    )
-                  : ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: currentTeachers.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 10),
-                      itemBuilder: (context, index) {
-                        final teacher = currentTeachers[index];
-                        return Container(
-                          padding: const EdgeInsets.all(16),
+                // ================= TAB CONTENTS =================
+                if (activeTab == "faculty") ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: cardBorder.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.search_rounded, color: primaryPink, size: 18),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            onChanged: (val) => setState(() => searchQuery = val),
+                            style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                            decoration: InputDecoration(
+                              hintText: "Find instructor...",
+                              hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  currentTeachers.isEmpty
+                      ? Container(
+                          padding: const EdgeInsets.all(30),
+                          alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: surfaceWhite,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: cardBorder, width: 1.5),
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
                           ),
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 20,
-                                backgroundColor: lightPinkBg,
-                                backgroundImage: teacher.avatarUrl != null ? NetworkImage(teacher.avatarUrl!) : null,
-                                child: teacher.avatarUrl == null ? Text(teacher.firstName[0], style: const TextStyle(color: primaryPink, fontSize: 12, fontWeight: FontWeight.bold)) : null,
+                          child: const Text("No instructors found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                        )
+                      : ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: currentTeachers.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final teacher = currentTeachers[index];
+                            return Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: surfaceWhite,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: cardBorder, width: 1.5),
+                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text("${teacher.firstName} ${teacher.lastName}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
-                                    const SizedBox(height: 2),
-                                    Text("\$${teacher.walletBalance.toStringAsFixed(2)} Unpaid", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: lightPinkBg,
+                                    backgroundImage: teacher.avatarUrl != null ? NetworkImage(teacher.avatarUrl!) : null,
+                                    child: teacher.avatarUrl == null ? Text(teacher.firstName[0], style: const TextStyle(color: primaryPink, fontSize: 12, fontWeight: FontWeight.bold)) : null,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text("${teacher.firstName} ${teacher.lastName}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                        const SizedBox(height: 2),
+                                        Text("\$${teacher.walletBalance.toStringAsFixed(2)} Unpaid", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: lightPinkBg,
+                                      foregroundColor: primaryPink,
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                    onPressed: teacher.walletBalance > 0 ? () {
+                                      setState(() {
+                                        selectedTeacher = teacher;
+                                        payoutAmount = teacher.walletBalance;
+                                        message = null;
+                                      });
+                                    } : null,
+                                    child: const Text("Settle", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                                  ),
+                                ],
                               ),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: lightPinkBg,
-                                  foregroundColor: primaryPink,
-                                  elevation: 0,
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                ),
-                                onPressed: teacher.walletBalance > 0 ? () {
-                                  setState(() {
-                                    selectedTeacher = teacher;
-                                    payoutAmount = teacher.walletBalance;
-                                    message = null;
-                                  });
-                                } : null,
-                                child: const Text("Settle", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-            ] else if (activeTab == "inflows") ...[
-              studentPayments.isEmpty
-                  ? Container(
-                      padding: const EdgeInsets.all(30),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: surfaceWhite,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: cardBorder, width: 1.5),
-                      ),
-                      child: const Text("No payment records found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
-                    )
-                  : ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: studentPayments.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 10),
-                      itemBuilder: (context, index) {
-                        final tx = studentPayments[index];
-                        return Container(
-                          padding: const EdgeInsets.all(16),
+                            );
+                          },
+                        ),
+                ] else if (activeTab == "inflows") ...[
+                  studentPayments.isEmpty
+                      ? Container(
+                          padding: const EdgeInsets.all(30),
+                          alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: surfaceWhite,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: cardBorder, width: 1.5),
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
                           ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(color: Colors.green.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
-                                child: Icon(Icons.arrow_downward_rounded, color: Colors.green.shade700, size: 18),
+                          child: const Text("No payment records found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                        )
+                      : ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: studentPayments.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final tx = studentPayments[index];
+                            return Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: surfaceWhite,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: cardBorder, width: 1.5),
+                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text("${tx.user?['first_name'] ?? 'User'} ${tx.user?['last_name'] ?? ''}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
-                                    const SizedBox(height: 2),
-                                    Text(tx.transactionType.toUpperCase(), style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(color: Colors.green.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
+                                    child: Icon(Icons.arrow_downward_rounded, color: Colors.green.shade700, size: 18),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text("${tx.user?['first_name'] ?? 'User'} ${tx.user?['last_name'] ?? ''}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                        const SizedBox(height: 2),
+                                        Text(tx.transactionType.toUpperCase(), style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                  ),
+                                  Text("+\$${tx.amount.toStringAsFixed(2)}", style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.w900, fontSize: 13)),
+                                ],
                               ),
-                              Text("+\$${tx.amount.toStringAsFixed(2)}", style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.w900, fontSize: 13)),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-            ] else if (activeTab == "outflows") ...[
-              payoutHistory.isEmpty
-                  ? Container(
-                      padding: const EdgeInsets.all(30),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: surfaceWhite,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: cardBorder, width: 1.5),
-                      ),
-                      child: const Text("No payouts processed yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
-                    )
-                  : ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: payoutHistory.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 10),
-                      itemBuilder: (context, index) {
-                        final tx = payoutHistory[index];
-                        return Container(
-                          padding: const EdgeInsets.all(16),
+                            );
+                          },
+                        ),
+                ] else if (activeTab == "outflows") ...[
+                  payoutHistory.isEmpty
+                      ? Container(
+                          padding: const EdgeInsets.all(30),
+                          alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: surfaceWhite,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: cardBorder, width: 1.5),
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
                           ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(color: primaryPink.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
-                                child: const Icon(Icons.arrow_upward_rounded, color: primaryPink, size: 18),
+                          child: const Text("No payouts processed yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                        )
+                      : ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: payoutHistory.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final tx = payoutHistory[index];
+                            return Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: surfaceWhite,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: cardBorder, width: 1.5),
+                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text("Paid to: ${tx.user?['first_name'] ?? 'Faculty'} ${tx.user?['last_name'] ?? ''}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
-                                    const SizedBox(height: 2),
-                                    Text(DateFormatter(tx.createdAt).formatted, style: const TextStyle(color: textGrey, fontSize: 10)),
-                                  ],
-                                ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(color: primaryPink.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
+                                    child: const Icon(Icons.arrow_upward_rounded, color: primaryPink, size: 18),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text("Paid to: ${tx.user?['first_name'] ?? 'Faculty'} ${tx.user?['last_name'] ?? ''}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                        const SizedBox(height: 2),
+                                        Text(DateFormatter(tx.createdAt).formatted, style: const TextStyle(color: textGrey, fontSize: 10)),
+                                      ],
+                                    ),
+                                  ),
+                                  Text("-\$${tx.amount.abs().toStringAsFixed(2)}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                ],
                               ),
-                              Text("-\$${tx.amount.abs().toStringAsFixed(2)}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-            ],
-            const SizedBox(height: 40),
-          ],
+                            );
+                          },
+                        ),
+                ],
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
         ),
       ),
 
-      // Payout Modal Overlay
+      // Payout Modal BottomSheet
       bottomSheet: selectedTeacher != null
           ? Container(
               padding: const EdgeInsets.all(24),
@@ -654,26 +661,13 @@ class _FinanceScreenState extends State<FinanceScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: color)),
+              Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: color), maxLines: 1, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 2),
-              Text(title.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+              Text(title.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8), maxLines: 1, overflow: TextOverflow.ellipsis),
             ],
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildGlassCard({required Widget child, EdgeInsetsGeometry? padding}) {
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: surfaceWhite,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
-      ),
-      child: child,
     );
   }
 }

@@ -1,5 +1,6 @@
-package com.example.safi_academy_app
+package com.yourcompany.safi_academy // نام پکیج خودتان
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+class MainActivity: FlutterFragmentActivity() {
+}

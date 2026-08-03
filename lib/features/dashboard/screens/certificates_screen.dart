@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'certificates_detail_screen.dart';
 
 class CertificateItem {
   final String id;
@@ -61,21 +61,18 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
       if (user == null) return;
       final userId = user.id;
 
-      // واکشی گواهینامه‌های شاگرد به همراه اطلاعات دوره‌ها از جدول certificates و courses
       final response = await supabase
           .from("certificates")
           .select("id, certificate_code, issue_date, certificate_url, course_id, courses(title)")
           .eq("student_id", userId);
 
-      if (response is List) {
-        certificates = response.map((item) {
-          final courseObj = item['courses'];
-          final courseData = courseObj is List ? (courseObj.isNotEmpty ? courseObj[0] : null) : courseObj;
-          final courseTitle = courseData?['title'] ?? 'Professional Course';
+      certificates = (response as List).map((item) {
+        final courseObj = item['courses'];
+        final courseData = courseObj is List ? (courseObj.isNotEmpty ? courseObj[0] : null) : courseObj;
+        final courseTitle = courseData?['title'] ?? 'Professional Course';
 
-          return CertificateItem.fromJson(item, courseTitle);
-        }).toList();
-      }
+        return CertificateItem.fromJson(item, courseTitle);
+      }).toList();
     } catch (e) {
       debugPrint("Error fetching certificates: $e");
     } finally {
@@ -83,11 +80,10 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
     }
   }
 
-  Future<void> _launchURL(String urlString) async {
-    final Uri url = Uri.parse(urlString);
-    if (!await launchUrl(url)) {
-      debugPrint('Could not launch $urlString');
-    }
+  bool _isImage(String? url) {
+    if (url == null) return false;
+    final lower = url.toLowerCase();
+    return lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.webp');
   }
 
   @override
@@ -153,11 +149,13 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: certificates.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 14),
+                          separatorBuilder: (_, __) => const SizedBox(height: 16),
                           itemBuilder: (context, index) {
                             final cert = certificates[index];
+                            final bool hasUrl = cert.certificateUrl != null && cert.certificateUrl!.isNotEmpty;
+                            final bool isImg = _isImage(cert.certificateUrl);
+
                             return Container(
-                              padding: const EdgeInsets.all(18),
                               decoration: BoxDecoration(
                                 color: surfaceWhite,
                                 borderRadius: BorderRadius.circular(24),
@@ -167,56 +165,91 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                                        child: Text("Verified Certificate ✅", style: TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
-                                      ),
-                                      Text("ID: ${cert.certificateCode}", style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(cert.courseTitle, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
-                                  const SizedBox(height: 4),
-                                  Text("Issued on: ${cert.issueDate.split('T')[0]}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                                  const SizedBox(height: 16),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: ElevatedButton.styleFrom != null ? ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: lightPinkBg,
-                                            foregroundColor: primaryPink,
-                                            elevation: 0,
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                            padding: const EdgeInsets.symmetric(vertical: 10),
-                                          ),
-                                          onPressed: cert.certificateUrl != null ? () => _launchURL(cert.certificateUrl!) : null,
-                                          child: const Text("Download PDF 📄", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
-                                        ) : const SizedBox(),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: cardBorder,
-                                            foregroundColor: textDark,
-                                            elevation: 0,
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                            padding: const EdgeInsets.symmetric(vertical: 10),
-                                          ),
-                                          onPressed: () {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(content: Text("Certificate ID ${cert.certificateCode} copied to clipboard!")),
-                                            );
-                                          },
-                                          child: const Text("Share / LinkedIn 🔗", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                                  if (hasUrl)
+                                    ClipRRect(
+                                      borderRadius: const BorderRadius.vertical(top: Radius.circular(23)),
+                                      child: isImg
+                                          ? Image.network(
+                                              cert.certificateUrl!,
+                                              height: 160,
+                                              width: double.infinity,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) => _buildPlaceholderBanner(Icons.broken_image_rounded, "Image preview unavailable"),
+                                            )
+                                          : _buildPlaceholderBanner(Icons.picture_as_pdf_rounded, "Official PDF Document"),
+                                    )
+                                  else
+                                    _buildPlaceholderBanner(Icons.verified_rounded, "Certified Achievement"),
+
+                                  Padding(
+                                    padding: const EdgeInsets.all(18),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                              decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                                              child: const Text("Verified Certificate ✅", style: TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                            ),
+                                            Text("ID: ${cert.certificateCode}", style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
+                                          ],
                                         ),
-                                      ),
-                                    ],
+                                        const SizedBox(height: 12),
+                                        Text(cert.courseTitle, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                                        const SizedBox(height: 4),
+                                        Text("Issued on: ${cert.issueDate.split('T')[0]}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                        const SizedBox(height: 16),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: ElevatedButton.icon(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: lightPinkBg,
+                                                  foregroundColor: primaryPink,
+                                                  elevation: 0,
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                                ),
+                                                icon: const Icon(Icons.visibility_rounded, size: 16),
+                                                label: const Text("View In-App 👁️", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                                                onPressed: hasUrl
+                                                    ? () {
+                                                        Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (_) => CertificateDetailScreen(certificate: cert),
+                                                          ),
+                                                        );
+                                                      }
+                                                    : null,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: ElevatedButton.icon(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: cardBorder,
+                                                  foregroundColor: textDark,
+                                                  elevation: 0,
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                                ),
+                                                icon: const Icon(Icons.share_rounded, size: 16),
+                                                label: const Text("Share ID 🔗", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                                                onPressed: () {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(content: Text("Certificate ID ${cert.certificateCode} copied to clipboard!")),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
@@ -237,6 +270,32 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderBanner(IconData icon, String subtitle) {
+    return Container(
+      height: 130,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [primaryPink.withOpacity(0.08), lightPinkBg.withOpacity(0.6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: surfaceWhite, shape: BoxShape.circle, boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 10)]),
+            child: Icon(icon, color: primaryPink, size: 28),
+          ),
+          const SizedBox(height: 8),
+          Text(subtitle, style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900)),
+        ],
       ),
     );
   }

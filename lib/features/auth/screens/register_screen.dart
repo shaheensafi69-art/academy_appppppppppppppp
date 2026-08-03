@@ -641,6 +641,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           controller: controller,
           obscureText: isPassword && !(showObscure ?? false),
           maxLines: maxLines,
+          cursorColor: primaryPink, // کرسر صورتی رنگ
           keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
           style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
