@@ -335,7 +335,7 @@ class _TeacherEditClassScreenState extends State<TeacherEditClassScreen> {
                 title: const Text("Cohort Broadcast Status", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900)),
                 subtitle: const Text("Toggle whether students can see this stream active.", style: TextStyle(color: textGrey, fontSize: 10)),
                 value: isActive,
-                activeColor: primaryPink,
+                activeThumbColor: primaryPink,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) => setState(() => isActive = val),
               ),

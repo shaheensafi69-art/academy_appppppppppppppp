@@ -396,7 +396,7 @@ class _TeacherCreateClassScreenState extends State<TeacherCreateClassScreen> {
                 title: const Text("Activate Cohort", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900)),
                 subtitle: const Text("Allow students to see this class and its links.", style: TextStyle(color: textGrey, fontSize: 10)),
                 value: isActive,
-                activeColor: primaryPink,
+                activeThumbColor: primaryPink,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) => setState(() => isActive = val),
               ),
