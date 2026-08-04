@@ -106,7 +106,7 @@ class _TeacherCreateAssignmentScreenState extends State<TeacherCreateAssignmentS
                 child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: classes.length,
-                  separatorBuilder: (_, __) => const Divider(color: cardBorder),
+                  separatorBuilder: (_, _) => const Divider(color: cardBorder),
                   itemBuilder: (context, index) {
                     final c = classes[index];
                     final cId = c['id'].toString();

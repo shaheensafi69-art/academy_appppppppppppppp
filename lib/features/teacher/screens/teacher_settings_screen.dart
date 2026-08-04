@@ -104,15 +104,15 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                    colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.3)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(32),
-                  border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                  border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryPink.withOpacity(0.08),
+                      color: primaryPink.withValues(alpha: 0.08),
                       blurRadius: 25,
                       offset: const Offset(0, 10),
                     ),
@@ -123,7 +123,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: primaryPink.withOpacity(0.12),
+                        color: primaryPink.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(Icons.settings_rounded, color: primaryPink, size: 26),
@@ -150,9 +150,9 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                   padding: const EdgeInsets.all(14),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: isSuccessMessage ? Colors.green.withOpacity(0.12) : Colors.red.withOpacity(0.12),
+                    color: isSuccessMessage ? Colors.green.withValues(alpha: 0.12) : Colors.red.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: isSuccessMessage ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3), width: 1.5),
+                    border: Border.all(color: isSuccessMessage ? Colors.green.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.3), width: 1.5),
                   ),
                   child: Row(
                     children: [
@@ -170,7 +170,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                   color: surfaceWhite,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: cardBorder, width: 1.5),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6))],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,7 +215,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                   color: surfaceWhite,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: cardBorder, width: 1.5),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6))],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,7 +239,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                         hintText: "At least 6 characters",
                         hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                         filled: true,
-                        fillColor: cardBorder.withOpacity(0.5),
+                        fillColor: cardBorder.withValues(alpha: 0.5),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
@@ -258,7 +258,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                         hintText: "Re-enter new password",
                         hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                         filled: true,
-                        fillColor: cardBorder.withOpacity(0.5),
+                        fillColor: cardBorder.withValues(alpha: 0.5),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
@@ -290,9 +290,9 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.04),
+                  color: Colors.red.withValues(alpha: 0.04),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.red.withOpacity(0.2), width: 1.5),
+                  border: Border.all(color: Colors.red.withValues(alpha: 0.2), width: 1.5),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

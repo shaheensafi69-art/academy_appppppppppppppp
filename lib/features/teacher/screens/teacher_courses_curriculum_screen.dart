@@ -170,7 +170,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: enrolledStudents.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 10),
+                              separatorBuilder: (_, _) => const SizedBox(height: 10),
                               itemBuilder: (context, index) {
                                 final enrollment = enrolledStudents[index];
                                 final profile = enrollment['profiles'] as Map<String, dynamic>?;

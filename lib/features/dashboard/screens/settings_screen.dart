@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:local_auth/local_auth.dart';
@@ -82,8 +81,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       final updateData = {
         'student_id': user.id,
-        if (pin != null) 'pin_code': pin,
-        if (biometric != null) 'is_biometric_enabled': biometric,
+        'pin_code': ?pin,
+        'is_biometric_enabled': ?biometric,
         'updated_at': DateTime.now().toIso8601String(),
       };
 

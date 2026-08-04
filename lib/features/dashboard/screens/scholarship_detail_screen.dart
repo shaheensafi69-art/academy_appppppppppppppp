@@ -91,7 +91,7 @@ class ScholarshipDetailScreen extends StatelessWidget {
                         height: 190,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildFallbackBanner(),
+                        errorBuilder: (_, _, _) => _buildFallbackBanner(),
                       )
                     : _buildFallbackBanner(),
               ),

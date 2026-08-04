@@ -166,7 +166,7 @@ class _TeacherLiveClassDetailsScreenState extends State<TeacherLiveClassDetailsS
                       border: Border.all(color: details!.isActive ? primaryPink : cardBorder, width: details!.isActive ? 2 : 1.5),
                       boxShadow: [
                         BoxShadow(
-                          color: details!.isActive ? primaryPink.withOpacity(0.12) : Colors.black.withOpacity(0.04),
+                          color: details!.isActive ? primaryPink.withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.04),
                           blurRadius: 15,
                           offset: const Offset(0, 6),
                         ),
@@ -186,7 +186,7 @@ class _TeacherLiveClassDetailsScreenState extends State<TeacherLiveClassDetailsS
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: details!.isActive ? Colors.green.withOpacity(0.12) : Colors.grey.withOpacity(0.1),
+                                color: details!.isActive ? Colors.green.withValues(alpha: 0.12) : Colors.grey.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -284,7 +284,7 @@ class _TeacherLiveClassDetailsScreenState extends State<TeacherLiveClassDetailsS
                               width: double.infinity,
                               child: ElevatedButton.icon(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: cardBorder.withOpacity(0.5),
+                                  backgroundColor: cardBorder.withValues(alpha: 0.5),
                                   foregroundColor: textDark,
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -305,7 +305,7 @@ class _TeacherLiveClassDetailsScreenState extends State<TeacherLiveClassDetailsS
                               width: double.infinity,
                               child: ElevatedButton.icon(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: cardBorder.withOpacity(0.5),
+                                  backgroundColor: cardBorder.withValues(alpha: 0.5),
                                   foregroundColor: textDark,
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -335,7 +335,7 @@ class _TeacherLiveClassDetailsScreenState extends State<TeacherLiveClassDetailsS
                       color: surfaceWhite,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: cardBorder, width: 1.5),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))],
                     ),
                     child: Row(
                       children: [

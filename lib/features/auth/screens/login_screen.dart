@@ -603,7 +603,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-            if (extraLabel != null) extraLabel,
+            ?extraLabel,
           ],
         ),
         const SizedBox(height: 6),

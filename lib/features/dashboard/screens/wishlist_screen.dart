@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'student_course_detail_screen.dart'; // ایمپورت صفحه جزئیات دوره
@@ -71,13 +70,11 @@ class _WishlistScreenState extends State<WishlistScreen> {
           .select("id, course_id, courses(*)")
           .eq("student_id", user.id);
 
-      if (res is List) {
-        wishlist = res.map((item) {
-          final courseObj = item['courses'];
-          final courseData = courseObj is List ? (courseObj.isNotEmpty ? courseObj[0] : {}) : (courseObj ?? {});
-          return WishlistItem.fromJson(item, courseData);
-        }).toList();
-      }
+      wishlist = (res as List).map((item) {
+        final courseObj = item['courses'];
+        final courseData = courseObj is List ? (courseObj.isNotEmpty ? courseObj[0] : {}) : (courseObj ?? {});
+        return WishlistItem.fromJson(item, courseData);
+      }).toList();
     } catch (e) {
       debugPrint("Error fetching wishlist: $e");
     } finally {
@@ -164,7 +161,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: wishlist.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          separatorBuilder: (_, _) => const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             final item = wishlist[index];
                             return GestureDetector(

@@ -184,14 +184,14 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                     padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                        colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                      border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                       boxShadow: [
-                        BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                        BoxShadow(color: primaryPink.withValues(alpha: 0.08), blurRadius: 25, offset: const Offset(0, 10)),
                       ],
                     ),
                     child: Row(
@@ -201,7 +201,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                           decoration: BoxDecoration(
                             color: lightPinkBg,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                            border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
                           ),
                           child: const Icon(Icons.person_rounded, color: primaryPink, size: 24),
                         ),
@@ -230,7 +230,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                             color: surfaceWhite,
                             borderRadius: BorderRadius.circular(28),
                             border: Border.all(color: cardBorder, width: 1.5),
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: const Offset(0, 6))],
+                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 6))],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,7 +275,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                             color: primaryPink,
                                             shape: BoxShape.circle,
                                             border: Border.all(color: surfaceWhite, width: 2.5),
-                                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 6, offset: const Offset(0, 2))],
+                                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 6, offset: const Offset(0, 2))],
                                           ),
                                           child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 16),
                                         ),
@@ -353,7 +353,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                     elevation: 0,
                                     padding: const EdgeInsets.symmetric(vertical: 16),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                    shadowColor: primaryPink.withOpacity(0.3),
+                                    shadowColor: primaryPink.withValues(alpha: 0.3),
                                   ),
                                   onPressed: isSaving ? null : _handleSaveProfile,
                                   child: Text(
@@ -388,7 +388,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
           style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             filled: true,
-            fillColor: cardBorder.withOpacity(0.5),
+            fillColor: cardBorder.withValues(alpha: 0.5),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
@@ -409,7 +409,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: cardBorder.withOpacity(0.3),
+            color: cardBorder.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: cardBorder),
           ),

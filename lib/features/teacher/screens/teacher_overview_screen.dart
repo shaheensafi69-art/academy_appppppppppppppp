@@ -458,7 +458,7 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: todoList.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final task = todoList[index];
                       final isCompleted = task['is_completed'] ?? false;

@@ -19,7 +19,6 @@ class _TeacherTodoDetailScreenState extends State<TeacherTodoDetailScreen> {
   DateTime? _selectedDueDate;
 
   static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
@@ -227,7 +226,7 @@ class _TeacherTodoDetailScreenState extends State<TeacherTodoDetailScreen> {
                                 const SizedBox(width: 10),
                                 Text(
                                   _selectedDueDate != null
-                                      ? "${_selectedDueDate.toString().split('.')[0]}"
+                                      ? _selectedDueDate.toString().split('.')[0]
                                       : "No due date set (Click to set)",
                                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _selectedDueDate != null ? textDark : textGrey),
                                 ),

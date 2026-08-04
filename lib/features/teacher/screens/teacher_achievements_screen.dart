@@ -196,15 +196,15 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                     padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                        colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.3)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(32),
-                      border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                      border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                       boxShadow: [
                         BoxShadow(
-                          color: primaryPink.withOpacity(0.08),
+                          color: primaryPink.withValues(alpha: 0.08),
                           blurRadius: 25,
                           offset: const Offset(0, 10),
                         ),
@@ -215,7 +215,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: primaryPink.withOpacity(0.12),
+                            color: primaryPink.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: const Icon(Icons.emoji_events_rounded, color: primaryPink, size: 26),
@@ -242,9 +242,9 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                       padding: const EdgeInsets.all(14),
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: isSuccessMessage ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                        color: isSuccessMessage ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: isSuccessMessage ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3)),
+                        border: Border.all(color: isSuccessMessage ? Colors.green.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         children: [
@@ -263,7 +263,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                       borderRadius: BorderRadius.circular(26),
                       border: Border.all(color: cardBorder, width: 1.5),
                       boxShadow: [
-                        BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6)),
+                        BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6)),
                       ],
                     ),
                     child: Column(
@@ -289,7 +289,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                             hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                             prefixIcon: const Icon(Icons.search_rounded, color: textGrey, size: 18),
                             filled: true,
-                            fillColor: cardBorder.withOpacity(0.5),
+                            fillColor: cardBorder.withValues(alpha: 0.5),
                             contentPadding: const EdgeInsets.symmetric(vertical: 14),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
                             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
@@ -298,13 +298,13 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                         ),
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
-                          value: selectedAwardStudentId,
+                          initialValue: selectedAwardStudentId,
                           dropdownColor: surfaceWhite,
                           isExpanded: true,
                           style: const TextStyle(color: textDark, fontSize: 12),
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: cardBorder.withOpacity(0.5),
+                            fillColor: cardBorder.withValues(alpha: 0.5),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
                             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
@@ -323,7 +323,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemCount: awards.length,
-                                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                                separatorBuilder: (_, _) => const SizedBox(height: 10),
                                 itemBuilder: (context, index) {
                                   final award = awards[index];
                                   bool isSelected = selectedAwardId == award.id;
@@ -333,7 +333,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                                     child: Container(
                                       padding: const EdgeInsets.all(14),
                                       decoration: BoxDecoration(
-                                        color: isSelected ? lightPinkBg : cardBorder.withOpacity(0.5),
+                                        color: isSelected ? lightPinkBg : cardBorder.withValues(alpha: 0.5),
                                         borderRadius: BorderRadius.circular(16),
                                         border: Border.all(color: isSelected ? primaryPink : cardBorder, width: isSelected ? 1.5 : 1),
                                       ),
@@ -342,7 +342,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                                           Container(
                                             padding: const EdgeInsets.all(8),
                                             decoration: BoxDecoration(
-                                              color: isSelected ? primaryPink : primaryPink.withOpacity(0.1),
+                                              color: isSelected ? primaryPink : primaryPink.withValues(alpha: 0.1),
                                               borderRadius: BorderRadius.circular(12),
                                             ),
                                             child: Text(award.iconUrl, style: const TextStyle(fontSize: 20)),

@@ -190,7 +190,7 @@ class _CertificateDetailScreenState extends State<CertificateDetailScreen> {
                                       ),
                                     );
                                   },
-                                  errorBuilder: (_, __, ___) => const Center(
+                                  errorBuilder: (_, _, _) => const Center(
                                     child: Text("Failed to load certificate image.", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold)),
                                   ),
                                 ),

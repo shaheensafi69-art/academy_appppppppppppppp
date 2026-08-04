@@ -250,7 +250,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: attempts.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 12),
+                              separatorBuilder: (_, _) => const SizedBox(height: 12),
                               itemBuilder: (context, index) {
                                 final att = attempts[index];
                                 bool isGraded = att.status == 'graded';

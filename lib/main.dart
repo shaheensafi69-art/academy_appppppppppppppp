@@ -2,20 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/routing/auth_gate.dart';
+import 'features/auth/screens/welcome_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Supabase.initialize(
-    url: 'https://enpuoypqpklndnnhndax.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVucHVveXBxcGtsbmRubmhuZGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNzg1MjgsImV4cCI6MjA5ODY1NDUyOH0.slU2vYIzM0BXG_3ksR5pcfvP-cpFH7IkwIyuzF1pNCo',
-  );
+  try {
+    await Supabase.initialize(
+      url: 'https://enpuoypqpklndnnhndax.supabase.co',
+      anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVucHVveXBxcGtsbmRubmhuZGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNzg1MjgsImV4cCI6MjA5ODY1NDUyOH0.slU2vYIzM0BXG_3ksR5pcfvP-cpFH7IkwIyuzF1pNCo',
+    );
+  } catch (e) {
+    debugPrint('Supabase initialization failed: $e');
+  }
 
   runApp(const SafiAcademyApp());
 }
 
 class SafiAcademyApp extends StatelessWidget {
-  const SafiAcademyApp({super.key});
+  final bool supabaseReady;
+
+  const SafiAcademyApp({super.key, this.supabaseReady = true});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +36,7 @@ class SafiAcademyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const AuthGate(),
+      home: supabaseReady ? const AuthGate() : const WelcomeScreen(),
     );
   }
 }

@@ -109,7 +109,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                           color: surfaceWhite,
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: cardBorder, width: 1.5),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,7 +163,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: classGroups.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 14),
+                              separatorBuilder: (_, _) => const SizedBox(height: 14),
                               itemBuilder: (context, index) {
                                 final group = classGroups[index];
                                 final studentsList = group['students_list'] as List? ?? [];
@@ -175,7 +175,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                     color: surfaceWhite,
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(color: isActive ? primaryPink : cardBorder, width: isActive ? 1.5 : 1),
-                                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
+                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2))],
                                   ),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,7 +188,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                           ),
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                            decoration: BoxDecoration(color: isActive ? Colors.green.withOpacity(0.1) : Colors.grey.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                            decoration: BoxDecoration(color: isActive ? Colors.green.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                                             child: Text(isActive ? "● Active" : "○ Standby", style: TextStyle(color: isActive ? Colors.green.shade700 : textGrey, fontSize: 9, fontWeight: FontWeight.w900)),
                                           ),
                                         ],
@@ -205,7 +205,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                               shrinkWrap: true,
                                               physics: const NeverScrollableScrollPhysics(),
                                               itemCount: studentsList.length,
-                                              separatorBuilder: (_, __) => const SizedBox(height: 6),
+                                              separatorBuilder: (_, _) => const SizedBox(height: 6),
                                               itemBuilder: (context, sIndex) {
                                                 final studentEntry = studentsList[sIndex];
                                                 final profile = studentEntry['profiles'] as Map<String, dynamic>?;
@@ -263,7 +263,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: enrolledStudents.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 10),
+                              separatorBuilder: (_, _) => const SizedBox(height: 10),
                               itemBuilder: (context, index) {
                                 final enrollment = enrolledStudents[index];
                                 final profile = enrollment['profiles'] as Map<String, dynamic>?;
@@ -278,7 +278,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                     color: surfaceWhite,
                                     borderRadius: BorderRadius.circular(18),
                                     border: Border.all(color: cardBorder, width: 1.5),
-                                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
+                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2))],
                                   ),
                                   child: Row(
                                     children: [
@@ -301,7 +301,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                       ),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                        decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                                         child: Text("$progress% Done", style: const TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.w900)),
                                       ),
                                     ],

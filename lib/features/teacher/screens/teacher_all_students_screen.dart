@@ -319,7 +319,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                   const Text("Course Filter", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 12)),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String?>(
-                    value: selectedCourseId,
+                    initialValue: selectedCourseId,
                     dropdownColor: surfaceWhite,
                     isExpanded: true,
                     style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
@@ -353,7 +353,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                   const Text("Class Group Filter", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 12)),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String?>(
-                    value: selectedClassId,
+                    initialValue: selectedClassId,
                     dropdownColor: surfaceWhite,
                     isExpanded: true,
                     style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
@@ -552,7 +552,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: filteredStudents.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final student = filteredStudents[index];
                         return Container(

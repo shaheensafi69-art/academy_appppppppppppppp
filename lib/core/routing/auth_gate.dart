@@ -27,23 +27,38 @@ class _AuthGateState extends State<AuthGate> {
   }
 
   void _initializeAuthListener() {
-    _resolveUserSessionAndRole(supabase.auth.currentSession);
+    try {
+      _resolveUserSessionAndRole(supabase.auth.currentSession);
 
-    supabase.auth.onAuthStateChange.listen((data) {
-      final AuthChangeEvent event = data.event;
-      final Session? session = data.session;
+      supabase.auth.onAuthStateChange.listen(
+        (data) {
+          final AuthChangeEvent event = data.event;
+          final Session? session = data.session;
 
-      if (event == AuthChangeEvent.signedIn || event == AuthChangeEvent.tokenRefreshed) {
-        _resolveUserSessionAndRole(session);
-      } else if (event == AuthChangeEvent.signedOut) {
-        if (mounted) {
-          setState(() {
-            _targetScreen = const WelcomeScreen();
-            _isLoading = false;
-          });
-        }
-      }
-    });
+          if (event == AuthChangeEvent.signedIn || event == AuthChangeEvent.tokenRefreshed) {
+            _resolveUserSessionAndRole(session);
+          } else if (event == AuthChangeEvent.signedOut) {
+            _showFallbackScreen();
+          }
+        },
+        onError: (error) {
+          debugPrint('Auth stream error: $error');
+          _showFallbackScreen();
+        },
+      );
+    } catch (e) {
+      debugPrint('Auth listener setup failed: $e');
+      _showFallbackScreen();
+    }
+  }
+
+  void _showFallbackScreen() {
+    if (mounted) {
+      setState(() {
+        _targetScreen = const WelcomeScreen();
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _resolveUserSessionAndRole(Session? session) async {

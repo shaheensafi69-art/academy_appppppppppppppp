@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'certificates_detail_screen.dart';
@@ -149,7 +148,7 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: certificates.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 16),
+                          separatorBuilder: (_, _) => const SizedBox(height: 16),
                           itemBuilder: (context, index) {
                             final cert = certificates[index];
                             final bool hasUrl = cert.certificateUrl != null && cert.certificateUrl!.isNotEmpty;
@@ -174,7 +173,7 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
                                               height: 160,
                                               width: double.infinity,
                                               fit: BoxFit.cover,
-                                              errorBuilder: (_, __, ___) => _buildPlaceholderBanner(Icons.broken_image_rounded, "Image preview unavailable"),
+                                              errorBuilder: (_, _, _) => _buildPlaceholderBanner(Icons.broken_image_rounded, "Image preview unavailable"),
                                             )
                                           : _buildPlaceholderBanner(Icons.picture_as_pdf_rounded, "Official PDF Document"),
                                     )

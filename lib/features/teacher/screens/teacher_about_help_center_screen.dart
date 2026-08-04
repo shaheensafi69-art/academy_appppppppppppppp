@@ -44,14 +44,14 @@ class _TeacherAboutHelpCenterScreenState extends State<TeacherAboutHelpCenterScr
                         padding: const EdgeInsets.all(22),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                            colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(28),
-                          border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                          border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                           boxShadow: [
-                            BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                            BoxShadow(color: primaryPink.withValues(alpha: 0.08), blurRadius: 25, offset: const Offset(0, 10)),
                           ],
                         ),
                         child: Row(
@@ -61,7 +61,7 @@ class _TeacherAboutHelpCenterScreenState extends State<TeacherAboutHelpCenterScr
                               decoration: BoxDecoration(
                                 color: lightPinkBg,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                                border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
                               ),
                               child: const Icon(Icons.info_outline_rounded, color: primaryPink, size: 24),
                             ),
@@ -88,7 +88,7 @@ class _TeacherAboutHelpCenterScreenState extends State<TeacherAboutHelpCenterScr
                           color: surfaceWhite,
                           borderRadius: BorderRadius.circular(28),
                           border: Border.all(color: cardBorder, width: 1.5),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,7 +100,7 @@ class _TeacherAboutHelpCenterScreenState extends State<TeacherAboutHelpCenterScr
                                   decoration: BoxDecoration(
                                     color: lightPinkBg,
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: primaryPink.withOpacity(0.2)),
+                                    border: Border.all(color: primaryPink.withValues(alpha: 0.2)),
                                   ),
                                   child: Image.asset(
                                     'assets/logo-without-b.png',
@@ -287,7 +287,7 @@ class _TeacherAboutHelpCenterScreenState extends State<TeacherAboutHelpCenterScr
           color: surfaceWhite,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: cardBorder, width: 1.5),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 3))],
         ),
         child: Row(
           children: [
@@ -327,7 +327,7 @@ class _TeacherAboutHelpCenterScreenState extends State<TeacherAboutHelpCenterScr
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
-            BoxShadow(color: const Color(0xFF25D366).withOpacity(0.25), blurRadius: 12, offset: const Offset(0, 6)),
+            BoxShadow(color: const Color(0xFF25D366).withValues(alpha: 0.25), blurRadius: 12, offset: const Offset(0, 6)),
           ],
         ),
         child: Row(
@@ -359,7 +359,7 @@ class _TeacherAboutHelpCenterScreenState extends State<TeacherAboutHelpCenterScr
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 14),
@@ -379,7 +379,7 @@ class _TeacherAboutHelpCenterScreenState extends State<TeacherAboutHelpCenterScr
           color: surfaceWhite,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: cardBorder, width: 1.5),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2))],
         ),
         child: Row(
           children: [
@@ -407,7 +407,7 @@ class _TeacherAboutHelpCenterScreenState extends State<TeacherAboutHelpCenterScr
                 ],
               ),
             ),
-            Icon(Icons.open_in_new_rounded, color: textGrey.withOpacity(0.5), size: 12),
+            Icon(Icons.open_in_new_rounded, color: textGrey.withValues(alpha: 0.5), size: 12),
           ],
         ),
       ),

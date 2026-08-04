@@ -131,7 +131,7 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
               const SizedBox(height: 16),
               Text(
                 "INITIALIZING INSTRUCTOR PORTAL...",
-                style: TextStyle(color: primaryPink.withOpacity(0.8), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2),
+                style: TextStyle(color: primaryPink.withValues(alpha: 0.8), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2),
               ),
             ],
           ),
@@ -156,7 +156,7 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 boxShadow: [
-                  BoxShadow(color: primaryPink.withOpacity(0.04), blurRadius: 100, spreadRadius: 40),
+                  BoxShadow(color: primaryPink.withValues(alpha: 0.04), blurRadius: 100, spreadRadius: 40),
                 ],
               ),
             ),
@@ -197,11 +197,11 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
           height: 60,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-            color: surfaceColor.withOpacity(0.95),
-            border: Border.all(color: primaryPink.withOpacity(0.2)),
+            color: surfaceColor.withValues(alpha: 0.95),
+            border: Border.all(color: primaryPink.withValues(alpha: 0.2)),
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
-              BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 6)),
+              BoxShadow(color: primaryPink.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 6)),
             ],
           ),
           child: Row(
@@ -270,7 +270,7 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
           child: Container(
-            color: backgroundWhite.withOpacity(0.97),
+            color: backgroundWhite.withValues(alpha: 0.97),
             child: SafeArea(
               child: Column(
                 children: [
@@ -284,7 +284,7 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                           onTap: () => setState(() => _isMobileMenuOpen = false),
                           child: Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(color: primaryPink.withOpacity(0.15), shape: BoxShape.circle),
+                            decoration: BoxDecoration(color: primaryPink.withValues(alpha: 0.15), shape: BoxShape.circle),
                             child: const Icon(Icons.close, color: primaryPink, size: 18),
                           ),
                         ),
@@ -311,8 +311,8 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             decoration: BoxDecoration(
-                              color: isSelected ? primaryPink.withOpacity(0.15) : Colors.grey.shade50,
-                              border: Border.all(color: isSelected ? primaryPink.withOpacity(0.4) : borderColor),
+                              color: isSelected ? primaryPink.withValues(alpha: 0.15) : Colors.grey.shade50,
+                              border: Border.all(color: isSelected ? primaryPink.withValues(alpha: 0.4) : borderColor),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Row(
@@ -323,7 +323,7 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                                     color: isSelected ? primaryPink : Colors.white,
                                     borderRadius: BorderRadius.circular(10),
                                     boxShadow: [
-                                      BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4, offset: const Offset(0, 2)),
+                                      BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 2)),
                                     ],
                                   ),
                                   child: Icon(
@@ -366,9 +366,9 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                       margin: const EdgeInsets.all(16),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: lightPinkBg.withOpacity(0.5),
+                        color: lightPinkBg.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                        border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
                       ),
                       child: Column(
                         children: [
@@ -376,7 +376,7 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                             children: [
                               CircleAvatar(
                                 radius: 20,
-                                backgroundColor: primaryPink.withOpacity(0.2),
+                                backgroundColor: primaryPink.withValues(alpha: 0.2),
                                 backgroundImage: _userProfile?['avatar_url'] != null ? NetworkImage(_userProfile!['avatar_url']) : null,
                                 child: _userProfile?['avatar_url'] == null ? const Icon(Icons.person, color: primaryPink, size: 20) : null,
                               ),
@@ -398,10 +398,10 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                             width: double.infinity,
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.redAccent.withOpacity(0.15),
+                                backgroundColor: Colors.redAccent.withValues(alpha: 0.15),
                                 foregroundColor: Colors.redAccent,
                                 elevation: 0,
-                                side: BorderSide(color: Colors.redAccent.withOpacity(0.3)),
+                                side: BorderSide(color: Colors.redAccent.withValues(alpha: 0.3)),
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                               ),

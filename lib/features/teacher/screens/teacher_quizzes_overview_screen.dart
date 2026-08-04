@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'teacher_create_quiz_screen.dart';
@@ -95,7 +94,7 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
       // ۳. واکشی تلاش‌های دانشجویان از جدول quiz_attempts برای بررسی اوراق
       final allAttempts = quizIds.isNotEmpty
           ? await supabase.from("quiz_attempts").select("quiz_id, status").inFilter("quiz_id", quizIds)
-          : [];
+          : <dynamic>[];
 
       quizzes = allQuizzes.map((quiz) {
         final classGroup = quiz['class_groups'];
@@ -108,7 +107,7 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
           headerName = classGroup['class_name'];
         }
 
-        final quizAttempts = (allAttempts as List).where((a) => a['quiz_id'] == quiz['id']).toList();
+        final quizAttempts = allAttempts.where((a) => a['quiz_id'] == quiz['id']).toList();
         final pendingCount = quizAttempts.where((a) => a['status'] == "pending_review").length;
 
         return QuizOverviewItem(
@@ -268,7 +267,7 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: filtered.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 14),
+                          separatorBuilder: (_, _) => const SizedBox(height: 14),
                           itemBuilder: (context, index) {
                             final quiz = filtered[index];
                             return Container(

@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -100,7 +99,7 @@ class ScholarshipDetailScreen extends StatelessWidget {
                         height: 180,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildFallbackBanner(),
+                        errorBuilder: (_, _, _) => _buildFallbackBanner(),
                       )
                     : _buildFallbackBanner(),
               ),
@@ -269,21 +268,19 @@ class _ScholarshipsScreenState extends State<ScholarshipsScreen> {
     try {
       final response = await supabase.from("scholarships").select("*");
 
-      if (response is List) {
-        // خواندن و فیلتر دقیق فقط زبان انگلیسی (en)
-        allScholarships = response
-            .map((s) => ScholarshipItem.fromJson(s))
-            .where((item) => item.language == 'en')
-            .toList();
+      // خواندن و فیلتر دقیق فقط زبان انگلیسی (en)
+      allScholarships = (response as List)
+          .map((s) => ScholarshipItem.fromJson(s))
+          .where((item) => item.language == 'en')
+          .toList();
 
-        Set<String> regionSet = {"All"};
-        for (var item in allScholarships) {
-          if (item.continent.isNotEmpty) {
-            regionSet.add(item.continent);
-          }
+      Set<String> regionSet = {"All"};
+      for (var item in allScholarships) {
+        if (item.continent.isNotEmpty) {
+          regionSet.add(item.continent);
         }
-        regions = regionSet.toList();
       }
+      regions = regionSet.toList();
     } catch (e) {
       debugPrint("Error fetching scholarships: $e");
     } finally {
@@ -353,7 +350,7 @@ class _ScholarshipsScreenState extends State<ScholarshipsScreen> {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: regions.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 6),
+                    separatorBuilder: (_, _) => const SizedBox(width: 6),
                     itemBuilder: (context, index) {
                       final reg = regions[index];
                       final isSelected = selectedRegion == reg;
@@ -392,7 +389,7 @@ class _ScholarshipsScreenState extends State<ScholarshipsScreen> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: filteredScholarships.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          separatorBuilder: (_, _) => const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             final sch = filteredScholarships[index];
                             return GestureDetector(
@@ -422,7 +419,7 @@ class _ScholarshipsScreenState extends State<ScholarshipsScreen> {
                                           height: 120,
                                           width: double.infinity,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
                                         ),
                                       ),
                                     Padding(

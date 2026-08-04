@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'teacher_certificates_detail_screen.dart';
@@ -146,7 +145,7 @@ class _TeacherCertificatesScreenState extends State<TeacherCertificatesScreen> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: certificates.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 12),
+                              separatorBuilder: (_, _) => const SizedBox(height: 12),
                               itemBuilder: (context, index) {
                                 final cert = certificates[index];
                                 final profile = cert['profiles'] as Map<String, dynamic>?;

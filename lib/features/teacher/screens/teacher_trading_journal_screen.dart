@@ -244,7 +244,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
             color: surfaceWhite,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(color: cardBorder, width: 1.5),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6))],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -286,15 +286,15 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                   padding: const EdgeInsets.all(22),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                      colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.3)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(32),
-                    border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                    border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                     boxShadow: [
                       BoxShadow(
-                        color: primaryPink.withOpacity(0.08),
+                        color: primaryPink.withValues(alpha: 0.08),
                         blurRadius: 25,
                         offset: const Offset(0, 10),
                       ),
@@ -308,7 +308,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: primaryPink.withOpacity(0.12),
+                              color: primaryPink.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: const Icon(Icons.trending_up_rounded, color: primaryPink, size: 26),
@@ -335,7 +335,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                           hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                           prefixIcon: const Icon(Icons.search_rounded, color: primaryPink, size: 18),
                           filled: true,
-                          fillColor: cardBorder.withOpacity(0.5),
+                          fillColor: cardBorder.withValues(alpha: 0.5),
                           contentPadding: const EdgeInsets.symmetric(vertical: 12),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
                           enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
@@ -368,10 +368,10 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                               color: surfaceWhite,
                               borderRadius: BorderRadius.circular(24),
                               border: Border.all(
-                                color: isGraded ? Colors.green.withOpacity(0.3) : cardBorder,
+                                color: isGraded ? Colors.green.withValues(alpha: 0.3) : cardBorder,
                                 width: 1.5,
                               ),
-                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6))],
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -396,7 +396,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                       decoration: BoxDecoration(
-                                        color: isGraded ? Colors.green.withOpacity(0.12) : lightPinkBg,
+                                        color: isGraded ? Colors.green.withValues(alpha: 0.12) : lightPinkBg,
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Text(
@@ -421,7 +421,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                           decoration: BoxDecoration(
-                                            color: journal.positionType.toUpperCase() == 'BUY' ? Colors.green.withOpacity(0.12) : Colors.red.withOpacity(0.12),
+                                            color: journal.positionType.toUpperCase() == 'BUY' ? Colors.green.withValues(alpha: 0.12) : Colors.red.withValues(alpha: 0.12),
                                             borderRadius: BorderRadius.circular(6),
                                           ),
                                           child: Text(
@@ -509,8 +509,8 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                 decoration: BoxDecoration(
                   color: surfaceWhite,
                   borderRadius: BorderRadius.circular(26),
-                  border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
-                  boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 25, offset: const Offset(0, 10))],
+                  border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
+                  boxShadow: [BoxShadow(color: primaryPink.withValues(alpha: 0.1), blurRadius: 25, offset: const Offset(0, 10))],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -545,7 +545,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                         hintText: "Score (e.g. 95)",
                         hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                         filled: true,
-                        fillColor: cardBorder.withOpacity(0.5),
+                        fillColor: cardBorder.withValues(alpha: 0.5),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
@@ -563,7 +563,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                         hintText: "Tactical feedback...",
                         hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                         filled: true,
-                        fillColor: cardBorder.withOpacity(0.5),
+                        fillColor: cardBorder.withValues(alpha: 0.5),
                         contentPadding: const EdgeInsets.all(14),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),

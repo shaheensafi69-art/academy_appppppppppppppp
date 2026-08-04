@@ -125,15 +125,15 @@ class _TeacherAnnouncementsScreenState extends State<TeacherAnnouncementsScreen>
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.3)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+              border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: primaryPink.withOpacity(0.08),
+                  color: primaryPink.withValues(alpha: 0.08),
                   blurRadius: 25,
                   offset: const Offset(0, 10),
                 ),
@@ -144,7 +144,7 @@ class _TeacherAnnouncementsScreenState extends State<TeacherAnnouncementsScreen>
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: primaryPink.withOpacity(0.12),
+                    color: primaryPink.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(Icons.campaign_rounded, color: primaryPink, size: 26),
@@ -189,7 +189,7 @@ class _TeacherAnnouncementsScreenState extends State<TeacherAnnouncementsScreen>
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(color: cardBorder, width: 1.5),
                             boxShadow: [
-                              BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6)),
+                              BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6)),
                             ],
                           ),
                           child: Column(
@@ -228,7 +228,7 @@ class _TeacherAnnouncementsScreenState extends State<TeacherAnnouncementsScreen>
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: cardBorder.withOpacity(0.5),
+                                  color: cardBorder.withValues(alpha: 0.5),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(

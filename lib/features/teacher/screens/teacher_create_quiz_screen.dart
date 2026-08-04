@@ -283,7 +283,7 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: questions.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 14),
+                    separatorBuilder: (_, _) => const SizedBox(height: 14),
                     itemBuilder: (context, index) {
                       final q = questions[index];
                       bool isMCQ = q['type'] == 'multiple_choice';
@@ -316,7 +316,7 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
                             const Text("Question Format *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 6),
                             DropdownButtonFormField<String>(
-                              value: q['type'],
+                              initialValue: q['type'],
                               dropdownColor: surfaceWhite,
                               isExpanded: true,
                               style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold),

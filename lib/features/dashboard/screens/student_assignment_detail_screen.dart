@@ -1,6 +1,3 @@
-import 'dart:ui';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -572,13 +569,6 @@ class _StudentAssignmentDetailScreenState extends State<StudentAssignmentDetailS
       debugPrint("Upload failed: $e");
     } finally {
       if (mounted) setState(() => isUploading = false);
-    }
-  }
-
-  Future<void> _launchURL(String urlString) async {
-    final Uri url = Uri.parse(urlString);
-    if (!await launchUrl(url)) {
-      debugPrint('Could not launch $urlString');
     }
   }
 

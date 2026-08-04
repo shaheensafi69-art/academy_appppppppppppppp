@@ -196,7 +196,7 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
                       hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                       prefixIcon: const Icon(Icons.search_rounded, color: textGrey, size: 20),
                       filled: true,
-                      fillColor: cardBorder.withOpacity(0.5),
+                      fillColor: cardBorder.withValues(alpha: 0.5),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
@@ -210,7 +210,7 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: filtered.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          separatorBuilder: (_, _) => const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             final student = filtered[index];
                             bool isEnrolled = enrolledIds.contains(student.id);
@@ -220,9 +220,9 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
                               decoration: BoxDecoration(
                                 color: surfaceWhite,
                                 borderRadius: BorderRadius.circular(22),
-                                border: Border.all(color: isEnrolled ? primaryPink.withOpacity(0.3) : cardBorder, width: isEnrolled ? 1.5 : 1),
+                                border: Border.all(color: isEnrolled ? primaryPink.withValues(alpha: 0.3) : cardBorder, width: isEnrolled ? 1.5 : 1),
                                 boxShadow: [
-                                  BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+                                  BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
                                 ],
                               ),
                               child: Row(
@@ -261,7 +261,7 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
                                       ? Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                           decoration: BoxDecoration(
-                                            color: Colors.green.withOpacity(0.1),
+                                            color: Colors.green.withValues(alpha: 0.1),
                                             borderRadius: BorderRadius.circular(10),
                                           ),
                                           child: const Text("Enrolled", style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.w900)),

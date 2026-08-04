@@ -184,7 +184,7 @@ class _TeacherLiveClassesScreenState extends State<TeacherLiveClassesScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: classGroups.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 14),
+                      separatorBuilder: (_, _) => const SizedBox(height: 14),
                       itemBuilder: (context, index) {
                         final cls = classGroups[index];
                         return Container(

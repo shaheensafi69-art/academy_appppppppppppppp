@@ -76,30 +76,27 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
 
       List<Map<String, dynamic>> finalTeachersList = [];
 
-      if (teacherProfilesRes != null) {
-        for (var profile in (teacherProfilesRes as List)) {
-          final tId = profile['id'];
+      for (var profile in teacherProfilesRes) {
+        final tId = profile['id'];
 
-          final teacherInfoMatch = await supabase
-              .from("teacher_info")
-              .select("id, bio")
-              .eq("id", tId)
-              .maybeSingle();
+        final teacherInfoMatch = await supabase
+            .from("teacher_info")
+            .select("id, bio")
+            .eq("id", tId)
+            .maybeSingle();
 
-          List<String> specialties = [];
-          if (teacherInfoMatch != null) {
-            final specRes = await supabase
-                .from("teacher_info_courses")
-                .select("course:courses(title, category)")
-                .eq("teacher_info_id", teacherInfoMatch['id']);
+        List<String> specialties = [];
+        if (teacherInfoMatch != null) {
+          final specRes = await supabase
+              .from("teacher_info_courses")
+              .select("course:courses(title, category)")
+              .eq("teacher_info_id", teacherInfoMatch['id']);
 
-            if (specRes != null) {
-              for (var item in (specRes as List)) {
-                final cat = item['course']?['category'];
-                if (cat != null) specialties.add(cat.toString());
-              }
-            }
+          for (var item in specRes) {
+            final cat = item['course']?['category'];
+            if (cat != null) specialties.add(cat.toString());
           }
+        }
 
           finalTeachersList.add({
             ...profile,
@@ -107,7 +104,6 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
             'specialties': specialties.toSet().toList(),
           });
         }
-      }
 
       final courseRes = await supabase.from("courses").select("category");
       Set<String> categoriesSet = {};
@@ -391,7 +387,7 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
                     const Text("CATEGORY (AUTO-MATCHED) *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<String>(
-                      value: selectedCategory,
+                      initialValue: selectedCategory,
                       dropdownColor: surfaceWhite,
                       style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                       decoration: _inputFieldDecoration("Select category"),
@@ -411,7 +407,7 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
                               const Text("LANGUAGE", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                               const SizedBox(height: 6),
                               DropdownButtonFormField<String>(
-                                value: selectedLanguage,
+                                initialValue: selectedLanguage,
                                 dropdownColor: surfaceWhite,
                                 style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                                 decoration: _inputFieldDecoration("Language"),
@@ -431,7 +427,7 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
                               const Text("STATUS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                               const SizedBox(height: 6),
                               DropdownButtonFormField<bool>(
-                                value: isPublished,
+                                initialValue: isPublished,
                                 dropdownColor: surfaceWhite,
                                 style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                                 decoration: _inputFieldDecoration("Status"),

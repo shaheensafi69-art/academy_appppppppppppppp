@@ -165,15 +165,15 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                    colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.3)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(32),
-                  border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                  border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryPink.withOpacity(0.08),
+                      color: primaryPink.withValues(alpha: 0.08),
                       blurRadius: 25,
                       offset: const Offset(0, 10),
                     ),
@@ -192,7 +192,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: primaryPink.withOpacity(0.12),
+                                color: primaryPink.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: const Icon(Icons.assignment_rounded, color: primaryPink, size: 26),
@@ -245,7 +245,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                         color: surfaceWhite,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: cardBorder, width: 1.5),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,7 +265,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                         color: surfaceWhite,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: cardBorder, width: 1.5),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -283,13 +283,13 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
 
               // فیلتر کلاس
               DropdownButtonFormField<String>(
-                value: selectedClassFilter,
+                initialValue: selectedClassFilter,
                 dropdownColor: surfaceWhite,
                 isExpanded: true,
                 style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w600),
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: cardBorder.withOpacity(0.5),
+                  fillColor: cardBorder.withValues(alpha: 0.5),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
@@ -311,7 +311,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: filteredAssignments.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 14),
+                          separatorBuilder: (_, _) => const SizedBox(height: 14),
                           itemBuilder: (context, index) {
                             final task = filteredAssignments[index];
                             bool isExpired = false;
@@ -328,7 +328,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                                 borderRadius: BorderRadius.circular(24),
                                 border: Border.all(color: cardBorder, width: 1.5),
                                 boxShadow: [
-                                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6)),
+                                  BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6)),
                                 ],
                               ),
                               child: Column(
@@ -344,7 +344,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                                       ),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(color: Colors.amber.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+                                        decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
                                         child: Text("Max: ${task.maxScore} Pts", style: const TextStyle(color: Colors.amber, fontSize: 9, fontWeight: FontWeight.bold)),
                                       ),
                                     ],

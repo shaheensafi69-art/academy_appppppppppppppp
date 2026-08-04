@@ -424,7 +424,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                       const Text("SYSTEM ROLE", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<String>(
-                        value: role,
+                        initialValue: role,
                         dropdownColor: surfaceWhite,
                         style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                         decoration: _inputFieldDecoration("Select role"),

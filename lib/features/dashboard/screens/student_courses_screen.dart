@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'student_course_detail_screen.dart';
@@ -87,9 +86,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
     try {
       final response = await supabase.from("courses").select();
       List<CourseModel> loadedCourses = [];
-      if (response is List) {
-        loadedCourses = response.map((item) => CourseModel.fromJson(item)).toList();
-      }
+      loadedCourses = (response as List).map((item) => CourseModel.fromJson(item)).toList();
 
       Set<String> enrolledIds = {};
       Set<String> wishlistIds = {};
@@ -102,11 +99,9 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
               .select("course_id")
               .eq("student_id", user.id);
 
-          if (enrollmentsRes is List) {
-            for (var item in enrollmentsRes) {
-              if (item['course_id'] != null) {
-                enrolledIds.add(item['course_id'].toString());
-              }
+          for (var item in enrollmentsRes as List) {
+            if (item['course_id'] != null) {
+              enrolledIds.add(item['course_id'].toString());
             }
           }
         } catch (e) {
@@ -120,11 +115,9 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
               .select("course_id")
               .eq("student_id", user.id);
 
-          if (wishlistRes is List) {
-            for (var item in wishlistRes) {
-              if (item['course_id'] != null) {
-                wishlistIds.add(item['course_id'].toString());
-              }
+          for (var item in wishlistRes as List) {
+            if (item['course_id'] != null) {
+              wishlistIds.add(item['course_id'].toString());
             }
           }
         } catch (e) {

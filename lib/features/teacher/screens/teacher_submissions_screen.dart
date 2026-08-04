@@ -232,7 +232,7 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                           color: surfaceWhite,
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: cardBorder, width: 1.5),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -246,7 +246,7 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                               children: [
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(color: Colors.amber.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+                                  decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
                                   child: Text("Max Score: ${assignmentInfo?['max_score'] ?? 100} Pts", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w900, fontSize: 10)),
                                 ),
                                 Text("Due: ${assignmentInfo?['deadline']?.toString().split('T')[0] ?? 'No Deadline'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
@@ -265,7 +265,7 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: submissions.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 14),
+                              separatorBuilder: (_, _) => const SizedBox(height: 14),
                               itemBuilder: (context, index) {
                                 final sub = submissions[index];
                                 bool isGraded = sub.grade != null;
@@ -276,10 +276,10 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                                     color: surfaceWhite,
                                     borderRadius: BorderRadius.circular(24),
                                     border: Border.all(
-                                      color: isGraded ? Colors.green.withOpacity(0.3) : primaryPink.withOpacity(0.2),
+                                      color: isGraded ? Colors.green.withValues(alpha: 0.3) : primaryPink.withValues(alpha: 0.2),
                                       width: 1.5,
                                     ),
-                                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6))],
                                   ),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,7 +313,7 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                             decoration: BoxDecoration(
-                                              color: isGraded ? Colors.green.withOpacity(0.12) : lightPinkBg,
+                                              color: isGraded ? Colors.green.withValues(alpha: 0.12) : lightPinkBg,
                                               borderRadius: BorderRadius.circular(8),
                                             ),
                                             child: Text(
@@ -402,8 +402,8 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                   decoration: BoxDecoration(
                     color: surfaceWhite,
                     borderRadius: BorderRadius.circular(26),
-                    border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
-                    boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 25, offset: const Offset(0, 10))],
+                    border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
+                    boxShadow: [BoxShadow(color: primaryPink.withValues(alpha: 0.1), blurRadius: 25, offset: const Offset(0, 10))],
                   ),
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
@@ -437,7 +437,7 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                             hintText: "Score (e.g. 95)",
                             hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                             filled: true,
-                            fillColor: cardBorder.withOpacity(0.5),
+                            fillColor: cardBorder.withValues(alpha: 0.5),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
                             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
@@ -455,7 +455,7 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                             hintText: "Constructive comments...",
                             hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                             filled: true,
-                            fillColor: cardBorder.withOpacity(0.5),
+                            fillColor: cardBorder.withValues(alpha: 0.5),
                             contentPadding: const EdgeInsets.all(14),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
                             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),

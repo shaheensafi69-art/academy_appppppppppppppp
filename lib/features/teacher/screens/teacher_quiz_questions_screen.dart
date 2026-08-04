@@ -201,7 +201,7 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
                 color: surfaceWhite,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: cardBorder, width: 1.5),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -209,7 +209,7 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
                   Text("Total Questions: ${questions.length}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(color: Colors.amber.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+                    decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
                     child: Text("Total Points: $totalPoints", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w900, fontSize: 11)),
                   ),
                 ],
@@ -221,9 +221,9 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: lightPinkBg.withOpacity(0.3),
+                color: lightPinkBg.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.5),
+                border: Border.all(color: primaryPink.withValues(alpha: 0.2), width: 1.5),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -354,7 +354,7 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
                           color: surfaceWhite,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: cardBorder, width: 1.5),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,

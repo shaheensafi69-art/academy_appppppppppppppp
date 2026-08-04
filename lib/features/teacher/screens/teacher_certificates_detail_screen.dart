@@ -147,7 +147,7 @@ class _TeacherCertificatesDetailScreenState extends State<TeacherCertificatesDet
         'student_id': selectedStudentId,
         'course_id': selectedCourseId,
         'certificate_code': _certCodeController.text.trim(),
-        if (fileUrl != null) 'certificate_url': fileUrl,
+        'certificate_url': ?fileUrl,
         'issue_date': DateTime.now().toIso8601String(),
       }, onConflict: 'student_id,course_id');
 
@@ -204,7 +204,7 @@ class _TeacherCertificatesDetailScreenState extends State<TeacherCertificatesDet
                   const Text("Target Class & Course *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
-                    value: selectedClassId,
+                    initialValue: selectedClassId,
                     dropdownColor: surfaceWhite,
                     isExpanded: true,
                     style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
@@ -238,7 +238,7 @@ class _TeacherCertificatesDetailScreenState extends State<TeacherCertificatesDet
                   const Text("Graduate Student *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
-                    value: selectedStudentId,
+                    initialValue: selectedStudentId,
                     dropdownColor: surfaceWhite,
                     isExpanded: true,
                     style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),

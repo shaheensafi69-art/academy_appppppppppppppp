@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/services.dart';
@@ -71,9 +70,7 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
           .eq("is_active", true);
 
       List<Map<String, dynamic>> groups = [];
-      if (groupsRes is List) {
-        groups = List<Map<String, dynamic>>.from(groupsRes);
-      }
+      groups = List<Map<String, dynamic>>.from(groupsRes as List);
 
       String initialInstructor = res['instructor_name'] ?? res['instructor'] ?? 'Safi Academy Faculty';
 

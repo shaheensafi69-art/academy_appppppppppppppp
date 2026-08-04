@@ -152,7 +152,7 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                 child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: availableCoInstructors.length,
-                  separatorBuilder: (_, __) => const Divider(color: cardBorder),
+                  separatorBuilder: (_, _) => const Divider(color: cardBorder),
                   itemBuilder: (context, index) {
                     final teacher = availableCoInstructors[index];
                     final name = "${teacher['first_name'] ?? ''} ${teacher['last_name'] ?? ''}".trim();
@@ -374,7 +374,7 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                   const Text("Language", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
-                    value: selectedLanguage,
+                    initialValue: selectedLanguage,
                     dropdownColor: surfaceWhite,
                     style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                     decoration: InputDecoration(
