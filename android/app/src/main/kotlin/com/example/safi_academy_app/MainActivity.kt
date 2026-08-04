@@ -1,4 +1,4 @@
-package com.yourcompany.safi_academy // نام پکیج خودتان
+package com.example.safi_academy_app
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 
