@@ -112,7 +112,7 @@ class ScholarshipDetailScreen extends StatelessWidget {
                       ? Image.network(
                           scholarship.coverImage!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildFallbackBanner(),
+                          errorBuilder: (_, _, _) => _buildFallbackBanner(),
                         )
                       : _buildFallbackBanner(),
                   // گرادینت تیره برای خوانایی دکمه بک و زیبایی تصویر

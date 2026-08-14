@@ -13,7 +13,6 @@ import 'teacher_trading_journal_screen.dart';
 import 'teacher_achievements_screen.dart';
 import 'teacher_certificates_screen.dart';
 import 'teacher_about_help_center_screen.dart';
-import 'teacher_profile_screen.dart';
 import 'teacher_settings_screen.dart';
 import 'user_profile_screen.dart';
 // صفحات اختصاصی بخش فید و سوشال

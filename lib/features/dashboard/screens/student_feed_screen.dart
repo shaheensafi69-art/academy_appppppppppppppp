@@ -148,18 +148,16 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
         bool isLikedByMe = false;
         try {
           final likesRes = await supabase.from("discussion_likes").select("student_id").eq("post_id", pId);
-          if (likesRes is List) {
-            likesCount = likesRes.length;
-            if (userId != null) {
-              isLikedByMe = likesRes.any((l) => l['student_id'] == userId);
-            }
+          likesCount = likesRes.length;
+          if (userId != null) {
+            isLikedByMe = likesRes.any((l) => l['student_id'] == userId);
           }
-        } catch (_) {}
+                } catch (_) {}
 
         int commentsCount = 0;
         try {
           final commentsRes = await supabase.from("discussion_comments").select("id").eq("post_id", pId);
-          if (commentsRes is List) commentsCount = commentsRes.length;
+          commentsCount = commentsRes.length;
         } catch (_) {}
 
         loadedPosts.add(FeedPostItem.fromJson(
@@ -507,7 +505,7 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
                           physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
                           padding: EdgeInsets.only(top: topPadding + (_isScrolled ? 90 : 150), bottom: 100),
                           itemCount: filteredPosts.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 16),
+                          separatorBuilder: (_, _) => const SizedBox(height: 16),
                           itemBuilder: (context, index) {
                             final post = filteredPosts[index];
                             return _buildPostCard(post);
@@ -820,7 +818,7 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.chat_bubble_outline_rounded, color: textGrey, size: 20),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8),
                           Text("Comment", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold, fontSize: 13)),
                         ],
                       ),

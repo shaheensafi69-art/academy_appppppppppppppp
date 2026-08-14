@@ -91,10 +91,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           .order('created_at', ascending: false)
           .limit(6);
 
-      if (txRes is List) {
-        recentActivities = List<Map<String, dynamic>>.from(txRes);
-      }
-    } catch (e) {
+      recentActivities = List<Map<String, dynamic>>.from(txRes);
+        } catch (e) {
       debugPrint("Error fetching dashboard metrics: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
