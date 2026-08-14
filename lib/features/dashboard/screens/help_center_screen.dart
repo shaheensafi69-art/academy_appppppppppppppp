@@ -47,7 +47,6 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
-      // ایجاد تیکت در دیتابیس
       final ticketRes = await supabase.from('tickets').insert({
         'student_id': user.id,
         'subject': subject,
@@ -57,29 +56,26 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
 
       final ticketId = ticketRes['id'];
 
-      // ثبت اولین پیام تیکت
       await supabase.from('ticket_messages').insert({
         'ticket_id': ticketId,
         'sender_id': user.id,
         'message_text': message,
       });
 
+      if (!mounted) return;
       _subjectController.clear();
       _messageController.clear();
-      FocusScope.of(context).unfocus(); // بستن کیبورد
+      FocusScope.of(context).unfocus();
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Support ticket submitted successfully! We will get back to you soon. 🎫"), backgroundColor: Colors.green),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Support ticket submitted successfully! We will get back to you soon. 🎫"), backgroundColor: Colors.green),
+      );
     } catch (e) {
       debugPrint("Error submitting ticket: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to submit ticket: $e"), backgroundColor: Colors.redAccent),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to submit ticket: $e"), backgroundColor: Colors.redAccent),
+      );
     } finally {
       if (mounted) setState(() => isSubmitting = false);
     }
@@ -109,7 +105,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [const Color(0xFFFFF0F5).withOpacity(0.5), surfaceWhite],
+              colors: [const Color(0xFFFFF0F5).withValues(alpha: 0.5), surfaceWhite],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -131,14 +127,14 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                             padding: const EdgeInsets.all(22),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                                colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
                               borderRadius: BorderRadius.circular(28),
-                              border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                              border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                               boxShadow: [
-                                BoxShadow(color: primaryPink.withOpacity(0.06), blurRadius: 20, offset: const Offset(0, 8)),
+                                BoxShadow(color: primaryPink.withValues(alpha: 0.06), blurRadius: 20, offset: const Offset(0, 8)),
                               ],
                             ),
                             child: Row(
@@ -148,7 +144,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                   decoration: BoxDecoration(
                                     color: lightPinkBg,
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                                    border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
                                   ),
                                   child: const Icon(Icons.support_agent_rounded, color: primaryPink, size: 28),
                                 ),
@@ -177,7 +173,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                               color: surfaceWhite,
                               borderRadius: BorderRadius.circular(24),
                               border: Border.all(color: cardBorder, width: 1.5),
-                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
                             ),
                             child: Column(
                               children: [
@@ -188,9 +184,9 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                                       decoration: BoxDecoration(
-                                        color: lightPinkBg.withOpacity(0.5),
+                                        color: lightPinkBg.withValues(alpha: 0.5),
                                         borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: primaryPink.withOpacity(0.2)),
+                                        border: Border.all(color: primaryPink.withValues(alpha: 0.2)),
                                       ),
                                       child: DropdownButton<String>(
                                         value: _selectedDepartment,
@@ -211,12 +207,13 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                 const Divider(height: 24, color: cardBorder, thickness: 1.5),
                                 TextField(
                                   controller: _subjectController,
-                                  style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900), // رنگ تیره برای لایت مود
+                                  cursorColor: primaryPink,
+                                  style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900),
                                   decoration: InputDecoration(
                                     hintText: "Subject / Issue summary...",
                                     hintStyle: const TextStyle(color: textGrey, fontSize: 13, fontWeight: FontWeight.w600),
                                     filled: true,
-                                    fillColor: cardBorder.withOpacity(0.5),
+                                    fillColor: cardBorder.withValues(alpha: 0.5),
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder, width: 1.5)),
                                     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
@@ -225,13 +222,14 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                 const SizedBox(height: 12),
                                 TextField(
                                   controller: _messageController,
+                                  cursorColor: primaryPink,
                                   maxLines: 4,
-                                  style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.w500, height: 1.5), // رنگ تیره
+                                  style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.w500, height: 1.5),
                                   decoration: InputDecoration(
                                     hintText: "Describe your problem or request in detail...",
                                     hintStyle: const TextStyle(color: textGrey, fontSize: 13),
                                     filled: true,
-                                    fillColor: cardBorder.withOpacity(0.5),
+                                    fillColor: cardBorder.withValues(alpha: 0.5),
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder, width: 1.5)),
                                     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
@@ -295,64 +293,53 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                           const Text("Official Channels & Socials", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
                           const SizedBox(height: 12),
                           
-                          // کانال واتساپ
                           _buildFeaturedWhatsAppCard(
                             onTap: () => _launchURL("https://whatsapp.com/channel/0029Vb8WCN9FXUucJwrltI32"),
                           ),
                           const SizedBox(height: 12),
 
-                          // شبکه‌های اجتماعی (ایکس، فیسبوک، اینستاگرام، لینکدین)
-                          LayoutBuilder(
-                            builder: (context, gridConstraints) {
-                              bool isWideGrid = gridConstraints.maxWidth > 500;
-                              return Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: _buildAssetSocialCard(
-                                          title: "Instagram",
-                                          subtitle: "safi_academy01",
-                                          assetPath: "assets/intagram.com-logo.webp",
-                                          onTap: () => _launchURL("https://www.instagram.com/safi_academy01?igsh=MXV1ZW44aXBwOHd3NQ=="),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: _buildAssetSocialCard(
-                                          title: "LinkedIn",
-                                          subtitle: "Safi Academy",
-                                          assetPath: "assets/linkedin.com-logo.webp",
-                                          onTap: () => _launchURL("https://www.linkedin.com/company/safi-academy/"),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: _buildAssetSocialCard(
-                                          title: "X (Twitter)",
-                                          subtitle: "safi_academy",
-                                          assetPath: "assets/x.com-logo.webp",
-                                          onTap: () => _launchURL("https://x.com/safi_academy"),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: _buildAssetSocialCard(
-                                          title: "Facebook",
-                                          subtitle: "Safi Academy",
-                                          assetPath: "assets/facebook.com-logo.webp",
-                                          onTap: () => _launchURL("https://www.facebook.com/profile.php?id=61591973281742"),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              );
-                            },
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildAssetSocialCard(
+                                  title: "Instagram",
+                                  subtitle: "safi_academy01",
+                                  assetPath: "assets/intagram.com-logo.webp",
+                                  onTap: () => _launchURL("https://www.instagram.com/safi_academy01?igsh=MXV1ZW44aXBwOHd3NQ=="),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: _buildAssetSocialCard(
+                                  title: "LinkedIn",
+                                  subtitle: "Safi Academy",
+                                  assetPath: "assets/linkedin.com-logo.webp",
+                                  onTap: () => _launchURL("https://www.linkedin.com/company/safi-academy/"),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildAssetSocialCard(
+                                  title: "X (Twitter)",
+                                  subtitle: "safi_academy",
+                                  assetPath: "assets/x.com-logo.webp",
+                                  onTap: () => _launchURL("https://x.com/safi_academy"),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: _buildAssetSocialCard(
+                                  title: "Facebook",
+                                  subtitle: "Safi Academy",
+                                  assetPath: "assets/facebook.com-logo.webp",
+                                  onTap: () => _launchURL("https://www.facebook.com/profile.php?id=61591973281742"),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 30),
 
@@ -364,7 +351,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                           _buildFaqItem("How are certificates issued?", "Once you successfully pass your final exams and complete the course requirements, your official verified certificate will automatically appear in the 'Certificates' section as a downloadable PDF."),
                           const SizedBox(height: 10),
                           _buildFaqItem("Can I apply for international scholarships?", "Absolutely! Explore our 'Scholarships' portal to discover fully funded global grants, eligibility criteria, and direct application links curated by Safi Academy."),
-                          const SizedBox(height: 80), // فاصله برای Bottom Nav
+                          const SizedBox(height: 80),
                         ],
                       ),
                     ),
@@ -388,7 +375,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
           color: surfaceWhite,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: cardBorder, width: 1.5),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 3))],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 3))],
         ),
         child: Row(
           children: [
@@ -427,7 +414,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [BoxShadow(color: const Color(0xFF25D366).withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))],
+          boxShadow: [BoxShadow(color: const Color(0xFF25D366).withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 6))],
         ),
         child: Row(
           children: [
@@ -449,7 +436,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
             ),
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
               child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 16),
             ),
           ],
@@ -467,7 +454,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
           color: surfaceWhite,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: cardBorder, width: 1.5),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2))],
         ),
         child: Row(
           children: [
@@ -487,7 +474,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                 ],
               ),
             ),
-            Icon(Icons.open_in_new_rounded, color: textGrey.withOpacity(0.4), size: 14),
+            Icon(Icons.open_in_new_rounded, color: textGrey.withValues(alpha: 0.4), size: 14),
           ],
         ),
       ),
@@ -500,7 +487,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
         color: surfaceWhite,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 3))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 3))],
       ),
       child: ExpansionTile(
         title: Text(question, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
@@ -517,9 +504,6 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
   }
 }
 
-// ============================================================================
-// ویجت کاستوم لودینگ آکادمی
-// ============================================================================
 class AcademyLoadingOverlay extends StatelessWidget {
   final bool isLoading;
   final String message;
@@ -539,7 +523,7 @@ class AcademyLoadingOverlay extends StatelessWidget {
         child,
         if (isLoading)
           Container(
-            color: Colors.white.withOpacity(0.95),
+            color: Colors.white.withValues(alpha: 0.95),
             alignment: Alignment.center,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

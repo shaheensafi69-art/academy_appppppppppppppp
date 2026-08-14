@@ -92,6 +92,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     try {
       final profile = await supabase.from('profiles').select('first_name, last_name, avatar_url, role').eq('id', user.id).maybeSingle();
       if (profile != null && (profile['role'] == 'admin' || profile['role'] == 'super_admin')) {
+        if (!mounted) return;
         setState(() { _userProfile = profile; _isLoading = false; });
       } else { _logout(); }
     } catch (e) { _logout(); }
@@ -167,10 +168,10 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
           height: 65,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
-            color: surfaceWhite.withOpacity(0.92),
+            color: surfaceWhite.withValues(alpha: 0.92),
             borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: primaryPink.withOpacity(0.18), width: 1.5),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 20, offset: const Offset(0, 8))],
+            border: Border.all(color: primaryPink.withValues(alpha: 0.18), width: 1.5),
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 20, offset: const Offset(0, 8))],
           ),
           child: _isInSocialSection
               ? Row(
@@ -218,7 +219,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                   children: [
                     Expanded(child: _buildNavTab(0, "Overview", Icons.dashboard_rounded, color: primaryPink)),
                     Expanded(child: _buildNavTab(1, "Students", Icons.school_rounded, color: const Color(0xFF00897B))),
-                    // دکمه فید مستقیماً در نوار پایین قرار گرفت
                     Expanded(child: _buildNavTab(12, "Feed", Icons.dynamic_feed_rounded, color: primaryPink)),
                     Expanded(
                       child: GestureDetector(
@@ -261,7 +261,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
         decoration: BoxDecoration(
-          color: isActive ? color.withOpacity(0.15) : Colors.transparent,
+          color: isActive ? color.withValues(alpha: 0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(18),
         ),
         alignment: Alignment.center,
@@ -295,7 +295,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
           Positioned.fill(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
-              child: Container(color: surfaceWhite.withOpacity(0.97)),
+              child: Container(color: surfaceWhite.withValues(alpha: 0.97)),
             ),
           ),
           SafeArea(
@@ -318,7 +318,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                         onTap: () => setState(() => _isMenuOpen = false),
                         child: Container(
                           padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(color: cardBorder.withOpacity(0.5), shape: BoxShape.circle),
+                          decoration: BoxDecoration(color: cardBorder.withValues(alpha: 0.5), shape: BoxShape.circle),
                           child: const Icon(Icons.close_rounded, color: textDark, size: 20),
                         ),
                       ),
@@ -358,7 +358,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                                 border: Border.all(color: isActive ? primaryPink : cardBorder, width: 1.5),
                                 boxShadow: [
                                   if (!isActive)
-                                    BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+                                    BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
                                 ],
                               ),
                               child: Row(
@@ -366,7 +366,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                                   Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: isActive ? Colors.white.withOpacity(0.2) : item['color'].withOpacity(0.12),
+                                      color: isActive ? Colors.white.withValues(alpha: 0.2) : item['color'].withValues(alpha: 0.12),
                                       borderRadius: BorderRadius.circular(14),
                                     ),
                                     child: Icon(item['icon'], color: isActive ? Colors.white : item['color'], size: 22),
@@ -415,9 +415,9 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                       margin: const EdgeInsets.all(20),
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        color: lightPinkBg.withOpacity(0.4),
+                        color: lightPinkBg.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.5),
+                        border: Border.all(color: primaryPink.withValues(alpha: 0.2), width: 1.5),
                       ),
                       child: Column(
                         children: [
@@ -447,7 +447,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                             height: 48,
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.redAccent.withOpacity(0.1),
+                                backgroundColor: Colors.redAccent.withValues(alpha: 0.1),
                                 foregroundColor: Colors.redAccent,
                                 elevation: 0,
                                 side: const BorderSide(color: Colors.redAccent, width: 1.5),

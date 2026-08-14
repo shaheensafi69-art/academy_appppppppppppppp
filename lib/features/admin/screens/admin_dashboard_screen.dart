@@ -3,8 +3,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'manage_students_screen.dart';
 import 'finance_screen.dart';
-import 'manage_teachers_screen.dart';
-import 'courses_screen.dart';
 
 class AdminStats {
   final int totalStudents;
@@ -78,13 +76,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         }
       }
 
-      // ۱. دریافت آمار از طریق RPC امن دیتابیس
       final statsRes = await supabase.rpc('get_admin_dashboard_stats');
       if (statsRes != null) {
         stats = AdminStats.fromMap(statsRes);
       }
 
-      // ۲. دریافت تراکنش‌های اخیر برای فید
       final txRes = await supabase
           .from('transactions')
           .select('id, amount, transaction_type, status, created_at')
@@ -92,7 +88,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           .limit(6);
 
       recentActivities = List<Map<String, dynamic>>.from(txRes);
-        } catch (e) {
+    } catch (e) {
       debugPrint("Error fetching dashboard metrics: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -125,7 +121,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [const Color(0xFFFFF0F5).withOpacity(0.5), surfaceWhite],
+            colors: [const Color(0xFFFFF0F5).withValues(alpha: 0.5), surfaceWhite],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -148,14 +144,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                            colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(28),
-                          border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                          border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                           boxShadow: [
-                            BoxShadow(color: primaryPink.withOpacity(0.06), blurRadius: 25, offset: const Offset(0, 8)),
+                            BoxShadow(color: primaryPink.withValues(alpha: 0.06), blurRadius: 25, offset: const Offset(0, 8)),
                           ],
                         ),
                         child: Column(
@@ -169,7 +165,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                   decoration: BoxDecoration(
                                     color: lightPinkBg,
                                     borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: primaryPink.withOpacity(0.3)),
+                                    border: Border.all(color: primaryPink.withValues(alpha: 0.3)),
                                   ),
                                   child: const Text(
                                     "SYSTEM COMMAND CENTER",
@@ -179,7 +175,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: primaryPink.withOpacity(0.1),
+                                    color: primaryPink.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                   child: const Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 22),
@@ -299,7 +295,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                     color: surfaceWhite,
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(color: cardBorder, width: 1.5),
-                                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -310,7 +306,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                             Container(
                                               padding: const EdgeInsets.all(12),
                                               decoration: BoxDecoration(
-                                                color: (isCompleted ? Colors.green : Colors.amber).withOpacity(0.12),
+                                                color: (isCompleted ? Colors.green : Colors.amber).withValues(alpha: 0.12),
                                                 borderRadius: BorderRadius.circular(14),
                                               ),
                                               child: Icon(
@@ -356,7 +352,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                             decoration: BoxDecoration(
-                                              color: (isCompleted ? Colors.green : Colors.amber).withOpacity(0.1),
+                                              color: (isCompleted ? Colors.green : Colors.amber).withValues(alpha: 0.1),
                                               borderRadius: BorderRadius.circular(6),
                                             ),
                                             child: Text(
@@ -406,7 +402,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         color: surfaceWhite,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2))],
       ),
       child: Row(
         children: [
@@ -443,7 +439,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           color: surfaceWhite,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: cardBorder, width: 1.5),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -455,7 +451,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
+                    color: color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(icon, color: color, size: 20),

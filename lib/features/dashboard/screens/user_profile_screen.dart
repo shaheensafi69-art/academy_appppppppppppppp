@@ -68,39 +68,44 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         if (relRes != null) {
           if (relRes['status'] == 'accepted') {
             status = 'friends';
-          } else if (relRes['sender_id'] == currentUser.id) status = 'pending_sent';
-          else status = 'pending_received';
+          } else if (relRes['sender_id'] == currentUser.id) {
+            status = 'pending_sent';
+          } else {
+            status = 'pending_received';
+          }
         }
       }
 
       final postsRes = await supabase.from("discussion_posts").select("*").eq("student_id", targetUserId).order("created_at", ascending: false);
       List<Map<String, dynamic>> enrichedPosts = [];
-      for (var post in postsRes) {
-        String pId = post['id'].toString();
-        int likesCount = 0;
-        bool isLikedByMe = false;
-        try {
-          final likesRes = await supabase.from("discussion_likes").select("student_id").eq("post_id", pId);
-          if (likesRes is List) {
-            likesCount = likesRes.length;
-            if (currentUser != null) isLikedByMe = likesRes.any((like) => like['student_id'] == currentUser.id);
-          }
-        } catch (_) {}
+      if (postsRes is List) {
+        for (var post in postsRes) {
+          String pId = post['id'].toString();
+          int likesCount = 0;
+          bool isLikedByMe = false;
+          try {
+            final likesRes = await supabase.from("discussion_likes").select("student_id").eq("post_id", pId);
+            if (likesRes is List) {
+              likesCount = likesRes.length;
+              if (currentUser != null) isLikedByMe = likesRes.any((like) => like['student_id'] == currentUser.id);
+            }
+          } catch (_) {}
 
-        int commentsCount = 0;
-        try {
-          final commentsRes = await supabase.from("discussion_comments").select("id").eq("post_id", pId);
-          if (commentsRes is List) commentsCount = commentsRes.length;
-        } catch (_) {}
+          int commentsCount = 0;
+          try {
+            final commentsRes = await supabase.from("discussion_comments").select("id").eq("post_id", pId);
+            if (commentsRes is List) commentsCount = commentsRes.length;
+          } catch (_) {}
 
-        enrichedPosts.add({
-          ...post,
-          'likes_count': likesCount,
-          'comments_count': commentsCount,
-          'is_liked_by_me': isLikedByMe,
-        });
+          enrichedPosts.add({
+            ...post,
+            'likes_count': likesCount,
+            'comments_count': commentsCount,
+            'is_liked_by_me': isLikedByMe,
+          });
+        }
       }
-    
+
       if (mounted) {
         setState(() {
           profileData = res;
@@ -129,10 +134,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       isScrollControlled: true,
       backgroundColor: surfaceWhite,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
-      builder: (context) => Padding(
+      builder: (sheetContext) => Padding(
         padding: EdgeInsets.only(
           left: 24, right: 24, top: 24,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
         ),
         child: SingleChildScrollView(
           child: Column(
@@ -200,13 +205,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         'bio': bioController.text.trim(),
                       }).eq("id", user.id);
 
-                      if (mounted) {
-                        Navigator.pop(context);
-                        _fetchProfileAndPosts();
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profile updated successfully! ✅"), backgroundColor: Colors.green));
-                      }
+                      if (!mounted) return;
+                      Navigator.pop(sheetContext);
+                      await _fetchProfileAndPosts();
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profile updated successfully! ✅"), backgroundColor: Colors.green));
                     } catch (e) {
-                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error updating profile: $e"), backgroundColor: Colors.redAccent));
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error updating profile: $e"), backgroundColor: Colors.redAccent));
                     }
                   },
                   child: const Text("SAVE CHANGES", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5)),
@@ -224,7 +230,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       hintText: hint,
       hintStyle: const TextStyle(color: textGrey, fontSize: 13),
       filled: true,
-      fillColor: cardBorder.withOpacity(0.6),
+      fillColor: cardBorder.withValues(alpha: 0.6),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder, width: 1.5)),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
@@ -238,12 +244,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     try {
       if (friendshipStatus == 'none') {
         await supabase.from("student_friends").insert({'sender_id': currentUser.id, 'receiver_id': targetUserId, 'status': 'pending'});
+        if (!mounted) return;
         setState(() => friendshipStatus = 'pending_sent');
       } else if (friendshipStatus == 'pending_sent' || friendshipStatus == 'friends') {
         await supabase.from("student_friends").delete().or("and(sender_id.eq.${currentUser.id},receiver_id.eq.$targetUserId),and(sender_id.eq.$targetUserId,receiver_id.eq.${currentUser.id})");
+        if (!mounted) return;
         setState(() => friendshipStatus = 'none');
       } else if (friendshipStatus == 'pending_received') {
         await supabase.from("student_friends").update({'status': 'accepted'}).or("and(sender_id.eq.$targetUserId,receiver_id.eq.${currentUser.id})");
+        if (!mounted) return;
         setState(() => friendshipStatus = 'friends');
       }
     } catch (e) {
@@ -256,10 +265,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Future<void> _deletePost(String postId) async {
     try {
       await supabase.from("discussion_posts").delete().eq("id", postId);
+      if (!mounted) return;
       setState(() => userPosts.removeWhere((p) => p['id'].toString() == postId));
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Post deleted successfully.")));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Post deleted successfully.")));
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error deleting post: $e")));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error deleting post: $e")));
     }
   }
 
@@ -295,7 +306,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) {
+      builder: (sheetContext) {
         return Container(
           decoration: const BoxDecoration(color: surfaceWhite, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -305,18 +316,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               Container(width: 45, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))),
               const SizedBox(height: 24),
               InkWell(
-                onTap: () { Navigator.pop(context); _showDeleteConfirmation(post['id'].toString()); },
+                onTap: () { 
+                  Navigator.pop(sheetContext); 
+                  _showDeleteConfirmation(post['id'].toString()); 
+                },
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: Colors.red.withOpacity(0.08), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.red.withOpacity(0.2), width: 1.5)),
+                  decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.red.withValues(alpha: 0.2), width: 1.5)),
                   child: Row(
                     children: [
                       const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 24),
                       const SizedBox(width: 16),
                       const Text("Delete Post", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Colors.red)),
                       const Spacer(),
-                      Icon(Icons.chevron_right_rounded, color: Colors.red.withOpacity(0.5)),
+                      Icon(Icons.chevron_right_rounded, color: Colors.red.withValues(alpha: 0.5)),
                     ],
                   ),
                 ),
@@ -332,14 +346,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void _showDeleteConfirmation(String postId) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: surfaceWhite,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text("Delete Post", style: TextStyle(fontWeight: FontWeight.w900, color: textDark)),
         content: const Text("Are you sure you want to delete this post? This action cannot be undone.", style: TextStyle(color: textGrey)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold))),
-          ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), onPressed: () { Navigator.pop(context); _deletePost(postId); }, child: const Text("Delete", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text("Cancel", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold))),
+          ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), onPressed: () { Navigator.pop(dialogContext); _deletePost(postId); }, child: const Text("Delete", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
         ],
       ),
     );
@@ -373,7 +387,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [const Color(0xFFFFF0F5), surfaceWhite, lightPinkBg.withOpacity(0.2)],
+            colors: [const Color(0xFFFFF0F5), surfaceWhite, lightPinkBg.withValues(alpha: 0.2)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -399,8 +413,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 decoration: BoxDecoration(
                                   color: surfaceWhite,
                                   borderRadius: BorderRadius.circular(28),
-                                  border: Border.all(color: roleColor.withOpacity(0.15), width: 1.5),
-                                  boxShadow: [BoxShadow(color: roleColor.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10))],
+                                  border: Border.all(color: roleColor.withValues(alpha: 0.15), width: 1.5),
+                                  boxShadow: [BoxShadow(color: roleColor.withValues(alpha: 0.08), blurRadius: 25, offset: const Offset(0, 10))],
                                 ),
                                 child: Column(
                                   children: [
@@ -408,7 +422,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       children: [
                                         CircleAvatar(
                                           radius: 36,
-                                          backgroundColor: roleColor.withOpacity(0.1),
+                                          backgroundColor: roleColor.withValues(alpha: 0.1),
                                           backgroundImage: profileData!['avatar_url'] != null && profileData!['avatar_url'].toString().isNotEmpty
                                               ? NetworkImage(profileData!['avatar_url'])
                                               : null,
@@ -428,7 +442,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                             children: [
                                               Container(
                                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                                decoration: BoxDecoration(color: roleColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                                decoration: BoxDecoration(color: roleColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                                                 child: Text(roleLabel, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: roleColor)),
                                               ),
                                               const SizedBox(height: 6),
@@ -542,6 +556,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                     const SizedBox(height: 10),
                                     _buildInfoRow(Icons.qr_code_rounded, "Referral Code", profileData!['referral_code'] ?? 'N/A', roleColor),
                                     const SizedBox(height: 10),
+                                    _buildInfoRow(Icons.link_rounded, "Referral Link", profileData!['referral_link'] ?? 'N/A', roleColor),
+                                    const SizedBox(height: 10),
+                                    _buildInfoRow(Icons.percent_rounded, "Referral Discount Rate", "${profileData!['referral_discount_rate'] ?? 0}%", roleColor),
+                                    const SizedBox(height: 10),
                                     _buildInfoRow(Icons.calendar_today_rounded, "Member Since", profileData!['created_at'] != null ? profileData!['created_at'].toString().split('T')[0] : 'N/A', roleColor),
                                   ],
                                 ),
@@ -557,7 +575,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       shrinkWrap: true,
                                       physics: const NeverScrollableScrollPhysics(),
                                       itemCount: userPosts.length,
-                                      separatorBuilder: (_, _) => const SizedBox(height: 16),
+                                      separatorBuilder: (_, __) => const SizedBox(height: 16),
                                       itemBuilder: (context, index) {
                                         final post = userPosts[index];
                                         final rawTitle = post['title'] ?? '';
@@ -571,7 +589,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                             color: surfaceWhite,
                                             borderRadius: BorderRadius.circular(24),
                                             border: Border.all(color: cardBorder, width: 1.5),
-                                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
                                           ),
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -731,7 +749,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       children: [
         Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
           child: Icon(icon, color: color, size: 16),
         ),
         const SizedBox(width: 12),
@@ -828,10 +846,13 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
 
       await supabase.from("discussion_comments").insert(insertData);
 
+      if (!mounted) return;
       _commentController.clear();
       _commentFocusNode.unfocus();
       setState(() { replyingToCommentId = null; replyingToName = null; });
       await _fetchComments();
+    } catch (e) {
+      debugPrint("Error sending comment: $e");
     } finally {
       if (mounted) setState(() => isSending = false);
     }
@@ -936,7 +957,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
           ),
           Container(
             padding: EdgeInsets.only(left: 16, right: 16, top: 12, bottom: MediaQuery.of(context).viewInsets.bottom + 16),
-            decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))]),
+            decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))]),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,

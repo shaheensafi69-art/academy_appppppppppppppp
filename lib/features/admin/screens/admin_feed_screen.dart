@@ -6,7 +6,7 @@ import 'user_profile_screen.dart';
 class FeedPostItem {
   final String id;
   final String studentId; 
-  final String rawTitle; // تایتل خام برای پردازش
+  final String rawTitle; 
   final String content;
   final String? imageUrl;
   final String createdAt;
@@ -16,7 +16,6 @@ class FeedPostItem {
   bool isLikedByMe;
   int commentsCount;
 
-  // فیلدهای استخراج شده هوشمند
   String moodTag;
   String cleanTitle;
 
@@ -142,14 +141,16 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
         bool isLikedByMe = false;
         try {
           final likesRes = await supabase.from("discussion_likes").select("student_id").eq("post_id", pId);
-          likesCount = likesRes.length;
-          if (userId != null) isLikedByMe = likesRes.any((l) => l['student_id'] == userId);
-                } catch (_) {}
+          if (likesRes is List) {
+            likesCount = likesRes.length;
+            if (userId != null) isLikedByMe = likesRes.any((l) => l['student_id'] == userId);
+          }
+        } catch (_) {}
 
         int commentsCount = 0;
         try {
           final commentsRes = await supabase.from("discussion_comments").select("id").eq("post_id", pId);
-          commentsCount = commentsRes.length;
+          if (commentsRes is List) commentsCount = commentsRes.length;
         } catch (_) {}
 
         loadedPosts.add(FeedPostItem.fromJson(
@@ -233,13 +234,15 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
   Future<void> _deletePost(String postId) async {
     try {
       await supabase.from("discussion_posts").delete().eq("id", postId);
+      if (!mounted) return;
       setState(() {
         allPosts.removeWhere((p) => p.id == postId);
         filteredPosts.removeWhere((p) => p.id == postId);
       });
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Post deleted successfully.")));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Post deleted successfully.")));
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error deleting post: $e")));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error deleting post: $e")));
     }
   }
 
@@ -252,10 +255,10 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
       isScrollControlled: true,
       backgroundColor: surfaceWhite,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
-      builder: (context) => Padding(
+      builder: (sheetContext) => Padding(
         padding: EdgeInsets.only(
           left: 20, right: 20, top: 24,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -275,13 +278,14 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
                   try {
                     String finalTitleToSave = "[${post.moodTag}] ${titleController.text.trim()}";
                     await supabase.from("discussion_posts").update({'title': finalTitleToSave, 'content': contentController.text.trim()}).eq("id", post.id);
-                    if (mounted) {
-                      Navigator.pop(context);
-                      _fetchFeedPosts();
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Post updated successfully!")));
-                    }
+                    if (!mounted) return;
+                    Navigator.pop(sheetContext);
+                    await _fetchFeedPosts();
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Post updated successfully!")));
                   } catch (e) {
-                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error updating post: $e")));
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error updating post: $e")));
                   }
                 },
                 child: const Text("UPDATE POST", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
@@ -297,7 +301,7 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) {
+      builder: (sheetContext) {
         return Container(
           decoration: const BoxDecoration(color: surfaceWhite, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -307,36 +311,42 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
               Container(width: 45, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))),
               const SizedBox(height: 24),
               InkWell(
-                onTap: () { Navigator.pop(context); _editPostModal(post); },
+                onTap: () { 
+                  Navigator.pop(sheetContext); 
+                  _editPostModal(post); 
+                },
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: Colors.blue.withOpacity(0.08), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.blue.withOpacity(0.2), width: 1.5)),
+                  decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.blue.withValues(alpha: 0.2), width: 1.5)),
                   child: Row(
                     children: [
-                      Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.blue.withOpacity(0.15), shape: BoxShape.circle), child: const Icon(Icons.edit_rounded, color: Colors.blue, size: 20)),
+                      Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.15), shape: BoxShape.circle), child: const Icon(Icons.edit_rounded, color: Colors.blue, size: 20)),
                       const SizedBox(width: 16),
                       const Text("Edit Post", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: textDark)),
                       const Spacer(),
-                      Icon(Icons.chevron_right_rounded, color: Colors.blue.withOpacity(0.5)),
+                      Icon(Icons.chevron_right_rounded, color: Colors.blue.withValues(alpha: 0.5)),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 12),
               InkWell(
-                onTap: () { Navigator.pop(context); _showDeleteConfirmation(post.id); },
+                onTap: () { 
+                  Navigator.pop(sheetContext); 
+                  _showDeleteConfirmation(post.id); 
+                },
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: Colors.red.withOpacity(0.08), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.red.withOpacity(0.2), width: 1.5)),
+                  decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.red.withValues(alpha: 0.2), width: 1.5)),
                   child: Row(
                     children: [
-                      Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.red.withOpacity(0.15), shape: BoxShape.circle), child: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20)),
+                      Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.15), shape: BoxShape.circle), child: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20)),
                       const SizedBox(width: 16),
                       const Text("Delete Post", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Colors.red)),
                       const Spacer(),
-                      Icon(Icons.chevron_right_rounded, color: Colors.red.withOpacity(0.5)),
+                      Icon(Icons.chevron_right_rounded, color: Colors.red.withValues(alpha: 0.5)),
                     ],
                   ),
                 ),
@@ -352,15 +362,18 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
   void _showDeleteConfirmation(String postId) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Row(children: [Icon(Icons.warning_amber_rounded, color: Colors.red), SizedBox(width: 8), Text("Delete Post", style: TextStyle(fontWeight: FontWeight.w900))]),
         content: const Text("Are you sure you want to delete this post? This action cannot be undone.", style: TextStyle(color: textGrey, height: 1.4)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel", style: TextStyle(color: textDark, fontWeight: FontWeight.bold))),
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text("Cancel", style: TextStyle(color: textDark, fontWeight: FontWeight.bold))),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-            onPressed: () { Navigator.pop(context); _deletePost(postId); },
+            onPressed: () { 
+              Navigator.pop(dialogContext); 
+              _deletePost(postId); 
+            },
             child: const Text("Delete", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
@@ -370,7 +383,7 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
 
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
-      hintText: hint, hintStyle: const TextStyle(color: textGrey, fontSize: 13), filled: true, fillColor: cardBorder.withOpacity(0.5),
+      hintText: hint, hintStyle: const TextStyle(color: textGrey, fontSize: 13), filled: true, fillColor: cardBorder.withValues(alpha: 0.5),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder, width: 1.5)),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
@@ -384,7 +397,7 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
     return Scaffold(
       backgroundColor: surfaceWhite,
       body: Container(
-        decoration: BoxDecoration(gradient: LinearGradient(colors: [const Color(0xFFFFF0F5), surfaceWhite, lightPinkBg.withOpacity(0.2)], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
+        decoration: BoxDecoration(gradient: LinearGradient(colors: [const Color(0xFFFFF0F5), surfaceWhite, lightPinkBg.withValues(alpha: 0.2)], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
         child: Stack(
           children: [
             RefreshIndicator(
@@ -397,7 +410,7 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
                           physics: const AlwaysScrollableScrollPhysics(),
                           children: [
                             SizedBox(height: topPadding + 160),
-                            Center(child: Column(children: [Icon(Icons.search_off_rounded, size: 60, color: textGrey.withOpacity(0.5)), const SizedBox(height: 16), const Text("No posts found.", style: TextStyle(color: textGrey, fontSize: 16, fontWeight: FontWeight.bold))])),
+                            Center(child: Column(children: [Icon(Icons.search_off_rounded, size: 60, color: textGrey.withValues(alpha: 0.5)), const SizedBox(height: 16), const Text("No posts found.", style: TextStyle(color: textGrey, fontSize: 16, fontWeight: FontWeight.bold))])),
                           ],
                         )
                       : ListView.separated(
@@ -405,7 +418,7 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
                           physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
                           padding: EdgeInsets.only(top: topPadding + (_isScrolled ? 90 : 150), bottom: 100),
                           itemCount: filteredPosts.length,
-                          separatorBuilder: (_, _) => const SizedBox(height: 16),
+                          separatorBuilder: (_, __) => const SizedBox(height: 16),
                           itemBuilder: (context, index) {
                             final post = filteredPosts[index];
                             return _buildPostCard(post);
@@ -422,7 +435,7 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
                   filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
                   child: Container(
                     padding: EdgeInsets.fromLTRB(16, topPadding + 12, 16, 12),
-                    decoration: BoxDecoration(color: surfaceWhite.withOpacity(0.85), border: Border(bottom: BorderSide(color: cardBorder, width: 1.5)), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))]),
+                    decoration: BoxDecoration(color: surfaceWhite.withValues(alpha: 0.85), border: Border(bottom: BorderSide(color: cardBorder, width: 1.5)), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))]),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -467,7 +480,7 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
   Widget _buildPostCard(FeedPostItem post) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(color: surfaceWhite, borderRadius: BorderRadius.circular(24), border: Border.all(color: cardBorder, width: 1.5), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: const Offset(0, 6))]),
+      decoration: BoxDecoration(color: surfaceWhite, borderRadius: BorderRadius.circular(24), border: Border.all(color: cardBorder, width: 1.5), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 6))]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -478,7 +491,7 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
                 GestureDetector(
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => UserProfileScreen(userId: post.studentId))),
                   child: Container(
-                    decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: primaryPink.withOpacity(0.2), width: 2)),
+                    decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: primaryPink.withValues(alpha: 0.2), width: 2)),
                     child: CircleAvatar(
                       radius: 20, backgroundColor: lightPinkBg,
                       backgroundImage: post.authorAvatar.isNotEmpty ? NetworkImage(post.authorAvatar) : null,
@@ -696,10 +709,13 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
 
       await supabase.from("discussion_comments").insert(insertData);
 
+      if (!mounted) return;
       _commentController.clear();
       _commentFocusNode.unfocus();
       setState(() { replyingToCommentId = null; replyingToName = null; });
       await _fetchComments();
+    } catch (e) {
+      debugPrint("Error sending comment: $e");
     } finally {
       if (mounted) setState(() => isSending = false);
     }
@@ -801,7 +817,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
           ),
           Container(
             padding: EdgeInsets.only(left: 16, right: 16, top: 12, bottom: MediaQuery.of(context).viewInsets.bottom + 16),
-            decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))]),
+            decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))]),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,

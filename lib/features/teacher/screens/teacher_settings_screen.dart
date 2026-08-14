@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:local_auth/local_auth.dart';
@@ -14,16 +15,13 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
   final supabase = Supabase.instance.client;
   final LocalAuthentication auth = LocalAuthentication();
 
-  bool isLoading = false;
   bool isSaving = false;
-
   final TextEditingController _newPasswordController = TextEditingController();
 
   String _selectedLanguage = 'English';
   bool _notificationsEnabled = true;
   bool _biometricEnabled = false;
   bool _pinLockEnabled = false;
-  String _userPin = "";
 
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
@@ -41,6 +39,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
   // تغییر رمز عبور
   Future<void> _changePassword() async {
     if (_newPasswordController.text.trim().length < 6) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Password must be at least 6 characters."), backgroundColor: Colors.redAccent),
       );
@@ -52,20 +51,18 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
       await supabase.auth.updateUser(
         UserAttributes(password: _newPasswordController.text.trim()),
       );
+      if (!mounted) return;
       _newPasswordController.clear();
       FocusScope.of(context).unfocus();
       
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Password changed successfully! 🔒"), backgroundColor: Colors.green),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Password changed successfully! 🔒"), backgroundColor: Colors.green),
+      );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error changing password: $e"), backgroundColor: Colors.redAccent),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error changing password: $e"), backgroundColor: Colors.redAccent),
+      );
     } finally {
       if (mounted) setState(() => isSaving = false);
     }
@@ -83,16 +80,14 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
             localizedReason: 'Authenticate to enable biometric security',
             biometricOnly: true,
           );
+          if (!mounted) return;
           if (authenticated) {
             setState(() => _biometricEnabled = true);
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Biometric login enabled! 🔓"), backgroundColor: Colors.green));
-            }
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Biometric login enabled! 🔓"), backgroundColor: Colors.green));
           }
         } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Biometrics not supported on this device."), backgroundColor: Colors.redAccent));
-          }
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Biometrics not supported on this device."), backgroundColor: Colors.redAccent));
         }
       } else {
         setState(() => _biometricEnabled = false);
@@ -108,7 +103,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: surfaceWhite,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Column(
@@ -140,7 +135,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               setState(() => _pinLockEnabled = false);
             },
             child: const Text("Cancel", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold)),
@@ -156,10 +151,9 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
             onPressed: () {
               if (pinController.text.length == 4) {
                 setState(() {
-                  _userPin = pinController.text;
                   _pinLockEnabled = true;
                 });
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PIN code successfully saved! 🔑"), backgroundColor: Colors.green));
                 }
@@ -190,7 +184,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [const Color(0xFFFFF0F5).withOpacity(0.5), surfaceWhite],
+            colors: [const Color(0xFFFFF0F5).withValues(alpha: 0.5), surfaceWhite],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -210,13 +204,13 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                          colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(28),
-                        border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
-                        boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.06), blurRadius: 25, offset: const Offset(0, 8))],
+                        border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
+                        boxShadow: [BoxShadow(color: primaryPink.withValues(alpha: 0.06), blurRadius: 25, offset: const Offset(0, 8))],
                       ),
                       child: Row(
                         children: [
@@ -225,7 +219,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                             decoration: BoxDecoration(
                               color: lightPinkBg,
                               borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                              border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
                             ),
                             child: const Icon(Icons.settings_rounded, color: primaryPink, size: 28),
                           ),
@@ -254,7 +248,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                         color: surfaceWhite,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: cardBorder, width: 1.5),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,7 +265,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                               hintStyle: const TextStyle(color: textGrey, fontSize: 13),
                               prefixIcon: const Icon(Icons.lock_outline_rounded, color: textGrey, size: 20),
                               filled: true,
-                              fillColor: cardBorder.withOpacity(0.5),
+                              fillColor: cardBorder.withValues(alpha: 0.5),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
                               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
@@ -308,7 +302,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                         color: surfaceWhite,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: cardBorder, width: 1.5),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
                       ),
                       child: Column(
                         children: [
@@ -334,7 +328,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                               ),
                               Switch.adaptive(
                                 value: _biometricEnabled,
-                                activeColor: primaryPink,
+                                activeThumbColor: primaryPink,
                                 activeTrackColor: lightPinkBg,
                                 onChanged: _toggleBiometric,
                               ),
@@ -366,7 +360,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                               ),
                               Switch.adaptive(
                                 value: _pinLockEnabled,
-                                activeColor: primaryPink,
+                                activeThumbColor: primaryPink,
                                 activeTrackColor: lightPinkBg,
                                 onChanged: (val) {
                                   if (val) {
@@ -374,7 +368,6 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                                   } else {
                                     setState(() {
                                       _pinLockEnabled = false;
-                                      _userPin = "";
                                     });
                                   }
                                 },
@@ -386,7 +379,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // ================= ۳. تنظیمات اپلیکیشن (زبان با منوی فوق‌العاده شیک و نوتیفیکیشن) =================
+                    // ================= ۳. تنظیمات اپلیکیشن =================
                     const Text("App Preferences", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
                     const SizedBox(height: 12),
                     Container(
@@ -395,11 +388,10 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                         color: surfaceWhite,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: cardBorder, width: 1.5),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
                       ),
                       child: Column(
                         children: [
-                          // منوی کشویی زبان با دیزاین پریمیوم
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -461,7 +453,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                   decoration: BoxDecoration(
-                                    color: cardBorder.withOpacity(0.6),
+                                    color: cardBorder.withValues(alpha: 0.6),
                                     borderRadius: BorderRadius.circular(14),
                                     border: Border.all(color: cardBorder, width: 1.5),
                                   ),
@@ -496,7 +488,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                               ),
                               Switch.adaptive(
                                 value: _notificationsEnabled,
-                                activeColor: primaryPink,
+                                activeThumbColor: primaryPink,
                                 activeTrackColor: lightPinkBg,
                                 onChanged: (val) => setState(() => _notificationsEnabled = val),
                               ),
@@ -512,10 +504,10 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent.withOpacity(0.12),
+                          backgroundColor: Colors.redAccent.withValues(alpha: 0.12),
                           foregroundColor: Colors.redAccent,
                           elevation: 0,
-                          side: BorderSide(color: Colors.redAccent.withOpacity(0.3), width: 1.5),
+                          side: BorderSide(color: Colors.redAccent.withValues(alpha: 0.3), width: 1.5),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                         ),
@@ -524,7 +516,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                         onPressed: _logout,
                       ),
                     ),
-                    const SizedBox(height: 100), // فاصله برای Bottom Nav
+                    const SizedBox(height: 100),
                   ],
                 ),
               ),
