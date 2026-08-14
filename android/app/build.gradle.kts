@@ -47,8 +47,25 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // Enable code shrinking and resource shrinking to reduce APK size
+            isMinifyEnabled = true
+            isShrinkResources = true
+            // Use Android's default optimize proguard file and a project rules file
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
+    // Split APKs per ABI to avoid bundling multiple native libs into one large APK.
+    // This will produce smaller per-ABI APKs (armeabi-v7a, arm64-v8a).
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("armeabi-v7a", "arm64-v8a")
+            isUniversalApk = false
         }
     }
 }
