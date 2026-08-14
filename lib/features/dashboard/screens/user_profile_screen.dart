@@ -16,7 +16,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Map<String, dynamic>? profileData;
   List<Map<String, dynamic>> userPosts = [];
   
-  String friendshipStatus = 'none'; // 'none', 'friends', 'pending_sent', 'pending_received'
+  String friendshipStatus = 'none'; 
   bool isActionLoading = false;
   int friendsCount = 0;
 
@@ -33,16 +33,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     _fetchProfileAndPosts();
   }
 
-  String get targetUserId {
-    if (widget.userId != null && widget.userId!.isNotEmpty) {
-      return widget.userId!;
+  String get targetUserId => (widget.userId != null && widget.userId!.isNotEmpty) ? widget.userId! : (supabase.auth.currentUser?.id ?? '');
+  bool get isMyProfile => widget.userId == null || widget.userId!.isEmpty || widget.userId == supabase.auth.currentUser?.id;
+
+  String _extractMood(String title) {
+    if (title.startsWith('[') && title.contains(']')) {
+      int endIndex = title.indexOf(']');
+      return title.substring(1, endIndex);
     }
-    return supabase.auth.currentUser?.id ?? '';
+    return "📢 Post";
   }
 
-  bool get isMyProfile {
-    final current = supabase.auth.currentUser?.id;
-    return widget.userId == null || widget.userId!.isEmpty || widget.userId == current;
+  String _extractCleanTitle(String title) {
+    if (title.startsWith('[') && title.contains(']')) {
+      int endIndex = title.indexOf(']');
+      return title.substring(endIndex + 1).trim();
+    }
+    return title;
   }
 
   Future<void> _fetchProfileAndPosts() async {
@@ -50,59 +57,34 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     try {
       if (targetUserId.isEmpty) return;
 
-      // دریافت اطلاعات پروفایل
-      final res = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", targetUserId)
-          .maybeSingle();
-
-      // دریافت تعداد دوستان
-      final friendsRes = await supabase
-          .from("student_friends")
-          .select("id")
-          .or("sender_id.eq.$targetUserId,receiver_id.eq.$targetUserId")
-          .eq("status", "accepted");
-
+      final res = await supabase.from("profiles").select("*").eq("id", targetUserId).maybeSingle();
+      final friendsRes = await supabase.from("student_friends").select("id").or("sender_id.eq.$targetUserId,receiver_id.eq.$targetUserId").eq("status", "accepted");
       int count = (friendsRes is List) ? friendsRes.length : 0;
 
-      // بررسی وضعیت دوستی
       String status = 'none';
       final currentUser = supabase.auth.currentUser;
       if (!isMyProfile && currentUser != null) {
-        final relRes = await supabase
-            .from("student_friends")
-            .select("*")
-            .or("and(sender_id.eq.${currentUser.id},receiver_id.eq.$targetUserId),and(sender_id.eq.$targetUserId,receiver_id.eq.${currentUser.id})")
-            .maybeSingle();
-
+        final relRes = await supabase.from("student_friends").select("*").or("and(sender_id.eq.${currentUser.id},receiver_id.eq.$targetUserId),and(sender_id.eq.$targetUserId,receiver_id.eq.${currentUser.id})").maybeSingle();
         if (relRes != null) {
-          if (relRes['status'] == 'accepted') {
-            status = 'friends';
-          } else if (relRes['sender_id'] == currentUser.id) {
-            status = 'pending_sent';
-          } else {
-            status = 'pending_received';
-          }
+          if (relRes['status'] == 'accepted') status = 'friends';
+          else if (relRes['sender_id'] == currentUser.id) status = 'pending_sent';
+          else status = 'pending_received';
         }
       }
 
-      // دریافت پست‌های کاربر و شمارش لایک و کامنت‌ها
-      final postsRes = await supabase
-          .from("discussion_posts")
-          .select("*")
-          .eq("student_id", targetUserId)
-          .order("created_at", ascending: false);
-
+      final postsRes = await supabase.from("discussion_posts").select("*").eq("student_id", targetUserId).order("created_at", ascending: false);
       List<Map<String, dynamic>> enrichedPosts = [];
       if (postsRes is List) {
         for (var post in postsRes) {
           String pId = post['id'].toString();
-
           int likesCount = 0;
+          bool isLikedByMe = false;
           try {
-            final likesRes = await supabase.from("discussion_likes").select("id").eq("post_id", pId);
-            if (likesRes is List) likesCount = likesRes.length;
+            final likesRes = await supabase.from("discussion_likes").select("student_id").eq("post_id", pId);
+            if (likesRes is List) {
+              likesCount = likesRes.length;
+              if (currentUser != null) isLikedByMe = likesRes.any((like) => like['student_id'] == currentUser.id);
+            }
           } catch (_) {}
 
           int commentsCount = 0;
@@ -115,6 +97,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ...post,
             'likes_count': likesCount,
             'comments_count': commentsCount,
+            'is_liked_by_me': isLikedByMe,
           });
         }
       }
@@ -134,30 +117,134 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  // دیالوگ ویرایش پروفایل برای کاربر خودم
+  void _showEditProfileModal() {
+    final TextEditingController firstNameController = TextEditingController(text: profileData?['first_name'] ?? '');
+    final TextEditingController lastNameController = TextEditingController(text: profileData?['last_name'] ?? '');
+    final TextEditingController countryController = TextEditingController(text: profileData?['country'] ?? '');
+    final TextEditingController dobController = TextEditingController(text: profileData?['date_of_birth'] ?? '');
+    final TextEditingController bioController = TextEditingController(text: profileData?['bio'] ?? '');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: surfaceWhite,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          left: 24, right: 24, top: 24,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("Edit Profile ✏️", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+              const SizedBox(height: 20),
+              TextField(
+                controller: firstNameController,
+                cursorColor: primaryPink,
+                decoration: _inputDecoration("First Name"),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textDark),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: lastNameController,
+                cursorColor: primaryPink,
+                decoration: _inputDecoration("Last Name"),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textDark),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: countryController,
+                cursorColor: primaryPink,
+                decoration: _inputDecoration("Country"),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textDark),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: dobController,
+                cursorColor: primaryPink,
+                decoration: _inputDecoration("Date of Birth (YYYY-MM-DD)"),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textDark),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: bioController,
+                cursorColor: primaryPink,
+                maxLines: 4,
+                decoration: _inputDecoration("Biography / About Me"),
+                style: const TextStyle(fontSize: 14, color: textDark),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryPink,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  onPressed: () async {
+                    try {
+                      final user = supabase.auth.currentUser;
+                      if (user == null) return;
+
+                      await supabase.from("profiles").update({
+                        'first_name': firstNameController.text.trim(),
+                        'last_name': lastNameController.text.trim(),
+                        'country': countryController.text.trim(),
+                        'date_of_birth': dobController.text.trim().isEmpty ? null : dobController.text.trim(),
+                        'bio': bioController.text.trim(),
+                      }).eq("id", user.id);
+
+                      if (mounted) {
+                        Navigator.pop(context);
+                        _fetchProfileAndPosts();
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profile updated successfully! ✅"), backgroundColor: Colors.green));
+                      }
+                    } catch (e) {
+                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error updating profile: $e"), backgroundColor: Colors.redAccent));
+                    }
+                  },
+                  child: const Text("SAVE CHANGES", style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(color: textGrey, fontSize: 13),
+      filled: true,
+      fillColor: cardBorder.withOpacity(0.6),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder, width: 1.5)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+    );
+  }
+
   Future<void> _handleFriendAction() async {
     final currentUser = supabase.auth.currentUser;
     if (currentUser == null) return;
-
     setState(() => isActionLoading = true);
     try {
       if (friendshipStatus == 'none') {
-        await supabase.from("student_friends").insert({
-          'sender_id': currentUser.id,
-          'receiver_id': targetUserId,
-          'status': 'pending',
-        });
+        await supabase.from("student_friends").insert({'sender_id': currentUser.id, 'receiver_id': targetUserId, 'status': 'pending'});
         setState(() => friendshipStatus = 'pending_sent');
       } else if (friendshipStatus == 'pending_sent' || friendshipStatus == 'friends') {
-        await supabase
-            .from("student_friends")
-            .delete()
-            .or("and(sender_id.eq.${currentUser.id},receiver_id.eq.$targetUserId),and(sender_id.eq.$targetUserId,receiver_id.eq.${currentUser.id})");
+        await supabase.from("student_friends").delete().or("and(sender_id.eq.${currentUser.id},receiver_id.eq.$targetUserId),and(sender_id.eq.$targetUserId,receiver_id.eq.${currentUser.id})");
         setState(() => friendshipStatus = 'none');
       } else if (friendshipStatus == 'pending_received') {
-        await supabase
-            .from("student_friends")
-            .update({'status': 'accepted'})
-            .or("and(sender_id.eq.$targetUserId,receiver_id.eq.${currentUser.id})");
+        await supabase.from("student_friends").update({'status': 'accepted'}).or("and(sender_id.eq.$targetUserId,receiver_id.eq.${currentUser.id})");
         setState(() => friendshipStatus = 'friends');
       }
     } catch (e) {
@@ -170,151 +257,60 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Future<void> _deletePost(String postId) async {
     try {
       await supabase.from("discussion_posts").delete().eq("id", postId);
-      setState(() {
-        userPosts.removeWhere((p) => p['id'].toString() == postId);
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Post deleted successfully.")));
-      }
+      setState(() => userPosts.removeWhere((p) => p['id'].toString() == postId));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Post deleted successfully.")));
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error deleting post: $e")));
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error deleting post: $e")));
     }
   }
 
-  Future<void> _editPostModal(Map<String, dynamic> post) async {
-    final TextEditingController titleController = TextEditingController(text: post['title']);
-    final TextEditingController contentController = TextEditingController(text: post['content']);
+  Future<void> _toggleLike(Map<String, dynamic> post, int index) async {
+    final currentUser = supabase.auth.currentUser;
+    if (currentUser == null) return;
 
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: surfaceWhite,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          left: 20, right: 20, top: 24,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("Edit Post ✏️", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-            const SizedBox(height: 20),
-            TextField(
-              controller: titleController,
-              cursorColor: primaryPink,
-              decoration: _inputDecoration("Title"),
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: contentController,
-              cursorColor: primaryPink,
-              maxLines: 5,
-              decoration: _inputDecoration("Content"),
-              style: const TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryPink, 
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                onPressed: () async {
-                  try {
-                    await supabase.from("discussion_posts").update({
-                      'title': titleController.text.trim(),
-                      'content': contentController.text.trim(),
-                    }).eq("id", post['id']);
+    bool currentlyLiked = post['is_liked_by_me'] ?? false;
+    int currentLikes = post['likes_count'] ?? 0;
 
-                    if (mounted) {
-                      Navigator.pop(context);
-                      _fetchProfileAndPosts();
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Post updated successfully!")));
-                    }
-                  } catch (e) {
-                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error updating post: $e")));
-                  }
-                },
-                child: const Text("UPDATE POST", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    setState(() {
+      if (currentlyLiked) {
+        userPosts[index]['is_liked_by_me'] = false;
+        userPosts[index]['likes_count'] = (currentLikes > 0) ? currentLikes - 1 : 0;
+      } else {
+        userPosts[index]['is_liked_by_me'] = true;
+        userPosts[index]['likes_count'] = currentLikes + 1;
+      }
+    });
+
+    try {
+      if (currentlyLiked) {
+        await supabase.from("discussion_likes").delete().eq("post_id", post['id']).eq("student_id", currentUser.id);
+      } else {
+        await supabase.from("discussion_likes").insert({"post_id": post['id'], "student_id": currentUser.id});
+      }
+    } catch (e) {
+      _fetchProfileAndPosts();
+    }
   }
 
-  // --- حل مشکل ۱: منوی کشویی زیبا و حرفه‌ای برای ادیت و دلیت ---
   void _showPostActionMenu(Map<String, dynamic> post) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) {
         return Container(
-          decoration: const BoxDecoration(
-            color: surfaceWhite,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
+          decoration: const BoxDecoration(color: surfaceWhite, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 45,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
+              Container(width: 45, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))),
               const SizedBox(height: 24),
-              // گزینه Edit
               InkWell(
-                onTap: () {
-                  Navigator.pop(context);
-                  _editPostModal(post);
-                },
+                onTap: () { Navigator.pop(context); _showDeleteConfirmation(post['id'].toString()); },
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.blue.withOpacity(0.2), width: 1.5),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.edit_rounded, color: Colors.blue, size: 24),
-                      const SizedBox(width: 16),
-                      const Text("Edit Post", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: textDark)),
-                      const Spacer(),
-                      Icon(Icons.chevron_right_rounded, color: Colors.blue.withOpacity(0.5)),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              // گزینه Delete
-              InkWell(
-                onTap: () {
-                  Navigator.pop(context);
-                  _showDeleteConfirmation(post['id'].toString());
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.red.withOpacity(0.2), width: 1.5),
-                  ),
+                  decoration: BoxDecoration(color: Colors.red.withOpacity(0.08), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.red.withOpacity(0.2), width: 1.5)),
                   child: Row(
                     children: [
                       const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 24),
@@ -338,54 +334,42 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: surfaceWhite,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text("Delete Post", style: TextStyle(fontWeight: FontWeight.w900)),
+        title: const Text("Delete Post", style: TextStyle(fontWeight: FontWeight.w900, color: textDark)),
         content: const Text("Are you sure you want to delete this post? This action cannot be undone.", style: TextStyle(color: textGrey)),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: textDark, fontWeight: FontWeight.bold)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-              _deletePost(postId);
-            },
-            child: const Text("Delete", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold))),
+          ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), onPressed: () { Navigator.pop(context); _deletePost(postId); }, child: const Text("Delete", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
         ],
       ),
     );
   }
 
-  // --- باز کردن کامنت‌ها ---
   void _openCommentsBottomSheet(String postId) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _CommentsWidget(
-        postId: postId, 
-        currentUserId: supabase.auth.currentUser?.id ?? ''
-      ),
-    ).then((_) {
-      _fetchProfileAndPosts();
-    });
+      builder: (context) => _CommentsWidget(postId: postId, currentUserId: supabase.auth.currentUser?.id ?? ''),
+    ).then((_) => _fetchProfileAndPosts());
   }
 
   @override
   Widget build(BuildContext context) {
+    bool isTeacher = profileData?['role'] == 'teacher';
+    bool isAdmin = profileData?['role'] == 'admin' || profileData?['role'] == 'super_admin';
+    Color roleColor = isAdmin ? Colors.deepPurple : (isTeacher ? Colors.blueAccent : primaryPink);
+    String roleLabel = isAdmin ? "ADMINISTRATOR 🛡️" : (isTeacher ? "INSTRUCTOR 🎓" : "STUDENT 🌍");
+
     return Scaffold(
       backgroundColor: surfaceWhite,
       appBar: AppBar(
         backgroundColor: surfaceWhite,
         elevation: 0,
         iconTheme: const IconThemeData(color: textDark),
-        title: Text(isMyProfile ? "My Profile" : "User Profile", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+        title: Text(isMyProfile ? "My Profile" : "Academy Profile", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+        centerTitle: true,
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -396,7 +380,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
         ),
         child: isLoading
-            ? const Center(child: CircularProgressIndicator(color: primaryPink))
+            ? const Center(child: CircularProgressIndicator(color: primaryPink, strokeWidth: 3))
             : profileData != null
                 ? RefreshIndicator(
                     color: primaryPink,
@@ -410,14 +394,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // بخش کارت اطلاعات پروفایل
+                              // کارت اطلاعات پروفایل
                               Container(
                                 padding: const EdgeInsets.all(24),
                                 decoration: BoxDecoration(
                                   color: surfaceWhite,
                                   borderRadius: BorderRadius.circular(28),
-                                  border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
-                                  boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10))],
+                                  border: Border.all(color: roleColor.withOpacity(0.15), width: 1.5),
+                                  boxShadow: [BoxShadow(color: roleColor.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10))],
                                 ),
                                 child: Column(
                                   children: [
@@ -425,7 +409,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       children: [
                                         CircleAvatar(
                                           radius: 36,
-                                          backgroundColor: lightPinkBg,
+                                          backgroundColor: roleColor.withOpacity(0.1),
                                           backgroundImage: profileData!['avatar_url'] != null && profileData!['avatar_url'].toString().isNotEmpty
                                               ? NetworkImage(profileData!['avatar_url'])
                                               : null,
@@ -434,7 +418,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                                   profileData!['first_name'] != null && profileData!['first_name'].toString().isNotEmpty
                                                       ? profileData!['first_name'][0]
                                                       : 'U',
-                                                  style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 24),
+                                                  style: TextStyle(color: roleColor, fontWeight: FontWeight.w900, fontSize: 24),
                                                 )
                                               : null,
                                         ),
@@ -445,16 +429,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                             children: [
                                               Container(
                                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                                decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                                                child: Text((profileData!['role'] ?? 'student').toString().toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink)),
+                                                decoration: BoxDecoration(color: roleColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                                child: Text(roleLabel, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: roleColor)),
                                               ),
                                               const SizedBox(height: 6),
                                               Text(
                                                 "${profileData!['first_name'] ?? ''} ${profileData!['last_name'] ?? ''}",
                                                 style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 18),
                                               ),
-                                              const SizedBox(height: 2),
-                                              Text(profileData!['email'] ?? '', style: const TextStyle(color: textGrey, fontSize: 11)),
                                             ],
                                           ),
                                         ),
@@ -466,13 +448,30 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                                       children: [
-                                        _buildStatItem("Friends", "$friendsCount"),
-                                        _buildStatItem("Score", "${profileData!['total_score'] ?? 0}"),
-                                        _buildStatItem("Posts", "${userPosts.length}"),
+                                        _buildStatItem("Network", "$friendsCount", roleColor),
+                                        if (!isTeacher && !isAdmin) _buildStatItem("Score", "${profileData!['total_score'] ?? 0}", roleColor),
+                                        _buildStatItem("Posts", "${userPosts.length}", roleColor),
                                       ],
                                     ),
                                     const SizedBox(height: 20),
-                                    if (!isMyProfile)
+                                    
+                                    if (isMyProfile)
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton.icon(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: lightPinkBg,
+                                            foregroundColor: primaryPink,
+                                            elevation: 0,
+                                            padding: const EdgeInsets.symmetric(vertical: 14),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                          ),
+                                          icon: const Icon(Icons.edit_rounded, size: 16),
+                                          label: const Text("Edit My Profile ✏️", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
+                                          onPressed: _showEditProfileModal,
+                                        ),
+                                      )
+                                    else
                                       SizedBox(
                                         width: double.infinity,
                                         child: ElevatedButton.icon(
@@ -495,13 +494,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                           ),
                                           label: Text(
                                             friendshipStatus == 'friends'
-                                                ? 'Friends ✓ (Click to Remove)'
+                                                ? 'Connected ✓ (Click to Remove)'
                                                 : friendshipStatus == 'pending_sent'
                                                     ? 'Request Pending'
                                                     : friendshipStatus == 'pending_received'
-                                                        ? 'Accept Friend Request'
-                                                        : 'Add Friend 🤝',
-                                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11),
+                                                        ? 'Accept Connection'
+                                                        : 'Connect 🤝',
+                                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
                                           ),
                                           onPressed: isActionLoading ? null : _handleFriendAction,
                                         ),
@@ -511,7 +510,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                               ),
                               const SizedBox(height: 20),
 
-                              // بیوگرافی
+                              // اطلاعات کامل پروفایل (بدون شماره موبایل و اسم پدر)
                               Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(20),
@@ -523,8 +522,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text("About Me", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
-                                    const SizedBox(height: 8),
+                                    const Text("Complete Profile Info", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                                    const SizedBox(height: 12),
                                     Text(
                                       (profileData!['bio'] != null && profileData!['bio'].toString().isNotEmpty)
                                           ? profileData!['bio']
@@ -532,14 +531,26 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       style: const TextStyle(color: textGrey, fontSize: 12, height: 1.4),
                                     ),
                                     const SizedBox(height: 16),
-                                    _buildInfoRow(Icons.public_rounded, "Country", profileData!['country'] ?? 'Not specified'),
+                                    _buildInfoRow(Icons.email_outlined, "Email Address", profileData!['email'] ?? 'Not specified', roleColor),
+                                    const SizedBox(height: 10),
+                                    _buildInfoRow(Icons.cake_rounded, "Date of Birth", profileData!['date_of_birth'] ?? 'Not specified', roleColor),
+                                    const SizedBox(height: 10),
+                                    _buildInfoRow(Icons.public_rounded, "Country", profileData!['country'] ?? 'Global', roleColor),
+                                    const SizedBox(height: 10),
+                                    _buildInfoRow(Icons.account_balance_wallet_rounded, "Wallet Balance", "\$${(profileData!['wallet_balance'] ?? 0).toDouble().toStringAsFixed(2)}", roleColor),
+                                    const SizedBox(height: 10),
+                                    _buildInfoRow(Icons.bolt_rounded, "Total Score", "${profileData!['total_score'] ?? 0} XP", roleColor),
+                                    const SizedBox(height: 10),
+                                    _buildInfoRow(Icons.qr_code_rounded, "Referral Code", profileData!['referral_code'] ?? 'N/A', roleColor),
+                                    const SizedBox(height: 10),
+                                    _buildInfoRow(Icons.calendar_today_rounded, "Member Since", profileData!['created_at'] != null ? profileData!['created_at'].toString().split('T')[0] : 'N/A', roleColor),
                                   ],
                                 ),
                               ),
                               const SizedBox(height: 24),
 
                               // بخش نمایش پست‌های کاربر
-                              const Text("User Posts", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                              const Text("Shared Posts", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
                               const SizedBox(height: 12),
 
                               userPosts.isNotEmpty
@@ -550,12 +561,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       separatorBuilder: (_, __) => const SizedBox(height: 16),
                                       itemBuilder: (context, index) {
                                         final post = userPosts[index];
+                                        final rawTitle = post['title'] ?? '';
+                                        final moodTag = _extractMood(rawTitle);
+                                        final cleanTitle = _extractCleanTitle(rawTitle);
+                                        final imageUrl = post['image_url'];
+
                                         return Container(
                                           padding: const EdgeInsets.all(16),
                                           decoration: BoxDecoration(
                                             color: surfaceWhite,
-                                            borderRadius: BorderRadius.circular(20),
+                                            borderRadius: BorderRadius.circular(24),
                                             border: Border.all(color: cardBorder, width: 1.5),
+                                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
                                           ),
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -574,36 +591,98 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                                     ),
                                                 ],
                                               ),
-                                              const SizedBox(height: 6),
-                                              Text(post['title'] ?? '', style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                                               const SizedBox(height: 4),
-                                              Text(post['content'] ?? '', style: const TextStyle(color: textGrey, fontSize: 12, height: 1.3)),
-                                              if (post['image_url'] != null && post['image_url'].toString().isNotEmpty) ...[
-                                                const SizedBox(height: 12),
+
+                                              // تگ مود جدا شده
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                                                child: Text(moodTag, style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900)),
+                                              ),
+                                              const SizedBox(height: 10),
+
+                                              if (cleanTitle.isNotEmpty) ...[
+                                                Text(cleanTitle, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                                                const SizedBox(height: 6),
+                                              ],
+                                              Text(post['content'] ?? '', style: const TextStyle(color: textGrey, fontSize: 13, height: 1.4)),
+
+                                              // نمایش تصویر پست با Placeholder و لودینگ استاندارد
+                                              if (imageUrl != null && imageUrl.toString().isNotEmpty) ...[
+                                                const SizedBox(height: 14),
                                                 ClipRRect(
-                                                  borderRadius: BorderRadius.circular(12),
-                                                  child: Image.network(post['image_url'], height: 180, width: double.infinity, fit: BoxFit.cover),
+                                                  borderRadius: BorderRadius.circular(16),
+                                                  child: Container(
+                                                    constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.35),
+                                                    width: double.infinity,
+                                                    color: Colors.grey.shade100,
+                                                    child: Image.network(
+                                                      imageUrl.toString(),
+                                                      fit: BoxFit.cover,
+                                                      loadingBuilder: (context, child, loadingProgress) {
+                                                        if (loadingProgress == null) return child;
+                                                        return Container(
+                                                          height: 180,
+                                                          alignment: Alignment.center,
+                                                          child: Column(
+                                                            mainAxisAlignment: MainAxisAlignment.center,
+                                                            children: [
+                                                              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2),
+                                                              const SizedBox(height: 6),
+                                                              Text("Loading image...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                                            ],
+                                                          ),
+                                                        );
+                                                      },
+                                                      errorBuilder: (context, error, stackTrace) {
+                                                        return Container(
+                                                          height: 140,
+                                                          alignment: Alignment.center,
+                                                          color: Colors.grey.shade200,
+                                                          child: const Column(
+                                                            mainAxisAlignment: MainAxisAlignment.center,
+                                                            children: [
+                                                              Icon(Icons.broken_image_rounded, color: textGrey, size: 28),
+                                                              SizedBox(height: 4),
+                                                              Text("Image failed to load", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                                            ],
+                                                          ),
+                                                        );
+                                                      },
+                                                    ),
+                                                  ),
                                                 ),
                                               ],
+
                                               const SizedBox(height: 12),
                                               const Divider(color: cardBorder),
                                               Row(
                                                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                                                 children: [
-                                                  Row(
-                                                    children: [
-                                                      const Icon(Icons.favorite_rounded, color: primaryPink, size: 16),
-                                                      const SizedBox(width: 6),
-                                                      Text("${post['likes_count'] ?? 0} Likes", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
-                                                    ],
+                                                  InkWell(
+                                                    onTap: () => _toggleLike(post, index),
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(
+                                                            (post['is_liked_by_me'] ?? false) ? Icons.thumb_up_rounded : Icons.thumb_up_outlined,
+                                                            color: (post['is_liked_by_me'] ?? false) ? primaryPink : textGrey,
+                                                            size: 18,
+                                                          ),
+                                                          const SizedBox(width: 6),
+                                                          Text("${post['likes_count'] ?? 0} Likes", style: TextStyle(color: (post['is_liked_by_me'] ?? false) ? primaryPink : textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                                                        ],
+                                                      ),
+                                                    ),
                                                   ),
                                                   InkWell(
                                                     onTap: () => _openCommentsBottomSheet(post['id'].toString()),
                                                     child: Padding(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
                                                       child: Row(
                                                         children: [
-                                                          const Icon(Icons.mode_comment_outlined, color: textGrey, size: 16),
+                                                          const Icon(Icons.mode_comment_outlined, color: textGrey, size: 18),
                                                           const SizedBox(width: 6),
                                                           Text("${post['comments_count'] ?? 0} Comments", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                                                         ],
@@ -638,23 +717,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _buildStatItem(String label, String value) {
+  Widget _buildStatItem(String label, String value, Color color) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 16)),
+        Text(value, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 16)),
         const SizedBox(height: 2),
         Text(label.toUpperCase(), style: const TextStyle(color: textGrey, fontWeight: FontWeight.w900, fontSize: 9)),
       ],
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(IconData icon, String label, String value, Color color) {
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(10)),
-          child: Icon(icon, color: primaryPink, size: 16),
+          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+          child: Icon(icon, color: color, size: 16),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -670,23 +749,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       ],
     );
   }
-
-  InputDecoration _inputDecoration(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: const TextStyle(color: textGrey, fontSize: 11),
-      filled: true,
-      fillColor: cardBorder.withOpacity(0.5),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder, width: 1.5)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
-    );
-  }
 }
 
 // =====================================================================
-// حل مشکل ۲: ویجت نمایش کامنت‌ها و قابلیت ریپلای زدن
-// این ویجت برای جلوگیری از ارور ارتباط (Join) به صورت دستی پروفایل را دریافت می‌کند
+// ویجت نمایش کامنت‌ها در پروفایل
 // =====================================================================
 class _CommentsWidget extends StatefulWidget {
   final String postId;
@@ -726,16 +792,9 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
   Future<void> _fetchComments() async {
     setState(() => isLoading = true);
     try {
-      // دریافت تمام کامنت‌های مربوط به این پست
-      final res = await supabase
-          .from("discussion_comments")
-          .select("*")
-          .eq("post_id", widget.postId)
-          .order("created_at", ascending: true);
-
+      final res = await supabase.from("discussion_comments").select("*").eq("post_id", widget.postId).order("created_at", ascending: true);
       List<Map<String, dynamic>> fetchedComments = List<Map<String, dynamic>>.from(res as List);
       
-      // دریافت دستی اطلاعات پروفایل برای جلوگیری از ارور ارتباط دیتابیس (Join Error)
       Set<String> studentIds = fetchedComments.map((c) => c['student_id'].toString()).toSet();
       Map<String, Map<String, dynamic>> profilesMap = {};
       
@@ -746,24 +805,15 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
         } catch (_) {}
       }
 
-      // جایگذاری اطلاعات پروفایل در کامنت‌ها
       for (var c in fetchedComments) {
         String sId = c['student_id'].toString();
-        c['profiles'] = profilesMap[sId] ?? {
-          'first_name': 'Student',
-          'last_name': '',
-          'avatar_url': ''
-        };
+        c['profiles'] = profilesMap[sId] ?? {'first_name': 'User', 'last_name': '', 'avatar_url': ''};
       }
 
       if (mounted) {
-        setState(() {
-          comments = fetchedComments;
-          isLoading = false;
-        });
+        setState(() { comments = fetchedComments; isLoading = false; });
       }
     } catch (e) {
-      debugPrint("Error fetching comments: $e");
       if (mounted) setState(() => isLoading = false);
     }
   }
@@ -774,50 +824,30 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
 
     setState(() => isSending = true);
     try {
-      final insertData = {
-        'post_id': widget.postId,
-        'student_id': widget.currentUserId,
-        'comment_text': text,
-      };
-
-      if (replyingToCommentId != null) {
-        insertData['parent_comment_id'] = replyingToCommentId!;
-      }
+      final insertData = {'post_id': widget.postId, 'student_id': widget.currentUserId, 'comment_text': text};
+      if (replyingToCommentId != null) insertData['parent_comment_id'] = replyingToCommentId!;
 
       await supabase.from("discussion_comments").insert(insertData);
 
       _commentController.clear();
       _commentFocusNode.unfocus();
-      setState(() {
-        replyingToCommentId = null;
-        replyingToName = null;
-      });
+      setState(() { replyingToCommentId = null; replyingToName = null; });
       await _fetchComments();
-    } catch (e) {
-      debugPrint("Error sending comment: $e");
-    } finally {
+    } catch (e) {} finally {
       if (mounted) setState(() => isSending = false);
     }
   }
 
   void _startReplying(String commentId, String authorName) {
-    setState(() {
-      replyingToCommentId = commentId;
-      replyingToName = authorName;
-    });
-    // باز شدن کیبورد برای نوشتن ریپلای
+    setState(() { replyingToCommentId = commentId; replyingToName = authorName; });
     _commentFocusNode.requestFocus();
   }
 
   void _cancelReply() {
-    setState(() {
-      replyingToCommentId = null;
-      replyingToName = null;
-    });
+    setState(() { replyingToCommentId = null; replyingToName = null; });
     _commentFocusNode.unfocus();
   }
 
-  // نمایش درختی کامنت‌ها
   List<Widget> _buildCommentTree(String? parentId, double leftPadding) {
     final childComments = comments.where((c) {
       if (parentId == null) return c['parent_comment_id'] == null;
@@ -836,8 +866,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CircleAvatar(
-                radius: 16,
-                backgroundColor: const Color(0xFFFCE4EC),
+                radius: 16, backgroundColor: const Color(0xFFFCE4EC),
                 backgroundImage: c['profiles']?['avatar_url'] != null && c['profiles']?['avatar_url'] != '' ? NetworkImage(c['profiles']['avatar_url']) : null,
                 child: c['profiles']?['avatar_url'] == null || c['profiles']?['avatar_url'] == '' ? const Icon(Icons.person, size: 16, color: Color(0xFFC2185B)) : null,
               ),
@@ -848,10 +877,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF3F4F6),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
+                      decoration: BoxDecoration(color: const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(16)),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -883,10 +909,8 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
         ),
       );
 
-      // جلوگیری از تو رفتگی بیش از حد ریپلای‌ها (Padding Limit)
       double nextPadding = leftPadding + 36;
       if (nextPadding > 72) nextPadding = 72;
-
       commentWidgets.addAll(_buildCommentTree(cId, nextPadding));
     }
     return commentWidgets;
@@ -896,18 +920,11 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       child: Column(
         children: [
           const SizedBox(height: 12),
-          Container(
-            width: 45,
-            height: 5,
-            decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
-          ),
+          Container(width: 45, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))),
           const SizedBox(height: 16),
           const Text("Comments", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF111827))),
           const Divider(height: 30),
@@ -916,23 +933,11 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                 ? const Center(child: CircularProgressIndicator(color: Color(0xFFC2185B)))
                 : comments.isEmpty
                     ? const Center(child: Text("No comments yet. Start the conversation!", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)))
-                    : ListView(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        physics: const BouncingScrollPhysics(),
-                        children: _buildCommentTree(null, 0),
-                      ),
+                    : ListView(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), physics: const BouncingScrollPhysics(), children: _buildCommentTree(null, 0)),
           ),
-          
-          // نوار ارسال کامنت 
           Container(
-            padding: EdgeInsets.only(
-              left: 16, right: 16, top: 12,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
-            ),
+            padding: EdgeInsets.only(left: 16, right: 16, top: 12, bottom: MediaQuery.of(context).viewInsets.bottom + 16),
+            decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))]),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -944,10 +949,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text("Replying to $replyingToName", style: const TextStyle(fontSize: 12, color: Color(0xFFC2185B), fontWeight: FontWeight.w900)),
-                        GestureDetector(
-                          onTap: _cancelReply,
-                          child: const Icon(Icons.close_rounded, size: 18, color: Colors.grey),
-                        )
+                        GestureDetector(onTap: _cancelReply, child: const Icon(Icons.close_rounded, size: 18, color: Colors.grey))
                       ],
                     ),
                   ),
@@ -955,29 +957,15 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                   children: [
                     Expanded(
                       child: TextField(
-                        controller: _commentController,
-                        focusNode: _commentFocusNode,
-                        cursorColor: const Color(0xFFC2185B),
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                        decoration: InputDecoration(
-                          hintText: replyingToName != null ? "Write a reply..." : "Add a comment...",
-                          hintStyle: const TextStyle(color: Colors.grey, fontSize: 12),
-                          filled: true,
-                          fillColor: const Color(0xFFF3F4F6),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
-                        ),
+                        controller: _commentController, focusNode: _commentFocusNode, cursorColor: const Color(0xFFC2185B), 
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500), 
+                        decoration: InputDecoration(hintText: replyingToName != null ? "Write a reply..." : "Add a comment...", hintStyle: const TextStyle(color: Colors.grey, fontSize: 12), filled: true, fillColor: const Color(0xFFF3F4F6), contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none)),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Container(
                       decoration: const BoxDecoration(color: Color(0xFFC2185B), shape: BoxShape.circle),
-                      child: IconButton(
-                        icon: isSending 
-                            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) 
-                            : const Icon(Icons.send_rounded, color: Colors.white, size: 18),
-                        onPressed: isSending ? null : _sendComment,
-                      ),
+                      child: IconButton(icon: isSending ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.send_rounded, color: Colors.white, size: 18), onPressed: isSending ? null : _sendComment),
                     ),
                   ],
                 ),

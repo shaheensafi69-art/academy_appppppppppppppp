@@ -142,12 +142,11 @@ class _TeacherCertificatesDetailScreenState extends State<TeacherCertificatesDet
         fileUrl = supabase.storage.from("certificates").getPublicUrl(filePath);
       }
 
-      // 🛠 استفاده از upsert برای جلوگیری از خطای duplicate key در دیتابیس
       await supabase.from("certificates").upsert({
         'student_id': selectedStudentId,
         'course_id': selectedCourseId,
         'certificate_code': _certCodeController.text.trim(),
-        'certificate_url': ?fileUrl,
+        'certificate_url': fileUrl,
         'issue_date': DateTime.now().toIso8601String(),
       }, onConflict: 'student_id,course_id');
 
@@ -178,6 +177,15 @@ class _TeacherCertificatesDetailScreenState extends State<TeacherCertificatesDet
       );
     }
 
+    final currentClass = classes.firstWhere((c) => c['id'].toString() == selectedClassId, orElse: () => classes.isNotEmpty ? classes[0] : {});
+    final currentCourseTitle = (currentClass['courses'] is Map) ? currentClass['courses']['title'] : 'Select Class & Course';
+    final currentClassName = currentClass['class_name'] ?? 'Select Class';
+
+    final currentStudent = students.firstWhere((s) => s['id'].toString() == selectedStudentId, orElse: () => students.isNotEmpty ? students[0] : {});
+    final currentStudentName = students.isNotEmpty ? "${currentStudent['first_name']} ${currentStudent['last_name']}" : 'Select Student';
+    final currentStudentEmail = students.isNotEmpty ? currentStudent['email'] : '';
+    final currentStudentAvatar = students.isNotEmpty ? currentStudent['avatar_url'] : null;
+
     return Scaffold(
       backgroundColor: surfaceWhite,
       appBar: AppBar(
@@ -185,179 +193,278 @@ class _TeacherCertificatesDetailScreenState extends State<TeacherCertificatesDet
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: textDark),
-        title: const Text("Issue New Certificate", style: TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+        title: const Text("Issue New Certificate", style: TextStyle(color: textDark, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(color: cardBorder, height: 1),
         ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
-          physics: const BouncingScrollPhysics(),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 700),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("Target Class & Course *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 6),
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedClassId,
-                    dropdownColor: surfaceWhite,
-                    isExpanded: true,
-                    style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: cardBorder.withOpacity(0.5),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
-                    ),
-                    items: classes.map((c) {
-                      final courseTitle = (c['courses'] is Map) ? c['courses']['title'] : 'Course';
-                      return DropdownMenuItem(
-                        value: c['id'].toString(),
-                        child: Text("${c['class_name']} ($courseTitle)", overflow: TextOverflow.ellipsis),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      setState(() {
-                        selectedClassId = val;
-                        final matchedClass = classes.firstWhere((c) => c['id'].toString() == val);
-                        if (matchedClass['course_id'] != null) {
-                          selectedCourseId = matchedClass['course_id'].toString();
-                        }
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  const Text("Graduate Student *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 6),
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedStudentId,
-                    dropdownColor: surfaceWhite,
-                    isExpanded: true,
-                    style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: cardBorder.withOpacity(0.5),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
-                    ),
-                    items: students.map((s) {
-                      return DropdownMenuItem(
-                        value: s['id'].toString(),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 12,
-                              backgroundColor: lightPinkBg,
-                              backgroundImage: s['avatar_url'] != null ? NetworkImage(s['avatar_url']) : null,
-                              child: s['avatar_url'] == null ? Text(s['first_name'][0], style: const TextStyle(fontSize: 9, color: primaryPink)) : null,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(child: Text("${s['first_name']} ${s['last_name']} (${s['email']})", overflow: TextOverflow.ellipsis)),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (val) => setState(() => selectedStudentId = val),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20.0),
+              physics: const BouncingScrollPhysics(),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 700),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Certificate Serial Code *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                      GestureDetector(
-                        onTap: _generateAutoCode,
-                        child: const Text("✨ Auto Generate Code", style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: _certCodeController,
-                    style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
-                    decoration: InputDecoration(
-                      hintText: "e.g. SAFI-2026-CERT-94821",
-                      hintStyle: const TextStyle(color: textGrey, fontSize: 11),
-                      filled: true,
-                      fillColor: cardBorder.withOpacity(0.5),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  const Text("Certificate Document (Image or PDF) *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 6),
-                  GestureDetector(
-                    onTap: _pickFile,
-                    child: Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: lightPinkBg.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
-                        boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(color: primaryPink.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
-                            child: const Icon(Icons.cloud_upload_rounded, color: primaryPink, size: 22),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  selectedFile != null ? selectedFile!.name : "Tap to browse certificate file...",
-                                  style: TextStyle(color: selectedFile != null ? textDark : primaryPink, fontWeight: FontWeight.w900, fontSize: 12),
-                                  overflow: TextOverflow.ellipsis,
+                      // --- Target Class & Course ---
+                      const Text("TARGET CLASS & COURSE *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                      const SizedBox(height: 8),
+                      PopupMenuButton<String>(
+                        offset: const Offset(0, 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        color: surfaceWhite,
+                        elevation: 10,
+                        itemBuilder: (context) {
+                          return classes.map((c) {
+                            final courseTitle = (c['courses'] is Map) ? c['courses']['title'] : 'Course';
+                            return PopupMenuItem<String>(
+                              value: c['id'].toString(),
+                              child: Container(
+                                width: constraints.maxWidth > 500 ? 450 : constraints.maxWidth - 60,
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(12)),
+                                      child: const Icon(Icons.class_rounded, color: primaryPink, size: 20),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text("${c['class_name']}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                                          const SizedBox(height: 2),
+                                          Text("Course: $courseTitle", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w600)),
+                                        ],
+                                      ),
+                                    ),
+                                    if (selectedClassId == c['id'].toString())
+                                      const Icon(Icons.check_circle_rounded, color: primaryPink, size: 20),
+                                  ],
                                 ),
-                                const SizedBox(height: 2),
-                                const Text("Supports high-res Image / PDF document", style: TextStyle(color: textGrey, fontSize: 9)),
-                              ],
-                            ),
+                              ),
+                            );
+                          }).toList();
+                        },
+                        onSelected: (val) {
+                          setState(() {
+                            selectedClassId = val;
+                            final matchedClass = classes.firstWhere((c) => c['id'].toString() == val);
+                            if (matchedClass['course_id'] != null) {
+                              selectedCourseId = matchedClass['course_id'].toString();
+                            }
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: cardBorder.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: cardBorder, width: 1.5),
                           ),
-                          const Icon(Icons.arrow_forward_ios_rounded, color: textGrey, size: 14),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(10)),
+                                child: const Icon(Icons.class_rounded, color: primaryPink, size: 18),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(currentClassName, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                    const SizedBox(height: 2),
+                                    Text("Course: $currentCourseTitle", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w600)),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.keyboard_arrow_down_rounded, color: primaryPink, size: 22),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // --- Graduate Student ---
+                      const Text("GRADUATE STUDENT *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                      const SizedBox(height: 8),
+                      PopupMenuButton<String>(
+                        offset: const Offset(0, 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        color: surfaceWhite,
+                        elevation: 10,
+                        itemBuilder: (context) {
+                          return students.map((s) {
+                            return PopupMenuItem<String>(
+                              value: s['id'].toString(),
+                              child: Container(
+                                width: constraints.maxWidth > 500 ? 450 : constraints.maxWidth - 60,
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 18,
+                                      backgroundColor: lightPinkBg,
+                                      backgroundImage: s['avatar_url'] != null ? NetworkImage(s['avatar_url']) : null,
+                                      child: s['avatar_url'] == null ? Text(s['first_name'][0], style: const TextStyle(fontSize: 12, color: primaryPink, fontWeight: FontWeight.bold)) : null,
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text("${s['first_name']} ${s['last_name']}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                          const SizedBox(height: 2),
+                                          Text("${s['email']}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w600)),
+                                        ],
+                                      ),
+                                    ),
+                                    if (selectedStudentId == s['id'].toString())
+                                      const Icon(Icons.check_circle_rounded, color: primaryPink, size: 20),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList();
+                        },
+                        onSelected: (val) => setState(() => selectedStudentId = val),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: cardBorder.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: cardBorder, width: 1.5),
+                          ),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 16,
+                                backgroundColor: lightPinkBg,
+                                backgroundImage: currentStudentAvatar != null ? NetworkImage(currentStudentAvatar) : null,
+                                child: currentStudentAvatar == null ? Text(currentStudentName.isNotEmpty ? currentStudentName[0] : 'S', style: const TextStyle(fontSize: 12, color: primaryPink, fontWeight: FontWeight.bold)) : null,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(currentStudentName, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                    const SizedBox(height: 2),
+                                    Text(currentStudentEmail, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w600)),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.keyboard_arrow_down_rounded, color: primaryPink, size: 22),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // --- Certificate Serial Code ---
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text("CERTIFICATE SERIAL CODE *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                          GestureDetector(
+                            onTap: _generateAutoCode,
+                            child: const Text("✨ Auto Generate Code", style: TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900)),
+                          ),
                         ],
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 35),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryPink,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _certCodeController,
+                        cursorColor: primaryPink,
+                        style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                        decoration: InputDecoration(
+                          hintText: "e.g. SAFI-2026-CERT-94821",
+                          hintStyle: const TextStyle(color: textGrey, fontSize: 13),
+                          filled: true,
+                          fillColor: cardBorder.withOpacity(0.6),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                        ),
                       ),
-                      onPressed: isSubmitting ? null : _handleSubmit,
-                      child: Text(isSubmitting ? "Issuing Certificate..." : "Issue & Deploy Certificate 🎓", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
-                    ),
+                      const SizedBox(height: 20),
+
+                      // --- Certificate Document Upload ---
+                      const Text("CERTIFICATE DOCUMENT (IMAGE OR PDF) *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: _pickFile,
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: lightPinkBg.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                            boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(color: primaryPink.withOpacity(0.15), borderRadius: BorderRadius.circular(14)),
+                                child: const Icon(Icons.cloud_upload_rounded, color: primaryPink, size: 24),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      selectedFile != null ? selectedFile!.name : "Tap to browse certificate file...",
+                                      style: TextStyle(color: selectedFile != null ? textDark : primaryPink, fontWeight: FontWeight.w900, fontSize: 13),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    const Text("Supports high-res Image / PDF document", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w600)),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.arrow_forward_ios_rounded, color: textGrey, size: 14),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+
+                      // --- Submit Button ---
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryPink,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          ),
+                          onPressed: isSubmitting ? null : _handleSubmit,
+                          child: Text(
+                            isSubmitting ? "Issuing Certificate..." : "Issue & Deploy Certificate 🎓",
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                    ],
                   ),
-                  const SizedBox(height: 40),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
