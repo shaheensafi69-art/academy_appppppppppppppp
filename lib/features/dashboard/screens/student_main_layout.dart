@@ -12,15 +12,17 @@ import '../screens/student_trading_journal_screen.dart';
 import '../screens/student_wallet_screen.dart';
 import '../screens/student_achievements_screen.dart';
 import '../screens/student_support_screen.dart';
+import '../screens/student_feed_screen.dart';      // صفحه فید اجتماعی
+import '../screens/student_friends_screen.dart';   // صفحه مدیریت دوستان
 
 import 'certificates_screen.dart';
 import 'wishlist_screen.dart';
 import 'payments_screen.dart';
 import 'scholarships_screen.dart';
-import 'discussion_forum_screen.dart';
-import 'settings_screen.dart';         // صفحه تنظیمات اپلیکیشن
+import 'create_post_screen.dart';                // صفحه ساخت پست جدید
+import 'settings_screen.dart';
 import 'help_center_screen.dart';
-import 'student_profile_screen.dart'; // صفحه پروفایل شخصی و اطلاعات کامل
+import 'user_profile_screen.dart';            // صفحه پروفایل کاربر
 
 import '../../../core/routing/auth_gate.dart';
 
@@ -47,30 +49,30 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
   static const Color borderColor = Color(0xFFF3F4F6);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
 
-  // لیست صفحات پورتال (ترتیب ایندکس‌ها باید با _menuItems همخوانی داشته باشد)
   late final List<Widget> _screens = [
-    const StudentOverviewScreen(),          // 0
-    const StudentAnnouncementsScreen(),     // 1
-    const StudentCoursesScreen(),           // 2
-    const WishlistScreen(),                 // 3
-    const StudentLiveClassesScreen(),       // 4
-    const StudentAssignmentsScreen(),       // 5
-    const StudentQuizzesScreen(),           // 6
-    const CertificatesScreen(),             // 7
-    const ScholarshipsScreen(),             // 8
-    const PaymentsScreen(),                 // 9
-    const StudentTradingJournalScreen(),    // 10
-    const DiscussionForumScreen(),          // 11
-    const StudentWalletScreen(),            // 12
-    const StudentAchievementsScreen(),      // 13
-    _buildPlaceholderScreen("AI Assistant", Icons.smart_toy_rounded, "Smart assistant for your trading & studies."), // 14
-    const HelpCenterScreen(),               // 15
-    const StudentSupportScreen(),           // 16
-    const StudentSettingsScreen(),          // 17 - صفحه پروفایل شخصی کامل
-    const SettingsScreen(),                 // 18 - صفحه تنظیمات اپلیکیشن و امنیت
+    const StudentOverviewScreen(),         // 0
+    const StudentAnnouncementsScreen(),    // 1
+    const StudentCoursesScreen(),          // 2
+    const WishlistScreen(),                // 3
+    const StudentLiveClassesScreen(),      // 4
+    const StudentAssignmentsScreen(),      // 5
+    const StudentQuizzesScreen(),          // 6
+    const CertificatesScreen(),            // 7
+    const ScholarshipsScreen(),            // 8
+    const PaymentsScreen(),                // 9
+    const StudentTradingJournalScreen(),   // 10
+    const CreatePostScreen(),              // 11 - صفحه ساخت پست جدید
+    const StudentFeedScreen(),             // 12 - فید اجتماعی
+    const StudentWalletScreen(),           // 13
+    const StudentFriendsScreen(),          // 14 - صفحه دوستان
+    const StudentAchievementsScreen(),     // 15
+    _buildPlaceholderScreen("AI Assistant", Icons.smart_toy_rounded, "Smart assistant for your trading & studies."), // 16
+    const HelpCenterScreen(),              // 17
+    const StudentSupportScreen(),          // 18
+    const UserProfileScreen(),          // 19 - پروفایل شخصی
+    const SettingsScreen(),                // 20
   ];
 
-  // لیست منوها شامل پروفایل و تنظیمات به صورت مجزا
   final List<Map<String, Object>> _menuItems = [
     {"index": 0, "name": "Overview", "icon": Icons.dashboard_rounded},
     {"index": 1, "name": "Announcements", "icon": Icons.campaign_rounded},
@@ -83,14 +85,16 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
     {"index": 8, "name": "Scholarships", "icon": Icons.school_rounded},
     {"index": 9, "name": "Payments & Invoices", "icon": Icons.receipt_long_rounded},
     {"index": 10, "name": "Trading Journal", "icon": Icons.show_chart_rounded},
-    {"index": 11, "name": "Discussion Forum", "icon": Icons.forum_rounded},
-    {"index": 12, "name": "Wallet & Referral", "icon": Icons.account_balance_wallet_rounded},
-    {"index": 13, "name": "Achievements", "icon": Icons.emoji_events_rounded},
-    {"index": 14, "name": "AI Assistant (Soon)", "icon": Icons.smart_toy_rounded, "soon": true},
-    {"index": 15, "name": "Help Center", "icon": Icons.help_outline_rounded},
-    {"index": 16, "name": "Support Tickets", "icon": Icons.support_agent_rounded},
-    {"index": 17, "name": "My Profile", "icon": Icons.person_rounded},         // ایندکس ۱۷ برای پروفایل
-    {"index": 18, "name": "App Settings", "icon": Icons.settings_rounded},   // ایندکس ۱۸ برای تنظیمات
+    {"index": 11, "name": "Create Post", "icon": Icons.add_rounded},
+    {"index": 12, "name": "Social Feed", "icon": Icons.dynamic_feed_rounded},
+    {"index": 13, "name": "Wallet & Referral", "icon": Icons.account_balance_wallet_rounded},
+    {"index": 14, "name": "Friends & Network", "icon": Icons.people_alt_rounded},
+    {"index": 15, "name": "Achievements", "icon": Icons.emoji_events_rounded},
+    {"index": 16, "name": "AI Assistant (Soon)", "icon": Icons.smart_toy_rounded, "soon": true},
+    {"index": 17, "name": "Help Center", "icon": Icons.help_outline_rounded},
+    {"index": 18, "name": "Support Tickets", "icon": Icons.support_agent_rounded},
+    {"index": 19, "name": "My Profile", "icon": Icons.person_rounded},
+    {"index": 20, "name": "App Settings", "icon": Icons.settings_rounded},
   ];
 
   @override
@@ -223,45 +227,107 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
     );
   }
 
+  // تشخیص اینکه آیا کاربر در بخش اجتماعی (فید، دوستان، پروفایل یا ساخت پست) است یا خیر
+  bool get _isInSocialSection => _currentIndex == 11 || _currentIndex == 12 || _currentIndex == 14 || _currentIndex == 19;
+
   Widget _buildFloatingBottomNav() {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(30),
+      borderRadius: BorderRadius.circular(28),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
-          height: 60,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          height: 65,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
           decoration: BoxDecoration(
-            color: surfaceColor.withOpacity(0.95),
-            border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.5),
-            borderRadius: BorderRadius.circular(30),
+            color: surfaceColor.withOpacity(0.92),
+            border: Border.all(color: primaryPink.withOpacity(0.18), width: 1.5),
+            borderRadius: BorderRadius.circular(28),
             boxShadow: [
-              BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 6)),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Expanded(child: _buildNavItem(0, "Overview", Icons.dashboard_rounded)),
-              Expanded(child: _buildNavItem(2, "Courses", Icons.menu_book_rounded)),
-              Expanded(child: _buildNavItem(4, "Live", Icons.podcasts_rounded)),
-              Expanded(child: _buildNavItem(12, "Wallet", Icons.account_balance_wallet_rounded)),
-              Expanded(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => setState(() => _isMobileMenuOpen = true),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.grid_view_rounded, color: subTextColor, size: 22),
-                      const SizedBox(height: 2),
-                      Text("MENU", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: subTextColor, letterSpacing: 0.8)),
-                    ],
-                  ),
-                ),
+              BoxShadow(
+                color: primaryPink.withOpacity(0.1),
+                blurRadius: 25,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
+          child: _isInSocialSection
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Expanded(child: _buildNavItem(12, "Feed", Icons.dynamic_feed_rounded)),
+                    Expanded(child: _buildNavItem(14, "Friends", Icons.people_alt_rounded)),
+                    // دکمه وسط (+) که مستقیماً به صفحه CreatePostScreen (ایندکس 11) هدایت می‌کند
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => setState(() => _currentIndex = 11),
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: primaryPink,
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_rounded, color: Colors.white, size: 22),
+                              SizedBox(height: 1),
+                              Text("POST", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.8)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(child: _buildNavItem(19, "Profile", Icons.person_rounded)),
+                    // دکمه خروج از بخش اجتماعی و بازگشت به صفحه اصلی
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => setState(() => _currentIndex = 0),
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.exit_to_app_rounded, color: Colors.redAccent, size: 19),
+                            SizedBox(height: 1),
+                            Text("EXIT", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.redAccent, letterSpacing: 0.8)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Expanded(child: _buildNavItem(0, "Overview", Icons.dashboard_rounded)),
+                    Expanded(child: _buildNavItem(2, "Courses", Icons.menu_book_rounded)),
+                    Expanded(child: _buildNavItem(4, "Live", Icons.podcasts_rounded)),
+                    Expanded(child: _buildNavItem(12, "Feed", Icons.dynamic_feed_rounded)),
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => setState(() => _isMobileMenuOpen = true),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: lightPinkBg.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(color: primaryPink.withOpacity(0.3), width: 1),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.grid_view_rounded, color: primaryPink, size: 20),
+                              const SizedBox(height: 1),
+                              Text("MENU", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 0.8)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
         ),
       ),
     );
@@ -272,17 +338,23 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => setState(() => _currentIndex = index),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+        decoration: BoxDecoration(
+          color: isActive ? lightPinkBg : Colors.transparent,
+          borderRadius: BorderRadius.circular(18),
+        ),
         alignment: Alignment.center,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
-              size: isActive ? 24 : 20,
+              size: isActive ? 22 : 19,
               color: isActive ? primaryPink : subTextColor,
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 1),
             Text(
               title.toUpperCase(),
               style: TextStyle(
@@ -311,7 +383,6 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
             child: SafeArea(
               child: Column(
                 children: [
-                  // هدر منو
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                     child: Row(
@@ -329,8 +400,6 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                       ],
                     ),
                   ),
-                  
-                  // لیست منوها
                   Expanded(
                     child: ListView.separated(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -402,12 +471,10 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                       },
                     ),
                   ),
-
-                  // کارت پروفایل کاملاً فعال و کلیک‌پذیر در پایین منو
                   GestureDetector(
                     onTap: () {
                       setState(() {
-                        _currentIndex = 17; // رفتن به صفحه پروفایل (StudentSettingsScreen)
+                        _currentIndex = 19;
                         _isMobileMenuOpen = false;
                       });
                     },

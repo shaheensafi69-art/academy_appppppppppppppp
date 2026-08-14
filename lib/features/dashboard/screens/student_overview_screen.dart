@@ -13,25 +13,25 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
   bool isLoading = true;
 
   Map<String, dynamic> student = {
-    'first_name': '',
+    'first_name': 'Student',
     'last_name': '',
     'avatar': '',
     'email': '',
     'wallet': 0.0,
+    'total_score': 0,
   };
 
   Map<String, dynamic> stats = {
     'enrolledCourses': 0,
-    'totalScore': 0,
     'certificates': 0,
-    'dailyStreak': 5,
-    'learningHours': 34.5,
+    'dailyStreak': 0,
+    'longestStreak': 0,
   };
 
   Map<String, dynamic>? activeCourse;
-  List<Map<String, dynamic>> upcomingClasses = [];
+  List<Map<String, dynamic>> activeClasses = [];
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  // پالت رنگی پرمیوم و هماهنگ با دیزاین مرجع
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
   static const Color surfaceWhite = Colors.white;
@@ -42,16 +42,17 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchDashboardData();
+    _fetchRealDashboardData();
   }
 
-  Future<void> _fetchDashboardData() async {
+  Future<void> _fetchRealDashboardData() async {
     setState(() => isLoading = true);
     try {
       final user = supabase.auth.currentUser;
       if (user == null) return;
       final userId = user.id;
 
+      // ۱. واکشی اطلاعات پروفایل از جدول profiles
       final profile = await supabase
           .from("profiles")
           .select("first_name, last_name, avatar_url, email, total_score, wallet_balance")
@@ -65,62 +66,79 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
           'avatar': profile['avatar_url'] ?? '',
           'email': profile['email'] ?? user.email ?? '',
           'wallet': (profile['wallet_balance'] ?? 0).toDouble(),
+          'total_score': profile['total_score'] ?? 0,
         };
       }
 
+      // ۲. شمارش تعداد دوره‌های ثبت‌نام شده از جدول enrollments
       final enrollmentsCount = await supabase
-          .from("class_students")
+          .from("enrollments")
           .count(CountOption.exact)
           .eq("student_id", userId);
 
+      // ۳. شمارش تعداد گواهینامه‌ها از جدول certificates
       final certsCount = await supabase
           .from("certificates")
           .count(CountOption.exact)
           .eq("student_id", userId);
 
+      // ۴. واکشی استریک‌ها از جدول student_streaks
+      final streakData = await supabase
+          .from("student_streaks")
+          .select("current_streak, longest_streak")
+          .eq("student_id", userId)
+          .maybeSingle();
+
       setState(() {
         stats['enrolledCourses'] = enrollmentsCount;
-        stats['totalScore'] = profile?['total_score'] ?? 0;
         stats['certificates'] = certsCount;
+        stats['dailyStreak'] = streakData?['current_streak'] ?? 0;
+        stats['longestStreak'] = streakData?['longest_streak'] ?? 0;
       });
 
+      // ۵. واکشی آخرین دوره در حال یادگیری از جدول enrollments همراه با اطلاعات جدول courses
       final latestEnrollment = await supabase
-          .from("class_students")
-          .select("class_groups(class_name)")
+          .from("enrollments")
+          .select("progress_percentage, courses(title)")
           .eq("student_id", userId)
           .order("enrolled_at", ascending: false)
           .limit(1)
           .maybeSingle();
 
-      if (latestEnrollment != null && latestEnrollment['class_groups'] != null) {
-        final courseData = latestEnrollment['class_groups'] is List
-            ? (latestEnrollment['class_groups'] as List).isNotEmpty ? latestEnrollment['class_groups'][0] : null
-            : latestEnrollment['class_groups'];
+      if (latestEnrollment != null && latestEnrollment['courses'] != null) {
+        final courseObj = latestEnrollment['courses'];
+        final courseTitle = courseObj is List 
+            ? (courseObj.isNotEmpty ? courseObj[0]['title'] : 'Active Course')
+            : courseObj['title'] ?? 'Active Course';
 
-        if (courseData != null) {
-          activeCourse = {
-            'title': courseData['class_name'] ?? 'Untitled Course',
-            'progress': 42,
-          };
-        }
+        activeCourse = {
+          'title': courseTitle,
+          'progress': latestEnrollment['progress_percentage'] ?? 0,
+        };
       }
 
-      upcomingClasses = [
-        {
-          'title': 'Advanced Financial Markets & Risk Management',
-          'time': 'Today, 04:00 PM',
-          'instructor': 'Prof. Alex Safi',
-          'isMissed': false,
-        },
-        {
-          'title': 'Forex Price Action Masterclass',
-          'time': 'Yesterday, 06:00 PM',
-          'instructor': 'Mentor David',
-          'isMissed': true,
-        },
-      ];
+      // ۶. واکشی کلاس‌های زنده مرتبط با دانشجو از جدول class_students و class_groups
+      final studentClasses = await supabase
+          .from("class_students")
+          .select("class_groups(class_name, meeting_link, class_time, class_days, is_active)")
+          .eq("student_id", userId);
+
+      List<Map<String, dynamic>> parsedClasses = [];
+      for (var item in (studentClasses as List)) {
+        if (item['class_groups'] != null) {
+          final group = item['class_groups'];
+          parsedClasses.add({
+            'title': group['class_name'] ?? 'Live Campus Session',
+            'time': "${group['class_days'] ?? ''} • ${group['class_time'] ?? ''}",
+            'meeting_link': group['meeting_link'] ?? '',
+            'is_active': group['is_active'] ?? true,
+          });
+        }
+      }
+      activeClasses = parsedClasses;
+
     } catch (e) {
-      debugPrint("Error fetching dashboard data: $e");
+      debugPrint("Error fetching real dashboard data: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -149,7 +167,7 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                  child: Text(liveClass['isMissed'] ? "MISSED SESSION" : "UPCOMING LIVE", style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                  child: const Text("LIVE CAMPUS SESSION", style: TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
                 ),
                 IconButton(icon: const Icon(Icons.close_rounded, color: textGrey), onPressed: () => Navigator.pop(context)),
               ],
@@ -157,48 +175,20 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
             const SizedBox(height: 12),
             Text(liveClass['title'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
             const SizedBox(height: 6),
-            Text("Instructor: ${liveClass['instructor']} • ${liveClass['time']}", style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.bold)),
+            Text("Schedule: ${liveClass['time']}", style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.bold)),
             const SizedBox(height: 24),
-            if (liveClass['isMissed']) ...[
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(backgroundColor: primaryPink, foregroundColor: Colors.white, elevation: 0, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
-                  icon: const Icon(Icons.play_circle_filled_rounded, size: 18),
-                  label: const Text("Review Recorded Session", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Loading recorded session..."), backgroundColor: Colors.green));
-                  },
-                ),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: primaryPink, foregroundColor: Colors.white, elevation: 0, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+                icon: const Icon(Icons.video_call_rounded, size: 18),
+                label: const Text("Join Live Meeting Room 🚀", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                onPressed: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Opening meeting link..."), backgroundColor: Colors.green));
+                },
               ),
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(foregroundColor: primaryPink, side: const BorderSide(color: primaryPink, width: 1.5), padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
-                  icon: const Icon(Icons.calendar_month_rounded, size: 18),
-                  label: const Text("Reschedule / Book Make-up Class", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Make-up class request submitted!"), backgroundColor: Colors.green));
-                  },
-                ),
-              ),
-            ] else ...[
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(backgroundColor: primaryPink, foregroundColor: Colors.white, elevation: 0, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
-                  icon: const Icon(Icons.video_call_rounded, size: 18),
-                  label: const Text("Join Live Meeting Room 🚀", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Connecting to live meeting..."), backgroundColor: Colors.green));
-                  },
-                ),
-              ),
-            ],
+            ),
             const SizedBox(height: 10),
           ],
         ),
@@ -208,288 +198,268 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return Scaffold(
+    return AcademyLoadingOverlay(
+      isLoading: isLoading,
+      message: "LOADING DASHBOARD...",
+      child: Scaffold(
         backgroundColor: surfaceWhite,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
-              const SizedBox(height: 14),
-              Text("LOADING DASHBOARD...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
-            ],
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [const Color(0xFFFFF0F5), surfaceWhite, lightPinkBg.withOpacity(0.2)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
           ),
-        ),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: surfaceWhite,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ================= 1. PREMIUM PROFILE & WALLET HEADER =================
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
-                  boxShadow: [
-                    BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ================= 1. PROFILE & WALLET HEADER =================
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                      boxShadow: [
+                        BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                      ],
+                    ),
+                    child: Column(
                       children: [
-                        Container(
-                          width: 54,
-                          height: 54,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
-                            color: surfaceWhite,
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: student['avatar'].isNotEmpty
-                                ? Image.network(student['avatar'], fit: BoxFit.cover)
-                                : Center(
-                                    child: Text(
-                                      student['first_name'].isNotEmpty ? student['first_name'][0] : 'S',
-                                      style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 20),
-                                    ),
+                        Row(
+                          children: [
+                            Container(
+                              width: 54,
+                              height: 54,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                                color: lightPinkBg,
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: student['avatar'].isNotEmpty
+                                    ? Image.network(student['avatar'], fit: BoxFit.cover)
+                                    : Center(
+                                        child: Text(
+                                          student['first_name'].isNotEmpty ? student['first_name'][0] : 'S',
+                                          style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 20),
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
+                                    child: const Text("ACADEMY STUDENT", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1)),
                                   ),
-                          ),
+                                  const SizedBox(height: 5),
+                                  Text(
+                                    "${student['first_name']} ${student['last_name']}",
+                                    style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(student['email'], style: const TextStyle(color: textGrey, fontSize: 10), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        const SizedBox(height: 14),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: cardBorder.withOpacity(0.7),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: cardBorder, width: 1.5),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                                child: const Text("ACADEMY STUDENT", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1)),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                "${student['first_name']} ${student['last_name']}",
-                                style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(student['email'], style: const TextStyle(color: textGrey, fontSize: 10), maxLines: 1, overflow: TextOverflow.ellipsis),
+                              const Text("Wallet Balance", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey)),
+                              Text("\$${student['wallet'].toStringAsFixed(2)}", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Colors.green.shade700)),
                             ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 14),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: cardBorder.withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: cardBorder, width: 1.5),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text("Wallet Balance", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey)),
-                          Text("\$${student['wallet'].toStringAsFixed(2)}", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Colors.green.shade700)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
+                  ),
+                  const SizedBox(height: 16),
 
-              // ================= 2. DAILY STREAK & LEARNING HOURS (RESPONSIVE) =================
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  bool isSmall = constraints.maxWidth < 340;
-                  if (isSmall) {
-                    return Column(
-                      children: [
-                        _buildMetricCard("DAILY STREAK", "${stats['dailyStreak']} Days", "🔥", Colors.amber),
-                        const SizedBox(height: 10),
-                        _buildMetricCard("STUDY HOURS", "${stats['learningHours']} Hrs", Icons.access_time_rounded, primaryPink),
-                      ],
-                    );
-                  }
-                  return Row(
+                  // ================= 2. DAILY STREAK =================
+                  Row(
                     children: [
                       Expanded(child: _buildMetricCard("DAILY STREAK", "${stats['dailyStreak']} Days", "🔥", Colors.amber)),
                       const SizedBox(width: 10),
-                      Expanded(child: _buildMetricCard("STUDY HOURS", "${stats['learningHours']} Hrs", Icons.access_time_rounded, primaryPink)),
+                      Expanded(child: _buildMetricCard("LONGEST STREAK", "${stats['longestStreak']} Days", "⚡", primaryPink)),
                     ],
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
+                  ),
+                  const SizedBox(height: 16),
 
-              // ================= 3. COLORFUL STATS GRID (RESPONSIVE) =================
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  int crossAxisCount = constraints.maxWidth > 500 ? 3 : 3;
-                  return GridView.count(
-                    crossAxisCount: crossAxisCount,
+                  // ================= 3. STATS GRID =================
+                  GridView.count(
+                    crossAxisCount: 3,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
-                    childAspectRatio: constraints.maxWidth > 500 ? 1.4 : 1.05,
+                    childAspectRatio: 1.05,
                     children: [
                       _buildStatCard("Enrolled", "${stats['enrolledCourses']}", Icons.menu_book_rounded, Colors.indigo),
-                      _buildStatCard("Score", "${stats['totalScore']}", Icons.bolt_rounded, primaryPink),
+                      _buildStatCard("Score", "${student['total_score']}", Icons.bolt_rounded, primaryPink),
                       _buildStatCard("Certs", "${stats['certificates']}", Icons.emoji_events_rounded, Colors.green.shade700),
                     ],
-                  );
-                },
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ================= 4. CONTINUE LEARNING =================
+                  const Text("Continue Learning", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                  const SizedBox(height: 10),
+                  activeCourse != null
+                      ? Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: surfaceWhite,
+                            borderRadius: BorderRadius.circular(22),
+                            border: Border.all(color: cardBorder, width: 1.5),
+                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                          ),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 50,
+                                height: 50,
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    CircularProgressIndicator(
+                                      value: activeCourse!['progress'] / 100,
+                                      backgroundColor: cardBorder,
+                                      valueColor: const AlwaysStoppedAnimation<Color>(primaryPink),
+                                      strokeWidth: 5,
+                                    ),
+                                    Center(
+                                      child: Text(
+                                        "${activeCourse!['progress']}%",
+                                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textDark),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(6)),
+                                      child: const Text("IN PROGRESS", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: primaryPink)),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      activeCourse!['title'],
+                                      style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Container(
+                          padding: const EdgeInsets.all(24),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(color: surfaceWhite, borderRadius: BorderRadius.circular(20), border: Border.all(color: cardBorder, width: 1.5)),
+                          child: const Text("You haven't enrolled in any courses yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
+                  const SizedBox(height: 20),
+
+                  // ================= 5. LIVE CLASSES =================
+                  const Text("Active Live Campus Classes", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                  const SizedBox(height: 10),
+                  activeClasses.isNotEmpty
+                      ? ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: activeClasses.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final liveClass = activeClasses[index];
+
+                            return GestureDetector(
+                              onTap: () => _showSessionActionModal(liveClass),
+                              child: Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: surfaceWhite,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: cardBorder, width: 1.5),
+                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(10),
+                                            decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(12)),
+                                            child: const Icon(Icons.live_tv_rounded, color: primaryPink, size: 18),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(liveClass['title'], style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                                const SizedBox(height: 2),
+                                                Text(liveClass['time'], style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                      decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(10)),
+                                      child: const Text("Join 🚀", style: TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : Container(
+                          padding: const EdgeInsets.all(24),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(color: surfaceWhite, borderRadius: BorderRadius.circular(20), border: Border.all(color: cardBorder, width: 1.5)),
+                          child: const Text("No active class groups found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
+                  const SizedBox(height: 40),
+                ],
               ),
-              const SizedBox(height: 20),
-
-              // ================= 4. CONTINUE LEARNING WITH PROGRESS CIRCLE =================
-              const Text("Continue Learning", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
-              const SizedBox(height: 10),
-              activeCourse != null
-                  ? Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: surfaceWhite,
-                        borderRadius: BorderRadius.circular(22),
-                        border: Border.all(color: cardBorder, width: 1.5),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
-                      ),
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 50,
-                            height: 50,
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                CircularProgressIndicator(
-                                  value: activeCourse!['progress'] / 100,
-                                  backgroundColor: cardBorder,
-                                  valueColor: const AlwaysStoppedAnimation<Color>(primaryPink),
-                                  strokeWidth: 5,
-                                ),
-                                Center(
-                                  child: Text(
-                                    "${activeCourse!['progress']}%",
-                                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textDark),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(6)),
-                                  child: const Text("IN PROGRESS", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: primaryPink)),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  activeCourse!['title'],
-                                  style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : Container(
-                      padding: const EdgeInsets.all(24),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(color: surfaceWhite, borderRadius: BorderRadius.circular(20), border: Border.all(color: cardBorder, width: 1.5)),
-                      child: const Text("You haven't enrolled in any courses yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
-                    ),
-              const SizedBox(height: 20),
-
-              // ================= 5. UPCOMING & MISSED CLASSES =================
-              const Text("Upcoming & Recent Classes", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
-              const SizedBox(height: 10),
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: upcomingClasses.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 10),
-                itemBuilder: (context, index) {
-                  final liveClass = upcomingClasses[index];
-                  bool isMissed = liveClass['isMissed'];
-
-                  return GestureDetector(
-                    onTap: () => _showSessionActionModal(liveClass),
-                    child: Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: surfaceWhite,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: isMissed ? Colors.red.withOpacity(0.3) : cardBorder, width: 1.5),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(color: isMissed ? Colors.red.withOpacity(0.1) : lightPinkBg, borderRadius: BorderRadius.circular(12)),
-                                  child: Icon(isMissed ? Icons.video_camera_front_rounded : Icons.live_tv_rounded, color: isMissed ? Colors.redAccent : primaryPink, size: 18),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(liveClass['title'], style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                      const SizedBox(height: 2),
-                                      Text("${liveClass['time']} • ${liveClass['instructor']}", style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(color: isMissed ? Colors.red.withOpacity(0.1) : lightPinkBg, borderRadius: BorderRadius.circular(10)),
-                            child: Text(isMissed ? "Review" : "Join 🚀", style: TextStyle(color: isMissed ? Colors.redAccent : primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 40),
-            ],
+            ),
           ),
         ),
       ),
@@ -561,6 +531,150 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ============================================================================
+// ویجت کاستوم لودینگ آکادمی (انیمیشن دختر دانشجو)
+// ============================================================================
+
+class AcademyLoadingOverlay extends StatelessWidget {
+  final bool isLoading;
+  final String message;
+  final Widget child;
+
+  const AcademyLoadingOverlay({
+    super.key,
+    required this.isLoading,
+    required this.child,
+    this.message = "LOADING...",
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        child,
+        if (isLoading)
+          Container(
+            color: Colors.white.withOpacity(0.95),
+            alignment: Alignment.center,
+            child: _AcademyThinkingLoadingAnimation(message: message),
+          ),
+      ],
+    );
+  }
+}
+
+class _AcademyThinkingLoadingAnimation extends StatefulWidget {
+  final String message;
+  const _AcademyThinkingLoadingAnimation({required this.message});
+
+  @override
+  State<_AcademyThinkingLoadingAnimation> createState() => _AcademyThinkingLoadingAnimationState();
+}
+
+class _AcademyThinkingLoadingAnimationState extends State<_AcademyThinkingLoadingAnimation> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(duration: const Duration(seconds: 2), vsync: this)..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            RotationTransition(
+              turns: _controller,
+              child: Container(
+                width: 130,
+                height: 130,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: SweepGradient(
+                    colors: [
+                      const Color(0xFFC2185B).withOpacity(0.0),
+                      const Color(0xFFC2185B).withOpacity(0.8),
+                      const Color(0xFFC2185B),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              width: 110,
+              height: 110,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFCE4EC),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFC2185B).withOpacity(0.25), width: 2),
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Icon(
+                    Icons.girl_rounded,
+                    size: 54,
+                    color: Color(0xFFC2185B),
+                  ),
+                  Positioned(
+                    bottom: 12,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 6),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.menu_book_rounded,
+                        size: 14,
+                        color: Color(0xFFC2185B),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        Text(
+          widget.message,
+          style: const TextStyle(
+            color: Color(0xFF111827),
+            fontSize: 11,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2,
+            decoration: TextDecoration.none,
+          ),
+        ),
+      ],
     );
   }
 }

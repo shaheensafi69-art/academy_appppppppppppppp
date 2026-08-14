@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+// ایمپورت صفحات پنل ادمین
 import 'admin_dashboard_screen.dart';
 import 'manage_students_screen.dart';
 import 'manage_teachers_screen.dart';
@@ -13,6 +14,13 @@ import 'announcements_screen.dart';
 import 'live_classes_screen.dart';
 import 'tickets_screen.dart';
 import 'settings_screen.dart';
+
+// ایمپورت صفحات سوشال و فید ادمین
+import 'admin_feed_screen.dart'; 
+import 'admin_friends_screen.dart';
+import 'create_post_screen.dart';
+import 'user_profile_screen.dart';
+
 import '../../../core/routing/auth_gate.dart';
 
 class AdminMainLayout extends StatefulWidget {
@@ -30,7 +38,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   int _currentIndex = 0;
   Map<String, dynamic>? _userProfile;
 
-  // پالت رنگی حرفه‌ای هماهنگ با پنل‌های دیگر
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
   static const Color surfaceWhite = Colors.white;
@@ -38,7 +45,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   static const Color textGrey = Color(0xFF6B7280);
   static const Color cardBorder = Color(0xFFE5E7EB);
 
-  // لیست اسکرین‌های ادمین
+  // لیست اسکرین‌های ادمین با ایندکس‌های دقیق
   late final List<Widget> _screens = [
     const AdminDashboardScreen(), // 0: Overview
     const ManageStudentsScreen(), // 1: Students
@@ -51,6 +58,10 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     const LiveClassesScreen(),    // 8: Live Studio
     const TicketsScreen(),        // 9: Tickets
     const AdminSettingsScreen(),  // 10: Settings
+    CreatePostScreen(onPostSuccess: () => setState(() => _currentIndex = 12)), // 11: Create Post
+    const AdminFeedScreen(),      // 12: Academy Feed (فید ادمین)
+    const AdminFriendsScreen(),   // 13: Admin Network
+    const UserProfileScreen(),    // 14: Admin Profile
   ];
 
   // لیست گزینه‌های منوی کامل ادمین
@@ -64,57 +75,35 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     {"name": "Honors", "icon": Icons.emoji_events_rounded, "index": 6, "color": const Color(0xFFFFA000)},
     {"name": "Notices", "icon": Icons.campaign_rounded, "index": 7, "color": const Color(0xFFFB8C00)},
     {"name": "Live Studio", "icon": Icons.live_tv_rounded, "index": 8, "color": const Color(0xFFE53935)},
-    {"name": "Support", "icon": Icons.headset_mic_rounded, "index": 9, "color": primaryPink},
+    {"name": "Academy Feed", "icon": Icons.dynamic_feed_rounded, "index": 12, "color": const Color(0xFFD81B60)},
+    {"name": "Support Tickets", "icon": Icons.headset_mic_rounded, "index": 9, "color": primaryPink},
     {"name": "Settings", "icon": Icons.settings_rounded, "index": 10, "color": textGrey},
   ];
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAdminAccess();
-    });
+    _checkAdminAccess();
   }
 
   Future<void> _checkAdminAccess() async {
     final user = supabase.auth.currentUser;
-    if (user == null) {
-      _logout();
-      return;
-    }
-
+    if (user == null) { _logout(); return; }
     try {
-      final profile = await supabase
-          .from('profiles')
-          .select('first_name, last_name, avatar_url, role')
-          .eq('id', user.id)
-          .maybeSingle();
-
-      if (profile != null) {
-        if (profile['role'] != 'admin' && profile['role'] != 'super_admin') {
-          _logout();
-          return;
-        }
-        setState(() {
-          _userProfile = profile;
-          _isLoading = false;
-        });
-      } else {
-        _logout();
-      }
-    } catch (e) {
-      _logout();
-    }
+      final profile = await supabase.from('profiles').select('first_name, last_name, avatar_url, role').eq('id', user.id).maybeSingle();
+      if (profile != null && (profile['role'] == 'admin' || profile['role'] == 'super_admin')) {
+        setState(() { _userProfile = profile; _isLoading = false; });
+      } else { _logout(); }
+    } catch (e) { _logout(); }
   }
 
   void _logout() async {
     await supabase.auth.signOut();
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const AuthGate()),
-      );
-    }
+    if (mounted) Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const AuthGate()));
   }
+
+  // بررسی اینکه ادمین در بخش سوشال (فید، نتورک، پست، پروفایل) است یا بخش مدیریتی
+  bool get _isInSocialSection => _currentIndex == 11 || _currentIndex == 12 || _currentIndex == 13 || _currentIndex == 14;
 
   @override
   Widget build(BuildContext context) {
@@ -127,10 +116,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
             children: [
               const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 16),
-              Text(
-                "INITIALIZING COMMAND CENTER...",
-                style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2),
-              ),
+              Text("INITIALIZING COMMAND CENTER...", style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
             ],
           ),
         ),
@@ -138,7 +124,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     }
 
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    final contentBottomPadding = bottomPadding + 85;
+    final contentBottomPadding = bottomPadding > 0 ? bottomPadding + 85 : 85.0;
 
     return Scaffold(
       backgroundColor: surfaceWhite,
@@ -146,31 +132,23 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // 1. محتوای اصلی صفحات
           Positioned.fill(
             child: Padding(
               padding: EdgeInsets.only(bottom: contentBottomPadding),
-              child: IndexedStack(
-                index: _currentIndex,
-                children: _screens,
-              ),
+              child: IndexedStack(index: _currentIndex, children: _screens),
             ),
           ),
-
-          // 2. نوار ناوبری پایین اختصاصی (دقیقاً شامل 4 دکمه: Overview, Students, Faculty, Menu)
           Positioned(
-            bottom: bottomPadding > 0 ? bottomPadding + 8 : 16.0,
+            bottom: bottomPadding > 0 ? bottomPadding + 4 : 12.0,
             left: 16,
             right: 16,
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 500),
+                constraints: const BoxConstraints(maxWidth: 800),
                 child: _buildModernBottomNav(),
               ),
             ),
           ),
-
-          // 3. منوی تمام‌صفحه جدید با دیزاین لوکس
           if (_isMenuOpen)
             Positioned.fill(
               child: _buildModernFullScreenMenu(),
@@ -180,75 +158,97 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     );
   }
 
-  // طراحی جدید و فیکس‌شده نوار ناوبری با ۴ دکمه اصلی
   Widget _buildModernBottomNav() {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(32),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
         child: Container(
-          height: 68,
+          height: 65,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
             color: surfaceWhite.withOpacity(0.92),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: cardBorder, width: 1.5),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 20, offset: const Offset(0, 8)),
-            ],
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: primaryPink.withOpacity(0.18), width: 1.5),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 20, offset: const Offset(0, 8))],
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              // 1. Overview Button
-              Expanded(child: _buildNavTab(0, "Overview", Icons.dashboard_rounded)),
-              
-              // 2. Students Button
-              Expanded(child: _buildNavTab(1, "Students", Icons.school_rounded)),
-              
-              // 3. Faculty Button
-              Expanded(child: _buildNavTab(2, "Faculty", Icons.psychology_rounded)),
-              
-              // 4. Menu Button (برای دسترسی به بقیه بخش‌ها)
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _isMenuOpen = true),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    decoration: BoxDecoration(
-                      color: _isMenuOpen ? lightPinkBg : Colors.transparent,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.grid_view_rounded, color: primaryPink, size: 22),
-                        const SizedBox(height: 3),
-                        Text(
-                          "MENU",
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w900,
-                            color: primaryPink,
-                            letterSpacing: 0.8,
+          child: _isInSocialSection
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(child: _buildNavTab(12, "Feed", Icons.dynamic_feed_rounded, color: primaryPink)),
+                    Expanded(child: _buildNavTab(13, "Network", Icons.people_alt_rounded, color: primaryPink)),
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => setState(() => _currentIndex = 11), // دکمه ایجاد پست (+)
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          decoration: BoxDecoration(color: primaryPink, borderRadius: BorderRadius.circular(20)),
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_rounded, color: Colors.white, size: 22),
+                              SizedBox(height: 1),
+                              Text("POST", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.8)),
+                            ],
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                    Expanded(child: _buildNavTab(14, "Profile", Icons.person_rounded, color: primaryPink)),
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => setState(() => _currentIndex = 0), // بازگشت به Overview
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.exit_to_app_rounded, color: Colors.redAccent, size: 19),
+                            SizedBox(height: 1),
+                            Text("EXIT", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.redAccent, letterSpacing: 0.8)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(child: _buildNavTab(0, "Overview", Icons.dashboard_rounded, color: primaryPink)),
+                    Expanded(child: _buildNavTab(1, "Students", Icons.school_rounded, color: const Color(0xFF00897B))),
+                    // دکمه فید مستقیماً در نوار پایین قرار گرفت
+                    Expanded(child: _buildNavTab(12, "Feed", Icons.dynamic_feed_rounded, color: primaryPink)),
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => setState(() => _isMenuOpen = true),
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: _isMenuOpen ? lightPinkBg : Colors.transparent,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.grid_view_rounded, color: primaryPink, size: 22),
+                              SizedBox(height: 3),
+                              Text("MENU", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 0.8)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
         ),
       ),
     );
   }
 
-  // ویجت کمکی برای تب‌های ناوبری
-  Widget _buildNavTab(int index, String title, IconData icon) {
+  Widget _buildNavTab(int index, String title, IconData icon, {required Color color}) {
     bool isActive = _currentIndex == index && !_isMenuOpen;
     return GestureDetector(
       onTap: () {
@@ -257,28 +257,26 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
           _isMenuOpen = false;
         });
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 6),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
         decoration: BoxDecoration(
-          color: isActive ? lightPinkBg : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
+          color: isActive ? color.withOpacity(0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(18),
         ),
+        alignment: Alignment.center,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: isActive ? primaryPink : textGrey,
-              size: isActive ? 22 : 20,
-            ),
-            const SizedBox(height: 3),
+            Icon(icon, color: isActive ? color : textGrey, size: isActive ? 22 : 19),
+            const SizedBox(height: 2),
             Text(
               title.toUpperCase(),
               style: TextStyle(
-                fontSize: 8,
+                fontSize: 7,
                 fontWeight: FontWeight.w900,
-                color: isActive ? primaryPink : textGrey,
-                letterSpacing: 0.5,
+                color: isActive ? color : textGrey,
+                letterSpacing: 0.8,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -289,7 +287,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     );
   }
 
-  // دیزاین کاملاً جدید و یکدست برای منوی تمام‌صفحه ادمین
   Widget _buildModernFullScreenMenu() {
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -304,7 +301,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
           SafeArea(
             child: Column(
               children: [
-                // هدر منو
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                   child: Row(
@@ -322,15 +318,13 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                         onTap: () => setState(() => _isMenuOpen = false),
                         child: Container(
                           padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(color: cardBorder, shape: BoxShape.circle),
+                          decoration: BoxDecoration(color: cardBorder.withOpacity(0.5), shape: BoxShape.circle),
                           child: const Icon(Icons.close_rounded, color: textDark, size: 20),
                         ),
                       ),
                     ],
                   ),
                 ),
-                
-                // لیست شبکه‌ای تمام گزینه‌های منو
                 Expanded(
                   child: Center(
                     child: ConstrainedBox(
@@ -414,8 +408,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                     ),
                   ),
                 ),
-                
-                // پروفایل و دکمه خروج در پایین منو
                 Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 800),

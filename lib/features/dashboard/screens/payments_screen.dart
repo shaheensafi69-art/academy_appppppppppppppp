@@ -50,6 +50,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
   List<TransactionItem> transactions = [];
   
   final TextEditingController _couponController = TextEditingController();
+  final FocusNode _couponFocus = FocusNode();
 
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
@@ -67,6 +68,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
   @override
   void dispose() {
     _couponController.dispose();
+    _couponFocus.dispose();
     super.dispose();
   }
 
@@ -76,7 +78,6 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
-      // واکشی تراکنش‌های مالی شاگرد از جدول transactions بر اساس student_id
       final res = await supabase
           .from("transactions")
           .select("*")
@@ -96,8 +97,9 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     if (code.isEmpty) return;
 
     setState(() => isApplyingCoupon = true);
+    _couponFocus.unfocus(); // بستن کیبورد
+
     try {
-      // بررسی کد تخفیف از جدول coupons
       final res = await supabase
           .from("coupons")
           .select("*")
@@ -135,61 +137,97 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
       case 'failed':
       case 'cancelled':
         return Colors.redAccent;
-      default:
+      case 'pending':
+      case 'processing':
         return Colors.amber.shade800;
+      default:
+        return textGrey;
     }
   }
 
+  IconData _getTransactionIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'deposit':
+        return Icons.arrow_downward_rounded;
+      case 'withdrawal':
+        return Icons.arrow_upward_rounded;
+      case 'refund':
+        return Icons.settings_backup_restore_rounded;
+      default:
+        return Icons.payment_rounded;
+    }
+  }
+
+  // نمایش رسید دیجیتال بسیار حرفه‌ای
   void _showTransactionDetails(TransactionItem tx) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: surfaceWhite,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) {
         final statusColor = _getStatusColor(tx.status);
-        return Padding(
-          padding: const EdgeInsets.all(24.0),
+        return Container(
+          decoration: const BoxDecoration(
+            color: surfaceWhite,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("Transaction Details", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: textGrey),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
+              Container(width: 40, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))),
+              const SizedBox(height: 24),
+              // هدر رسید
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(color: statusColor.withOpacity(0.1), shape: BoxShape.circle),
+                child: Icon(_getTransactionIcon(tx.transactionType), color: statusColor, size: 32),
               ),
-              const Divider(color: cardBorder, height: 20),
-              _detailRow("Transaction ID:", tx.id),
-              const SizedBox(height: 10),
-              _detailRow("Type:", tx.transactionType.toUpperCase()),
-              const SizedBox(height: 10),
-              _detailRow("Amount:", "\$${tx.amount.toStringAsFixed(2)} ${tx.currency}"),
-              const SizedBox(height: 10),
-              _detailRow("Payment Gateway:", tx.paymentGateway.toUpperCase()),
-              const SizedBox(height: 10),
-              _detailRow("Reference ID:", tx.referenceId),
-              const SizedBox(height: 10),
-              _detailRow("Date & Time:", tx.createdAt.replaceFirst('T', ' ').substring(0, 19)),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("Status:", style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.bold)),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(color: statusColor.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
-                    child: Text(tx.status.toUpperCase(), style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.w900)),
-                  ),
-                ],
+              const SizedBox(height: 16),
+              Text("\$${tx.amount.toStringAsFixed(2)}", style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: textDark, letterSpacing: -1)),
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(color: statusColor.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+                child: Text(tx.status.toUpperCase(), style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1)),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 24),
+              
+              // خط چین
+              Row(
+                children: List.generate(30, (index) => Expanded(
+                  child: Container(color: index % 2 == 0 ? Colors.transparent : cardBorder, height: 2),
+                )),
+              ),
+              const SizedBox(height: 24),
+
+              // جزئیات
+              _detailRow("Transaction ID", tx.id),
+              const SizedBox(height: 16),
+              _detailRow("Type", tx.transactionType.toUpperCase()),
+              const SizedBox(height: 16),
+              _detailRow("Gateway", tx.paymentGateway.toUpperCase()),
+              const SizedBox(height: 16),
+              _detailRow("Reference", tx.referenceId),
+              const SizedBox(height: 16),
+              _detailRow("Date & Time", tx.createdAt.replaceFirst('T', ' ').substring(0, 16)),
+              
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: cardBorder,
+                    foregroundColor: textDark,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("CLOSE", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900)),
+                ),
+              ),
+              const SizedBox(height: 16),
             ],
           ),
         );
@@ -201,8 +239,8 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.bold)),
-        Text(value, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900)),
+        Text(label, style: const TextStyle(color: textGrey, fontSize: 13, fontWeight: FontWeight.w600)),
+        Text(value, style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.w900)),
       ],
     );
   }
@@ -218,9 +256,9 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // هدر صفحه
+              // --- هدر صفحه ---
               Container(
-                padding: const EdgeInsets.all(22),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
@@ -230,95 +268,98 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
                   boxShadow: [
-                    BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                    BoxShadow(color: primaryPink.withOpacity(0.06), blurRadius: 25, offset: const Offset(0, 8)),
                   ],
                 ),
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: lightPinkBg,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
                       ),
-                      child: const Icon(Icons.receipt_long_rounded, color: primaryPink, size: 24),
+                      child: const Icon(Icons.receipt_long_rounded, color: primaryPink, size: 28),
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: 16),
                     const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Payments & Invoices", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                          SizedBox(height: 3),
-                          Text("Track transaction history, receipts, and apply discount coupons.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
+                          Text("Payments & Invoices", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark, letterSpacing: -0.5)),
+                          SizedBox(height: 4),
+                          Text("Track transaction history, receipts, and apply discount coupons.", style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
                         ],
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-              // بخش اعمال کد تخفیف
-              const Text("Discount & Scholarships", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+              // --- بخش اعمال کد تخفیف ---
+              const Text("Discount & Scholarships", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
               const SizedBox(height: 12),
               Container(
-                padding: const EdgeInsets.all(18),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: surfaceWhite,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: cardBorder, width: 1.5),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
                 ),
                 child: Row(
                   children: [
                     Expanded(
                       child: TextField(
                         controller: _couponController,
-                        style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                        focusNode: _couponFocus,
+                        cursorColor: primaryPink,
+                        // رنگ تیره اجباری برای خوانایی در حالت لایت‌مود
+                        style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900),
                         decoration: InputDecoration(
                           hintText: "Enter coupon code...",
-                          hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                          hintStyle: const TextStyle(color: textGrey, fontSize: 13, fontWeight: FontWeight.w500),
                           filled: true,
                           fillColor: cardBorder.withOpacity(0.5),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder, width: 1.5)),
-                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder, width: 1.5)),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryPink,
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                       ),
                       onPressed: isApplyingCoupon ? null : _applyCoupon,
                       child: isApplyingCoupon
-                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : const Text("Apply", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : const Text("Apply", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900)),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 30),
 
-              // بخش تاریخچه تراکنش‌ها با تمام جزئیات
-              const Text("Transaction History", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+              // --- بخش تاریخچه تراکنش‌ها ---
+              const Text("Transaction History", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
               const SizedBox(height: 12),
 
               isLoading
-                  ? const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5)))
+                  ? const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator(color: primaryPink, strokeWidth: 3)))
                   : transactions.isNotEmpty
                       ? ListView.separated(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: transactions.length,
-                          separatorBuilder: (_, _) => const SizedBox(height: 12),
+                          separatorBuilder: (_, __) => const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             final tx = transactions[index];
                             final statusColor = _getStatusColor(tx.status);
@@ -330,7 +371,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                                   color: surfaceWhite,
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(color: cardBorder, width: 1.5),
-                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 3))],
                                 ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -338,19 +379,19 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                                     Row(
                                       children: [
                                         Container(
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(12)),
-                                          child: const Icon(Icons.payment_rounded, color: primaryPink, size: 20),
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(14)),
+                                          child: Icon(_getTransactionIcon(tx.transactionType), color: primaryPink, size: 20),
                                         ),
-                                        const SizedBox(width: 12),
+                                        const SizedBox(width: 16),
                                         Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text(tx.transactionType.toUpperCase(), style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
+                                            Text(tx.transactionType.toUpperCase(), style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                            const SizedBox(height: 4),
+                                            Text("Gateway: ${tx.paymentGateway}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                                             const SizedBox(height: 2),
-                                            Text("Gateway: ${tx.paymentGateway}", style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.bold)),
-                                            const SizedBox(height: 1),
-                                            Text(tx.createdAt.split('T')[0], style: const TextStyle(color: textGrey, fontSize: 8, fontWeight: FontWeight.w500)),
+                                            Text(tx.createdAt.split('T')[0], style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500)),
                                           ],
                                         ),
                                       ],
@@ -358,12 +399,12 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.end,
                                       children: [
-                                        Text("\$${tx.amount.toStringAsFixed(2)} ${tx.currency}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
-                                        const SizedBox(height: 4),
+                                        Text("\$${tx.amount.toStringAsFixed(2)}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                                        const SizedBox(height: 6),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                          decoration: BoxDecoration(color: statusColor.withOpacity(0.12), borderRadius: BorderRadius.circular(6)),
-                                          child: Text(tx.status.toUpperCase(), style: TextStyle(color: statusColor, fontSize: 8, fontWeight: FontWeight.w900)),
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(color: statusColor.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+                                          child: Text(tx.status.toUpperCase(), style: TextStyle(color: statusColor, fontSize: 9, fontWeight: FontWeight.w900)),
                                         ),
                                       ],
                                     ),
@@ -374,16 +415,22 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                           },
                         )
                       : Container(
-                          padding: const EdgeInsets.all(40),
+                          padding: const EdgeInsets.all(50),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: surfaceWhite,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(24),
                             border: Border.all(color: cardBorder, width: 1.5),
                           ),
-                          child: const Text("No payment history or transactions found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                          child: const Column(
+                            children: [
+                              Icon(Icons.receipt_long_outlined, size: 40, color: textGrey),
+                              SizedBox(height: 12),
+                              Text("No payment history found.", style: TextStyle(color: textGrey, fontSize: 13, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
                         ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 80), // فاصله برای Bottom Nav
             ],
           ),
         ),

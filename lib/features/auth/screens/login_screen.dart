@@ -22,7 +22,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   bool showPassword = false;
   bool rememberMe = false;
   String? errorMsg;
-  String selectedRoleTab = 'student';
 
   Map<String, dynamic>? userData;
   Timer? _debounce;
@@ -30,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   late AnimationController _floatController;
   late Animation<Offset> _floatAnimation;
 
-  // Light Pink & Pure Surface Palette
+  // پالت رنگی پرمیوم و لایت آکادمی
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
   static const Color surfaceWhite = Colors.white;
@@ -61,6 +60,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     super.dispose();
   }
 
+  // جستجوی هوشمند پروفایل کاربر به محض وارد کردن ایمیل
   void _onEmailChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
 
@@ -81,16 +81,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         if (data != null && mounted) {
           setState(() {
             userData = data;
-            final role = data['role'] as String?;
-            if (role != null) {
-              if (role == 'admin' || role == 'super_admin') {
-                selectedRoleTab = 'super_admin';
-              } else if (role == 'teacher' || role == 'mentor') {
-                selectedRoleTab = 'teacher';
-              } else {
-                selectedRoleTab = 'student';
-              }
-            }
           });
         } else {
           setState(() => userData = null);
@@ -120,38 +110,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         password: passwordCtrl.text,
       );
 
-      if (authResponse.session != null) {
-        final profileResponse = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', authResponse.session!.user.id)
-            .maybeSingle();
-
-        final finalRole = profileResponse?['role'] ?? 'student';
-
-        bool isMatched = false;
-        if (selectedRoleTab == 'super_admin' && (finalRole == 'admin' || finalRole == 'super_admin')) {
-          isMatched = true;
-        } else if (selectedRoleTab == 'teacher' && (finalRole == 'teacher' || finalRole == 'mentor')) {
-          isMatched = true;
-        } else if (selectedRoleTab == 'student' && finalRole == 'student') {
-          isMatched = true;
-        }
-
-        if (!isMatched && finalRole != 'super_admin') {
-          await supabase.auth.signOut();
-          setState(() {
-            errorMsg = "Access Denied: Role mismatch ($finalRole).";
-            isLoading = false;
-          });
-          return;
-        }
-
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const AuthGate()),
-          );
-        }
+      if (authResponse.session != null && mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const AuthGate()),
+        );
       }
     } on AuthException catch (e) {
       setState(() {
@@ -322,25 +284,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               "Step into your digital campus.",
                               style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w500),
                             ),
-                            const SizedBox(height: 20),
-
-                            // Role Selection Tabs
-                            Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: cardBorder.withOpacity(0.6),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: cardBorder, width: 1.2),
-                              ),
-                              child: Row(
-                                children: [
-                                  _buildRoleTab("Student", "student"),
-                                  _buildRoleTab("Instructor", "teacher"),
-                                  _buildRoleTab("Admin", "super_admin"),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 18),
+                            const SizedBox(height: 24),
 
                             // Main Login Card
                             Container(
@@ -380,32 +324,54 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                     ),
                                   ],
 
-                                  // User Avatar Preview when Email Matched
+                                  // User Avatar Preview & Detected Role Badge when Email Matched
                                   if (userData != null) ...[
                                     Center(
                                       child: Column(
                                         children: [
-                                          CircleAvatar(
-                                            radius: 24,
-                                            backgroundColor: lightPinkBg,
-                                            backgroundImage: (userData!['avatar_url'] != null &&
-                                                    userData!['avatar_url'].toString().isNotEmpty)
-                                                ? NetworkImage(userData!['avatar_url'])
-                                                : null,
-                                            child: (userData!['avatar_url'] == null ||
-                                                    userData!['avatar_url'].toString().isEmpty)
-                                                ? Text(
-                                                    userData!['first_name']?[0] ?? 'U',
-                                                    style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 16),
-                                                  )
-                                                : null,
+                                          Stack(
+                                            children: [
+                                              CircleAvatar(
+                                                radius: 28,
+                                                backgroundColor: lightPinkBg,
+                                                backgroundImage: (userData!['avatar_url'] != null &&
+                                                        userData!['avatar_url'].toString().isNotEmpty)
+                                                    ? NetworkImage(userData!['avatar_url'])
+                                                    : null,
+                                                child: (userData!['avatar_url'] == null ||
+                                                        userData!['avatar_url'].toString().isEmpty)
+                                                    ? Text(
+                                                        userData!['first_name']?[0] ?? 'U',
+                                                        style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 18),
+                                                      )
+                                                    : null,
+                                              ),
+                                            ],
                                           ),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            "Welcome back, ${userData!['first_name'] ?? ''}!",
-                                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textDark),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                "${userData!['first_name'] ?? ''} ${userData!['last_name'] ?? ''}",
+                                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textDark),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                                decoration: BoxDecoration(
+                                                  color: lightPinkBg,
+                                                  borderRadius: BorderRadius.circular(6),
+                                                  border: Border.all(color: primaryPink.withOpacity(0.3)),
+                                                ),
+                                                child: Text(
+                                                  (userData!['role'] ?? 'student').toString().toUpperCase(),
+                                                  style: const TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                          const SizedBox(height: 14),
+                                          const SizedBox(height: 16),
                                         ],
                                       ),
                                     ),
@@ -445,7 +411,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   ),
                                   const SizedBox(height: 12),
 
-                                  // Remember Me Checkbox Row (با بردهای صورتی و ظاهر شیک)
+                                  // Remember Me Checkbox Row
                                   Row(
                                     children: [
                                       SizedBox(
@@ -509,23 +475,21 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                     ),
                                   ),
 
-                                  // Register Link for Students
-                                  if (selectedRoleTab == 'student') ...[
-                                    const SizedBox(height: 18),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        const Text("New here? ", style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w500)),
-                                        GestureDetector(
-                                          onTap: () => Navigator.push(
-                                            context,
-                                            MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                                          ),
-                                          child: const Text("Create account", style: TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 12)),
+                                  // Register Link
+                                  const SizedBox(height: 18),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text("New here? ", style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w500)),
+                                      GestureDetector(
+                                        onTap: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(builder: (_) => const RegisterScreen()),
                                         ),
-                                      ],
-                                    ),
-                                  ],
+                                        child: const Text("Create account", style: TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 12)),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -603,7 +567,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-            ?extraLabel,
+            if (extraLabel != null) extraLabel,
           ],
         ),
         const SizedBox(height: 6),
@@ -611,7 +575,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           controller: controller,
           onChanged: onChanged,
           obscureText: isPassword && !showPassword,
-          cursorColor: primaryPink, // کرسر صورتی رنگ
+          cursorColor: primaryPink,
           style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             filled: true,
@@ -635,42 +599,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildRoleTab(String title, String role) {
-    bool isActive = selectedRoleTab == role;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => selectedRoleTab = role),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          padding: const EdgeInsets.symmetric(vertical: 9),
-          decoration: BoxDecoration(
-            color: isActive ? surfaceWhite : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: isActive
-                ? [
-                    BoxShadow(
-                      color: primaryPink.withOpacity(0.12),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : [],
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            title.toUpperCase(),
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.8,
-              color: isActive ? primaryPink : textGrey,
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

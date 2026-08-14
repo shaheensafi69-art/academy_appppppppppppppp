@@ -87,63 +87,72 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: surfaceWhite,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // هدر صفحه
-              Container(
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+    return AcademyLoadingOverlay(
+      isLoading: isLoading,
+      message: "LOADING CERTIFICATES...",
+      child: Scaffold(
+        backgroundColor: surfaceWhite,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [const Color(0xFFFFF0F5), surfaceWhite, lightPinkBg.withOpacity(0.2)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ================= هدر صفحه =================
+                  Container(
+                    padding: const EdgeInsets.all(22),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                      boxShadow: [
+                        BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: lightPinkBg,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                          ),
+                          child: const Icon(Icons.workspace_premium_rounded, color: primaryPink, size: 24),
+                        ),
+                        const SizedBox(width: 14),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("My Certificates", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                              SizedBox(height: 3),
+                              Text("View, download, and share your official academy achievements.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
-                  boxShadow: [
-                    BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: lightPinkBg,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
-                      ),
-                      child: const Icon(Icons.workspace_premium_rounded, color: primaryPink, size: 24),
-                    ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("My Certificates", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                          SizedBox(height: 3),
-                          Text("View, download, and share your official academy achievements.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-              const Text("Earned Credentials", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
-              const SizedBox(height: 12),
+                  const Text("Earned Credentials", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                  const SizedBox(height: 12),
 
-              isLoading
-                  ? const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5)))
-                  : certificates.isNotEmpty
+                  certificates.isNotEmpty
                       ? ListView.separated(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
@@ -265,8 +274,10 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
                           ),
                           child: const Text("No certificates earned yet. Complete courses to get certified!", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
                         ),
-              const SizedBox(height: 40),
-            ],
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -296,6 +307,150 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
           Text(subtitle, style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900)),
         ],
       ),
+    );
+  }
+}
+
+// ============================================================================
+// ویجت کاستوم لودینگ آکادمی
+// ============================================================================
+
+class AcademyLoadingOverlay extends StatelessWidget {
+  final bool isLoading;
+  final String message;
+  final Widget child;
+
+  const AcademyLoadingOverlay({
+    super.key,
+    required this.isLoading,
+    required this.child,
+    this.message = "LOADING...",
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        child,
+        if (isLoading)
+          Container(
+            color: Colors.white.withOpacity(0.95),
+            alignment: Alignment.center,
+            child: _AcademyThinkingLoadingAnimation(message: message),
+          ),
+      ],
+    );
+  }
+}
+
+class _AcademyThinkingLoadingAnimation extends StatefulWidget {
+  final String message;
+  const _AcademyThinkingLoadingAnimation({required this.message});
+
+  @override
+  State<_AcademyThinkingLoadingAnimation> createState() => _AcademyThinkingLoadingAnimationState();
+}
+
+class _AcademyThinkingLoadingAnimationState extends State<_AcademyThinkingLoadingAnimation> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(duration: const Duration(seconds: 2), vsync: this)..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            RotationTransition(
+              turns: _controller,
+              child: Container(
+                width: 130,
+                height: 130,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: SweepGradient(
+                    colors: [
+                      const Color(0xFFC2185B).withOpacity(0.0),
+                      const Color(0xFFC2185B).withOpacity(0.8),
+                      const Color(0xFFC2185B),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              width: 110,
+              height: 110,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFCE4EC),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFC2185B).withOpacity(0.25), width: 2),
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Icon(
+                    Icons.girl_rounded,
+                    size: 54,
+                    color: Color(0xFFC2185B),
+                  ),
+                  Positioned(
+                    bottom: 12,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 6),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.menu_book_rounded,
+                        size: 14,
+                        color: Color(0xFFC2185B),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        Text(
+          widget.message,
+          style: const TextStyle(
+            color: Color(0xFF111827),
+            fontSize: 11,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2,
+            decoration: TextDecoration.none,
+          ),
+        ),
+      ],
     );
   }
 }

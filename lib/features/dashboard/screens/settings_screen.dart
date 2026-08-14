@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:local_auth/local_auth.dart';
@@ -61,7 +62,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       if (res != null) {
         setState(() {
-          _userPin = res['pin_code'] ?? '';
+          _userPin = res['pin_code']?.toString() ?? '';
           _pinLockEnabled = _userPin.isNotEmpty;
           _biometricEnabled = res['is_biometric_enabled'] ?? false;
         });
@@ -73,7 +74,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // به‌روزرسانی تنظیمات امنیتی در دیتابیس
+  // به‌روزرسانی تنظیمات امنیتی در دیتابیس (اصلاح خطای سینتکس)
   Future<void> _saveSecuritySettingsToDb({String? pin, bool? biometric}) async {
     try {
       final user = supabase.auth.currentUser;
@@ -81,8 +82,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       final updateData = {
         'student_id': user.id,
-        'pin_code': ?pin,
-        'is_biometric_enabled': ?biometric,
+        'pin_code': pin ?? _userPin,
+        'is_biometric_enabled': biometric ?? _biometricEnabled,
         'updated_at': DateTime.now().toIso8601String(),
       };
 
@@ -92,20 +93,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // تغییر رمز عبور امن
+  // تغییر رمز عبور
   Future<void> _changePassword() async {
     if (_newPasswordController.text.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Password must be at least 6 characters."), backgroundColor: Colors.red),
+        const SnackBar(content: Text("Password must be at least 6 characters."), backgroundColor: Colors.redAccent),
       );
       return;
     }
 
+    setState(() => isSaving = true);
     try {
       await supabase.auth.updateUser(
         UserAttributes(password: _newPasswordController.text.trim()),
       );
       _newPasswordController.clear();
+      FocusScope.of(context).unfocus();
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Password changed successfully! 🔒"), backgroundColor: Colors.green),
@@ -114,9 +118,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error changing password: $e"), backgroundColor: Colors.red),
+          SnackBar(content: Text("Error changing password: $e"), backgroundColor: Colors.redAccent),
         );
       }
+    } finally {
+      if (mounted) setState(() => isSaving = false);
     }
   }
 
@@ -141,7 +147,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           }
         } else {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Biometrics not supported on this device."), backgroundColor: Colors.red));
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Biometrics not supported on this device."), backgroundColor: Colors.redAccent));
           }
         }
       } else {
@@ -153,33 +159,57 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // تنظیم پین‌کد امنیتی (PIN Lock)
+  // تنظیم پین‌کد امنیتی با دیزاین حرفه‌ای
   void _showSetPinDialog() {
     TextEditingController pinController = TextEditingController();
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text("Set Security PIN", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+        backgroundColor: surfaceWhite,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Column(
+          children: [
+            Icon(Icons.dialpad_rounded, color: primaryPink, size: 40),
+            SizedBox(height: 12),
+            Text("Set App PIN Lock", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: textDark)),
+          ],
+        ),
         content: TextField(
           controller: pinController,
           keyboardType: TextInputType.number,
           maxLength: 4,
           obscureText: true,
+          obscuringCharacter: '⬤',
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 24, letterSpacing: 16, fontWeight: FontWeight.bold, color: textDark),
           decoration: InputDecoration(
-            hintText: "Enter 4-digit PIN",
+            hintText: "••••",
+            hintStyle: const TextStyle(color: textGrey, letterSpacing: 16),
             filled: true,
             fillColor: cardBorder,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+            counterText: "",
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 2)),
           ),
         ),
+        actionsAlignment: MainAxisAlignment.center,
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: textGrey)),
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() => _pinLockEnabled = false); // برگشت به حالت خاموش در صورت انصراف
+            },
+            child: const Text("Cancel", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: primaryPink, foregroundColor: Colors.white, elevation: 0),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryPink, 
+              foregroundColor: Colors.white, 
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
             onPressed: () async {
               if (pinController.text.length == 4) {
                 setState(() {
@@ -191,9 +221,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PIN code successfully saved! 🔑"), backgroundColor: Colors.green));
                 }
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PIN must be 4 digits."), backgroundColor: Colors.redAccent));
               }
             },
-            child: const Text("Save PIN"),
+            child: const Text("Save PIN", style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -214,233 +246,319 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (isLoading) {
       return const Scaffold(
         backgroundColor: surfaceWhite,
-        body: Center(child: CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5)),
+        body: Center(child: CircularProgressIndicator(color: primaryPink, strokeWidth: 3)),
       );
     }
 
     return Scaffold(
       backgroundColor: surfaceWhite,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // هدر صفحه
-              Container(
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
-                  boxShadow: [
-                    BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
-                  ],
-                ),
-                child: Row(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [const Color(0xFFFFF0F5).withOpacity(0.5), surfaceWhite],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            physics: const BouncingScrollPhysics(),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 700),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // ================= هدر صفحه =================
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: lightPinkBg,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                        gradient: LinearGradient(
+                          colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(28),
+                        border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                        boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.06), blurRadius: 25, offset: const Offset(0, 8))],
                       ),
-                      child: const Icon(Icons.settings_rounded, color: primaryPink, size: 24),
-                    ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: [
-                          Text("App Settings", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                          SizedBox(height: 3),
-                          Text("Manage your app preferences, security, and credentials.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: lightPinkBg,
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                            ),
+                            child: const Icon(Icons.settings_rounded, color: primaryPink, size: 28),
+                          ),
+                          const SizedBox(width: 16),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("App Settings", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: textDark, letterSpacing: -0.5)),
+                                SizedBox(height: 4),
+                                Text("Manage your app preferences, security, and credentials.", style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
+                    const SizedBox(height: 30),
 
-              // ================= ۱. بخش امنیت و رمز عبور =================
-              const Text("Security & Passwords", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: surfaceWhite,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: cardBorder, width: 1.5),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
-                ),
-                child: Column(
-                  children: [
-                    _buildTextField("New Password", _newPasswordController, obscureText: true),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: primaryPink,
-                          side: const BorderSide(color: primaryPink, width: 1.5),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        onPressed: _changePassword,
-                        child: const Text("UPDATE PASSWORD 🔒", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                    // ================= ۱. بخش تغییر رمز عبور =================
+                    const Text("Account Security", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: surfaceWhite,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: cardBorder, width: 1.5),
+                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                      ),
+                      child: Column(
+                        children: [
+                          _buildTextField("New Password", "Enter a strong password...", _newPasswordController, obscureText: true, icon: Icons.lock_outline_rounded),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: primaryPink,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
+                              onPressed: isSaving ? null : _changePassword,
+                              child: isSaving 
+                                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                : const Text("UPDATE PASSWORD 🔒", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const Divider(height: 30, color: cardBorder),
+                    const SizedBox(height: 24),
 
-                    // تنظیمات بیومتریک (اثر انگشت)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.fingerprint_rounded, color: primaryPink, size: 20),
-                            SizedBox(width: 10),
-                            Text("Biometric Login", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 12)),
-                          ],
-                        ),
-                        Switch(
-                          value: _biometricEnabled,
-                          activeThumbColor: primaryPink,
-                          onChanged: _toggleBiometric,
-                        ),
-                      ],
+                    // ================= ۲. بخش قفل‌های بیومتریک و پین =================
+                    const Text("App Lock & Privacy", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: surfaceWhite,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: cardBorder, width: 1.5),
+                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                      ),
+                      child: Column(
+                        children: [
+                          // بیومتریک
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(10)),
+                                    child: const Icon(Icons.fingerprint_rounded, color: primaryPink, size: 20),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  const Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text("Biometric Login", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                                      Text("Face ID or Touch ID", style: TextStyle(color: textGrey, fontSize: 11)),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              Switch.adaptive(
+                                value: _biometricEnabled,
+                                activeColor: primaryPink,
+                                activeTrackColor: lightPinkBg,
+                                onChanged: _toggleBiometric,
+                              ),
+                            ],
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Divider(color: cardBorder, thickness: 1.5),
+                          ),
+                          // پین‌کد
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(color: cardBorder, borderRadius: BorderRadius.circular(10)),
+                                    child: const Icon(Icons.dialpad_rounded, color: textDark, size: 20),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text("App PIN Lock", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                                      Text(_pinLockEnabled ? "Enabled" : "Disabled", style: TextStyle(color: _pinLockEnabled ? Colors.green : textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              Switch.adaptive(
+                                value: _pinLockEnabled,
+                                activeColor: primaryPink,
+                                activeTrackColor: lightPinkBg,
+                                onChanged: (val) {
+                                  if (val) {
+                                    _showSetPinDialog();
+                                  } else {
+                                    setState(() {
+                                      _pinLockEnabled = false;
+                                      _userPin = "";
+                                    });
+                                    _saveSecuritySettingsToDb(pin: "");
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 24),
 
-                    // تنظیمات پین‌کد (PIN Lock)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.lock_outline_rounded, color: primaryPink, size: 20),
-                            SizedBox(width: 10),
-                            Text("App PIN Lock", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 12)),
-                          ],
-                        ),
-                        Switch(
-                          value: _pinLockEnabled,
-                          activeThumbColor: primaryPink,
-                          onChanged: (val) {
-                            if (val) {
-                              _showSetPinDialog();
-                            } else {
-                              setState(() {
-                                _pinLockEnabled = false;
-                                _userPin = "";
-                              });
-                              _saveSecuritySettingsToDb(pin: "");
-                            }
-                          },
-                        ),
-                      ],
+                    // ================= ۳. بخش تنظیمات اپلیکیشن =================
+                    const Text("App Preferences", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: surfaceWhite,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: cardBorder, width: 1.5),
+                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(color: cardBorder, borderRadius: BorderRadius.circular(10)),
+                                    child: const Icon(Icons.language_rounded, color: textDark, size: 20),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  const Text("Language", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                                ],
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                                decoration: BoxDecoration(color: cardBorder.withOpacity(0.5), borderRadius: BorderRadius.circular(12)),
+                                child: DropdownButton<String>(
+                                  value: _selectedLanguage,
+                                  underline: const SizedBox(),
+                                  icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+                                  items: ['English', 'Persian (Dari)', 'Arabic'].map((lang) {
+                                    return DropdownMenuItem(value: lang, child: Text(lang, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textDark)));
+                                  }).toList(),
+                                  onChanged: (val) {
+                                    if (val != null) setState(() => _selectedLanguage = val);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Divider(color: cardBorder, thickness: 1.5),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(color: cardBorder, borderRadius: BorderRadius.circular(10)),
+                                    child: const Icon(Icons.notifications_active_rounded, color: textDark, size: 20),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  const Text("Push Notifications", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                                ],
+                              ),
+                              Switch.adaptive(
+                                value: _notificationsEnabled,
+                                activeColor: primaryPink,
+                                activeTrackColor: lightPinkBg,
+                                onChanged: (val) => setState(() => _notificationsEnabled = val),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(height: 32),
+
+                    // ================= خروج امن =================
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent.withOpacity(0.12),
+                          foregroundColor: Colors.redAccent,
+                          elevation: 0,
+                          side: BorderSide(color: Colors.redAccent.withOpacity(0.3), width: 1.5),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                        ),
+                        icon: const Icon(Icons.logout_rounded, size: 20),
+                        label: const Text("SECURE SIGN OUT", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                        onPressed: _logout,
+                      ),
+                    ),
+                    const SizedBox(height: 80), // فاصله برای Bottom Nav
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
-
-              // ================= ۲. بخش تنظیمات اپلیکیشن =================
-              const Text("App Preferences", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: surfaceWhite,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: cardBorder, width: 1.5),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("Language", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 12)),
-                        DropdownButton<String>(
-                          value: _selectedLanguage,
-                          underline: const SizedBox(),
-                          items: ['English', 'Persian (Dari)', 'Arabic'].map((lang) {
-                            return DropdownMenuItem(value: lang, child: Text(lang, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)));
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) setState(() => _selectedLanguage = val);
-                          },
-                        ),
-                      ],
-                    ),
-                    const Divider(height: 24, color: cardBorder),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("Push Notifications", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 12)),
-                        Switch(
-                          value: _notificationsEnabled,
-                          activeThumbColor: primaryPink,
-                          onChanged: (val) => setState(() => _notificationsEnabled = val),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // خروج امن
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent.withOpacity(0.12),
-                    foregroundColor: Colors.redAccent,
-                    elevation: 0,
-                    side: BorderSide(color: Colors.redAccent.withOpacity(0.3), width: 1.5),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                  icon: const Icon(Icons.logout_rounded, size: 18),
-                  label: const Text("SECURE SIGN OUT", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1)),
-                  onPressed: _logout,
-                ),
-              ),
-              const SizedBox(height: 40),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {int maxLines = 1, TextInputType keyboardType = TextInputType.text, bool obscureText = false}) {
+  // ویجت کمکی برای ساخت تکست‌فیلد
+  Widget _buildTextField(String label, String hint, TextEditingController controller, {bool obscureText = false, IconData? icon}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 6),
+        Text(label, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900)),
+        const SizedBox(height: 8),
         TextField(
           controller: controller,
-          maxLines: maxLines,
-          keyboardType: keyboardType,
           obscureText: obscureText,
-          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w600),
+          style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w600), // رنگ متن تیره
           decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(color: textGrey, fontSize: 13),
+            prefixIcon: icon != null ? Icon(icon, color: textGrey, size: 20) : null,
             filled: true,
             fillColor: cardBorder.withOpacity(0.5),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder, width: 1.5)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder, width: 1.5)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
           ),
         ),
       ],

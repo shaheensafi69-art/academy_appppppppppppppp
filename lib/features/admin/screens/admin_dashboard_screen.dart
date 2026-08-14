@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'manage_students_screen.dart';
 import 'finance_screen.dart';
+import 'manage_teachers_screen.dart';
+import 'courses_screen.dart';
 
 class AdminStats {
   final int totalStudents;
@@ -20,6 +22,17 @@ class AdminStats {
     required this.totalTeachers,
     required this.activeCourses,
   });
+
+  factory AdminStats.fromMap(Map<String, dynamic> map) {
+    return AdminStats(
+      totalStudents: map['totalStudents'] ?? 0,
+      activeTickets: map['activeTickets'] ?? 0,
+      totalRevenue: (map['totalRevenue'] ?? 0).toDouble(),
+      pendingWithdrawals: map['pendingWithdrawals'] ?? 0,
+      totalTeachers: map['totalTeachers'] ?? 0,
+      activeCourses: map['activeCourses'] ?? 0,
+    );
+  }
 }
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -32,11 +45,10 @@ class AdminDashboardScreen extends StatefulWidget {
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final supabase = Supabase.instance.client;
   bool isLoading = true;
-  String adminName = "";
-  late AdminStats stats;
+  String adminName = "Administrator";
+  AdminStats stats = AdminStats(totalStudents: 0, activeTickets: 0, totalRevenue: 0, pendingWithdrawals: 0, totalTeachers: 0, activeCourses: 0);
   List<Map<String, dynamic>> recentActivities = [];
 
-  // پالت رنگی اختصاصی هماهنگ با پنل استاد و شاگرد
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
   static const Color surfaceWhite = Colors.white;
@@ -47,10 +59,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchCoreStatsAndActivity();
+    _fetchDashboardData();
   }
 
-  Future<void> _fetchCoreStatsAndActivity() async {
+  Future<void> _fetchDashboardData() async {
     setState(() => isLoading = true);
 
     try {
@@ -66,35 +78,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         }
       }
 
-      final results = await Future.wait([
-        supabase.from('profiles').select('id').eq('role', 'student'),
-        supabase.from('profiles').select('id').inFilter('role', ['teacher', 'mentor']),
-        supabase.from('courses').select('id').eq('is_published', true),
-        supabase.from('tickets').select('id').eq('status', 'open'),
-        supabase.from('transactions').select('id').eq('transaction_type', 'withdrawal').eq('status', 'PENDING'),
-        supabase.from('transactions').select('amount').eq('status', 'COMPLETED').inFilter('transaction_type', ['deposit', 'payment', 'course_fee']),
-        supabase.from('transactions').select('id, amount, transaction_type, status, created_at').order('created_at', ascending: false).limit(5),
-      ]);
-
-      final revenueData = results[5] as List<dynamic>;
-      double realTotalRevenue = 0;
-      for (var item in revenueData) {
-        realTotalRevenue += (item['amount'] ?? 0).toDouble();
+      // ۱. دریافت آمار از طریق RPC امن دیتابیس
+      final statsRes = await supabase.rpc('get_admin_dashboard_stats');
+      if (statsRes != null) {
+        stats = AdminStats.fromMap(statsRes);
       }
 
-      stats = AdminStats(
-        totalStudents: (results[0] as List).length,
-        totalTeachers: (results[1] as List).length,
-        activeCourses: (results[2] as List).length,
-        activeTickets: (results[3] as List).length,
-        pendingWithdrawals: (results[4] as List).length,
-        totalRevenue: realTotalRevenue,
-      );
+      // ۲. دریافت تراکنش‌های اخیر برای فید
+      final txRes = await supabase
+          .from('transactions')
+          .select('id, amount, transaction_type, status, created_at')
+          .order('created_at', ascending: false)
+          .limit(6);
 
-      recentActivities = List<Map<String, dynamic>>.from(results[6]);
+      if (txRes is List) {
+        recentActivities = List<Map<String, dynamic>>.from(txRes);
+      }
     } catch (e) {
-      debugPrint("Error fetching admin stats: $e");
-      stats = AdminStats(totalStudents: 0, activeTickets: 0, totalRevenue: 0, pendingWithdrawals: 0, totalTeachers: 0, activeCourses: 0);
+      debugPrint("Error fetching dashboard metrics: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -109,16 +110,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
-              const SizedBox(height: 14),
-              Text(
-                "INITIALIZING ADMIN ECOSYSTEM...",
-                style: TextStyle(
-                  color: textGrey,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 2,
-                ),
+              const CircularProgressIndicator(color: primaryPink, strokeWidth: 3),
+              const SizedBox(height: 16),
+              const Text(
+                "INITIALIZING COMMAND CENTER...",
+                style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2),
               ),
             ],
           ),
@@ -128,232 +124,279 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
     return Scaffold(
       backgroundColor: surfaceWhite,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
-            physics: const BouncingScrollPhysics(),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 900),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 1. Hero Command Center Banner
-                    Container(
-                      padding: const EdgeInsets.all(22),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [surfaceWhite, lightPinkBg.withOpacity(0.5)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.5),
-                        boxShadow: [
-                          BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: lightPinkBg,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: primaryPink.withOpacity(0.3)),
-                                ),
-                                child: const Text(
-                                  "SYSTEM COMMAND CENTER",
-                                  style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: primaryPink.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                child: const Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 22),
-                              ),
-                            ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [const Color(0xFFFFF0F5).withOpacity(0.5), surfaceWhite],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: RefreshIndicator(
+            color: primaryPink,
+            onRefresh: _fetchDashboardData,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 900),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ================= ۱. بنر خوش‌آمدگویی و آمار کلیدی =================
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              const Text("Welcome back, ", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                              Text(
-                                adminName,
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: primaryPink),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            "Live performance overview and global academy control.",
-                            style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
-                          ),
-                          const SizedBox(height: 18),
-                          LayoutBuilder(
-                            builder: (context, boxConstraints) {
-                              bool isWide = boxConstraints.maxWidth > 500;
-                              return Flex(
-                                direction: isWide ? Axis.horizontal : Axis.vertical,
-                                children: [
-                                  Expanded(
-                                    flex: isWide ? 1 : 0,
-                                    child: _buildMiniStatItem("Active Courses", stats.activeCourses.toString(), Icons.menu_book_rounded),
-                                  ),
-                                  SizedBox(width: isWide ? 12 : 0, height: isWide ? 0 : 12),
-                                  Expanded(
-                                    flex: isWide ? 1 : 0,
-                                    child: _buildMiniStatItem("Total Faculty", stats.totalTeachers.toString(), Icons.psychology_rounded),
-                                  ),
-                                ],
-                              );
-                            },
-                          )
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // 2. Section Title: System Metrics
-                    const Text("SYSTEM METRICS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.5)),
-                    const SizedBox(height: 12),
-                    LayoutBuilder(
-                      builder: (context, constraintsGrid) {
-                        int crossAxisCount = constraintsGrid.maxWidth > 650 ? 4 : 2;
-                        return GridView.count(
-                          crossAxisCount: crossAxisCount,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 1.3,
-                          children: [
-                            _buildMetricCard("Total Students", stats.totalStudents.toString(), Icons.people_alt_rounded, const Color(0xFF00897B), () {
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageStudentsScreen()));
-                            }),
-                            _buildMetricCard("Gross Revenue", "\$${stats.totalRevenue.toInt()}", Icons.account_balance_wallet_rounded, const Color(0xFF2E7D32), () {
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceScreen()));
-                            }),
-                            _buildMetricCard("Open Tickets", stats.activeTickets.toString(), Icons.support_agent_rounded, const Color(0xFFF57C00), () {}),
-                            _buildMetricCard("Pending Payouts", stats.pendingWithdrawals.toString(), Icons.pending_actions_rounded, primaryPink, () {
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceScreen()));
-                            }),
+                          borderRadius: BorderRadius.circular(28),
+                          border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                          boxShadow: [
+                            BoxShadow(color: primaryPink.withOpacity(0.06), blurRadius: 25, offset: const Offset(0, 8)),
                           ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 28),
-
-                    // 3. Section Title: Recent System Activity
-                    Row(
-                      children: [
-                        const Text(
-                          "RECENT TRANSACTIONS FEED",
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.5),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(child: Container(height: 1.5, color: cardBorder)),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-
-                    // 4. Activity List
-                    recentActivities.isNotEmpty
-                        ? ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: recentActivities.length,
-                            separatorBuilder: (_, _) => const SizedBox(height: 10),
-                            itemBuilder: (context, index) {
-                              final act = recentActivities[index];
-                              bool isCompleted = act['status'] == 'COMPLETED';
-
-                              return Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: surfaceWhite,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: cardBorder, width: 1.5),
-                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 3))],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: lightPinkBg,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: primaryPink.withOpacity(0.3)),
+                                  ),
+                                  child: const Text(
+                                    "SYSTEM COMMAND CENTER",
+                                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1),
+                                  ),
                                 ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: primaryPink.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: const Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 22),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                const Text("Welcome back, ", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: textDark)),
+                                Text(adminName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: primaryPink)),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              "Live performance overview and global academy control.",
+                              style: TextStyle(fontSize: 12, color: textGrey, fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(height: 20),
+                            LayoutBuilder(
+                              builder: (context, boxConstraints) {
+                                bool isWide = boxConstraints.maxWidth > 500;
+                                return Flex(
+                                  direction: isWide ? Axis.horizontal : Axis.vertical,
                                   children: [
                                     Expanded(
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.all(10),
-                                            decoration: BoxDecoration(
-                                              color: (isCompleted ? Colors.green : Colors.amber).withOpacity(0.12),
-                                              borderRadius: BorderRadius.circular(14),
+                                      flex: isWide ? 1 : 0,
+                                      child: _buildMiniStatItem("Active Courses", stats.activeCourses.toString(), Icons.menu_book_rounded),
+                                    ),
+                                    SizedBox(width: isWide ? 12 : 0, height: isWide ? 0 : 12),
+                                    Expanded(
+                                      flex: isWide ? 1 : 0,
+                                      child: _buildMiniStatItem("Total Faculty", stats.totalTeachers.toString(), Icons.psychology_rounded),
+                                    ),
+                                  ],
+                                );
+                              },
+                            )
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+
+                      // ================= ۲. متریک‌های سیستم (کاملاً ریسپانسیو) =================
+                      const Text("SYSTEM METRICS", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.5)),
+                      const SizedBox(height: 12),
+                      LayoutBuilder(
+                        builder: (context, constraintsGrid) {
+                          bool isWide = constraintsGrid.maxWidth > 600;
+
+                          if (isWide) {
+                            return Row(
+                              children: [
+                                Expanded(child: _buildMetricCard("Total Students", stats.totalStudents.toString(), Icons.people_alt_rounded, const Color(0xFF00897B), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageStudentsScreen())))),
+                                const SizedBox(width: 12),
+                                Expanded(child: _buildMetricCard("Gross Revenue", "\$${stats.totalRevenue.toInt()}", Icons.account_balance_wallet_rounded, const Color(0xFF2E7D32), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceScreen())))),
+                                const SizedBox(width: 12),
+                                Expanded(child: _buildMetricCard("Open Tickets", stats.activeTickets.toString(), Icons.support_agent_rounded, const Color(0xFFF57C00), () {})),
+                                const SizedBox(width: 12),
+                                Expanded(child: _buildMetricCard("Pending Payouts", stats.pendingWithdrawals.toString(), Icons.pending_actions_rounded, primaryPink, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceScreen())))),
+                              ],
+                            );
+                          } else {
+                            return Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(child: _buildMetricCard("Total Students", stats.totalStudents.toString(), Icons.people_alt_rounded, const Color(0xFF00897B), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageStudentsScreen())))),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: _buildMetricCard("Gross Revenue", "\$${stats.totalRevenue.toInt()}", Icons.account_balance_wallet_rounded, const Color(0xFF2E7D32), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceScreen())))),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(child: _buildMetricCard("Open Tickets", stats.activeTickets.toString(), Icons.support_agent_rounded, const Color(0xFFF57C00), () {})),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: _buildMetricCard("Pending Payouts", stats.pendingWithdrawals.toString(), Icons.pending_actions_rounded, primaryPink, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceScreen())))),
+                                  ],
+                                ),
+                              ],
+                            );
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 32),
+
+                      // ================= ۳. فید تراکنش‌های اخیر =================
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "RECENT TRANSACTIONS",
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.5),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceScreen())),
+                            child: const Text("View All", style: TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 11)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      recentActivities.isNotEmpty
+                          ? ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: recentActivities.length,
+                              separatorBuilder: (_, _) => const SizedBox(height: 12),
+                              itemBuilder: (context, index) {
+                                final act = recentActivities[index];
+                                bool isCompleted = act['status'] == 'COMPLETED';
+
+                                return Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: surfaceWhite,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: cardBorder, width: 1.5),
+                                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(12),
+                                              decoration: BoxDecoration(
+                                                color: (isCompleted ? Colors.green : Colors.amber).withOpacity(0.12),
+                                                borderRadius: BorderRadius.circular(14),
+                                              ),
+                                              child: Icon(
+                                                isCompleted ? Icons.arrow_downward_rounded : Icons.hourglass_top_rounded,
+                                                color: isCompleted ? Colors.green.shade700 : Colors.amber.shade800,
+                                                size: 20,
+                                              ),
                                             ),
-                                            child: Icon(
-                                              isCompleted ? Icons.arrow_downward_rounded : Icons.hourglass_top_rounded,
+                                            const SizedBox(width: 14),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    (act['transaction_type'] ?? 'Transaction').toString().toUpperCase().replaceAll('_', ' '),
+                                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: textDark),
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                  const SizedBox(height: 3),
+                                                  Text(
+                                                    act['created_at'] != null ? act['created_at'].toString().split('T')[0] : 'Recent',
+                                                    style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.bold),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            "\$${(act['amount'] ?? 0).toDouble().toStringAsFixed(2)}",
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w900,
                                               color: isCompleted ? Colors.green.shade700 : Colors.amber.shade800,
-                                              size: 18,
                                             ),
                                           ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  (act['transaction_type'] ?? 'Transaction').toString().toUpperCase(),
-                                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: textDark),
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                                const SizedBox(height: 2),
-                                                Text(
-                                                  act['created_at'] != null ? act['created_at'].toString().split('T')[0] : 'Recent',
-                                                  style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500),
-                                                ),
-                                              ],
+                                          const SizedBox(height: 4),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: (isCompleted ? Colors.green : Colors.amber).withOpacity(0.1),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              (act['status'] ?? 'PENDING').toString().toUpperCase(),
+                                              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: isCompleted ? Colors.green.shade700 : Colors.amber.shade800),
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      "\$${act['amount'] ?? 0}",
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w900,
-                                        color: isCompleted ? Colors.green.shade700 : Colors.amber.shade800,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          )
-                        : Container(
-                            padding: const EdgeInsets.all(30),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: surfaceWhite,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: cardBorder, width: 1.5),
+                                    ],
+                                  ),
+                                );
+                              },
+                            )
+                          : Container(
+                              padding: const EdgeInsets.all(40),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: surfaceWhite,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(color: cardBorder, width: 1.5),
+                              ),
+                              child: const Column(
+                                children: [
+                                  Icon(Icons.receipt_long_outlined, size: 48, color: textGrey),
+                                  SizedBox(height: 12),
+                                  Text("No recent financial activity recorded.", style: TextStyle(color: textGrey, fontSize: 13, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
                             ),
-                            child: const Text("No recent financial activity recorded.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
-                          ),
-                    const SizedBox(height: 40),
-                  ],
+                      const SizedBox(height: 100), // فاصله برای Bottom Nav
+                    ],
+                  ),
                 ),
               ),
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
@@ -370,19 +413,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: lightPinkBg,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: primaryPink, size: 18),
+            child: Icon(icon, color: primaryPink, size: 20),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                Text(title.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                 const SizedBox(height: 2),
                 Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
               ],
@@ -400,7 +443,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: surfaceWhite,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(color: cardBorder, width: 1.5),
           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
         ),
@@ -412,22 +455,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(icon, color: color, size: 18),
+                  child: Icon(icon, color: color, size: 20),
                 ),
-                const Icon(Icons.arrow_forward_ios_rounded, color: textGrey, size: 12),
+                const Icon(Icons.arrow_forward_ios_rounded, color: textGrey, size: 14),
               ],
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: color)),
+                Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: color)),
                 const SizedBox(height: 2),
-                Text(title.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                Text(title.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
               ],
             ),
           ],
