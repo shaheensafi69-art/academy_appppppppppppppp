@@ -29,7 +29,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
-  static const Color cardBorder = Color(0xFFF3F4F6);
+  static const Color cardBorder = Color(0xFFE5E7EB);
 
   @override
   void initState() {
@@ -80,7 +80,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     final content = _contentController.text.trim();
 
     if (title.isEmpty || content.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please fill in both title and content fields."), backgroundColor: Colors.redAccent));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill in both title and content fields."), backgroundColor: Colors.redAccent),
+      );
       return;
     }
 
@@ -97,7 +99,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       }
 
       Map<String, dynamic> insertData = {
-        'student_id': user.id, // ستون دیتابیس student_id است اما آیدی استاد هم اینجا ذخیره میشود
+        'student_id': user.id,
         'title': "[$selectedMood] $title",
         'content': content,
       };
@@ -106,7 +108,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       await supabase.from("discussion_posts").insert(insertData);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Post published successfully! 🎉"), backgroundColor: Colors.green));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Post published successfully! 🎉"), backgroundColor: Colors.green),
+        );
+        
         _titleController.clear();
         _contentController.clear();
         setState(() => _selectedImageFile = null);
@@ -118,7 +123,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         }
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to publish post: $e"), backgroundColor: Colors.redAccent));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to publish post: $e"), backgroundColor: Colors.redAccent),
+        );
+      }
     } finally {
       if (mounted) setState(() => isPosting = false);
     }
@@ -135,6 +144,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       if (userProfile!['role'] == 'teacher') {
         roleLabel = "Instructor Post 🎓";
         roleColor = Colors.blueAccent;
+      } else if (userProfile!['role'] == 'admin' || userProfile!['role'] == 'super_admin') {
+        roleLabel = "Admin Announcement 🛡️";
+        roleColor = Colors.deepPurple;
       } else {
         roleLabel = "Student Post 🌍";
       }
@@ -150,7 +162,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           backgroundColor: surfaceWhite,
           elevation: 0,
           iconTheme: const IconThemeData(color: textDark),
-          title: const Text("Create Post ✍️", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 18)),
+          title: const Text("Create New Post ✍️", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 17, letterSpacing: -0.5)),
           centerTitle: true,
           actions: [
             Padding(
@@ -160,123 +172,194 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   backgroundColor: primaryPink,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shadowColor: primaryPink.withOpacity(0.4),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                 ),
                 onPressed: isPosting ? null : _publishPost,
-                child: const Text("Post", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+                child: const Text("Publish", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5)),
               ),
             ),
           ],
         ),
         body: Container(
-          decoration: BoxDecoration(gradient: LinearGradient(colors: [const Color(0xFFFFF0F5).withOpacity(0.5), surfaceWhite], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [const Color(0xFFFFF0F5).withOpacity(0.4), surfaceWhite],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
           child: SafeArea(
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 700),
+                constraints: const BoxConstraints(maxWidth: 750),
                 child: Column(
                   children: [
                     Expanded(
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.all(20),
                         physics: const BouncingScrollPhysics(),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: 24, backgroundColor: lightPinkBg,
-                                  backgroundImage: avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
-                                  child: avatarUrl.isEmpty ? Text(authorName.isNotEmpty ? authorName[0] : 'U', style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 18)) : null,
-                                ),
-                                const SizedBox(width: 14),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(authorName, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
-                                    const SizedBox(height: 4),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(color: roleColor.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-                                      child: Text(roleLabel, style: TextStyle(color: roleColor, fontSize: 10, fontWeight: FontWeight.bold)),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-                            SizedBox(
-                              height: 40,
-                              child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: moods.length,
-                                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                                itemBuilder: (context, index) {
-                                  final m = moods[index];
-                                  bool isSelected = selectedMood == m;
-                                  return ChoiceChip(
-                                    label: Text(m, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : textDark)),
-                                    selected: isSelected,
-                                    selectedColor: primaryPink,
-                                    backgroundColor: cardBorder,
-                                    onSelected: (selected) => setState(() => selectedMood = m),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    side: BorderSide.none,
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-                                  );
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            TextField(
-                              controller: _titleController,
-                              style: const TextStyle(color: textDark, fontSize: 20, fontWeight: FontWeight.w900),
-                              decoration: const InputDecoration(hintText: "Title / Topic...", hintStyle: TextStyle(color: textGrey, fontSize: 20, fontWeight: FontWeight.w600), border: InputBorder.none, isDense: true),
-                            ),
-                            const Divider(color: cardBorder, height: 30, thickness: 1.5),
-                            TextField(
-                              controller: _contentController,
-                              maxLines: null, minLines: 5,
-                              style: const TextStyle(color: textDark, fontSize: 15, fontWeight: FontWeight.w500, height: 1.5),
-                              decoration: const InputDecoration(hintText: "What do you want to talk about? Share your analysis, ideas, or questions here...", hintStyle: TextStyle(color: textGrey, fontSize: 15, height: 1.5), border: InputBorder.none),
-                            ),
-                            const SizedBox(height: 20),
-                            if (_selectedImageFile != null) ...[
-                              Stack(
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: surfaceWhite,
+                            borderRadius: BorderRadius.circular(28),
+                            border: Border.all(color: cardBorder, width: 1.5),
+                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20, offset: const Offset(0, 8))],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // پروفایل کاربر
+                              Row(
                                 children: [
-                                  Container(
-                                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(24), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))]),
-                                    child: ClipRRect(borderRadius: BorderRadius.circular(24), child: Image.file(_selectedImageFile!, height: 300, width: double.infinity, fit: BoxFit.cover)),
+                                  CircleAvatar(
+                                    radius: 26,
+                                    backgroundColor: lightPinkBg,
+                                    backgroundImage: avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+                                    child: avatarUrl.isEmpty
+                                        ? Text(authorName.isNotEmpty ? authorName[0] : 'U', style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 18))
+                                        : null,
                                   ),
-                                  Positioned(
-                                    top: 12, right: 12,
-                                    child: GestureDetector(
-                                      onTap: () => setState(() => _selectedImageFile = null),
-                                      child: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), shape: BoxShape.circle), child: const Icon(Icons.close_rounded, color: Colors.white, size: 20)),
-                                    ),
+                                  const SizedBox(width: 14),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(authorName, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                                      const SizedBox(height: 4),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(color: roleColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                        child: Text(roleLabel, style: TextStyle(color: roleColor, fontSize: 10, fontWeight: FontWeight.w900)),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
+                              const SizedBox(height: 24),
+
+                              // انتخاب Vibe / Topic
+                              const Text("SELECT VIBE / TOPIC", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                height: 44,
+                                child: ListView.separated(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: moods.length,
+                                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                                  itemBuilder: (context, index) {
+                                    final m = moods[index];
+                                    bool isSelected = selectedMood == m;
+                                    return ChoiceChip(
+                                      label: Text(m, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: isSelected ? Colors.white : textDark)),
+                                      selected: isSelected,
+                                      selectedColor: primaryPink,
+                                      backgroundColor: cardBorder,
+                                      onSelected: (selected) => setState(() => selectedMood = m),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      side: BorderSide.none,
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    );
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+
+                              // فیلد عنوان با کرسرصورتی و متن تیره
+                              TextField(
+                                controller: _titleController,
+                                cursorColor: primaryPink,
+                                style: const TextStyle(color: textDark, fontSize: 18, fontWeight: FontWeight.w900),
+                                decoration: const InputDecoration(
+                                  hintText: "Give your post a catching title...",
+                                  hintStyle: TextStyle(color: textGrey, fontSize: 18, fontWeight: FontWeight.w600),
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                ),
+                              ),
+                              const Divider(color: cardBorder, height: 32, thickness: 1.5),
+
+                              // فیلد متن اصلی با کرسر صورتی و متن خوانا
+                              TextField(
+                                controller: _contentController,
+                                cursorColor: primaryPink,
+                                maxLines: null,
+                                minLines: 6,
+                                style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w500, height: 1.6),
+                                decoration: const InputDecoration(
+                                  hintText: "What's on your mind? Share trading setups, ideas, or questions with the academy...",
+                                  hintStyle: TextStyle(color: textGrey, fontSize: 14, height: 1.6),
+                                  border: InputBorder.none,
+                                ),
+                              ),
                               const SizedBox(height: 20),
+
+                              // پیش‌نمایش تصویر انتخاب شده
+                              if (_selectedImageFile != null) ...[
+                                Stack(
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 15, offset: const Offset(0, 6))],
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(20),
+                                        child: Image.file(_selectedImageFile!, height: 240, width: double.infinity, fit: BoxFit.cover),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 12, right: 12,
+                                      child: GestureDetector(
+                                        onTap: () => setState(() => _selectedImageFile = null),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(color: Colors.black.withOpacity(0.75), shape: BoxShape.circle),
+                                          child: const Icon(Icons.close_rounded, color: Colors.white, size: 18),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
                       ),
                     ),
+
+                    // نوار ابزار پایین برای عکس و تگ
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      decoration: BoxDecoration(color: surfaceWhite, border: const Border(top: BorderSide(color: cardBorder, width: 1.5)), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, -4))]),
+                      decoration: BoxDecoration(
+                        color: surfaceWhite,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                        border: const Border(top: BorderSide(color: cardBorder, width: 1.5)),
+                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: const Offset(0, -4))],
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text("Add to your post", style: TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+                          const Text("Attach Media", style: TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.w900)),
                           Row(
                             children: [
-                              IconButton(icon: const Icon(Icons.photo_library_rounded, color: Colors.green, size: 28), onPressed: () => _pickImage(ImageSource.gallery)),
-                              IconButton(icon: const Icon(Icons.camera_alt_rounded, color: primaryPink, size: 28), onPressed: () => _pickImage(ImageSource.camera)),
-                              IconButton(icon: const Icon(Icons.tag_rounded, color: Colors.blue, size: 28), onPressed: () => _contentController.text += " #SafiAcademy #Trading "),
+                              IconButton(
+                                icon: const Icon(Icons.photo_library_rounded, color: Colors.green, size: 24),
+                                onPressed: () => _pickImage(ImageSource.gallery),
+                                tooltip: "Gallery",
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.camera_alt_rounded, color: primaryPink, size: 24),
+                                onPressed: () => _pickImage(ImageSource.camera),
+                                tooltip: "Camera",
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.tag_rounded, color: Colors.blue, size: 24),
+                                onPressed: () => _contentController.text += " #SafiAcademy #Trading ",
+                                tooltip: "Add Tags",
+                              ),
                             ],
                           ),
                         ],
@@ -307,13 +390,23 @@ class AcademyLoadingOverlay extends StatelessWidget {
         child,
         if (isLoading)
           Container(
-            color: Colors.white.withOpacity(0.95), alignment: Alignment.center,
+            color: Colors.white.withOpacity(0.95),
+            alignment: Alignment.center,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const CircularProgressIndicator(color: Color(0xFFC2185B), strokeWidth: 3),
                 const SizedBox(height: 20),
-                Text(message, style: const TextStyle(color: Color(0xFF111827), fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 2, decoration: TextDecoration.none)),
+                Text(
+                  message,
+                  style: const TextStyle(
+                    color: Color(0xFF111827),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
               ],
             ),
           ),

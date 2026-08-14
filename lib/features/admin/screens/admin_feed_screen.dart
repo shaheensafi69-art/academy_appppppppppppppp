@@ -6,7 +6,7 @@ import 'user_profile_screen.dart';
 class FeedPostItem {
   final String id;
   final String studentId; 
-  final String title;
+  final String rawTitle; // تایتل خام برای پردازش
   final String content;
   final String? imageUrl;
   final String createdAt;
@@ -16,10 +16,14 @@ class FeedPostItem {
   bool isLikedByMe;
   int commentsCount;
 
+  // فیلدهای استخراج شده هوشمند
+  String moodTag;
+  String cleanTitle;
+
   FeedPostItem({
     required this.id,
     required this.studentId,
-    required this.title,
+    required this.rawTitle,
     required this.content,
     this.imageUrl,
     required this.createdAt,
@@ -28,13 +32,30 @@ class FeedPostItem {
     this.likesCount = 0,
     this.isLikedByMe = false,
     this.commentsCount = 0,
-  });
+  }) : moodTag = _extractMood(rawTitle),
+       cleanTitle = _extractCleanTitle(rawTitle);
+
+  static String _extractMood(String title) {
+    if (title.startsWith('[') && title.contains(']')) {
+      int endIndex = title.indexOf(']');
+      return title.substring(1, endIndex);
+    }
+    return "📢 Post";
+  }
+
+  static String _extractCleanTitle(String title) {
+    if (title.startsWith('[') && title.contains(']')) {
+      int endIndex = title.indexOf(']');
+      return title.substring(endIndex + 1).trim();
+    }
+    return title;
+  }
 
   factory FeedPostItem.fromJson(Map<String, dynamic> json, {String name = "Academy Member", String avatar = "", int likes = 0, bool liked = false, int comments = 0}) {
     return FeedPostItem(
       id: json['id']?.toString() ?? '',
       studentId: json['student_id']?.toString() ?? '',
-      title: json['title'] ?? '',
+      rawTitle: json['title'] ?? '',
       content: json['content'] ?? '',
       imageUrl: json['image_url'],
       createdAt: json['created_at'] ?? '',
@@ -163,7 +184,7 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
       } else {
         final q = query.trim().toLowerCase();
         filteredPosts = allPosts.where((post) {
-          final titleMatch = post.title.toLowerCase().contains(q);
+          final titleMatch = post.cleanTitle.toLowerCase().contains(q);
           final contentMatch = post.content.toLowerCase().contains(q);
           final nameMatch = post.authorName.toLowerCase().contains(q);
           return titleMatch || contentMatch || nameMatch;
@@ -225,7 +246,7 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
   }
 
   Future<void> _editPostModal(FeedPostItem post) async {
-    final TextEditingController titleController = TextEditingController(text: post.title);
+    final TextEditingController titleController = TextEditingController(text: post.cleanTitle);
     final TextEditingController contentController = TextEditingController(text: post.content);
 
     await showModalBottomSheet(
@@ -254,7 +275,8 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
                 style: ElevatedButton.styleFrom(backgroundColor: primaryPink, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
                 onPressed: () async {
                   try {
-                    await supabase.from("discussion_posts").update({'title': titleController.text.trim(), 'content': contentController.text.trim()}).eq("id", post.id);
+                    String finalTitleToSave = "[${post.moodTag}] ${titleController.text.trim()}";
+                    await supabase.from("discussion_posts").update({'title': finalTitleToSave, 'content': contentController.text.trim()}).eq("id", post.id);
                     if (mounted) {
                       Navigator.pop(context);
                       _fetchFeedPosts();
@@ -480,21 +502,92 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
                     ),
                   ),
                 ),
-                // ادمین می‌تواند تمام پست‌ها را ادیت/حذف کند!
                 IconButton(icon: const Icon(Icons.more_horiz_rounded, color: textGrey), onPressed: () => _showPostActionMenu(post)),
               ],
             ),
           ),
+          
+          // --- بخش نمایش تگ مود جدا شده در بالای تایتل ---
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: lightPinkBg,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                post.moodTag,
+                style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (post.title.isNotEmpty) ...[Text(post.title, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)), const SizedBox(height: 8)],
+                if (post.cleanTitle.isNotEmpty) ...[
+                  Text(post.cleanTitle, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                  const SizedBox(height: 8),
+                ],
                 Text(post.content, style: const TextStyle(color: Color(0xFF374151), fontSize: 14, height: 1.5)),
               ],
             ),
           ),
+
+          // --- بخش نمایش عکس با Placeholder (موقع لود شدن) ---
+          if (post.imageUrl != null && post.imageUrl!.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
+                  width: double.infinity,
+                  color: Colors.grey.shade100,
+                  child: Image.network(
+                    post.imageUrl!,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        height: 200,
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
+                            const SizedBox(height: 8),
+                            Text("Loading image...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 150,
+                        alignment: Alignment.center,
+                        color: Colors.grey.shade200,
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.broken_image_rounded, color: textGrey, size: 32),
+                            SizedBox(height: 6),
+                            Text("Image failed to load", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ],
+
           const SizedBox(height: 16),
           if (post.likesCount > 0 || post.commentsCount > 0) ...[
             Padding(
@@ -517,7 +610,7 @@ class _AdminFeedScreenState extends State<AdminFeedScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 Expanded(child: InkWell(onTap: () => _toggleLike(post), borderRadius: BorderRadius.circular(12), child: Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(post.isLikedByMe ? Icons.thumb_up_rounded : Icons.thumb_up_outlined, color: post.isLikedByMe ? primaryPink : textGrey, size: 20), const SizedBox(width: 8), Text("Like", style: TextStyle(color: post.isLikedByMe ? primaryPink : textGrey, fontWeight: FontWeight.bold, fontSize: 13))])))),
-                Expanded(child: InkWell(onTap: () => _openCommentsBottomSheet(post.id), borderRadius: BorderRadius.circular(12), child: const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.chat_bubble_outline_rounded, color: textGrey, size: 20), SizedBox(width: 8), Text("Comment", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold, fontSize: 13))])))),
+                Expanded(child: InkWell(onTap: () => _openCommentsBottomSheet(post.id), borderRadius: BorderRadius.circular(12), child: const Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.chat_bubble_outline_rounded, color: textGrey, size: 20), SizedBox(width: 8), Text("Comment", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold, fontSize: 13))])))),
               ],
             ),
           ),

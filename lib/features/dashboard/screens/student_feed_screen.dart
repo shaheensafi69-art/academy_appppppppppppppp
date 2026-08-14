@@ -6,7 +6,7 @@ import 'user_profile_screen.dart';
 class FeedPostItem {
   final String id;
   final String studentId;
-  final String title;
+  final String rawTitle;
   final String content;
   final String? imageUrl;
   final String createdAt;
@@ -16,10 +16,13 @@ class FeedPostItem {
   bool isLikedByMe;
   int commentsCount;
 
+  String moodTag;
+  String cleanTitle;
+
   FeedPostItem({
     required this.id,
     required this.studentId,
-    required this.title,
+    required this.rawTitle,
     required this.content,
     this.imageUrl,
     required this.createdAt,
@@ -28,13 +31,30 @@ class FeedPostItem {
     this.likesCount = 0,
     this.isLikedByMe = false,
     this.commentsCount = 0,
-  });
+  }) : moodTag = _extractMood(rawTitle),
+       cleanTitle = _extractCleanTitle(rawTitle);
+
+  static String _extractMood(String title) {
+    if (title.startsWith('[') && title.contains(']')) {
+      int endIndex = title.indexOf(']');
+      return title.substring(1, endIndex);
+    }
+    return "📢 Post";
+  }
+
+  static String _extractCleanTitle(String title) {
+    if (title.startsWith('[') && title.contains(']')) {
+      int endIndex = title.indexOf(']');
+      return title.substring(endIndex + 1).trim();
+    }
+    return title;
+  }
 
   factory FeedPostItem.fromJson(Map<String, dynamic> json, {String name = "Academy Student", String avatar = "", int likes = 0, bool liked = false, int comments = 0}) {
     return FeedPostItem(
       id: json['id']?.toString() ?? '',
       studentId: json['student_id']?.toString() ?? '',
-      title: json['title'] ?? '',
+      rawTitle: json['title'] ?? '',
       content: json['content'] ?? '',
       imageUrl: json['image_url'],
       createdAt: json['created_at'] ?? '',
@@ -172,7 +192,7 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
       } else {
         final q = query.trim().toLowerCase();
         filteredPosts = allPosts.where((post) {
-          final titleMatch = post.title.toLowerCase().contains(q);
+          final titleMatch = post.cleanTitle.toLowerCase().contains(q);
           final contentMatch = post.content.toLowerCase().contains(q);
           final nameMatch = post.authorName.toLowerCase().contains(q);
           return titleMatch || contentMatch || nameMatch;
@@ -243,7 +263,7 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
   }
 
   Future<void> _editPostModal(FeedPostItem post) async {
-    final TextEditingController titleController = TextEditingController(text: post.title);
+    final TextEditingController titleController = TextEditingController(text: post.cleanTitle);
     final TextEditingController contentController = TextEditingController(text: post.content);
 
     await showModalBottomSheet(
@@ -266,7 +286,6 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
               controller: titleController,
               cursorColor: primaryPink,
               decoration: _inputDecoration("Title"),
-              // تنظیم صریح رنگ متن
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textDark),
             ),
             const SizedBox(height: 12),
@@ -275,7 +294,6 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
               cursorColor: primaryPink,
               maxLines: 5,
               decoration: _inputDecoration("Content"),
-              // تنظیم صریح رنگ متن
               style: const TextStyle(fontSize: 14, color: textDark),
             ),
             const SizedBox(height: 24),
@@ -289,8 +307,9 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
                 ),
                 onPressed: () async {
                   try {
+                    String finalTitleToSave = "[${post.moodTag}] ${titleController.text.trim()}";
                     await supabase.from("discussion_posts").update({
-                      'title': titleController.text.trim(),
+                      'title': finalTitleToSave,
                       'content': contentController.text.trim(),
                     }).eq("id", post.id);
 
@@ -434,6 +453,18 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
     );
   }
 
+  InputDecoration _inputDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(color: textGrey, fontSize: 13),
+      filled: true,
+      fillColor: cardBorder.withOpacity(0.5),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder, width: 1.5)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final double topPadding = MediaQuery.of(context).padding.top;
@@ -497,7 +528,7 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
                     padding: EdgeInsets.fromLTRB(16, topPadding + 12, 16, 12),
                     decoration: BoxDecoration(
                       color: surfaceWhite.withOpacity(0.85),
-                      border: Border(bottom: BorderSide(color: cardBorder, width: 1.5)),
+                      border: const Border(bottom: BorderSide(color: cardBorder, width: 1.5)),
                       boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
                     ),
                     child: Column(
@@ -522,7 +553,7 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
                                   : Container(
                                       key: const ValueKey('notif_btn'),
                                       padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
+                                      decoration: const BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
                                       child: const Icon(Icons.notifications_none_rounded, color: primaryPink, size: 20),
                                     ),
                             ),
@@ -632,13 +663,31 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
               ],
             ),
           ),
+          
+          // --- بخش نمایش تگ مود جدا شده در بالای تایتل ---
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: lightPinkBg,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                post.moodTag,
+                style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (post.title.isNotEmpty) ...[
-                  Text(post.title, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                if (post.cleanTitle.isNotEmpty) ...[
+                  Text(post.cleanTitle, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
                   const SizedBox(height: 8),
                 ],
                 Text(
@@ -648,28 +697,57 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
               ],
             ),
           ),
+
+          // --- بخش نمایش عکس با Placeholder (موقع لود شدن) ---
           if (post.imageUrl != null && post.imageUrl!.isNotEmpty) ...[
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                width: double.infinity,
-                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
+                  width: double.infinity,
+                  color: Colors.grey.shade100,
                   child: Image.network(
                     post.imageUrl!,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        height: 200,
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
+                            const SizedBox(height: 8),
+                            Text("Loading image...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 150,
+                        alignment: Alignment.center,
+                        color: Colors.grey.shade200,
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.broken_image_rounded, color: textGrey, size: 32),
+                            SizedBox(height: 6),
+                            Text("Image failed to load", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
             ),
           ],
+
           const SizedBox(height: 16),
           if (post.likesCount > 0 || post.commentsCount > 0) ...[
             Padding(
@@ -683,27 +761,27 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
                         Container(
                           padding: const EdgeInsets.all(4),
                           decoration: const BoxDecoration(color: primaryPink, shape: BoxShape.circle),
-                          child: const Icon(Icons.thumb_up_rounded, color: Colors.white, size: 10),
+                          child: const Icon(Icons.thumb_up_rounded, color: Colors.white, size: 8),
                         ),
                         const SizedBox(width: 6),
-                        Text("${post.likesCount}", style: const TextStyle(color: textGrey, fontWeight: FontWeight.bold, fontSize: 12)),
+                        Text("${post.likesCount}", style: const TextStyle(color: textGrey, fontSize: 12)),
                       ],
                     )
                   else
                     const SizedBox(),
                   if (post.commentsCount > 0)
-                    Text("${post.commentsCount} Comments", style: const TextStyle(color: textGrey, fontWeight: FontWeight.bold, fontSize: 12)),
+                    Text("${post.commentsCount} comments", style: const TextStyle(color: textGrey, fontSize: 12)),
                 ],
               ),
             ),
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Divider(color: cardBorder, height: 24, thickness: 1.5),
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Divider(color: cardBorder, height: 24),
             ),
           ] else ...[
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Divider(color: cardBorder, height: 24, thickness: 1.5),
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Divider(color: cardBorder, height: 24),
             ),
           ],
           Padding(
@@ -716,7 +794,7 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
                     onTap: () => _toggleLike(post),
                     borderRadius: BorderRadius.circular(12),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -737,12 +815,12 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
                     onTap: () => _openCommentsBottomSheet(post.id),
                     borderRadius: BorderRadius.circular(12),
                     child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
+                      padding: EdgeInsets.symmetric(vertical: 8),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.chat_bubble_outline_rounded, color: textGrey, size: 20),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text("Comment", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold, fontSize: 13)),
                         ],
                       ),
@@ -756,22 +834,10 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
       ),
     );
   }
-
-  InputDecoration _inputDecoration(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: const TextStyle(color: textGrey, fontSize: 13),
-      filled: true,
-      fillColor: cardBorder.withOpacity(0.5),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder, width: 1.5)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
-    );
-  }
 }
 
 // =====================================================================
-// ویجت نمایش کامنت‌ها و قابلیت ریپلای بدون خطای دیتابیس 
+// کلاس نمایش کامنت‌ها 
 // =====================================================================
 class _CommentsWidget extends StatefulWidget {
   final String postId;
@@ -957,7 +1023,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
       );
 
       double nextPadding = leftPadding + 36;
-      if (nextPadding > 72) nextPadding = 72; // محدود کردن حاشیه چپ برای ریپلای‌های متوالی
+      if (nextPadding > 72) nextPadding = 72;
       commentWidgets.addAll(_buildCommentTree(cId, nextPadding));
     }
     return commentWidgets;
@@ -1018,8 +1084,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                         controller: _commentController,
                         focusNode: _commentFocusNode,
                         cursorColor: const Color(0xFFC2185B),
-                        // رنگ تیره به متن اضافه شد تا روی پس‌زمینه روشن خوانا باشد
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF111827)),
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF111827)), 
                         decoration: InputDecoration(
                           hintText: replyingToName != null ? "Write a reply..." : "Add a comment...",
                           hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
