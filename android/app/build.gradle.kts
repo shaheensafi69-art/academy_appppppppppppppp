@@ -15,38 +15,40 @@ plugins {
 
 android {
     namespace = "org.safiacademy.app"
-    compileSdk = 36 // تغییر از flutter.compileSdkVersion به ۳۶
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
-    // ...
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
 
     defaultConfig {
         applicationId = "org.safiacademy.app"
         minSdk = flutter.minSdkVersion
-        targetSdk = 36 // تغییر از flutter.targetSdkVersion به ۳۶
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
-    
-    // ...
-}
 
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String? ?: ""
-            keyPassword = keystoreProperties["keyPassword"] as String? ?: ""
-            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
-            storePassword = keystoreProperties["storePassword"] as String? ?: ""
+            keyAlias = keystoreProperties.getProperty("keyAlias")
+            keyPassword = keystoreProperties.getProperty("keyPassword")
+            storeFile = keystoreProperties.getProperty("storeFile")?.let { file(it) }
+            storePassword = keystoreProperties.getProperty("storePassword")
         }
     }
 
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
-            // Enable code shrinking and resource shrinking to reduce APK size
             isMinifyEnabled = true
             isShrinkResources = true
-            // Use Android's default optimize proguard file and a project rules file
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
