@@ -15,25 +15,21 @@ plugins {
 
 android {
     namespace = "org.safiacademy.app"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36 // تغییر از flutter.compileSdkVersion به ۳۶
     ndkVersion = flutter.ndkVersion
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
+    // ...
 
     defaultConfig {
         applicationId = "org.safiacademy.app"
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 36 // تغییر از flutter.targetSdkVersion به ۳۶
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
+    
+    // ...
+}
 
     signingConfigs {
         create("release") {
@@ -55,17 +51,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-        }
-    }
-
-    // Split APKs per ABI to avoid bundling multiple native libs into one large APK.
-    // This will produce smaller per-ABI APKs (armeabi-v7a, arm64-v8a).
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include("armeabi-v7a", "arm64-v8a")
-            isUniversalApk = false
         }
     }
 }

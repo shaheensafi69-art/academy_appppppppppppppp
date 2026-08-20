@@ -78,34 +78,32 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
       final postsRes = await supabase.from("discussion_posts").select("*").eq("student_id", targetUserId).order("created_at", ascending: false);
       List<Map<String, dynamic>> enrichedPosts = [];
-      if (postsRes is List) {
-        for (var post in postsRes) {
-          String pId = post['id'].toString();
-          int likesCount = 0;
-          bool isLikedByMe = false;
-          try {
-            final likesRes = await supabase.from("discussion_likes").select("student_id").eq("post_id", pId);
-            if (likesRes is List) {
-              likesCount = likesRes.length;
-              if (currentUser != null) isLikedByMe = likesRes.any((like) => like['student_id'] == currentUser.id);
-            }
-          } catch (_) {}
+      for (var post in postsRes) {
+        String pId = post['id'].toString();
+        int likesCount = 0;
+        bool isLikedByMe = false;
+        try {
+          final likesRes = await supabase.from("discussion_likes").select("student_id").eq("post_id", pId);
+          if (likesRes is List) {
+            likesCount = likesRes.length;
+            if (currentUser != null) isLikedByMe = likesRes.any((like) => like['student_id'] == currentUser.id);
+          }
+        } catch (_) {}
 
-          int commentsCount = 0;
-          try {
-            final commentsRes = await supabase.from("discussion_comments").select("id").eq("post_id", pId);
-            if (commentsRes is List) commentsCount = commentsRes.length;
-          } catch (_) {}
+        int commentsCount = 0;
+        try {
+          final commentsRes = await supabase.from("discussion_comments").select("id").eq("post_id", pId);
+          if (commentsRes is List) commentsCount = commentsRes.length;
+        } catch (_) {}
 
-          enrichedPosts.add({
-            ...post,
-            'likes_count': likesCount,
-            'comments_count': commentsCount,
-            'is_liked_by_me': isLikedByMe,
-          });
-        }
+        enrichedPosts.add({
+          ...post,
+          'likes_count': likesCount,
+          'comments_count': commentsCount,
+          'is_liked_by_me': isLikedByMe,
+        });
       }
-
+    
       if (mounted) {
         setState(() {
           profileData = res;
@@ -575,7 +573,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       shrinkWrap: true,
                                       physics: const NeverScrollableScrollPhysics(),
                                       itemCount: userPosts.length,
-                                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                                      separatorBuilder: (_, _) => const SizedBox(height: 16),
                                       itemBuilder: (context, index) {
                                         final post = userPosts[index];
                                         final rawTitle = post['title'] ?? '';
