@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'teacher_overview_screen.dart';
@@ -15,10 +16,11 @@ import 'teacher_certificates_screen.dart';
 import 'teacher_about_help_center_screen.dart';
 import 'teacher_settings_screen.dart';
 import 'user_profile_screen.dart';
-// صفحات اختصاصی بخش فید و سوشال
-import 'teacher_feed_screen.dart'; 
-import 'teacher_friends_screen.dart'; 
+import '../../dashboard/screens/student_feed_screen.dart'; 
+import '../../dashboard/screens/student_friends_screen.dart'; 
 import 'create_post_screen.dart'; 
+import '../../reels/screens/student_reels_screen.dart';
+import '../../reels/screens/upload_reel_screen.dart';
 
 import '../../../core/routing/auth_gate.dart';
 
@@ -44,7 +46,7 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
   static const Color textGrey = Color(0xFF6B7280);
   static const Color cardBorder = Color(0xFFF3F4F6);
 
-  late final List<Widget> _screens = [
+  List<Widget> get _screens => [
     const TeacherOverviewScreen(),          // 0
     const TeacherAnnouncementsScreen(),     // 1
     const TeacherCoursesCurriculumScreen(), // 2
@@ -57,10 +59,11 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
     const TeacherCertificatesScreen(),      // 9
     const TeacherAboutHelpCenterScreen(),   // 10
     CreatePostScreen(onPostSuccess: () => setState(() => _currentIndex = 12)), // 11
-    const TeacherFeedScreen(),              // 12
-    const UserProfileScreen(),           // 13
+    const StudentFeedScreen(),              // 12 - فید اجتماعی یکپارچه
+    const UserProfileScreen(),              // 13
     const TeacherSettingsScreen(),          // 14
-    const TeacherFriendsScreen(),           // 15 - صفحه شبکه و اساتید
+    const StudentFriendsScreen(),           // 15 - شبکه دوستان یکپارچه
+    StudentReelsScreen(isActive: _currentIndex == 16), // 16 - صفحه ویدیوهای کوتاه ریلز
   ];
 
   final List<Map<String, Object>> _menuItems = [
@@ -142,6 +145,23 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
       );
     }
 
+    final bool isReels = _currentIndex == 16;
+    if (isReels) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+        systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ));
+    } else {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ));
+    }
+
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     final floatBottomMargin = bottomPadding > 0 ? bottomPadding + 4 : 12.0;
 
@@ -174,95 +194,149 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
     );
   }
 
-  bool get _isInSocialSection => _currentIndex == 11 || _currentIndex == 12 || _currentIndex == 13 || _currentIndex == 15;
+  bool get _isInSocialSection => _currentIndex == 11 || _currentIndex == 12 || _currentIndex == 13 || _currentIndex == 15 || _currentIndex == 16;
+
+  void _showCreateOptionsModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 16),
+              const Text("Create New Content 🚀", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF111827))),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
+                  child: const Icon(Icons.video_library_rounded, color: primaryPink, size: 24),
+                ),
+                title: const Text("Upload Educational Reel 🎬", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF111827))),
+                subtitle: const Text("Share short trading or coding videos with peers", style: TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const UploadReelScreen()));
+                },
+              ),
+              const Divider(height: 16),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
+                  child: const Icon(Icons.article_rounded, color: primaryPink, size: 24),
+                ),
+                title: const Text("Create Feed Post 📝", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF111827))),
+                subtitle: const Text("Share text, questions, or images on the academy feed", style: TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() => _currentIndex = 11); // Create Post index
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildFloatingBottomNav() {
+    final bool isReels = _currentIndex == 16;
+    if (_isInSocialSection) {
+      return Container(
+        height: 60,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: const BoxDecoration(
+          color: Colors.transparent,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Expanded(child: _buildNavItem(12, "FEED", Icons.dynamic_feed_rounded)),
+            Expanded(child: _buildNavItem(16, "REELS", Icons.video_library_rounded)),
+            // دکمه وسط (+) با انتخاب دوگانه ریلز یا پست معمولی (Instagram Style)
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _showCreateOptionsModal,
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isReels ? Colors.white : primaryPink,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.add_rounded,
+                      color: isReels ? Colors.black : Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(child: _buildNavItem(15, "FRIENDS", Icons.people_alt_rounded)),
+            Expanded(child: _buildNavItem(13, "PROFILE", Icons.person_rounded)),
+          ],
+        ),
+      );
+    }
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(32),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           height: 65,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
           decoration: BoxDecoration(
-            color: surfaceWhite.withOpacity(0.92),
-            border: Border.all(color: primaryPink.withOpacity(0.18), width: 1.5),
+            color: isReels ? Colors.black.withValues(alpha: 0.88) : surfaceWhite.withValues(alpha: 0.92),
+            border: Border.all(
+              color: isReels ? Colors.white12 : primaryPink.withValues(alpha: 0.18),
+              width: 1.5,
+            ),
             borderRadius: BorderRadius.circular(32),
-            boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 25, offset: const Offset(0, 8))],
+            boxShadow: [BoxShadow(color: primaryPink.withValues(alpha: 0.1), blurRadius: 25, offset: const Offset(0, 8))],
           ),
-          child: _isInSocialSection
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Expanded(child: _buildNavItem(12, "Feed", Icons.dynamic_feed_rounded)),
-                    Expanded(child: _buildNavItem(15, "Network", Icons.people_alt_rounded)),
-                    Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => setState(() => _currentIndex = 11),
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                          decoration: BoxDecoration(color: primaryPink, borderRadius: BorderRadius.circular(20)),
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.add_rounded, color: Colors.white, size: 22),
-                              SizedBox(height: 2),
-                              Text("POST", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.8)),
-                            ],
-                          ),
-                        ),
-                      ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Expanded(child: _buildNavItem(0, "Overview", Icons.dashboard_rounded)),
+              Expanded(child: _buildNavItem(2, "Courses", Icons.menu_book_rounded)),
+              Expanded(child: _buildNavItem(3, "Live", Icons.podcasts_rounded)),
+              Expanded(child: _buildNavItem(12, "Feed", Icons.dynamic_feed_rounded)),
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => setState(() => _isMobileMenuOpen = true),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: lightPinkBg.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
                     ),
-                    Expanded(child: _buildNavItem(13, "Profile", Icons.person_rounded)),
-                    Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => setState(() => _currentIndex = 0),
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.exit_to_app_rounded, color: Colors.redAccent, size: 20),
-                            SizedBox(height: 2),
-                            Text("EXIT", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.redAccent, letterSpacing: 0.8)),
-                          ],
-                        ),
-                      ),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.grid_view_rounded, color: primaryPink, size: 20),
+                        SizedBox(height: 2),
+                        Text("MENU", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 0.8)),
+                      ],
                     ),
-                  ],
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Expanded(child: _buildNavItem(0, "Overview", Icons.dashboard_rounded)),
-                    Expanded(child: _buildNavItem(2, "Courses", Icons.menu_book_rounded)),
-                    Expanded(child: _buildNavItem(3, "Live", Icons.podcasts_rounded)),
-                    Expanded(child: _buildNavItem(12, "Feed", Icons.dynamic_feed_rounded)),
-                    Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => setState(() => _isMobileMenuOpen = true),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: lightPinkBg.withOpacity(0.6),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
-                          ),
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.grid_view_rounded, color: primaryPink, size: 20),
-                              SizedBox(height: 2),
-                              Text("MENU", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 0.8)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -270,6 +344,12 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
 
   Widget _buildNavItem(int index, String title, IconData icon) {
     bool isActive = _currentIndex == index;
+    bool isReelsActive = _currentIndex == 16;
+
+    Color activeBgColor = isReelsActive ? Colors.white12 : lightPinkBg;
+    Color activeIconText = isReelsActive ? Colors.white : primaryPink;
+    Color inactiveIconText = isReelsActive ? Colors.white54 : textGrey;
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => setState(() => _currentIndex = index),
@@ -277,18 +357,18 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
         decoration: BoxDecoration(
-          color: isActive ? lightPinkBg : Colors.transparent,
+          color: isActive ? activeBgColor : Colors.transparent,
           borderRadius: BorderRadius.circular(18),
         ),
         alignment: Alignment.center,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: isActive ? 22 : 20, color: isActive ? primaryPink : textGrey),
+            Icon(icon, size: isActive ? 22 : 20, color: isActive ? activeIconText : inactiveIconText),
             const SizedBox(height: 2),
             Text(
               title.toUpperCase(),
-              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: isActive ? primaryPink : textGrey, letterSpacing: 0.5),
+              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: isActive ? activeIconText : inactiveIconText, letterSpacing: 0.5),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

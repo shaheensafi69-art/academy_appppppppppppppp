@@ -11,6 +11,8 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
+    // اضافه کردن پلاگین گوگل‌سرویس برای فایربیس
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -59,4 +61,13 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // وارد کردن Firebase BoM برای مدیریت نسخه هماهنگ پکیج‌ها
+    implementation(platform("com.google.firebase:firebase-bom:34.18.0"))
+    
+    // پکیج‌های مورد نیاز فایربیس (آنالیتیکس و پیام‌رسانی/نوتیفیکیشن)
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-messaging")
 }

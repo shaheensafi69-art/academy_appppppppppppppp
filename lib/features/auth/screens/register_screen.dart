@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/routing/auth_gate.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -19,7 +18,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   int step = 1;
   bool isLoading = false;
   String? errorMsg;
-  String? successMsg;
+  bool isSuccess = false; // <--- استیت موفقیت برای نمایش صفحه تایید ایمیل
   bool showPassword = false;
   bool showConfirmPassword = false;
 
@@ -177,6 +176,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
         validReferrerId = refData['id'];
       }
 
+      // ثبت‌نام در سوپابیس
       final authResponse = await supabase.auth.signUp(
         email: emailCtrl.text.trim(),
         password: passwordCtrl.text,
@@ -218,16 +218,11 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
         });
       }
 
+      // نمایش صفحه تایید ایمیل (به جای ریدایرکت به داشبورد)
       setState(() {
-        successMsg = "Registration complete! 🚀 Redirecting to dashboard...";
+        isSuccess = true;
       });
 
-      Future.delayed(const Duration(seconds: 2), () {
-        if (!mounted) return;
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const AuthGate()),
-        );
-      });
     } catch (e) {
       setState(() => errorMsg = e.toString());
     } finally {
@@ -272,42 +267,42 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             // Header Logo
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: lightPinkBg,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: primaryPink.withOpacity(0.18), width: 1.5),
-                              ),
-                              child: Image.asset(
-                                'assets/logo-without-b.png',
-                                height: 42,
-                                errorBuilder: (context, error, stackTrace) => const Icon(
-                                  Icons.school_rounded,
-                                  size: 42,
-                                  color: primaryPink,
+                            if (!isSuccess) ...[
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: lightPinkBg,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: primaryPink.withOpacity(0.18), width: 1.5),
+                                ),
+                                child: Image.asset(
+                                  'assets/logo-without-b.png',
+                                  height: 42,
+                                  errorBuilder: (context, error, stackTrace) => const Icon(
+                                    Icons.school_rounded,
+                                    size: 42,
+                                    color: primaryPink,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              "Create Account",
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                color: textDark,
-                                letterSpacing: -0.5,
+                              const SizedBox(height: 12),
+                              const Text(
+                                "Create Account",
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w900,
+                                  color: textDark,
+                                  letterSpacing: -0.5,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              "Join Safi Academy digital ecosystem.",
-                              style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500),
-                            ),
-                            const SizedBox(height: 18),
+                              const SizedBox(height: 4),
+                              const Text(
+                                "Join Safi Academy digital ecosystem.",
+                                style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500),
+                              ),
+                              const SizedBox(height: 18),
 
-                            // Step Indicators
-                            if (successMsg == null)
+                              // Step Indicators
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -316,7 +311,8 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                   _buildStepDot(3),
                                 ],
                               ),
-                            const SizedBox(height: 16),
+                              const SizedBox(height: 16),
+                            ],
 
                             // Card Form Container
                             Container(
@@ -333,22 +329,24 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                   ),
                                 ],
                               ),
-                              child: successMsg != null
+                              child: isSuccess
                                   ? _buildSuccessView()
                                   : _buildFormSteps(),
                             ),
 
-                            const SizedBox(height: 18),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Text("Already have an account? ", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
-                                GestureDetector(
-                                  onTap: () => Navigator.pop(context),
-                                  child: const Text("Sign In", style: TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 11)),
-                                ),
-                              ],
-                            ),
+                            if (!isSuccess) ...[
+                              const SizedBox(height: 18),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text("Already have an account? ", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                                  GestureDetector(
+                                    onTap: () => Navigator.pop(context),
+                                    child: const Text("Sign In", style: TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 11)),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -418,17 +416,87 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     );
   }
 
+  // ==========================================
+  // 💎 SUCCESS / VERIFY EMAIL VIEW (صفحه تایید ایمیل دو زبانه)
+  // ==========================================
   Widget _buildSuccessView() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.check_circle_rounded, color: Colors.green, size: 52),
-        const SizedBox(height: 12),
-        const Text("Registration Complete!", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: lightPinkBg,
+            shape: BoxShape.circle,
+            border: Border.all(color: primaryPink.withOpacity(0.3)),
+          ),
+          child: const Icon(Icons.mark_email_unread_rounded, color: primaryPink, size: 40),
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          "Verify Your Identity",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark),
+        ),
         const SizedBox(height: 6),
-        Text(successMsg!, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-        const SizedBox(height: 18),
-        const CircularProgressIndicator(color: primaryPink),
+        const Text(
+          "We've sent a secure verification link to your email address:",
+          style: TextStyle(color: textGrey, fontSize: 11),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: cardBorder.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            emailCtrl.text.trim(),
+            style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 12),
+          ),
+        ),
+        const SizedBox(height: 14),
+        // بخش فارسی (توضیحات تکمیلی)
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: lightPinkBg.withOpacity(0.4),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: primaryPink.withOpacity(0.2)),
+          ),
+          child: const Column(
+            children: [
+              Text(
+                "لطفاً وارد ایمیل خود شده و روی دکمه تایید کلیک کنید.",
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textDark),
+                textAlign: TextAlign.right,
+                textDirection: TextDirection.rtl,
+              ),
+              SizedBox(height: 4),
+              Text(
+                "(در صورت عدم مشاهده، حتماً پوشه Spam یا Junk را بررسی نمایید)",
+                style: TextStyle(fontSize: 9, color: textGrey),
+                textAlign: TextAlign.right,
+                textDirection: TextDirection.rtl,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          height: 44,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryPink,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text("PROCEED TO LOGIN", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1)),
+          ),
+        ),
       ],
     );
   }
@@ -641,7 +709,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           controller: controller,
           obscureText: isPassword && !(showObscure ?? false),
           maxLines: maxLines,
-          cursorColor: primaryPink, // کرسر صورتی رنگ
+          cursorColor: primaryPink,
           keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
           style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold),
           decoration: InputDecoration(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/routing/auth_gate.dart';
 import 'register_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -93,6 +94,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     });
   }
 
+  // ==========================================
+  // 🔒 بررسی تایید ایمیل قبل از اجازه ورود
+  // ==========================================
   Future<void> _handleLogin() async {
     if (emailCtrl.text.trim().isEmpty || passwordCtrl.text.isEmpty) {
       setState(() => errorMsg = "Please enter both email and password.");
@@ -110,10 +114,30 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         password: passwordCtrl.text,
       );
 
-      if (authResponse.session != null && mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const AuthGate()),
-        );
+      final user = authResponse.user;
+
+      if (user != null) {
+        // بررسی اینکه آیا ایمیل کاربر توسط سوپابیس تایید شده است یا خیر
+        // (حساب‌هایی که تازه ثبت‌نام کرده‌اند اما روی لینک ایمیل کلیک نکرده‌اند emailConfirmedAtشان null است)
+        final bool isEmailVerified = user.emailConfirmedAt != null;
+
+        if (!isEmailVerified) {
+          // اگر تایید نشده بود، از حساب خارجش می‌کنیم تا نتواند وارد شود
+          await supabase.auth.signOut();
+          
+          setState(() {
+            errorMsg = "Please verify your email address before signing in.\nلطفاً قبل از ورود، ایمیل خود را تایید کنید.";
+            isLoading = false;
+          });
+          return;
+        }
+
+        // اگر ایمیل تایید شده بود، اجازه ورود به داشبورد را می‌دهیم
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const AuthGate()),
+          );
+        }
       }
     } on AuthException catch (e) {
       setState(() {
@@ -126,77 +150,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         isLoading = false;
       });
     }
-  }
-
-  void _showForgotPasswordDialog() {
-    final resetEmailCtrl = TextEditingController(text: emailCtrl.text);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: surfaceWhite,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Reset Password', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textDark)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Enter your email address to receive a password reset link.',
-              style: TextStyle(fontSize: 12, color: textGrey),
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: resetEmailCtrl,
-              cursorColor: primaryPink,
-              keyboardType: TextInputType.emailAddress,
-              style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.bold),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: cardBorder.withOpacity(0.4),
-                hintText: 'email@example.com',
-                prefixIcon: const Icon(Icons.email_outlined, color: primaryPink, size: 20),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: cardBorder)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: cardBorder)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: primaryPink)),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: textGrey, fontSize: 13)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (resetEmailCtrl.text.trim().isNotEmpty) {
-                try {
-                  await supabase.auth.resetPasswordForEmail(resetEmailCtrl.text.trim());
-                  if (context.mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Password reset link sent to your email.')),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: ${e.toString()}')),
-                    );
-                  }
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryPink,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            child: const Text('Send Link', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -318,7 +271,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                       ),
                                       child: Text(
                                         errorMsg!,
-                                        style: const TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold),
+                                        style: const TextStyle(color: Colors.redAccent, fontSize: 11, height: 1.4, fontWeight: FontWeight.bold),
                                         textAlign: TextAlign.center,
                                       ),
                                     ),
@@ -405,7 +358,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                     showPassword: showPassword,
                                     onTogglePassword: () => setState(() => showPassword = !showPassword),
                                     extraLabel: GestureDetector(
-                                      onTap: _showForgotPasswordDialog,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                                        );
+                                      },
                                       child: const Text("Forgot?", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryPink)),
                                     ),
                                   ),

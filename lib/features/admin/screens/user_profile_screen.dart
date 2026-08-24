@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../chat/screens/direct_chat_screen.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final String? userId;
@@ -59,7 +60,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
       final res = await supabase.from("profiles").select("*").eq("id", targetUserId).maybeSingle();
       final friendsRes = await supabase.from("student_friends").select("id").or("sender_id.eq.$targetUserId,receiver_id.eq.$targetUserId").eq("status", "accepted");
-      int count = (friendsRes is List) ? friendsRes.length : 0;
+      int count = (friendsRes as List).length;
 
       String status = 'none';
       final currentUser = supabase.auth.currentUser;
@@ -84,16 +85,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         bool isLikedByMe = false;
         try {
           final likesRes = await supabase.from("discussion_likes").select("student_id").eq("post_id", pId);
-          if (likesRes is List) {
-            likesCount = likesRes.length;
-            if (currentUser != null) isLikedByMe = likesRes.any((like) => like['student_id'] == currentUser.id);
-          }
-        } catch (_) {}
+          likesCount = likesRes.length;
+          if (currentUser != null) isLikedByMe = likesRes.any((like) => like['student_id'] == currentUser.id);
+                } catch (_) {}
 
         int commentsCount = 0;
         try {
           final commentsRes = await supabase.from("discussion_comments").select("id").eq("post_id", pId);
-          if (commentsRes is List) commentsCount = commentsRes.length;
+          commentsCount = commentsRes.length;
         } catch (_) {}
 
         enrichedPosts.add({
@@ -381,6 +380,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         iconTheme: const IconThemeData(color: textDark),
         title: Text(isMyProfile ? "My Profile" : "Academy Profile", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
         centerTitle: true,
+        actions: [
+          TextButton.icon(
+            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+            icon: const Icon(Icons.exit_to_app_rounded, size: 18),
+            label: const Text("EXIT", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            onPressed: () {
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -483,38 +492,70 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                         ),
                                       )
                                     else
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: ElevatedButton.icon(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: friendshipStatus == 'friends' ? cardBorder : primaryPink,
-                                            foregroundColor: friendshipStatus == 'friends' ? textDark : Colors.white,
-                                            elevation: 0,
-                                            padding: const EdgeInsets.symmetric(vertical: 14),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: ElevatedButton.icon(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: friendshipStatus == 'friends' ? cardBorder : primaryPink,
+                                                foregroundColor: friendshipStatus == 'friends' ? textDark : Colors.white,
+                                                elevation: 0,
+                                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                              ),
+                                              icon: Icon(
+                                                friendshipStatus == 'friends'
+                                                    ? Icons.how_to_reg_rounded
+                                                    : friendshipStatus == 'pending_sent'
+                                                        ? Icons.access_time_rounded
+                                                        : friendshipStatus == 'pending_received'
+                                                            ? Icons.person_add_alt_1_rounded
+                                                            : Icons.person_add_rounded,
+                                                size: 16,
+                                              ),
+                                              label: Text(
+                                                friendshipStatus == 'friends'
+                                                    ? 'Connected ✓'
+                                                    : friendshipStatus == 'pending_sent'
+                                                        ? 'Pending'
+                                                        : friendshipStatus == 'pending_received'
+                                                            ? 'Accept'
+                                                            : 'Connect 🤝',
+                                                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
+                                              ),
+                                              onPressed: isActionLoading ? null : _handleFriendAction,
+                                            ),
                                           ),
-                                          icon: Icon(
-                                            friendshipStatus == 'friends'
-                                                ? Icons.how_to_reg_rounded
-                                                : friendshipStatus == 'pending_sent'
-                                                    ? Icons.access_time_rounded
-                                                    : friendshipStatus == 'pending_received'
-                                                        ? Icons.person_add_alt_1_rounded
-                                                        : Icons.person_add_rounded,
-                                            size: 16,
+                                          const SizedBox(width: 10),
+                                          ElevatedButton.icon(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: primaryPink,
+                                              foregroundColor: Colors.white,
+                                              elevation: 0,
+                                              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                            ),
+                                            icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
+                                            label: const Text("Chat 💬", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
+                                            onPressed: () {
+                                              final targetId = widget.userId ?? (profileData != null ? profileData!['id'] : null);
+                                              if (targetId != null) {
+                                                final peerName = "${profileData?['first_name'] ?? ''} ${profileData?['last_name'] ?? ''}".trim();
+                                                final peerAvatar = profileData?['avatar_url'] ?? '';
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (_) => DirectChatScreen(
+                                                      peerId: targetId,
+                                                      peerName: peerName.isNotEmpty ? peerName : 'User',
+                                                      peerAvatar: peerAvatar,
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+                                            },
                                           ),
-                                          label: Text(
-                                            friendshipStatus == 'friends'
-                                                ? 'Connected ✓ (Click to Remove)'
-                                                : friendshipStatus == 'pending_sent'
-                                                    ? 'Request Pending'
-                                                    : friendshipStatus == 'pending_received'
-                                                        ? 'Accept Connection'
-                                                        : 'Connect 🤝',
-                                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
-                                          ),
-                                          onPressed: isActionLoading ? null : _handleFriendAction,
-                                        ),
+                                        ],
                                       ),
                                   ],
                                 ),

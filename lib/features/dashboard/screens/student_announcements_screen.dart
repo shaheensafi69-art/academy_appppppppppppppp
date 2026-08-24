@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AnnouncementItem {
   final String id;
@@ -18,11 +19,40 @@ class AnnouncementItem {
 
   factory AnnouncementItem.fromJson(Map<String, dynamic> json) {
     return AnnouncementItem(
-      id: json['id'] ?? '',
+      id: json['id']?.toString() ?? '',
       title: json['title'] ?? '',
       message: json['message'] ?? '',
       targetRole: json['target_role'] ?? 'all',
       createdAt: json['created_at'] ?? DateTime.now().toIso8601String(),
+    );
+  }
+}
+
+class ClassGroupItem {
+  final String id;
+  final String className;
+  final String scheduleInfo;
+  final String? classTime;
+  final String? classDays;
+  final String? meetingLink;
+
+  ClassGroupItem({
+    required this.id,
+    required this.className,
+    required this.scheduleInfo,
+    this.classTime,
+    this.classDays,
+    this.meetingLink,
+  });
+
+  factory ClassGroupItem.fromJson(Map<String, dynamic> json) {
+    return ClassGroupItem(
+      id: json['id']?.toString() ?? '',
+      className: json['class_name'] ?? 'Academy Class',
+      scheduleInfo: json['schedule_info'] ?? '',
+      classTime: json['class_time'],
+      classDays: json['class_days'],
+      meetingLink: json['meeting_link'],
     );
   }
 }
@@ -38,6 +68,10 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
   final supabase = Supabase.instance.client;
   bool isLoading = true;
   List<AnnouncementItem> announcements = [];
+  List<ClassGroupItem> classGroups = [];
+
+  String selectedFilter = 'Announcements 📢';
+  final List<String> filters = ['Announcements 📢', 'Classes 🎓'];
 
   static const Color primaryPink = Color(0xFFC2185B);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
@@ -49,10 +83,10 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
   @override
   void initState() {
     super.initState();
-    _fetchAnnouncements();
+    _fetchAnnouncementsAndClasses();
   }
 
-  Future<void> _fetchAnnouncements() async {
+  Future<void> _fetchAnnouncementsAndClasses() async {
     setState(() => isLoading = true);
     try {
       final user = supabase.auth.currentUser;
@@ -67,20 +101,30 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
 
       final userRole = profile?['role'] ?? "student";
 
-      // ۲. واکشی اعلانات (آن‌هایی که برای "all" هستند یا مستقیماً برای نقش این کاربر)
+      // ۲. واکشی اعلانات
       final announcementsData = await supabase
           .from("announcements")
           .select("*")
           .inFilter("target_role", ["all", userRole])
           .order("created_at", ascending: false);
 
+      // ۳. واکشی کلاس‌ها
+      final classesData = await supabase
+          .from("class_groups")
+          .select("*")
+          .eq("is_active", true)
+          .order("created_at", ascending: false);
+
       setState(() {
         announcements = (announcementsData as List)
             .map((item) => AnnouncementItem.fromJson(item))
             .toList();
+        classGroups = (classesData as List)
+            .map((item) => ClassGroupItem.fromJson(item))
+            .toList();
       });
     } catch (e) {
-      debugPrint("Error fetching announcements: $e");
+      debugPrint("Error fetching data: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -99,11 +143,9 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
   String _formatTime(String dateStr) {
     try {
       final dt = DateTime.parse(dateStr);
-      int hour = dt.hour;
-      String period = hour >= 12 ? "PM" : "AM";
-      hour = hour % 12;
-      if (hour == 0) hour = 12;
-      return "$hour:${dt.minute.toString().padLeft(2, '0')} $period";
+      final hour = dt.hour.toString().padLeft(2, '0');
+      final minute = dt.minute.toString().padLeft(2, '0');
+      return "$hour:$minute";
     } catch (_) {
       return "";
     }
@@ -112,8 +154,8 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
   bool _isRecent(String dateStr) {
     try {
       final dt = DateTime.parse(dateStr);
-      final diff = DateTime.now().difference(dt).inDays;
-      return diff < 3;
+      final difference = DateTime.now().difference(dt);
+      return difference.inDays < 3;
     } catch (_) {
       return false;
     }
@@ -121,328 +163,279 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
 
   @override
   Widget build(BuildContext context) {
-    return AcademyLoadingOverlay(
-      isLoading: isLoading,
-      message: "LOADING ANNOUNCEMENTS...",
-      child: Scaffold(
-        backgroundColor: surfaceWhite,
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [const Color(0xFFFFF0F5), surfaceWhite, lightPinkBg.withOpacity(0.2)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ================= HEADER CARD =================
-                Container(
-                  padding: const EdgeInsets.all(22),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
-                    boxShadow: [
-                      BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
-                    ],
-                  ),
-                  child: Row(
+    return Scaffold(
+      backgroundColor: surfaceWhite,
+      body: SafeArea(
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator(color: primaryPink))
+            : RefreshIndicator(
+                color: primaryPink,
+                onRefresh: _fetchAnnouncementsAndClasses,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // هدر بخش اعلانات و کلاس‌ها
                       Container(
-                        width: 52,
-                        height: 52,
+                        padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: lightPinkBg,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                          gradient: LinearGradient(
+                            colors: [lightPinkBg.withOpacity(0.4), const Color(0xFFFFF0F5)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(28),
+                          border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
                         ),
-                        child: const Icon(Icons.campaign_rounded, color: primaryPink, size: 24),
-                      ),
-                      const SizedBox(width: 14),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Text(
-                              "Official Announcements",
-                              style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 18),
+                            Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                color: lightPinkBg,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                              ),
+                              child: const Icon(Icons.campaign_rounded, color: primaryPink, size: 24),
                             ),
-                            SizedBox(height: 4),
-                            Text(
-                              "Stay updated with latest news and notices from Safi Academy administration.",
-                              style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500, height: 1.3),
+                            const SizedBox(width: 14),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Academy Announcements",
+                                    style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 18),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    "Stay updated with latest announcements and upcoming live class groups.",
+                                    style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500, height: 1.3),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
                       ),
+                      const SizedBox(height: 20),
+
+                      // فیلتر دسته‌بندی با کنتراست بالا
+                      Row(
+                        children: filters.map((f) {
+                          final isSel = selectedFilter == f;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 10),
+                            child: ChoiceChip(
+                              label: Text(f),
+                              selected: isSel,
+                              selectedColor: primaryPink,
+                              backgroundColor: const Color(0xFFF3F4F6),
+                              side: BorderSide.none,
+                              showCheckmark: isSel,
+                              checkmarkColor: Colors.white,
+                              labelStyle: TextStyle(
+                                color: isSel ? Colors.white : textDark,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                              onSelected: (val) {
+                                if (val) {
+                                  setState(() {
+                                    selectedFilter = f;
+                                  });
+                                }
+                              },
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // نمایش داده فیلتر شده
+                      selectedFilter == 'Announcements 📢'
+                          ? _buildAnnouncementsList()
+                          : _buildClassesList(),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // ================= ANNOUNCEMENTS LIST =================
-                announcements.isNotEmpty
-                    ? ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: announcements.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final item = announcements[index];
-                          bool recent = _isRecent(item.createdAt);
-
-                          return Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: surfaceWhite,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: cardBorder, width: 1.5),
-                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        item.title,
-                                        style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14),
-                                      ),
-                                    ),
-                                    if (recent)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: lightPinkBg,
-                                          borderRadius: BorderRadius.circular(10),
-                                          border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(Icons.bolt_rounded, color: primaryPink, size: 12),
-                                            const SizedBox(width: 2),
-                                            const Text("New", style: TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
-                                          ],
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                                const SizedBox(height: 6),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.calendar_today_rounded, color: textGrey, size: 11),
-                                    const SizedBox(width: 4),
-                                    Text(_formatDate(item.createdAt), style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                                    const SizedBox(width: 12),
-                                    const Icon(Icons.access_time_rounded, color: textGrey, size: 11),
-                                    const SizedBox(width: 4),
-                                    Text(_formatTime(item.createdAt), style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                const Divider(color: cardBorder, height: 1),
-                                const SizedBox(height: 12),
-                                Text(
-                                  item.message,
-                                  style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w500, height: 1.4),
-                                ),
-                                const SizedBox(height: 14),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: cardBorder.withOpacity(0.6),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    "Target: ${item.targetRole == 'all' ? 'Entire Academy' : item.targetRole.toUpperCase()}",
-                                    style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.w900),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      )
-                    : Container(
-                        padding: const EdgeInsets.all(40),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: surfaceWhite,
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: cardBorder, width: 1.5),
-                        ),
-                        child: Column(
-                          children: [
-                            const Icon(Icons.notifications_off_outlined, color: textGrey, size: 36),
-                            const SizedBox(height: 10),
-                            const Text("No Announcements Yet", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
-                            const SizedBox(height: 4),
-                            const Text("You're all caught up! Future updates will appear here.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
-                          ],
-                        ),
-                      ),
-                const SizedBox(height: 40),
-              ],
-            ),
-          ),
-        ),
+              ),
       ),
     );
   }
-}
 
-// ============================================================================
-// ویجت کاستوم لودینگ آکادمی
-// ============================================================================
-
-class AcademyLoadingOverlay extends StatelessWidget {
-  final bool isLoading;
-  final String message;
-  final Widget child;
-
-  const AcademyLoadingOverlay({
-    super.key,
-    required this.isLoading,
-    required this.child,
-    this.message = "LOADING...",
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        child,
-        if (isLoading)
-          Container(
-            color: Colors.white.withOpacity(0.95),
-            alignment: Alignment.center,
-            child: _AcademyThinkingLoadingAnimation(message: message),
-          ),
-      ],
-    );
-  }
-}
-
-class _AcademyThinkingLoadingAnimation extends StatefulWidget {
-  final String message;
-  const _AcademyThinkingLoadingAnimation({required this.message});
-
-  @override
-  State<_AcademyThinkingLoadingAnimation> createState() => _AcademyThinkingLoadingAnimationState();
-}
-
-class _AcademyThinkingLoadingAnimationState extends State<_AcademyThinkingLoadingAnimation> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(duration: const Duration(seconds: 2), vsync: this)..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Stack(
-          alignment: Alignment.center,
+  Widget _buildAnnouncementsList() {
+    if (announcements.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(40),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: surfaceWhite,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: cardBorder, width: 1.5),
+        ),
+        child: const Column(
           children: [
-            RotationTransition(
-              turns: _controller,
-              child: Container(
-                width: 130,
-                height: 130,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: SweepGradient(
-                    colors: [
-                      const Color(0xFFC2185B).withOpacity(0.0),
-                      const Color(0xFFC2185B).withOpacity(0.8),
-                      const Color(0xFFC2185B),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              width: 110,
-              height: 110,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-            ),
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFCE4EC),
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFC2185B).withOpacity(0.25), width: 2),
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  const Icon(
-                    Icons.girl_rounded,
-                    size: 54,
-                    color: Color(0xFFC2185B),
-                  ),
-                  Positioned(
-                    bottom: 12,
-                    right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 6),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.menu_book_rounded,
-                        size: 14,
-                        color: Color(0xFFC2185B),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            Icon(Icons.notifications_off_outlined, color: textGrey, size: 36),
+            SizedBox(height: 10),
+            Text("No Announcements Yet", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
           ],
         ),
-        const SizedBox(height: 24),
-        Text(
-          widget.message,
-          style: const TextStyle(
-            color: Color(0xFF111827),
-            fontSize: 11,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 2,
-            decoration: TextDecoration.none,
+      );
+    }
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: announcements.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final item = announcements[index];
+        bool recent = _isRecent(item.createdAt);
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: surfaceWhite,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: cardBorder, width: 1.5),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
           ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      item.title,
+                      style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14),
+                    ),
+                  ),
+                  if (recent)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: lightPinkBg,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text("NEW", style: TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.bold)),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  const Icon(Icons.calendar_today_rounded, color: textGrey, size: 11),
+                  const SizedBox(width: 4),
+                  Text(_formatDate(item.createdAt), style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Divider(color: cardBorder, height: 1),
+              const SizedBox(height: 12),
+              Text(
+                item.message,
+                style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w500, height: 1.4),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildClassesList() {
+    if (classGroups.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(40),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: surfaceWhite,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: cardBorder, width: 1.5),
         ),
-      ],
+        child: const Column(
+          children: [
+            Icon(Icons.school_outlined, color: textGrey, size: 36),
+            SizedBox(height: 10),
+            Text("No Active Class Groups", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: classGroups.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final group = classGroups[index];
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: surfaceWhite,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: cardBorder, width: 1.5),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                group.className,
+                style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              if (group.classDays != null || group.classTime != null) ...[
+                Row(
+                  children: [
+                    const Icon(Icons.access_time_rounded, color: primaryPink, size: 13),
+                    const SizedBox(width: 6),
+                    Text(
+                      "${group.classDays ?? 'Scheduled Days'} at ${group.classTime ?? '10:00 AM'}",
+                      style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+              ],
+              Text(
+                group.scheduleInfo,
+                style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500),
+              ),
+              if (group.meetingLink != null && group.meetingLink!.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryPink,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(Icons.video_call_rounded, color: Colors.white),
+                    label: const Text("JOIN LIVE CLASS 📹", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    onPressed: () async {
+                      final url = Uri.parse(group.meetingLink!);
+                      if (await canLaunchUrl(url)) {
+                        await launchUrl(url);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
     );
   }
 }

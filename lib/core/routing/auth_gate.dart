@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../services/notification_service.dart';
 import '../../features/auth/screens/welcome_screen.dart';
 import '../../features/admin/screens/admin_main_layout.dart';
 import '../../features/dashboard/screens/student_main_layout.dart';
@@ -105,6 +106,9 @@ class _AuthGateState extends State<AuthGate> {
       } else {
         destination = const StudentMainLayout();
       }
+
+      // ذخیره و آپدیت توکن FCM در دیتابیس سوپابیس برای کاربر فعال
+      NotificationService().saveFCMTokenToDatabase();
 
       setState(() {
         _targetScreen = destination;

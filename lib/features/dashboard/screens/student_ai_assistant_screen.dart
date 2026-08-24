@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import '../../../core/services/gemini_ai_service.dart';
 
 class Message {
   final String id;
@@ -26,20 +25,22 @@ class StudentAiAssistantScreen extends StatefulWidget {
 
 class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
   final supabase = Supabase.instance.client;
+  final GeminiAiService _aiService = GeminiAiService();
   bool isLoadingHistory = true;
   bool isTyping = false;
   List<Message> messages = [];
   final TextEditingController _textController = TextEditingController();
   String studentName = "";
+  List<String> studentCourses = [];
   bool showEmojiPanel = false;
 
   final ScrollController _scrollController = ScrollController();
 
   final List<String> suggestedPrompts = [
-    "Explain Stripe Treasury BaaS integration.",
-    "Review my latest Trading Journal entry.",
-    "How do I set up Dropshipping on Shopify?",
-    "Debug my Next.js & Supabase connection."
+    "سوال درباره دوره‌های ثبت‌نام‌شده من",
+    "چه دوره‌های جدیدی در آکادمی ارائه می‌شود؟",
+    "چگونه در کلاس‌های زنده شرکت کنم؟",
+    "راهنمایی درباره پروژه‌ها و برنامه‌های آموزشی"
   ];
 
   final List<String> emojis = ["🔥", "🚀", "💻", "📈", "📊", "🎯", "💰", "💎", "💡", "🧠", "👍", "🙌", "🎉", "👑"];
@@ -82,16 +83,10 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
       if (user == null) return;
       final userId = user.id;
 
-      // دریافت نام دانشجو
-      final profile = await supabase
-          .from("profiles")
-          .select("first_name")
-          .eq("id", userId)
-          .maybeSingle();
-
-      if (profile != null) {
-        studentName = profile['first_name'] ?? '';
-      }
+      // دریافت اطلاعات متنی دانشجو
+      final studentCtx = await _aiService.fetchStudentContext(userId);
+      studentName = studentCtx.studentName;
+      studentCourses = studentCtx.enrolledCourses;
 
       // دریافت تاریخچه چت از جدول ai_chat_history
       final history = await supabase
@@ -150,21 +145,21 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
 
     try {
       final user = supabase.auth.currentUser;
-      if (user == null) return;
+      if (user == null) {
+        throw Exception("لطفاً ابتدا وارد حساب کاربری شوید.");
+      }
       final userId = user.id;
 
-      final response = await http.post(
-        Uri.parse("https://your-domain.com/api/chat"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"prompt": text, "userId": userId}),
+      final List<Map<String, String>> conversationHistory = messages
+          .where((m) => !m.id.startsWith("temp-"))
+          .map((m) => {"role": m.role, "content": m.content})
+          .toList();
+
+      final realAIResponse = await _aiService.generateResponse(
+        studentId: userId,
+        userPrompt: text,
+        conversationHistory: conversationHistory,
       );
-
-      final resData = jsonDecode(response.body);
-      if (response.statusCode != 200) {
-        throw Exception(resData['message'] ?? "Server error");
-      }
-
-      final realAIResponse = resData['message'] ?? "No response received.";
 
       final savedChat = await supabase
           .from("ai_chat_history")
@@ -202,7 +197,7 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
           messages.add(Message(
             id: "error-${DateTime.now().millisecondsSinceEpoch}",
             role: "ai",
-            content: "⚠️ Failed to get AI response. Please check connection.",
+            content: "⚠️ خطایی در پاسخ هوش مصنوعی رخ داد: $e",
             createdAt: DateTime.now().toIso8601String(),
           ));
         });

@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../screens/student_overview_screen.dart';
@@ -14,6 +15,9 @@ import '../screens/student_achievements_screen.dart';
 import '../screens/student_support_screen.dart';
 import '../screens/student_feed_screen.dart';      // صفحه فید اجتماعی
 import '../screens/student_friends_screen.dart';   // صفحه مدیریت دوستان
+import '../screens/student_ai_assistant_screen.dart'; // دستیار هوشمند AI
+import '../../reels/screens/student_reels_screen.dart';        // صفحه ویدیوهای کوتاه ریلز
+import '../../reels/screens/upload_reel_screen.dart';
 
 import 'certificates_screen.dart';
 import 'wishlist_screen.dart';
@@ -25,6 +29,7 @@ import 'help_center_screen.dart';
 import 'user_profile_screen.dart';            // صفحه پروفایل کاربر
 
 import '../../../core/routing/auth_gate.dart';
+import '../../../core/services/notification_service.dart';
 
 class StudentMainLayout extends StatefulWidget {
   const StudentMainLayout({super.key});
@@ -49,7 +54,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
   static const Color borderColor = Color(0xFFF3F4F6);
   static const Color lightPinkBg = Color(0xFFFCE4EC);
 
-  late final List<Widget> _screens = [
+  List<Widget> get _screens => [
     const StudentOverviewScreen(),         // 0
     const StudentAnnouncementsScreen(),    // 1
     const StudentCoursesScreen(),          // 2
@@ -66,11 +71,12 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
     const StudentWalletScreen(),           // 13
     const StudentFriendsScreen(),          // 14 - صفحه دوستان
     const StudentAchievementsScreen(),     // 15
-    _buildPlaceholderScreen("AI Assistant", Icons.smart_toy_rounded, "Smart assistant for your trading & studies."), // 16
+    const StudentAiAssistantScreen(),      // 16 - دستیار هوشمند AI
     const HelpCenterScreen(),              // 17
     const StudentSupportScreen(),          // 18
-    const UserProfileScreen(),          // 19 - پروفایل شخصی
+    const UserProfileScreen(),             // 19 - پروفایل شخصی
     const SettingsScreen(),                // 20
+    StudentReelsScreen(isActive: _currentIndex == 21), // 21 - ویدیوهای کوتاه ریلز
   ];
 
   final List<Map<String, Object>> _menuItems = [
@@ -90,7 +96,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
     {"index": 13, "name": "Wallet & Referral", "icon": Icons.account_balance_wallet_rounded},
     {"index": 14, "name": "Friends & Network", "icon": Icons.people_alt_rounded},
     {"index": 15, "name": "Achievements", "icon": Icons.emoji_events_rounded},
-    {"index": 16, "name": "AI Assistant (Soon)", "icon": Icons.smart_toy_rounded, "soon": true},
+    {"index": 16, "name": "Safi AI Assistant", "icon": Icons.smart_toy_rounded},
     {"index": 17, "name": "Help Center", "icon": Icons.help_outline_rounded},
     {"index": 18, "name": "Support Tickets", "icon": Icons.support_agent_rounded},
     {"index": 19, "name": "My Profile", "icon": Icons.person_rounded},
@@ -111,6 +117,9 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
       _logout();
       return;
     }
+
+    // ذخیره خودکار توکن FCM پس از لود شدن هویت کاربر
+    NotificationService().saveFCMTokenToDatabase();
 
     try {
       final profile = await supabase
@@ -139,41 +148,6 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
     }
   }
 
-  Widget _buildPlaceholderScreen(String title, IconData icon, String subtitle) {
-    return Scaffold(
-      backgroundColor: backgroundWhite,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: const BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
-                child: Icon(icon, size: 40, color: primaryPink),
-              ),
-              const SizedBox(height: 16),
-              Text(title, style: const TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.w900)),
-              const SizedBox(height: 6),
-              Text(subtitle, style: const TextStyle(color: subTextColor, fontSize: 11), textAlign: TextAlign.center),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: lightPinkBg,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
-                ),
-                child: const Text("Coming Soon 🚀", style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -190,6 +164,23 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
           ),
         ),
       );
+    }
+
+    final bool isReels = _currentIndex == 21;
+    if (isReels) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+        systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ));
+    } else {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ));
     }
 
     final bottomPadding = MediaQuery.of(context).padding.bottom;
@@ -227,10 +218,102 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
     );
   }
 
-  // تشخیص اینکه آیا کاربر در بخش اجتماعی (فید، دوستان، پروفایل یا ساخت پست) است یا خیر
-  bool get _isInSocialSection => _currentIndex == 11 || _currentIndex == 12 || _currentIndex == 14 || _currentIndex == 19;
+  // تشخیص اینکه آیا کاربر در بخش اجتماعی است یا خیر
+  bool get _isInSocialSection => _currentIndex == 11 || _currentIndex == 12 || _currentIndex == 14 || _currentIndex == 19 || _currentIndex == 21;
+
+  void _showCreateOptionsModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 16),
+              const Text("Create New Content 🚀", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF111827))),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
+                  child: const Icon(Icons.video_library_rounded, color: primaryPink, size: 24),
+                ),
+                title: const Text("Upload Educational Reel 🎬", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF111827))),
+                subtitle: const Text("Share short trading or coding videos with peers", style: TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const UploadReelScreen()));
+                },
+              ),
+              const Divider(height: 16),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
+                  child: const Icon(Icons.article_rounded, color: primaryPink, size: 24),
+                ),
+                title: const Text("Create Feed Post 📝", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF111827))),
+                subtitle: const Text("Share text, questions, or images on the academy feed", style: TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() => _currentIndex = 11); // Create Post index
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildFloatingBottomNav() {
+    final bool isReels = _currentIndex == 21;
+    if (_isInSocialSection) {
+      return Container(
+        height: 60,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: const BoxDecoration(
+          color: Colors.transparent,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Expanded(child: _buildNavItem(12, "FEED", Icons.dynamic_feed_rounded)),
+            Expanded(child: _buildNavItem(21, "REELS", Icons.video_library_rounded)),
+            // دکمه وسط (+) با انتخاب دوگانه ریلز یا پست معمولی (Instagram Style)
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _showCreateOptionsModal,
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isReels ? Colors.white : primaryPink,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.add_rounded,
+                      color: isReels ? Colors.black : Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(child: _buildNavItem(14, "FRIENDS", Icons.people_alt_rounded)),
+            Expanded(child: _buildNavItem(19, "PROFILE", Icons.person_rounded)),
+          ],
+        ),
+      );
+    }
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(28),
       child: BackdropFilter(
@@ -239,95 +322,52 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
           height: 65,
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
           decoration: BoxDecoration(
-            color: surfaceColor.withOpacity(0.92),
-            border: Border.all(color: primaryPink.withOpacity(0.18), width: 1.5),
+            color: isReels ? Colors.black.withValues(alpha: 0.88) : surfaceColor.withValues(alpha: 0.92),
+            border: Border.all(
+              color: isReels ? Colors.white12 : primaryPink.withValues(alpha: 0.18),
+              width: 1.5,
+            ),
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
-                color: primaryPink.withOpacity(0.1),
+                color: primaryPink.withValues(alpha: 0.1),
                 blurRadius: 25,
                 offset: const Offset(0, 8),
               ),
             ],
           ),
-          child: _isInSocialSection
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Expanded(child: _buildNavItem(12, "Feed", Icons.dynamic_feed_rounded)),
-                    Expanded(child: _buildNavItem(14, "Friends", Icons.people_alt_rounded)),
-                    // دکمه وسط (+) که مستقیماً به صفحه CreatePostScreen (ایندکس 11) هدایت می‌کند
-                    Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => setState(() => _currentIndex = 11),
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: primaryPink,
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.add_rounded, color: Colors.white, size: 22),
-                              SizedBox(height: 1),
-                              Text("POST", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.8)),
-                            ],
-                          ),
-                        ),
-                      ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Expanded(child: _buildNavItem(0, "Overview", Icons.dashboard_rounded)),
+              Expanded(child: _buildNavItem(2, "Courses", Icons.menu_book_rounded)),
+              Expanded(child: _buildNavItem(4, "Live", Icons.podcasts_rounded)),
+              Expanded(child: _buildNavItem(12, "Feed", Icons.dynamic_feed_rounded)),
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => setState(() => _isMobileMenuOpen = true),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: lightPinkBg.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: primaryPink.withOpacity(0.3), width: 1),
                     ),
-                    Expanded(child: _buildNavItem(19, "Profile", Icons.person_rounded)),
-                    // دکمه خروج از بخش اجتماعی و بازگشت به صفحه اصلی
-                    Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => setState(() => _currentIndex = 0),
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.exit_to_app_rounded, color: Colors.redAccent, size: 19),
-                            SizedBox(height: 1),
-                            Text("EXIT", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.redAccent, letterSpacing: 0.8)),
-                          ],
-                        ),
-                      ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.grid_view_rounded, color: primaryPink, size: 20),
+                        const SizedBox(height: 1),
+                        Text("MENU", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 0.8)),
+                      ],
                     ),
-                  ],
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Expanded(child: _buildNavItem(0, "Overview", Icons.dashboard_rounded)),
-                    Expanded(child: _buildNavItem(2, "Courses", Icons.menu_book_rounded)),
-                    Expanded(child: _buildNavItem(4, "Live", Icons.podcasts_rounded)),
-                    Expanded(child: _buildNavItem(12, "Feed", Icons.dynamic_feed_rounded)),
-                    Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => setState(() => _isMobileMenuOpen = true),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: lightPinkBg.withOpacity(0.6),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: primaryPink.withOpacity(0.3), width: 1),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.grid_view_rounded, color: primaryPink, size: 20),
-                              const SizedBox(height: 1),
-                              Text("MENU", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 0.8)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -335,6 +375,12 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
 
   Widget _buildNavItem(int index, String title, IconData icon) {
     bool isActive = _currentIndex == index;
+    bool isReelsActive = _currentIndex == 21;
+
+    Color activeBgColor = isReelsActive ? Colors.white12 : lightPinkBg;
+    Color activeIconText = isReelsActive ? Colors.white : primaryPink;
+    Color inactiveIconText = isReelsActive ? Colors.white54 : subTextColor;
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => setState(() => _currentIndex = index),
@@ -342,7 +388,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
         decoration: BoxDecoration(
-          color: isActive ? lightPinkBg : Colors.transparent,
+          color: isActive ? activeBgColor : Colors.transparent,
           borderRadius: BorderRadius.circular(18),
         ),
         alignment: Alignment.center,
@@ -352,7 +398,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
             Icon(
               icon,
               size: isActive ? 22 : 19,
-              color: isActive ? primaryPink : subTextColor,
+              color: isActive ? activeIconText : inactiveIconText,
             ),
             const SizedBox(height: 1),
             Text(
@@ -360,7 +406,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
               style: TextStyle(
                 fontSize: 7,
                 fontWeight: FontWeight.w900,
-                color: isActive ? primaryPink : subTextColor,
+                color: isActive ? activeIconText : inactiveIconText,
                 letterSpacing: 0.8,
               ),
               maxLines: 1,

@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // ایمپورت صفحات پنل ادمین
@@ -15,11 +16,12 @@ import 'live_classes_screen.dart';
 import 'tickets_screen.dart';
 import 'settings_screen.dart';
 
-// ایمپورت صفحات سوشال و فید ادمین
-import 'admin_feed_screen.dart'; 
-import 'admin_friends_screen.dart';
+import '../../dashboard/screens/student_feed_screen.dart'; 
+import '../../dashboard/screens/student_friends_screen.dart';
 import 'create_post_screen.dart';
 import 'user_profile_screen.dart';
+import '../../reels/screens/student_reels_screen.dart';
+import '../../reels/screens/upload_reel_screen.dart';
 
 import '../../../core/routing/auth_gate.dart';
 
@@ -45,8 +47,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   static const Color textGrey = Color(0xFF6B7280);
   static const Color cardBorder = Color(0xFFE5E7EB);
 
-  // لیست اسکرین‌های ادمین با ایندکس‌های دقیق
-  late final List<Widget> _screens = [
+  List<Widget> get _screens => [
     const AdminDashboardScreen(), // 0: Overview
     const ManageStudentsScreen(), // 1: Students
     const ManageTeachersScreen(), // 2: Faculty
@@ -59,9 +60,10 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     const TicketsScreen(),        // 9: Tickets
     const AdminSettingsScreen(),  // 10: Settings
     CreatePostScreen(onPostSuccess: () => setState(() => _currentIndex = 12)), // 11: Create Post
-    const AdminFeedScreen(),      // 12: Academy Feed (فید ادمین)
-    const AdminFriendsScreen(),   // 13: Admin Network
-    const UserProfileScreen(),    // 14: Admin Profile
+    const StudentFeedScreen(),     // 12: Academy Feed (فید اجتماعی یکپارچه)
+    const StudentFriendsScreen(),  // 13: Friends & Network (شبکه یکپارچه)
+    const UserProfileScreen(),     // 14: Admin Profile
+    StudentReelsScreen(isActive: _currentIndex == 15), // 15: Educational Reels
   ];
 
   // لیست گزینه‌های منوی کامل ادمین
@@ -104,7 +106,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   }
 
   // بررسی اینکه ادمین در بخش سوشال (فید، نتورک، پست، پروفایل) است یا بخش مدیریتی
-  bool get _isInSocialSection => _currentIndex == 11 || _currentIndex == 12 || _currentIndex == 13 || _currentIndex == 14;
+  bool get _isInSocialSection => _currentIndex == 11 || _currentIndex == 12 || _currentIndex == 13 || _currentIndex == 14 || _currentIndex == 15;
 
   @override
   Widget build(BuildContext context) {
@@ -122,6 +124,23 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
           ),
         ),
       );
+    }
+
+    final bool isReels = _currentIndex == 15;
+    if (isReels) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+        systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ));
+    } else {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ));
     }
 
     final bottomPadding = MediaQuery.of(context).padding.bottom;
@@ -159,90 +178,144 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     );
   }
 
+  void _showCreateOptionsModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 16),
+              const Text("Create New Content 🚀", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF111827))),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
+                  child: const Icon(Icons.video_library_rounded, color: primaryPink, size: 24),
+                ),
+                title: const Text("Upload Educational Reel 🎬", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF111827))),
+                subtitle: const Text("Share short trading or coding videos with peers", style: TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const UploadReelScreen()));
+                },
+              ),
+              const Divider(height: 16),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
+                  child: const Icon(Icons.article_rounded, color: primaryPink, size: 24),
+                ),
+                title: const Text("Create Feed Post 📝", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF111827))),
+                subtitle: const Text("Share text, questions, or images on the academy feed", style: TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() => _currentIndex = 11); // Create Post index
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildModernBottomNav() {
+    final bool isReels = _currentIndex == 15;
+    if (_isInSocialSection) {
+      return Container(
+        height: 60,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: const BoxDecoration(
+          color: Colors.transparent,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(child: _buildNavTab(12, "FEED", Icons.dynamic_feed_rounded, color: primaryPink)),
+            Expanded(child: _buildNavTab(15, "REELS", Icons.video_library_rounded, color: primaryPink)),
+            // دکمه وسط (+) با انتخاب دوگانه ریلز یا پست معمولی (Instagram Style)
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _showCreateOptionsModal,
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isReels ? Colors.white : primaryPink,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.add_rounded,
+                      color: isReels ? Colors.black : Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(child: _buildNavTab(13, "FRIENDS", Icons.people_alt_rounded, color: primaryPink)),
+            Expanded(child: _buildNavTab(14, "PROFILE", Icons.person_rounded, color: primaryPink)),
+          ],
+        ),
+      );
+    }
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(32),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
         child: Container(
           height: 65,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
           decoration: BoxDecoration(
-            color: surfaceWhite.withValues(alpha: 0.92),
+            color: isReels ? Colors.black.withValues(alpha: 0.88) : surfaceWhite.withValues(alpha: 0.92),
             borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: primaryPink.withValues(alpha: 0.18), width: 1.5),
+            border: Border.all(
+              color: isReels ? Colors.white12 : primaryPink.withValues(alpha: 0.18),
+              width: 1.5,
+            ),
             boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 20, offset: const Offset(0, 8))],
           ),
-          child: _isInSocialSection
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(child: _buildNavTab(12, "Feed", Icons.dynamic_feed_rounded, color: primaryPink)),
-                    Expanded(child: _buildNavTab(13, "Network", Icons.people_alt_rounded, color: primaryPink)),
-                    Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => setState(() => _currentIndex = 11), // دکمه ایجاد پست (+)
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                          decoration: BoxDecoration(color: primaryPink, borderRadius: BorderRadius.circular(20)),
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.add_rounded, color: Colors.white, size: 22),
-                              SizedBox(height: 1),
-                              Text("POST", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.8)),
-                            ],
-                          ),
-                        ),
-                      ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(child: _buildNavTab(0, "Overview", Icons.dashboard_rounded, color: primaryPink)),
+              Expanded(child: _buildNavTab(1, "Students", Icons.school_rounded, color: const Color(0xFF00897B))),
+              Expanded(child: _buildNavTab(12, "Feed", Icons.dynamic_feed_rounded, color: primaryPink)),
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => setState(() => _isMenuOpen = true),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: _isMenuOpen ? lightPinkBg : Colors.transparent,
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    Expanded(child: _buildNavTab(14, "Profile", Icons.person_rounded, color: primaryPink)),
-                    Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => setState(() => _currentIndex = 0), // بازگشت به Overview
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.exit_to_app_rounded, color: Colors.redAccent, size: 19),
-                            SizedBox(height: 1),
-                            Text("EXIT", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.redAccent, letterSpacing: 0.8)),
-                          ],
-                        ),
-                      ),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.grid_view_rounded, color: primaryPink, size: 22),
+                        SizedBox(height: 3),
+                        Text("MENU", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 0.8)),
+                      ],
                     ),
-                  ],
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(child: _buildNavTab(0, "Overview", Icons.dashboard_rounded, color: primaryPink)),
-                    Expanded(child: _buildNavTab(1, "Students", Icons.school_rounded, color: const Color(0xFF00897B))),
-                    Expanded(child: _buildNavTab(12, "Feed", Icons.dynamic_feed_rounded, color: primaryPink)),
-                    Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => setState(() => _isMenuOpen = true),
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: _isMenuOpen ? lightPinkBg : Colors.transparent,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.grid_view_rounded, color: primaryPink, size: 22),
-                              SizedBox(height: 3),
-                              Text("MENU", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 0.8)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -250,6 +323,12 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
 
   Widget _buildNavTab(int index, String title, IconData icon, {required Color color}) {
     bool isActive = _currentIndex == index && !_isMenuOpen;
+    bool isReelsActive = _currentIndex == 15;
+
+    Color activeBgColor = isReelsActive ? Colors.white12 : color.withValues(alpha: 0.15);
+    Color activeIconText = isReelsActive ? Colors.white : color;
+    Color inactiveIconText = isReelsActive ? Colors.white54 : textGrey;
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -261,21 +340,21 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
         decoration: BoxDecoration(
-          color: isActive ? color.withValues(alpha: 0.15) : Colors.transparent,
+          color: isActive ? activeBgColor : Colors.transparent,
           borderRadius: BorderRadius.circular(18),
         ),
         alignment: Alignment.center,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: isActive ? color : textGrey, size: isActive ? 22 : 19),
+            Icon(icon, color: isActive ? activeIconText : inactiveIconText, size: isActive ? 22 : 19),
             const SizedBox(height: 2),
             Text(
               title.toUpperCase(),
               style: TextStyle(
                 fontSize: 7,
                 fontWeight: FontWeight.w900,
-                color: isActive ? color : textGrey,
+                color: isActive ? activeIconText : inactiveIconText,
                 letterSpacing: 0.8,
               ),
               maxLines: 1,
