@@ -4,8 +4,9 @@ import '../../chat/screens/direct_chat_screen.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final String? userId;
+  final VoidCallback? onExit;
 
-  const UserProfileScreen({super.key, this.userId});
+  const UserProfileScreen({super.key, this.userId, this.onExit});
 
   @override
   State<UserProfileScreen> createState() => _UserProfileScreenState();
@@ -386,7 +387,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             icon: const Icon(Icons.exit_to_app_rounded, size: 18),
             label: const Text("EXIT", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
             onPressed: () {
-              Navigator.of(context).popUntil((route) => route.isFirst);
+              if (isMyProfile) {
+                if (widget.onExit != null) {
+                  widget.onExit!();
+                }
+              } else {
+                Navigator.of(context).pop();
+              }
             },
           ),
         ],

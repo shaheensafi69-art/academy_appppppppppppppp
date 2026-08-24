@@ -16,9 +16,9 @@ import 'teacher_certificates_screen.dart';
 import 'teacher_about_help_center_screen.dart';
 import 'teacher_settings_screen.dart';
 import 'user_profile_screen.dart';
-import '../../dashboard/screens/student_feed_screen.dart'; 
-import '../../dashboard/screens/student_friends_screen.dart'; 
-import 'create_post_screen.dart'; 
+import '../../dashboard/screens/student_feed_screen.dart';
+import '../../dashboard/screens/student_friends_screen.dart';
+import 'create_post_screen.dart';
 import '../../reels/screens/student_reels_screen.dart';
 import '../../reels/screens/upload_reel_screen.dart';
 
@@ -47,23 +47,27 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
   static const Color cardBorder = Color(0xFFF3F4F6);
 
   List<Widget> get _screens => [
-    const TeacherOverviewScreen(),          // 0
-    const TeacherAnnouncementsScreen(),     // 1
+    const TeacherOverviewScreen(), // 0
+    const TeacherAnnouncementsScreen(), // 1
     const TeacherCoursesCurriculumScreen(), // 2
-    const TeacherLiveClassesScreen(),       // 3
-    const TeacherAllStudentsScreen(),       // 4
-    const TeacherAssignmentsScreen(),       // 5
-    const TeacherQuizzesOverviewScreen(),   // 6
-    const TeacherTradingJournalScreen(),    // 7
-    const TeacherAchievementsScreen(),      // 8
-    const TeacherCertificatesScreen(),      // 9
-    const TeacherAboutHelpCenterScreen(),   // 10
-    CreatePostScreen(onPostSuccess: () => setState(() => _currentIndex = 12)), // 11
-    const StudentFeedScreen(),              // 12 - فید اجتماعی یکپارچه
-    const UserProfileScreen(),              // 13
-    const TeacherSettingsScreen(),          // 14
-    const StudentFriendsScreen(),           // 15 - شبکه دوستان یکپارچه
-    StudentReelsScreen(isActive: _currentIndex == 16), // 16 - صفحه ویدیوهای کوتاه ریلز
+    const TeacherLiveClassesScreen(), // 3
+    const TeacherAllStudentsScreen(), // 4
+    const TeacherAssignmentsScreen(), // 5
+    const TeacherQuizzesOverviewScreen(), // 6
+    const TeacherTradingJournalScreen(), // 7
+    const TeacherAchievementsScreen(), // 8
+    const TeacherCertificatesScreen(), // 9
+    const TeacherAboutHelpCenterScreen(), // 10
+    CreatePostScreen(
+      onPostSuccess: () => setState(() => _currentIndex = 12),
+    ), // 11
+    const StudentFeedScreen(), // 12 - فید اجتماعی یکپارچه
+    UserProfileScreen(onExit: () => setState(() => _currentIndex = 0)), // 13
+    const TeacherSettingsScreen(), // 14
+    const StudentFriendsScreen(), // 15 - شبکه دوستان یکپارچه
+    StudentReelsScreen(
+      isActive: _currentIndex == 16,
+    ), // 16 - صفحه ویدیوهای کوتاه ریلز
   ];
 
   final List<Map<String, Object>> _menuItems = [
@@ -76,11 +80,19 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
     {"index": 6, "name": "Exams & Quizzes", "icon": Icons.quiz_rounded},
     {"index": 7, "name": "Trading Journal", "icon": Icons.show_chart_rounded},
     {"index": 8, "name": "Achievements", "icon": Icons.emoji_events_rounded},
-    {"index": 9, "name": "Certificates", "icon": Icons.workspace_premium_rounded},
+    {
+      "index": 9,
+      "name": "Certificates",
+      "icon": Icons.workspace_premium_rounded,
+    },
     {"index": 10, "name": "Help Center", "icon": Icons.help_outline_rounded},
     {"index": 11, "name": "Create Post", "icon": Icons.add_rounded},
     {"index": 12, "name": "Academy Feed", "icon": Icons.dynamic_feed_rounded},
-    {"index": 15, "name": "Faculty & Network", "icon": Icons.people_alt_rounded},
+    {
+      "index": 15,
+      "name": "Faculty & Network",
+      "icon": Icons.people_alt_rounded,
+    },
     {"index": 13, "name": "My Profile", "icon": Icons.person_rounded},
     {"index": 14, "name": "App Settings", "icon": Icons.settings_rounded},
   ];
@@ -121,9 +133,9 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
   void _logout() async {
     await supabase.auth.signOut();
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const AuthGate()),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthGate()));
     }
   }
 
@@ -138,7 +150,15 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
             children: [
               CircularProgressIndicator(color: primaryPink, strokeWidth: 3),
               SizedBox(height: 16),
-              Text("INITIALIZING INSTRUCTOR PORTAL...", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(
+                "INITIALIZING INSTRUCTOR PORTAL...",
+                style: TextStyle(
+                  color: textDark,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                ),
+              ),
             ],
           ),
         ),
@@ -148,18 +168,22 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
     final bool isReels = _currentIndex == 16;
     if (isReels) {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-        systemNavigationBarColor: Colors.black,
-        systemNavigationBarIconBrightness: Brightness.light,
-      ));
+      SystemChrome.setSystemUIOverlayStyle(
+        const SystemUiOverlayStyle(
+          systemNavigationBarColor: Colors.black,
+          systemNavigationBarIconBrightness: Brightness.light,
+        ),
+      );
     } else {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        systemNavigationBarColor: Colors.white,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ));
+      SystemChrome.setSystemUIOverlayStyle(
+        const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          systemNavigationBarColor: Colors.white,
+          systemNavigationBarIconBrightness: Brightness.dark,
+        ),
+      );
     }
 
     final bottomPadding = MediaQuery.of(context).padding.bottom;
@@ -172,11 +196,13 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
         children: [
           Positioned.fill(
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 85),
-              child: IndexedStack(
-                index: _currentIndex,
-                children: _screens,
+              padding: EdgeInsets.only(
+                top: (isReels || _isInSocialSection)
+                    ? 0
+                    : (MediaQuery.of(context).padding.top + 8),
+                bottom: _isInSocialSection ? 0 : 85,
               ),
+              child: IndexedStack(index: _currentIndex, children: _screens),
             ),
           ),
           Positioned(
@@ -185,16 +211,18 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
             right: 16,
             child: _buildFloatingBottomNav(),
           ),
-          if (_isMobileMenuOpen)
-            Positioned.fill(
-              child: _buildFullScreenMenu(),
-            ),
+          if (_isMobileMenuOpen) Positioned.fill(child: _buildFullScreenMenu()),
         ],
       ),
     );
   }
 
-  bool get _isInSocialSection => _currentIndex == 11 || _currentIndex == 12 || _currentIndex == 13 || _currentIndex == 15 || _currentIndex == 16;
+  bool get _isInSocialSection =>
+      _currentIndex == 11 ||
+      _currentIndex == 12 ||
+      _currentIndex == 13 ||
+      _currentIndex == 15 ||
+      _currentIndex == 16;
 
   void _showCreateOptionsModal() {
     showModalBottomSheet(
@@ -209,32 +237,83 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(height: 16),
-              const Text("Create New Content 🚀", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF111827))),
+              const Text(
+                "Create New Content 🚀",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF111827),
+                ),
+              ),
               const SizedBox(height: 20),
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(10),
-                  decoration: const BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
-                  child: const Icon(Icons.video_library_rounded, color: primaryPink, size: 24),
+                  decoration: const BoxDecoration(
+                    color: lightPinkBg,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.video_library_rounded,
+                    color: primaryPink,
+                    size: 24,
+                  ),
                 ),
-                title: const Text("Upload Educational Reel 🎬", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF111827))),
-                subtitle: const Text("Share short trading or coding videos with peers", style: TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+                title: const Text(
+                  "Upload Educational Reel 🎬",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                subtitle: const Text(
+                  "Share short trading or coding videos with peers",
+                  style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                ),
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const UploadReelScreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const UploadReelScreen()),
+                  );
                 },
               ),
               const Divider(height: 16),
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(10),
-                  decoration: const BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
-                  child: const Icon(Icons.article_rounded, color: primaryPink, size: 24),
+                  decoration: const BoxDecoration(
+                    color: lightPinkBg,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.article_rounded,
+                    color: primaryPink,
+                    size: 24,
+                  ),
                 ),
-                title: const Text("Create Feed Post 📝", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF111827))),
-                subtitle: const Text("Share text, questions, or images on the academy feed", style: TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+                title: const Text(
+                  "Create Feed Post 📝",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                subtitle: const Text(
+                  "Share text, questions, or images on the academy feed",
+                  style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   setState(() => _currentIndex = 11); // Create Post index
@@ -253,21 +332,26 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
       return Container(
         height: 60,
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: const BoxDecoration(
-          color: Colors.transparent,
-        ),
+        decoration: const BoxDecoration(color: Colors.transparent),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Expanded(child: _buildNavItem(12, "FEED", Icons.dynamic_feed_rounded)),
-            Expanded(child: _buildNavItem(16, "REELS", Icons.video_library_rounded)),
+            Expanded(
+              child: _buildNavItem(12, "FEED", Icons.dynamic_feed_rounded),
+            ),
+            Expanded(
+              child: _buildNavItem(16, "REELS", Icons.video_library_rounded),
+            ),
             // دکمه وسط (+) با انتخاب دوگانه ریلز یا پست معمولی (Instagram Style)
             Expanded(
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: _showCreateOptionsModal,
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: isReels ? Colors.white : primaryPink,
                     borderRadius: BorderRadius.circular(10),
@@ -282,7 +366,9 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                 ),
               ),
             ),
-            Expanded(child: _buildNavItem(15, "FRIENDS", Icons.people_alt_rounded)),
+            Expanded(
+              child: _buildNavItem(15, "FRIENDS", Icons.people_alt_rounded),
+            ),
             Expanded(child: _buildNavItem(13, "PROFILE", Icons.person_rounded)),
           ],
         ),
@@ -297,39 +383,73 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
           height: 65,
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
           decoration: BoxDecoration(
-            color: isReels ? Colors.black.withValues(alpha: 0.88) : surfaceWhite.withValues(alpha: 0.92),
+            color: isReels
+                ? Colors.black.withValues(alpha: 0.88)
+                : surfaceWhite.withValues(alpha: 0.92),
             border: Border.all(
-              color: isReels ? Colors.white12 : primaryPink.withValues(alpha: 0.18),
+              color: isReels
+                  ? Colors.white12
+                  : primaryPink.withValues(alpha: 0.18),
               width: 1.5,
             ),
             borderRadius: BorderRadius.circular(32),
-            boxShadow: [BoxShadow(color: primaryPink.withValues(alpha: 0.1), blurRadius: 25, offset: const Offset(0, 8))],
+            boxShadow: [
+              BoxShadow(
+                color: primaryPink.withValues(alpha: 0.1),
+                blurRadius: 25,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Expanded(child: _buildNavItem(0, "Overview", Icons.dashboard_rounded)),
-              Expanded(child: _buildNavItem(2, "Courses", Icons.menu_book_rounded)),
+              Expanded(
+                child: _buildNavItem(0, "Overview", Icons.dashboard_rounded),
+              ),
+              Expanded(
+                child: _buildNavItem(2, "Courses", Icons.menu_book_rounded),
+              ),
               Expanded(child: _buildNavItem(3, "Live", Icons.podcasts_rounded)),
-              Expanded(child: _buildNavItem(12, "Feed", Icons.dynamic_feed_rounded)),
+              Expanded(
+                child: _buildNavItem(12, "Feed", Icons.dynamic_feed_rounded),
+              ),
               Expanded(
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () => setState(() => _isMobileMenuOpen = true),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: lightPinkBg.withOpacity(0.6),
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                      border: Border.all(
+                        color: primaryPink.withOpacity(0.3),
+                        width: 1.5,
+                      ),
                     ),
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.grid_view_rounded, color: primaryPink, size: 20),
+                        Icon(
+                          Icons.grid_view_rounded,
+                          color: primaryPink,
+                          size: 20,
+                        ),
                         SizedBox(height: 2),
-                        Text("MENU", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 0.8)),
+                        Text(
+                          "MENU",
+                          style: TextStyle(
+                            fontSize: 8,
+                            fontWeight: FontWeight.w900,
+                            color: primaryPink,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -364,11 +484,20 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: isActive ? 22 : 20, color: isActive ? activeIconText : inactiveIconText),
+            Icon(
+              icon,
+              size: isActive ? 22 : 20,
+              color: isActive ? activeIconText : inactiveIconText,
+            ),
             const SizedBox(height: 2),
             Text(
               title.toUpperCase(),
-              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: isActive ? activeIconText : inactiveIconText, letterSpacing: 0.5),
+              style: TextStyle(
+                fontSize: 8,
+                fontWeight: FontWeight.w900,
+                color: isActive ? activeIconText : inactiveIconText,
+                letterSpacing: 0.5,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -390,17 +519,36 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("INSTRUCTOR PORTAL MENU", style: TextStyle(color: primaryPink, fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                        const Text(
+                          "INSTRUCTOR PORTAL MENU",
+                          style: TextStyle(
+                            color: primaryPink,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
                         GestureDetector(
-                          onTap: () => setState(() => _isMobileMenuOpen = false),
+                          onTap: () =>
+                              setState(() => _isMobileMenuOpen = false),
                           child: Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(color: primaryPink.withOpacity(0.15), shape: BoxShape.circle),
-                            child: const Icon(Icons.close, color: primaryPink, size: 18),
+                            decoration: BoxDecoration(
+                              color: primaryPink.withOpacity(0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              color: primaryPink,
+                              size: 18,
+                            ),
                           ),
                         ),
                       ],
@@ -408,7 +556,10 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                   ),
                   Expanded(
                     child: ListView.separated(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 8,
+                      ),
                       itemCount: _menuItems.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
@@ -424,10 +575,20 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                             });
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
                             decoration: BoxDecoration(
-                              color: isSelected ? primaryPink.withOpacity(0.15) : cardBorder.withOpacity(0.5),
-                              border: Border.all(color: isSelected ? primaryPink.withOpacity(0.4) : cardBorder, width: 1.5),
+                              color: isSelected
+                                  ? primaryPink.withOpacity(0.15)
+                                  : cardBorder.withOpacity(0.5),
+                              border: Border.all(
+                                color: isSelected
+                                    ? primaryPink.withOpacity(0.4)
+                                    : cardBorder,
+                                width: 1.5,
+                              ),
                               borderRadius: BorderRadius.circular(18),
                             ),
                             child: Row(
@@ -435,17 +596,44 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: isSelected ? primaryPink : surfaceWhite,
+                                    color: isSelected
+                                        ? primaryPink
+                                        : surfaceWhite,
                                     borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4, offset: const Offset(0, 2))],
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.04),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
                                   ),
-                                  child: Icon(item['icon'] as IconData, size: 18, color: isSelected ? Colors.white : primaryPink),
+                                  child: Icon(
+                                    item['icon'] as IconData,
+                                    size: 18,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : primaryPink,
+                                  ),
                                 ),
                                 const SizedBox(width: 14),
                                 Expanded(
-                                  child: Text(item['name'] as String, style: TextStyle(color: isSelected ? primaryPink : textDark, fontSize: 13, fontWeight: FontWeight.w900)),
+                                  child: Text(
+                                    item['name'] as String,
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? primaryPink
+                                          : textDark,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
                                 ),
-                                Icon(Icons.arrow_forward_ios_rounded, size: 14, color: isSelected ? primaryPink : textGrey),
+                                Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 14,
+                                  color: isSelected ? primaryPink : textGrey,
+                                ),
                               ],
                             ),
                           ),
@@ -456,34 +644,76 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                   GestureDetector(
                     onTap: () {
                       setState(() {
-                        _currentIndex = 13; 
+                        _currentIndex = 13;
                         _isMobileMenuOpen = false;
                       });
                     },
                     child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: lightPinkBg.withOpacity(0.5),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                        border: Border.all(
+                          color: primaryPink.withOpacity(0.3),
+                          width: 1.5,
+                        ),
                       ),
                       child: Row(
                         children: [
                           CircleAvatar(
                             radius: 18,
                             backgroundColor: primaryPink.withOpacity(0.2),
-                            backgroundImage: _userProfile?['avatar_url'] != null && _userProfile!['avatar_url'].toString().isNotEmpty ? NetworkImage(_userProfile!['avatar_url']) : null,
-                            child: _userProfile?['avatar_url'] == null || _userProfile!['avatar_url'].toString().isEmpty ? const Icon(Icons.person, color: primaryPink, size: 20) : null,
+                            backgroundImage:
+                                _userProfile?['avatar_url'] != null &&
+                                    _userProfile!['avatar_url']
+                                        .toString()
+                                        .isNotEmpty
+                                ? NetworkImage(_userProfile!['avatar_url'])
+                                : null,
+                            child:
+                                _userProfile?['avatar_url'] == null ||
+                                    _userProfile!['avatar_url']
+                                        .toString()
+                                        .isEmpty
+                                ? const Icon(
+                                    Icons.person,
+                                    color: primaryPink,
+                                    size: 20,
+                                  )
+                                : null,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("${_userProfile?['first_name'] ?? 'Instructor'} ${_userProfile?['last_name'] ?? ''}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                Text(
+                                  "${_userProfile?['first_name'] ?? 'Instructor'} ${_userProfile?['last_name'] ?? ''}",
+                                  style: const TextStyle(
+                                    color: textDark,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 13,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                                 const SizedBox(height: 2),
-                                const Text("Faculty Member", style: TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+                                const Text(
+                                  "Faculty Member",
+                                  style: TextStyle(
+                                    color: primaryPink,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -492,15 +722,31 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                             height: 36,
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.redAccent.withOpacity(0.12),
+                                backgroundColor: Colors.redAccent.withOpacity(
+                                  0.12,
+                                ),
                                 foregroundColor: Colors.redAccent,
                                 elevation: 0,
-                                side: BorderSide(color: Colors.redAccent.withOpacity(0.3), width: 1.5),
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                side: BorderSide(
+                                  color: Colors.redAccent.withOpacity(0.3),
+                                  width: 1.5,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
                               icon: const Icon(Icons.logout_rounded, size: 16),
-                              label: const Text("SIGN OUT", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                              label: const Text(
+                                "SIGN OUT",
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1,
+                                ),
+                              ),
                               onPressed: _logout,
                             ),
                           ),

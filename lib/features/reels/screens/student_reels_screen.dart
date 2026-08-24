@@ -726,30 +726,40 @@ class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
             const Divider(),
             Expanded(
               child: isLoading
-                  ? const Center(child: CircularProgressIndicator(color: Color(0xFFC2185B)))
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFFC2185B),
+                      ),
+                    )
                   : comments.isEmpty
-                      ? const Center(
-                          child: Text(
-                            "Be the first to comment!",
-                            style: TextStyle(color: Color(0xFF9CA3AF), fontWeight: FontWeight.w500),
-                          ),
-                        )
-                      : ListView.builder(
-                          itemCount: comments.length,
-                          itemBuilder: (context, index) {
-                            final c = comments[index];
-                            return ListTile(
-                              leading: const CircleAvatar(
-                                backgroundColor: Color(0xFFFCE4EC),
-                                child: Icon(Icons.person, color: Color(0xFFC2185B)),
-                              ),
-                              title: Text(
-                                c['comment_text'] ?? '',
-                                style: const TextStyle(fontSize: 13, color: Color(0xFF111827)),
-                              ),
-                            );
-                          },
+                  ? const Center(
+                      child: Text(
+                        "Be the first to comment!",
+                        style: TextStyle(
+                          color: Color(0xFF9CA3AF),
+                          fontWeight: FontWeight.w500,
                         ),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: comments.length,
+                      itemBuilder: (context, index) {
+                        final c = comments[index];
+                        return ListTile(
+                          leading: const CircleAvatar(
+                            backgroundColor: Color(0xFFFCE4EC),
+                            child: Icon(Icons.person, color: Color(0xFFC2185B)),
+                          ),
+                          title: Text(
+                            c['comment_text'] ?? '',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF111827),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
@@ -758,13 +768,22 @@ class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
                   Expanded(
                     child: TextField(
                       controller: _controller,
-                      style: const TextStyle(color: Color(0xFF111827), fontSize: 13),
+                      style: const TextStyle(
+                        color: Color(0xFF111827),
+                        fontSize: 13,
+                      ),
                       decoration: InputDecoration(
                         hintText: "Write a comment...",
-                        hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
+                        hintStyle: const TextStyle(
+                          color: Color(0xFF9CA3AF),
+                          fontSize: 13,
+                        ),
                         filled: true,
                         fillColor: const Color(0xFFF3F4F6),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide.none,
@@ -774,7 +793,10 @@ class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: const Icon(Icons.send_rounded, color: Color(0xFFC2185B)),
+                    icon: const Icon(
+                      Icons.send_rounded,
+                      color: Color(0xFFC2185B),
+                    ),
                     onPressed: _addComment,
                   ),
                 ],
@@ -817,7 +839,9 @@ class _ReelVideoPlayerWidgetState extends State<ReelVideoPlayerWidget> {
 
   Future<void> _initializePlayer() async {
     try {
-      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+      _controller = VideoPlayerController.networkUrl(
+        Uri.parse(widget.videoUrl),
+      );
       await _controller.initialize();
       _controller.setLooping(true);
       if (mounted) {

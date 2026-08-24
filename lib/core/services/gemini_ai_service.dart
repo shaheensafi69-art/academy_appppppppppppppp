@@ -24,7 +24,10 @@ class GeminiAiService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
   String get _apiKey {
-    final key = dotenv.env['GOOGLE_GEMINI_API_KEY'] ?? dotenv.env['GEMINI_API_KEY'] ?? '';
+    final key =
+        dotenv.env['GOOGLE_GEMINI_API_KEY'] ??
+        dotenv.env['GEMINI_API_KEY'] ??
+        '';
     return key.trim();
   }
 
@@ -70,8 +73,11 @@ class GeminiAiService {
           .eq("student_id", studentId);
 
       for (var item in (classStudents as List)) {
-        if (item['class_groups'] != null && item['class_groups']['class_name'] != null) {
-          enrolledClassGroups.add(item['class_groups']['class_name'].toString());
+        if (item['class_groups'] != null &&
+            item['class_groups']['class_name'] != null) {
+          enrolledClassGroups.add(
+            item['class_groups']['class_name'].toString(),
+          );
         }
       }
 
@@ -85,7 +91,9 @@ class GeminiAiService {
         final title = c['title'] ?? '';
         final instructor = c['instructor_name'] ?? '';
         if (title.isNotEmpty) {
-          availableAcademyCourses.add("$title ${instructor.isNotEmpty ? "(مدرس: $instructor)" : ""}");
+          availableAcademyCourses.add(
+            "$title ${instructor.isNotEmpty ? "(مدرس: $instructor)" : ""}",
+          );
         }
       }
 
@@ -116,49 +124,51 @@ class GeminiAiService {
   String _buildSystemPrompt(StudentContext ctx) {
     final enrolledCoursesStr = ctx.enrolledCourses.isNotEmpty
         ? ctx.enrolledCourses.join("، ")
-        : "هنوز در هیچ دوره‌ای ثبت‌نام نکرده است";
+        : "هیچ دوره‌ای";
 
     final enrolledClassesStr = ctx.enrolledClassGroups.isNotEmpty
         ? ctx.enrolledClassGroups.join("، ")
-        : "عضو هیچ کلاس گروهی زنده نیست";
+        : "هیچ کلاسی";
 
     final availableCoursesStr = ctx.availableAcademyCourses.isNotEmpty
-        ? ctx.availableAcademyCourses.join("\n- ")
-        : "دوره‌های دیجیتال مارکتینگ، شاپیفای (Shopify)، ترید و بازارهای مالی، برنامه‌نویسی و وب";
+        ? ctx.availableAcademyCourses.map((c) => "- $c").join("\n")
+        : "دوره‌های فعال آکادمی";
 
     final availableTeachersStr = ctx.availableTeachers.isNotEmpty
         ? ctx.availableTeachers.join("، ")
         : "اساتید مجرب آکادمی سافی";
 
     return '''
-شما دستیار هوشمند اختصاصی و رسمی آکادمی آموزش عالی "سافی آکادمی" (Safi Academy) هستید.
+شما دستیار هوش مصنوعی اختصاصی و رسمی آکادمی آموزش عالی "سافی آکادمی" (Safi Academy) هستید. شما باید به شدت و بدون استثنا قوانین زیر را رعایت کنید:
 
-اطلاعات دانش‌آموز فعلی (کاربر):
-- نام دانش‌آموز: ${ctx.studentName}
-- دوره‌های ثبت‌نام شده فعلی: $enrolledCoursesStr
-- کلاس‌های زنده فعلی: $enrolledClassesStr
+اطلاعات کاربر فعلی (${ctx.studentName}):
+- دوره‌های ثبت‌نام شده کاربر: $enrolledCoursesStr
+- کلاس‌های زنده فعلی کاربر: $enrolledClassesStr
 
-لیست دوره‌های فعال و موجود در سافی آکادمی:
-- $availableCoursesStr
+کاتالوگ کامل دوره‌های آکادمی سافی:
+$availableCoursesStr
 
-اساتید سافی آکادمی:
+لیست اساتید آکادمی سافی:
 $availableTeachersStr
 
-قوانین حتمی و الزامی پاسخ‌دهی (قوانین دامنه و دسترسی):
-1. **سوالات تخصصی مربوط به دوره‌های ثبت‌نام‌شده کاربر**:
-   اگر کاربر سوالی درباره موضوعات درسی دوره‌ها یا کلاس‌هایی که در آن ثبت‌نام کرده (مانند $enrolledCoursesStr) پرسید، با تمام جزئیات، کدنویسی، پاسخ عمیق آموزشی، راهنمایی گام‌به‌گام و تخصص کامل پاسخ دهید.
+قوانین حیاتی پاسخ‌دهی (سیاست دسترسی محتوا):
+1. **فقط سوالات مربوط به دوره‌های ثبت‌نام شده کاربر**:
+   شما مجاز هستید به سوالات علمی، فنی، تخصصی، تمرین‌ها، نوشتن کد و جزئیات عمیق فقط و فقط برای دوره‌هایی پاسخ دهید که کاربر در آنها ثبت‌نام کرده است (یعنی: $enrolledCoursesStr).
+   - برای مثال، اگر کاربر در دوره پایتون ثبت‌نام کرده و سوالی درباره پایتون بپرسد، پاسخ کامل، عمیق و فنی همراه با کد ارائه دهید.
 
-2. **سوالات تخصصی مربوط به سایر دوره‌های آکادمی (ثبت‌نام نشده)**:
-   اگر کاربر سوال تخصصی و عمیق درباره موضوعی پرسید که مربوط به دوره‌های دیگر آکادمی است اما خودش هنوز در آن ثبت‌نام نکرده (مثلاً سوال تریدینگ یا شاپیفای بپرسد در حالی که فقط در دوره دیگر ثبت‌نام کرده)، **پاسخ عمیق و آموزش کامل ندهید**. فقط یک توضیح بسیار کوتاه و خلاصه بدهید و محترمانه بگویید برای دسترسی به آموزش کامل و تخصصی این بخش، باید در دوره مربوطه در سافی آکادمی ثبت‌نام کند.
+2. **عدم پاسخ‌دهی تخصصی به دوره‌های ثبت‌نام نشده**:
+   اگر کاربر سوال تخصصی یا فنی (مانند نوشتن کد، تحلیل ترید، تنظیمات شاپیفای و غیره) درباره دوره‌هایی بپرسد که در آنها ثبت‌نام نکرده است:
+   - به هیچ وجه پاسخ عمیق، فنی یا آموزشی ندهید.
+   - فقط یک توضیح بسیار خلاصه، کلی و سطحی (در حد معرفی ابتدایی) بدهید تا کاربر ترغیب شود.
+   - صراحتاً و محترمانه اعلام کنید: "برای دسترسی به آموزش‌های تخصصی، کدنویسی، پاسخ‌های عمیق و پشتیبانی علمی این دوره، باید ابتدا در دوره مربوطه در سافی آکادمی ثبت‌نام کنید."
 
-3. **سوالات عمومی درباره آکادمی، دوره‌ها و اساتید**:
-   اگر کاربر پرسید چه دوره‌هایی وجود دارد، اساتید کیستند یا چطور ثبت‌نام کند، بر اساس لیست دوره‌ها و اساتید آکادمی، آنها را با گرمی و دقت تشریح کنید و به ثبت‌نام راهنمایی کنید.
+3. **محدودیت مطلق به دامنه آکادمی (عدم پاسخ به سوالات عمومی و متفرقه)**:
+   شما اجازه ندارید به عنوان یک هوش مصنوعی عمومی کار کنید. هر سوالی که خارج از مباحث آموزشی دوره‌های سافی آکادمی باشد (مانند سوالات آشپزی، اخبار، بیوگرافی افراد غیرمرتبط، سرگرمی، اطلاعات عمومی جهان و غیره) را باید قاطعانه و محترمانه رد کنید.
+   - پاسخ شما در این حالت باید دقیقاً اینگونه باشد:
+   "من دستیار هوشمند اختصاصی سافی آکادمی هستم و تنها امکان پاسخگویی به سوالات مرتبط با دوره‌ها و دروس آکادمی را دارم. چطور می‌توانم در زمینه دروس ثبت‌نام شده یا معرفی دوره‌های آکادمی به شما کمک کنم؟"
 
-4. **سوالات کاملاً غیرمرتبط با آکادمی و آموزش (خارج از موضوع)**:
-   اگر کاربر سوالی غیرمرتبط با برنامه‌نویسی، ترید، شاپیفای، کسب‌وکار، دروس آکادمی یا امور آموزشی پرسید (مثلاً آشپزی، اخبار سیاسی، سرگرمی متفرقه)، حتماً و محترمانه بفرمایید:
-   "من دستیار هوشمند اختصاصی سافی آکادمی هستم و تنها امکان پاسخگویی به سوالات آموزشی، دوره‌ها و دروس آکادمی را دارم. چطور می‌توانم در زمینه دروس یا ثبت‌نام دوره‌ها به شما کمک کنم؟"
-
-لحن پاسخگویی: صمیمی، حرفه‌ای، تشویق‌کننده و با زبان فارسی/دری روان.
+4. **لحن و زبان**:
+   پاسخ‌های خود را با لحنی صمیمی، دلسوزانه، حرفه‌ای و به زبان فارسی/دری روان بنویسید.
 ''';
   }
 
@@ -185,8 +195,8 @@ $availableTeachersStr
       contents.add({
         "role": msg['role'] == 'user' ? 'user' : 'model',
         "parts": [
-          {"text": msg['content']}
-        ]
+          {"text": msg['content']},
+        ],
       });
     }
 
@@ -194,39 +204,45 @@ $availableTeachersStr
     contents.add({
       "role": "user",
       "parts": [
-        {"text": userPrompt}
-      ]
+        {"text": userPrompt},
+      ],
     });
 
     final requestBody = jsonEncode({
+      "systemInstruction": {
+        "parts": [
+          {"text": systemPrompt},
+        ],
+      },
       "system_instruction": {
         "parts": [
-          {"text": systemPrompt}
-        ]
+          {"text": systemPrompt},
+        ],
       },
       "contents": contents,
-      "generationConfig": {
-        "temperature": 0.7,
-        "maxOutputTokens": 1500,
-      }
+      "generationConfig": {"temperature": 0.7, "maxOutputTokens": 1500},
     });
 
-    // 3. فراخوانی API
+    // 3. فراخوانی API با مدل‌های جدید
     final endpoints = [
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=$key",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$key",
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$key",
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$key",
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=$key",
     ];
 
     String aiText = "";
+    List<String> errorDetails = [];
 
     for (var endpoint in endpoints) {
       try {
-        final response = await http.post(
-          Uri.parse(endpoint),
-          headers: {"Content-Type": "application/json"},
-          body: requestBody,
-        ).timeout(const Duration(seconds: 25));
+        final response = await http
+            .post(
+              Uri.parse(endpoint),
+              headers: {"Content-Type": "application/json"},
+              body: requestBody,
+            )
+            .timeout(const Duration(seconds: 25));
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
@@ -239,15 +255,26 @@ $availableTeachersStr
             }
           }
         } else {
-          debugPrint("Gemini Endpoint ($endpoint) Error Status: ${response.statusCode} Body: ${response.body}");
+          final errBody = response.body;
+          final modelName = Uri.parse(
+            endpoint,
+          ).pathSegments.reversed.skip(1).first;
+          errorDetails.add(
+            "$modelName: HTTP ${response.statusCode} - $errBody",
+          );
+          debugPrint(
+            "Gemini Endpoint ($endpoint) Error Status: ${response.statusCode} Body: $errBody",
+          );
         }
       } catch (e) {
+        errorDetails.add("Exception: $e");
         debugPrint("Gemini Endpoint Call Exception: $e");
       }
     }
 
     if (aiText.isEmpty) {
-      aiText = "متأسفانه مشکلی در ارتباط با هوش مصنوعی رخ داد. لطفاً دوباره تلاش کنید.";
+      aiText =
+          "متأسفانه مشکلی در ارتباط با هوش مصنوعی رخ داد. جزئیات خطا:\n${errorDetails.join('\n')}";
     }
 
     return aiText;
