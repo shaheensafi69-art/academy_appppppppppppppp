@@ -1,37 +1,56 @@
-name: iOS IPA Build
+name: Safi Academy iOS Build
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # امکان اجرای دستی از تب Actions
+  push:
+    branches:
+      - main           # اجرا هنگام پوش شدن کدها به برنچ main
 
 jobs:
-  build:
+  build-ios:
+    name: Build iOS IPA
     runs-on: macos-latest
 
     steps:
+      # ۱. دریافت کدهای پروژه از ریپازیتوری
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-
+      # ۲. نصب فلاتر با معماری x64 (جهت جلوگیری از ارور arm64 در سرورهای مک)
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.3'
           channel: 'stable'
-          cache: false
+          architecture: x64
+          cache: true
 
+      # ۳. ساخت فایل .env در صورت وجود نداشتن (برای جلوگیری از خطای Asset)
+      - name: Ensure .env file exists
+        run: |
+          if [ ! -f .env ]; then
+            echo "Creating empty .env file..."
+            touch .env
+          fi
+
+      # ۴. دریافت پکیج‌ها و وابستگی‌های pubspec.yaml
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build iOS IPA (Unsigned)
-        run: flutter build ipa --release --no-codesign
+      # ۵. بیلد نسخه iOS بدون نیاز به اکانت دولوپر اپل (No Codesign)
+      - name: Build iOS Application
+        run: flutter build ios --release --no-codesign
 
+      # ۶. ساخت ساختار استاندارد Payload و تولید فایل IPA
+      - name: Package to IPA
+        run: |
+          mkdir -p Payload
+          cp -r build/ios/iphoneos/Runner.app Payload/
+          zip -r -y safi_academy_app.ipa Payload
+
+      # ۷. آپلود فایل خروجی IPA در بخش Artifacts گیت‌هاب
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ios-ipa
-          path: build/ios/ipa/*.ipa
+          name: safi_academy_app_v1.0.0+6
+          path: safi_academy_app.ipa
+          retention-days: 14
