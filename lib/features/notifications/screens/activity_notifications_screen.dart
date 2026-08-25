@@ -28,10 +28,12 @@ class ActivityNotificationsScreen extends StatefulWidget {
   const ActivityNotificationsScreen({super.key});
 
   @override
-  State<ActivityNotificationsScreen> createState() => _ActivityNotificationsScreenState();
+  State<ActivityNotificationsScreen> createState() =>
+      _ActivityNotificationsScreenState();
 }
 
-class _ActivityNotificationsScreenState extends State<ActivityNotificationsScreen> {
+class _ActivityNotificationsScreenState
+    extends State<ActivityNotificationsScreen> {
   final supabase = Supabase.instance.client;
   bool isLoading = true;
   List<ActivityNotificationItem> allNotifications = [];
@@ -88,7 +90,8 @@ class _ActivityNotificationsScreenState extends State<ActivityNotificationsScree
               type: n['notification_type'] == 'comment' ? 'comment' : 'like',
               senderName: 'Safi Academy Student',
               senderAvatar: '',
-              createdAt: DateTime.tryParse(n['created_at'] ?? '') ?? DateTime.now(),
+              createdAt:
+                  DateTime.tryParse(n['created_at'] ?? '') ?? DateTime.now(),
               linkUrl: n['link_url'],
             ),
           );
@@ -102,11 +105,15 @@ class _ActivityNotificationsScreenState extends State<ActivityNotificationsScree
             .select("id, title")
             .eq("user_id", currentUserId);
 
-        final myReelIds = (myReelsRes as List).map((r) => r['id'].toString()).toList();
+        final myReelIds = (myReelsRes as List)
+            .map((r) => r['id'].toString())
+            .toList();
         if (myReelIds.isNotEmpty) {
           final reelLikesRes = await supabase
               .from("reel_likes")
-              .select("id, reel_id, user_id, created_at, profiles(first_name, last_name, avatar_url)")
+              .select(
+                "id, reel_id, user_id, created_at, profiles(first_name, last_name, avatar_url)",
+              )
               .filter("reel_id", "in", myReelIds)
               .neq("user_id", currentUserId)
               .order("created_at", ascending: false)
@@ -114,7 +121,9 @@ class _ActivityNotificationsScreenState extends State<ActivityNotificationsScree
 
           for (var l in (reelLikesRes as List)) {
             final p = l['profiles'];
-            final name = (p != null) ? "${p['first_name'] ?? ''} ${p['last_name'] ?? ''}".trim() : 'Someone';
+            final name = (p != null)
+                ? "${p['first_name'] ?? ''} ${p['last_name'] ?? ''}".trim()
+                : 'Someone';
             final avatar = p != null ? (p['avatar_url'] ?? '') : '';
 
             items.add(
@@ -125,7 +134,8 @@ class _ActivityNotificationsScreenState extends State<ActivityNotificationsScree
                 type: 'like',
                 senderName: name.isNotEmpty ? name : 'Student',
                 senderAvatar: avatar,
-                createdAt: DateTime.tryParse(l['created_at'] ?? '') ?? DateTime.now(),
+                createdAt:
+                    DateTime.tryParse(l['created_at'] ?? '') ?? DateTime.now(),
               ),
             );
           }
@@ -136,14 +146,18 @@ class _ActivityNotificationsScreenState extends State<ActivityNotificationsScree
       try {
         final friendsRes = await supabase
             .from("student_friends")
-            .select("id, sender_id, status, created_at, profiles!sender_id(first_name, last_name, avatar_url)")
+            .select(
+              "id, sender_id, status, created_at, profiles!sender_id(first_name, last_name, avatar_url)",
+            )
             .eq("receiver_id", currentUserId)
             .eq("status", "pending")
             .order("created_at", ascending: false);
 
         for (var f in (friendsRes as List)) {
           final p = f['profiles'];
-          final name = (p != null) ? "${p['first_name'] ?? ''} ${p['last_name'] ?? ''}".trim() : 'Someone';
+          final name = (p != null)
+              ? "${p['first_name'] ?? ''} ${p['last_name'] ?? ''}".trim()
+              : 'Someone';
           final avatar = p != null ? (p['avatar_url'] ?? '') : '';
 
           items.add(
@@ -154,7 +168,8 @@ class _ActivityNotificationsScreenState extends State<ActivityNotificationsScree
               type: 'friend_request',
               senderName: name,
               senderAvatar: avatar,
-              createdAt: DateTime.tryParse(f['created_at'] ?? '') ?? DateTime.now(),
+              createdAt:
+                  DateTime.tryParse(f['created_at'] ?? '') ?? DateTime.now(),
             ),
           );
         }
@@ -179,9 +194,13 @@ class _ActivityNotificationsScreenState extends State<ActivityNotificationsScree
     if (selectedFilter == 'All 🔥') {
       filteredNotifications = List.from(allNotifications);
     } else if (selectedFilter == 'Likes & Comments ❤️') {
-      filteredNotifications = allNotifications.where((n) => n.type == 'like' || n.type == 'comment').toList();
+      filteredNotifications = allNotifications
+          .where((n) => n.type == 'like' || n.type == 'comment')
+          .toList();
     } else if (selectedFilter == 'Friend Requests 👥') {
-      filteredNotifications = allNotifications.where((n) => n.type == 'friend_request').toList();
+      filteredNotifications = allNotifications
+          .where((n) => n.type == 'friend_request')
+          .toList();
     }
   }
 
@@ -194,14 +213,25 @@ class _ActivityNotificationsScreenState extends State<ActivityNotificationsScree
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: textDark, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: textDark,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Row(
           children: [
             Icon(Icons.favorite_rounded, color: primaryPink, size: 22),
             SizedBox(width: 8),
-            Text("Activity & Notifications", style: TextStyle(color: textDark, fontSize: 16, fontWeight: FontWeight.w900)),
+            Text(
+              "Activity & Notifications",
+              style: TextStyle(
+                color: textDark,
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
           ],
         ),
       ),
@@ -250,108 +280,159 @@ class _ActivityNotificationsScreenState extends State<ActivityNotificationsScree
               color: primaryPink,
               onRefresh: _fetchActivityNotifications,
               child: isLoading
-                  ? const Center(child: CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5))
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: primaryPink,
+                        strokeWidth: 2.5,
+                      ),
+                    )
                   : filteredNotifications.isEmpty
-                      ? ListView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          children: const [
-                            SizedBox(height: 120),
-                            Center(
-                              child: Column(
-                                children: [
-                                  Icon(Icons.notifications_off_outlined, size: 60, color: textGrey),
-                                  SizedBox(height: 16),
-                                  Text("No activities yet", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 14)),
-                                  SizedBox(height: 6),
-                                  Text("New likes, comments, and friend requests will appear here.", style: TextStyle(color: textGrey, fontSize: 11)),
-                                ],
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [
+                        SizedBox(height: 120),
+                        Center(
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.notifications_off_outlined,
+                                size: 60,
+                                color: textGrey,
                               ),
-                            ),
-                          ],
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: filteredNotifications.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final item = filteredNotifications[index];
-                            return GestureDetector(
-                              onTap: () {
-                                if (item.type == 'like' || item.type == 'comment') {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (_) => const StudentReelsScreen()),
-                                  );
-                                }
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(14),
-                                decoration: BoxDecoration(
-                                  color: surfaceWhite,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: cardBorder, width: 1.5),
-                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                              SizedBox(height: 16),
+                              Text(
+                                "No activities yet",
+                                style: TextStyle(
+                                  color: textDark,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
                                 ),
-                                child: Row(
+                              ),
+                              SizedBox(height: 6),
+                              Text(
+                                "New likes, comments, and friend requests will appear here.",
+                                style: TextStyle(color: textGrey, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: filteredNotifications.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                      itemBuilder: (context, index) {
+                        final item = filteredNotifications[index];
+                        return GestureDetector(
+                          onTap: () {
+                            if (item.type == 'like' || item.type == 'comment') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const StudentReelsScreen(),
+                                ),
+                              );
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: surfaceWhite,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: cardBorder, width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.03),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Stack(
                                   children: [
-                                    Stack(
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 22,
-                                          backgroundColor: lightPinkBg,
-                                          backgroundImage: item.senderAvatar.isNotEmpty ? NetworkImage(item.senderAvatar) : null,
-                                          child: item.senderAvatar.isEmpty
-                                              ? Text(
-                                                  item.senderName.isNotEmpty ? item.senderName[0] : 'S',
-                                                  style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold),
-                                                )
-                                              : null,
-                                        ),
-                                        Positioned(
-                                          bottom: 0,
-                                          right: 0,
-                                          child: Container(
-                                            padding: const EdgeInsets.all(2),
-                                            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                                            child: Icon(
-                                              item.type == 'like'
-                                                  ? Icons.favorite_rounded
-                                                  : item.type == 'comment'
-                                                      ? Icons.chat_bubble_rounded
-                                                      : Icons.people_rounded,
-                                              color: primaryPink,
-                                              size: 12,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                    CircleAvatar(
+                                      radius: 22,
+                                      backgroundColor: lightPinkBg,
+                                      backgroundImage:
+                                          item.senderAvatar.isNotEmpty
+                                          ? NetworkImage(item.senderAvatar)
+                                          : null,
+                                      child: item.senderAvatar.isEmpty
+                                          ? Text(
+                                              item.senderName.isNotEmpty
+                                                  ? item.senderName[0]
+                                                  : 'S',
+                                              style: const TextStyle(
+                                                color: primaryPink,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            )
+                                          : null,
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            item.title,
-                                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: textDark),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            item.message,
-                                            style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ],
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(2),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          item.type == 'like'
+                                              ? Icons.favorite_rounded
+                                              : item.type == 'comment'
+                                              ? Icons.chat_bubble_rounded
+                                              : Icons.people_rounded,
+                                          color: primaryPink,
+                                          size: 12,
+                                        ),
                                       ),
                                     ),
-                                    const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: textGrey),
                                   ],
                                 ),
-                              ),
-                            );
-                          },
-                        ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item.title,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 13,
+                                          color: textDark,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        item.message,
+                                        style: const TextStyle(
+                                          color: textGrey,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 12,
+                                  color: textGrey,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
             ),
           ),
         ],

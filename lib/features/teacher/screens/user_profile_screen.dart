@@ -114,10 +114,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               .select("student_id")
               .eq("post_id", pId);
           likesCount = likesRes.length;
-          if (currentUser != null)
+          if (currentUser != null) {
             isLikedByMe = likesRes.any(
               (like) => like['student_id'] == currentUser.id,
             );
+          }
         } catch (_) {}
 
         int commentsCount = 0;
@@ -1173,8 +1174,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                                         loadingProgress,
                                                       ) {
                                                         if (loadingProgress ==
-                                                            null)
+                                                            null) {
                                                           return child;
+                                                        }
                                                         return Container(
                                                           height: 180,
                                                           alignment:
@@ -1541,8 +1543,9 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
         'student_id': widget.currentUserId,
         'comment_text': text,
       };
-      if (replyingToCommentId != null)
+      if (replyingToCommentId != null) {
         insertData['parent_comment_id'] = replyingToCommentId!;
+      }
 
       await supabase.from("discussion_comments").insert(insertData);
 

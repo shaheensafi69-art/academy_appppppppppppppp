@@ -61,10 +61,12 @@ class StudentAnnouncementsScreen extends StatefulWidget {
   const StudentAnnouncementsScreen({super.key});
 
   @override
-  State<StudentAnnouncementsScreen> createState() => _StudentAnnouncementsScreenState();
+  State<StudentAnnouncementsScreen> createState() =>
+      _StudentAnnouncementsScreenState();
 }
 
-class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen> {
+class _StudentAnnouncementsScreenState
+    extends State<StudentAnnouncementsScreen> {
   final supabase = Supabase.instance.client;
   bool isLoading = true;
   List<AnnouncementItem> announcements = [];
@@ -133,7 +135,20 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
   String _formatDate(String dateStr) {
     try {
       final dt = DateTime.parse(dateStr);
-      final months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      final months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
       return "${dt.day} ${months[dt.month - 1]} ${dt.year}";
     } catch (_) {
       return dateStr;
@@ -172,7 +187,9 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
                 color: primaryPink,
                 onRefresh: _fetchAnnouncementsAndClasses,
                 child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,12 +199,18 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [lightPinkBg.withOpacity(0.4), const Color(0xFFFFF0F5)],
+                            colors: [
+                              lightPinkBg.withOpacity(0.4),
+                              const Color(0xFFFFF0F5),
+                            ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(28),
-                          border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                          border: Border.all(
+                            color: primaryPink.withOpacity(0.15),
+                            width: 1.5,
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -197,9 +220,16 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
                               decoration: BoxDecoration(
                                 color: lightPinkBg,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                                border: Border.all(
+                                  color: primaryPink.withOpacity(0.3),
+                                  width: 1.5,
+                                ),
                               ),
-                              child: const Icon(Icons.campaign_rounded, color: primaryPink, size: 24),
+                              child: const Icon(
+                                Icons.campaign_rounded,
+                                color: primaryPink,
+                                size: 24,
+                              ),
                             ),
                             const SizedBox(width: 14),
                             const Expanded(
@@ -208,12 +238,21 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
                                 children: [
                                   Text(
                                     "Academy Announcements",
-                                    style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 18),
+                                    style: TextStyle(
+                                      color: textDark,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 18,
+                                    ),
                                   ),
                                   SizedBox(height: 4),
                                   Text(
                                     "Stay updated with latest announcements and upcoming live class groups.",
-                                    style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500, height: 1.3),
+                                    style: TextStyle(
+                                      color: textGrey,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.3,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -282,7 +321,14 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
           children: [
             Icon(Icons.notifications_off_outlined, color: textGrey, size: 36),
             SizedBox(height: 10),
-            Text("No Announcements Yet", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+            Text(
+              "No Announcements Yet",
+              style: TextStyle(
+                color: textDark,
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+              ),
+            ),
           ],
         ),
       );
@@ -292,7 +338,7 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: announcements.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final item = announcements[index];
         bool recent = _isRecent(item.createdAt);
@@ -303,7 +349,13 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
             color: surfaceWhite,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(color: cardBorder, width: 1.5),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -314,26 +366,51 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
                   Expanded(
                     child: Text(
                       item.title,
-                      style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14),
+                      style: const TextStyle(
+                        color: textDark,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                   if (recent)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: lightPinkBg,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text("NEW", style: TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        "NEW",
+                        style: TextStyle(
+                          color: primaryPink,
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                 ],
               ),
               const SizedBox(height: 6),
               Row(
                 children: [
-                  const Icon(Icons.calendar_today_rounded, color: textGrey, size: 11),
+                  const Icon(
+                    Icons.calendar_today_rounded,
+                    color: textGrey,
+                    size: 11,
+                  ),
                   const SizedBox(width: 4),
-                  Text(_formatDate(item.createdAt), style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text(
+                    _formatDate(item.createdAt),
+                    style: const TextStyle(
+                      color: textGrey,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -341,7 +418,12 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
               const SizedBox(height: 12),
               Text(
                 item.message,
-                style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w500, height: 1.4),
+                style: const TextStyle(
+                  color: textDark,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  height: 1.4,
+                ),
               ),
             ],
           ),
@@ -365,7 +447,14 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
           children: [
             Icon(Icons.school_outlined, color: textGrey, size: 36),
             SizedBox(height: 10),
-            Text("No Active Class Groups", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+            Text(
+              "No Active Class Groups",
+              style: TextStyle(
+                color: textDark,
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+              ),
+            ),
           ],
         ),
       );
@@ -375,7 +464,7 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: classGroups.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final group = classGroups[index];
 
@@ -385,24 +474,42 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
             color: surfaceWhite,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(color: cardBorder, width: 1.5),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 group.className,
-                style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14),
+                style: const TextStyle(
+                  color: textDark,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                ),
               ),
               const SizedBox(height: 8),
               if (group.classDays != null || group.classTime != null) ...[
                 Row(
                   children: [
-                    const Icon(Icons.access_time_rounded, color: primaryPink, size: 13),
+                    const Icon(
+                      Icons.access_time_rounded,
+                      color: primaryPink,
+                      size: 13,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       "${group.classDays ?? 'Scheduled Days'} at ${group.classTime ?? '10:00 AM'}",
-                      style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        color: textGrey,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -410,19 +517,35 @@ class _StudentAnnouncementsScreenState extends State<StudentAnnouncementsScreen>
               ],
               Text(
                 group.scheduleInfo,
-                style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  color: textGrey,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              if (group.meetingLink != null && group.meetingLink!.isNotEmpty) ...[
+              if (group.meetingLink != null &&
+                  group.meetingLink!.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryPink,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    icon: const Icon(Icons.video_call_rounded, color: Colors.white),
-                    label: const Text("JOIN LIVE CLASS 📹", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    icon: const Icon(
+                      Icons.video_call_rounded,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      "JOIN LIVE CLASS 📹",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     onPressed: () async {
                       final url = Uri.parse(group.meetingLink!);
                       if (await canLaunchUrl(url)) {

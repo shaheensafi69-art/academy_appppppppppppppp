@@ -181,10 +181,11 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
 
   void _logout() async {
     await supabase.auth.signOut();
-    if (mounted)
+    if (mounted) {
       Navigator.of(
         context,
       ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthGate()));
+    }
   }
 
   // بررسی اینکه ادمین در بخش سوشال (فید، نتورک، پست، پروفایل) است یا بخش مدیریتی

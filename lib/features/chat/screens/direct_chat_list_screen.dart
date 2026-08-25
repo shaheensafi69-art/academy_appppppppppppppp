@@ -57,8 +57,9 @@ class _DirectChatListScreenState extends State<DirectChatListScreen> {
     super.initState();
     _fetchExistingChatThreads();
     _refreshTimer = Timer.periodic(const Duration(milliseconds: 2000), (_) {
-      if (mounted && !isSearchingLive)
+      if (mounted && !isSearchingLive) {
         _fetchExistingChatThreads(showLoading: false);
+      }
     });
   }
 

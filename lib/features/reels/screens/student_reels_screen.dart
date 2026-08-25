@@ -921,7 +921,7 @@ class _ReelVideoPlayerWidgetState extends State<ReelVideoPlayerWidget> {
                 child: Image.network(
                   widget.thumbnailUrl!,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const SizedBox(),
+                  errorBuilder: (_, _, _) => const SizedBox(),
                 ),
               ),
             const CircularProgressIndicator(

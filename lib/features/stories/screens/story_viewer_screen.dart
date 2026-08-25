@@ -278,6 +278,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     if (isLoading) {
       return const Scaffold(
@@ -338,7 +339,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                           child: CircularProgressIndicator(color: primaryPink),
                         );
                       },
-                      errorBuilder: (_, __, ___) {
+                      errorBuilder: (_, _, _) {
                         // If image fails, trigger load to not get stuck
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           _onMediaLoaded(const Duration(seconds: 5));
@@ -504,11 +505,13 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
             // نوار بازدیدکنندگان (برای استوری خود کاربر)
             if (isMyStory)
               Positioned(
-                bottom: 56, // Raised from 24 to 56 to clear system navigation bar
+                bottom:
+                    56, // Raised from 24 to 56 to clear system navigation bar
                 left: 20,
                 right: 20,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start, // Aligned to the left (daste chap)
+                  mainAxisAlignment: MainAxisAlignment
+                      .start, // Aligned to the left (daste chap)
                   children: [
                     const Icon(
                       Icons.visibility_outlined,
