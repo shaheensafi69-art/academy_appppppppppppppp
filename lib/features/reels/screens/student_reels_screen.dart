@@ -1,7 +1,5 @@
 import 'package:image_picker/image_picker.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:video_player/video_player.dart';
 import '../../chat/screens/direct_chat_screen.dart';
@@ -247,9 +245,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                             final bytes = await video.readAsBytes();
                             final fileName =
                                 "reel_${DateTime.now().millisecondsSinceEpoch}.mp4";
-                            await supabase.storage
-                                .from("reels")
-                                .uploadBinary(
+                            await supabase.storage.from("reels").uploadBinary(
                                   fileName,
                                   bytes,
                                   fileOptions: const FileOptions(
@@ -299,8 +295,8 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                           isUploadingFile
                               ? "Uploading video to Supabase... ⏳"
                               : (urlController.text.isNotEmpty
-                                    ? "Video Uploaded! ✅"
-                                    : "Select Video File from Gallery 🎥"),
+                                  ? "Video Uploaded! ✅"
+                                  : "Select Video File from Gallery 🎥"),
                           style: const TextStyle(
                             color: primaryPink,
                             fontWeight: FontWeight.bold,
@@ -732,34 +728,35 @@ class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
                       ),
                     )
                   : comments.isEmpty
-                  ? const Center(
-                      child: Text(
-                        "Be the first to comment!",
-                        style: TextStyle(
-                          color: Color(0xFF9CA3AF),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: comments.length,
-                      itemBuilder: (context, index) {
-                        final c = comments[index];
-                        return ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: Color(0xFFFCE4EC),
-                            child: Icon(Icons.person, color: Color(0xFFC2185B)),
-                          ),
-                          title: Text(
-                            c['comment_text'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF111827),
+                      ? const Center(
+                          child: Text(
+                            "Be the first to comment!",
+                            style: TextStyle(
+                              color: Color(0xFF9CA3AF),
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        )
+                      : ListView.builder(
+                          itemCount: comments.length,
+                          itemBuilder: (context, index) {
+                            final c = comments[index];
+                            return ListTile(
+                              leading: const CircleAvatar(
+                                backgroundColor: Color(0xFFFCE4EC),
+                                child: Icon(Icons.person,
+                                    color: Color(0xFFC2185B)),
+                              ),
+                              title: Text(
+                                c['comment_text'] ?? '',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF111827),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
