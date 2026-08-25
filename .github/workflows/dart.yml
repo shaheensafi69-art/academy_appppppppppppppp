@@ -20,7 +20,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.28.1' # نسخه سازگار با Dart SDK ^3.11.0
+          flutter-version: '3.22.2' # استفاده از نسخه پایدار و مطمئن که معماری را به هم نمی‌ریزد
           channel: 'stable'
           cache: true
 
