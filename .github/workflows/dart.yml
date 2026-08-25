@@ -20,7 +20,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.x' # یا نسخه فلاتر خودتان را بنویسید
+          flutter-version: '3.19.x'
           channel: 'stable'
           cache: true
 
@@ -31,7 +31,7 @@ jobs:
         run: flutter build ipa --release --no-codesign
 
       - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ios-ipa
           path: build/ios/ipa/*.ipa
