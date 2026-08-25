@@ -20,9 +20,9 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.2' # استفاده از نسخه پایدار و مطمئن که معماری را به هم نمی‌ریزد
+          flutter-version: '3.29.0' # نسخه‌ای که دارت ۳.۸+ را پشتیبانی می‌کند
           channel: 'stable'
-          cache: true
+          cache: false
 
       - name: Install dependencies
         run: flutter pub get
