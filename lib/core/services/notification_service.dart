@@ -98,10 +98,12 @@ class NotificationService {
     required String message,
     required String notificationType, // 'like_comment', 'chat', 'class_reminder', 'admin_announcement', 'scheduled'
     String? linkUrl,
+    String? senderId,
   }) async {
     try {
       await supabase.from("user_notifications").insert({
         'user_id': targetUserId,
+        'sender_id': senderId,
         'title': title,
         'message': message,
         'notification_type': notificationType,

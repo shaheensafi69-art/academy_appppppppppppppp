@@ -58,8 +58,8 @@ class ScholarshipDetailScreen extends StatelessWidget {
 
   const ScholarshipDetailScreen({super.key, required this.scholarship});
 
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
@@ -205,7 +205,7 @@ class ScholarshipDetailScreen extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFC2185B), Color(0xFF880E4F)],
+          colors: [Color(0xFFF494AC), Color(0xFF880E4F)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -250,8 +250,8 @@ class _ScholarshipsScreenState extends State<ScholarshipsScreen> {
   String selectedRegion = "All";
   List<String> regions = ["All"];
 
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);

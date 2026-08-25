@@ -18,7 +18,7 @@ class _TeacherTodoDetailScreenState extends State<TeacherTodoDetailScreen> {
   bool _isCompleted = false;
   DateTime? _selectedDueDate;
 
-  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color primaryPink = Color(0xFFF494AC);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);

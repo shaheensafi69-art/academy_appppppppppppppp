@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../chat/screens/direct_chat_screen.dart';
+import '../../reels/screens/student_reels_screen.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final String? userId;
@@ -17,13 +18,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   bool isLoading = true;
   Map<String, dynamic>? profileData;
   List<Map<String, dynamic>> userPosts = [];
+  List<Map<String, dynamic>> userReels = [];
+  int activeTab = 0; // 0 for Posts, 1 for Reels
 
   String friendshipStatus = 'none';
   bool isActionLoading = false;
   int friendsCount = 0;
 
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
@@ -80,13 +83,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       String status = 'none';
       final currentUser = supabase.auth.currentUser;
       if (!isMyProfile && currentUser != null) {
-        final relRes = await supabase
+        final relsRes = await supabase
             .from("student_friends")
             .select("*")
             .or(
-              "and(sender_id.eq.${currentUser.id},receiver_id.eq.$targetUserId),and(sender_id.eq.$targetUserId,receiver_id.eq.${currentUser.id})",
-            )
-            .maybeSingle();
+              "sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}",
+            );
+
+        dynamic relRes;
+        for (var r in (relsRes as List)) {
+          final sId = r['sender_id']?.toString() ?? '';
+          final recId = r['receiver_id']?.toString() ?? '';
+          if ((sId == currentUser.id && recId == targetUserId) ||
+              (sId == targetUserId && recId == currentUser.id)) {
+            relRes = r;
+            break;
+          }
+        }
+
         if (relRes != null) {
           if (relRes['status'] == 'accepted') {
             status = 'friends';
@@ -138,12 +152,26 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         });
       }
 
+      // دریافت ریلزهای کاربر
+      List<Map<String, dynamic>> enrichedReels = [];
+      try {
+        final reelsRes = await supabase
+            .from("reels")
+            .select("*")
+            .eq("user_id", targetUserId)
+            .order("created_at", ascending: false);
+        for (var r in reelsRes) {
+          enrichedReels.add(Map<String, dynamic>.from(r));
+        }
+      } catch (_) {}
+
       if (mounted) {
         setState(() {
           profileData = res;
           friendsCount = count;
           friendshipStatus = status;
           userPosts = enrichedPosts;
+          userReels = enrichedReels;
           isLoading = false;
         });
       }
@@ -1026,346 +1054,536 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           ),
                           const SizedBox(height: 24),
 
-                          // بخش نمایش پست‌های کاربر
-                          const Text(
-                            "Shared Posts",
-                            style: TextStyle(
-                              color: textDark,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 16,
-                            ),
+                          // دکمه‌های انتخاب تب (Posts / Reels)
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () => setState(() => activeTab = 0),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: activeTab == 0
+                                        ? primaryPink
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: activeTab == 0
+                                          ? primaryPink
+                                          : Colors.grey[300]!,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    "Posts (${userPosts.length})",
+                                    style: TextStyle(
+                                      color: activeTab == 0
+                                          ? Colors.white
+                                          : textGrey,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              GestureDetector(
+                                onTap: () => setState(() => activeTab = 1),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: activeTab == 1
+                                        ? primaryPink
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: activeTab == 1
+                                          ? primaryPink
+                                          : Colors.grey[300]!,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    "Reels (${userReels.length})",
+                                    style: TextStyle(
+                                      color: activeTab == 1
+                                          ? Colors.white
+                                          : textGrey,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
 
-                          userPosts.isNotEmpty
-                              ? ListView.separated(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: userPosts.length,
-                                  separatorBuilder: (_, _) =>
-                                      const SizedBox(height: 16),
-                                  itemBuilder: (context, index) {
-                                    final post = userPosts[index];
-                                    final rawTitle = post['title'] ?? '';
-                                    final moodTag = _extractMood(rawTitle);
-                                    final cleanTitle = _extractCleanTitle(
-                                      rawTitle,
-                                    );
-                                    final imageUrl = post['image_url'];
+                          if (activeTab == 0) ...[
+                            userPosts.isNotEmpty
+                                ? ListView.separated(
+                                    shrinkWrap: true,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    itemCount: userPosts.length,
+                                    separatorBuilder: (_, _) =>
+                                        const SizedBox(height: 16),
+                                    itemBuilder: (context, index) {
+                                      final post = userPosts[index];
+                                      final rawTitle = post['title'] ?? '';
+                                      final moodTag = _extractMood(rawTitle);
+                                      final cleanTitle = _extractCleanTitle(
+                                        rawTitle,
+                                      );
+                                      final imageUrl = post['image_url'];
 
-                                    return Container(
-                                      padding: const EdgeInsets.all(16),
-                                      decoration: BoxDecoration(
-                                        color: surfaceWhite,
-                                        borderRadius: BorderRadius.circular(24),
-                                        border: Border.all(
-                                          color: cardBorder,
-                                          width: 1.5,
+                                      return Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                          color: surfaceWhite,
+                                          borderRadius: BorderRadius.circular(
+                                            24,
+                                          ),
+                                          border: Border.all(
+                                            color: cardBorder,
+                                            width: 1.5,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(
+                                                alpha: 0.02,
+                                              ),
+                                              blurRadius: 10,
+                                              offset: const Offset(0, 4),
+                                            ),
+                                          ],
                                         ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withValues(
-                                              alpha: 0.02,
-                                            ),
-                                            blurRadius: 10,
-                                            offset: const Offset(0, 4),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                post['created_at']
-                                                        ?.toString()
-                                                        .split('T')[0] ??
-                                                    '',
-                                                style: const TextStyle(
-                                                  color: textGrey,
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              if (isMyProfile)
-                                                IconButton(
-                                                  icon: const Icon(
-                                                    Icons.more_horiz_rounded,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                  post['created_at']
+                                                          ?.toString()
+                                                          .split('T')[0] ??
+                                                      '',
+                                                  style: const TextStyle(
                                                     color: textGrey,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
                                                   ),
-                                                  onPressed: () =>
-                                                      _showPostActionMenu(post),
                                                 ),
+                                                if (isMyProfile)
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                      Icons.more_horiz_rounded,
+                                                      color: textGrey,
+                                                    ),
+                                                    onPressed: () =>
+                                                        _showPostActionMenu(
+                                                          post,
+                                                        ),
+                                                  ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+
+                                            // تگ مود جدا شده
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 4,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: lightPinkBg,
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              child: Text(
+                                                moodTag,
+                                                style: const TextStyle(
+                                                  color: primaryPink,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w900,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 10),
+
+                                            if (cleanTitle.isNotEmpty) ...[
+                                              Text(
+                                                cleanTitle,
+                                                style: const TextStyle(
+                                                  color: textDark,
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: 15,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 6),
                                             ],
-                                          ),
-                                          const SizedBox(height: 4),
-
-                                          // تگ مود جدا شده
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                              vertical: 4,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: lightPinkBg,
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              moodTag,
-                                              style: const TextStyle(
-                                                color: primaryPink,
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w900,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 10),
-
-                                          if (cleanTitle.isNotEmpty) ...[
                                             Text(
-                                              cleanTitle,
+                                              post['content'] ?? '',
                                               style: const TextStyle(
-                                                color: textDark,
-                                                fontWeight: FontWeight.w900,
-                                                fontSize: 15,
+                                                color: textGrey,
+                                                fontSize: 13,
+                                                height: 1.4,
                                               ),
                                             ),
-                                            const SizedBox(height: 6),
-                                          ],
-                                          Text(
-                                            post['content'] ?? '',
-                                            style: const TextStyle(
-                                              color: textGrey,
-                                              fontSize: 13,
-                                              height: 1.4,
-                                            ),
-                                          ),
 
-                                          // نمایش تصویر پست با Placeholder و لودینگ استاندارد
-                                          if (imageUrl != null &&
-                                              imageUrl
-                                                  .toString()
-                                                  .isNotEmpty) ...[
-                                            const SizedBox(height: 14),
-                                            ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              child: Container(
-                                                constraints: BoxConstraints(
-                                                  maxHeight:
-                                                      MediaQuery.of(
-                                                        context,
-                                                      ).size.height *
-                                                      0.35,
-                                                ),
-                                                width: double.infinity,
-                                                color: Colors.grey.shade100,
-                                                child: Image.network(
-                                                  imageUrl.toString(),
-                                                  fit: BoxFit.cover,
-                                                  loadingBuilder:
-                                                      (
-                                                        context,
-                                                        child,
-                                                        loadingProgress,
-                                                      ) {
-                                                        if (loadingProgress ==
-                                                            null) {
-                                                          return child;
-                                                        }
-                                                        return Container(
-                                                          height: 180,
-                                                          alignment:
-                                                              Alignment.center,
-                                                          child: Column(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .center,
-                                                            children: [
-                                                              const CircularProgressIndicator(
-                                                                color:
-                                                                    primaryPink,
-                                                                strokeWidth: 2,
-                                                              ),
-                                                              const SizedBox(
-                                                                height: 6,
-                                                              ),
-                                                              Text(
-                                                                "Loading image...",
-                                                                style: TextStyle(
+                                            // نمایش تصویر پست با Placeholder و لودینگ استاندارد
+                                            if (imageUrl != null &&
+                                                imageUrl
+                                                    .toString()
+                                                    .isNotEmpty) ...[
+                                              const SizedBox(height: 14),
+                                              ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                                child: Container(
+                                                  constraints: BoxConstraints(
+                                                    maxHeight:
+                                                        MediaQuery.of(
+                                                          context,
+                                                        ).size.height *
+                                                        0.35,
+                                                  ),
+                                                  width: double.infinity,
+                                                  color: Colors.grey.shade100,
+                                                  child: Image.network(
+                                                    imageUrl.toString(),
+                                                    fit: BoxFit.cover,
+                                                    loadingBuilder:
+                                                        (
+                                                          context,
+                                                          child,
+                                                          loadingProgress,
+                                                        ) {
+                                                          if (loadingProgress ==
+                                                              null) {
+                                                            return child;
+                                                          }
+                                                          return Container(
+                                                            height: 180,
+                                                            alignment: Alignment
+                                                                .center,
+                                                            child: Column(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                const CircularProgressIndicator(
                                                                   color:
-                                                                      textGrey,
-                                                                  fontSize: 10,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
+                                                                      primaryPink,
+                                                                  strokeWidth:
+                                                                      2,
                                                                 ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        );
-                                                      },
-                                                  errorBuilder:
-                                                      (
-                                                        context,
-                                                        error,
-                                                        stackTrace,
-                                                      ) {
-                                                        return Container(
-                                                          height: 140,
-                                                          alignment:
-                                                              Alignment.center,
-                                                          color: Colors
-                                                              .grey
-                                                              .shade200,
-                                                          child: const Column(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .center,
-                                                            children: [
-                                                              Icon(
-                                                                Icons
-                                                                    .broken_image_rounded,
+                                                                const SizedBox(
+                                                                  height: 6,
+                                                                ),
+                                                                Text(
+                                                                  "Loading image...",
+                                                                  style: TextStyle(
+                                                                    color:
+                                                                        textGrey,
+                                                                    fontSize:
+                                                                        10,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          );
+                                                        },
+                                                    errorBuilder: (context, error, stackTrace) {
+                                                      return Container(
+                                                        height: 140,
+                                                        alignment:
+                                                            Alignment.center,
+                                                        color: Colors
+                                                            .grey
+                                                            .shade200,
+                                                        child: const Column(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Icon(
+                                                              Icons
+                                                                  .broken_image_rounded,
+                                                              color: textGrey,
+                                                              size: 28,
+                                                            ),
+                                                            SizedBox(height: 4),
+                                                            Text(
+                                                              "Image failed to load",
+                                                              style: TextStyle(
                                                                 color: textGrey,
-                                                                size: 28,
+                                                                fontSize: 10,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
                                                               ),
-                                                              SizedBox(
-                                                                height: 4,
-                                                              ),
-                                                              Text(
-                                                                "Image failed to load",
-                                                                style: TextStyle(
-                                                                  color:
-                                                                      textGrey,
-                                                                  fontSize: 10,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        );
-                                                      },
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
 
-                                          const SizedBox(height: 12),
-                                          const Divider(color: cardBorder),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
-                                            children: [
-                                              InkWell(
-                                                onTap: () =>
-                                                    _toggleLike(post, index),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        vertical: 6,
-                                                        horizontal: 12,
-                                                      ),
-                                                  child: Row(
-                                                    children: [
-                                                      Icon(
-                                                        (post['is_liked_by_me'] ??
-                                                                false)
-                                                            ? Icons
-                                                                  .thumb_up_rounded
-                                                            : Icons
-                                                                  .thumb_up_outlined,
-                                                        color:
-                                                            (post['is_liked_by_me'] ??
-                                                                false)
-                                                            ? primaryPink
-                                                            : textGrey,
-                                                        size: 18,
-                                                      ),
-                                                      const SizedBox(width: 6),
-                                                      Text(
-                                                        "${post['likes_count'] ?? 0} Likes",
-                                                        style: TextStyle(
+                                            const SizedBox(height: 12),
+                                            const Divider(color: cardBorder),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
+                                              children: [
+                                                InkWell(
+                                                  onTap: () =>
+                                                      _toggleLike(post, index),
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          vertical: 6,
+                                                          horizontal: 12,
+                                                        ),
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(
+                                                          (post['is_liked_by_me'] ??
+                                                                  false)
+                                                              ? Icons
+                                                                    .thumb_up_rounded
+                                                              : Icons
+                                                                    .thumb_up_outlined,
                                                           color:
                                                               (post['is_liked_by_me'] ??
                                                                   false)
                                                               ? primaryPink
                                                               : textGrey,
-                                                          fontSize: 11,
-                                                          fontWeight:
-                                                              FontWeight.bold,
+                                                          size: 18,
                                                         ),
+                                                        const SizedBox(
+                                                          width: 6,
+                                                        ),
+                                                        Text(
+                                                          "${post['likes_count'] ?? 0} Likes",
+                                                          style: TextStyle(
+                                                            color:
+                                                                (post['is_liked_by_me'] ??
+                                                                    false)
+                                                                ? primaryPink
+                                                                : textGrey,
+                                                            fontSize: 11,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                                InkWell(
+                                                  onTap: () =>
+                                                      _openCommentsBottomSheet(
+                                                        post['id'].toString(),
                                                       ),
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          vertical: 6,
+                                                          horizontal: 12,
+                                                        ),
+                                                    child: Row(
+                                                      children: [
+                                                        const Icon(
+                                                          Icons
+                                                              .mode_comment_outlined,
+                                                          color: textGrey,
+                                                          size: 18,
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 6,
+                                                        ),
+                                                        Text(
+                                                          "${post['comments_count'] ?? 0} Comments",
+                                                          style:
+                                                              const TextStyle(
+                                                                color: textGrey,
+                                                                fontSize: 11,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  )
+                                : Container(
+                                    padding: const EdgeInsets.all(30),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: surfaceWhite,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: cardBorder,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      "No posts shared by this user yet.",
+                                      style: TextStyle(
+                                        color: textGrey,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                          ] else ...[
+                            userReels.isNotEmpty
+                                ? GridView.builder(
+                                    shrinkWrap: true,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    gridDelegate:
+                                        const SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 3,
+                                          childAspectRatio: 0.65,
+                                          crossAxisSpacing: 8,
+                                          mainAxisSpacing: 8,
+                                        ),
+                                    itemCount: userReels.length,
+                                    itemBuilder: (context, index) {
+                                      final reel = userReels[index];
+                                      final thumbnailUrl =
+                                          reel['thumbnail_url']?.toString() ??
+                                          '';
+                                      return GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  StudentReelsScreen(
+                                                    targetReelId: reel['id']
+                                                        ?.toString(),
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          child: Stack(
+                                            fit: StackFit.expand,
+                                            children: [
+                                              Image.network(
+                                                thumbnailUrl.isNotEmpty
+                                                    ? thumbnailUrl
+                                                    : "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=300",
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (_, _, _) =>
+                                                    Container(
+                                                      color: Colors.grey[200],
+                                                      child: const Icon(
+                                                        Icons
+                                                            .play_circle_outline_rounded,
+                                                        color: primaryPink,
+                                                        size: 28,
+                                                      ),
+                                                    ),
+                                              ),
+                                              Container(
+                                                decoration: const BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    begin: Alignment.topCenter,
+                                                    end: Alignment.bottomCenter,
+                                                    colors: [
+                                                      Colors.transparent,
+                                                      Colors.black54,
                                                     ],
                                                   ),
                                                 ),
                                               ),
-                                              InkWell(
-                                                onTap: () =>
-                                                    _openCommentsBottomSheet(
-                                                      post['id'].toString(),
+                                              Positioned(
+                                                bottom: 6,
+                                                left: 6,
+                                                right: 6,
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(
+                                                      Icons.play_arrow_rounded,
+                                                      color: Colors.white,
+                                                      size: 14,
                                                     ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        vertical: 6,
-                                                        horizontal: 12,
-                                                      ),
-                                                  child: Row(
-                                                    children: [
-                                                      const Icon(
-                                                        Icons
-                                                            .mode_comment_outlined,
-                                                        color: textGrey,
-                                                        size: 18,
-                                                      ),
-                                                      const SizedBox(width: 6),
-                                                      Text(
-                                                        "${post['comments_count'] ?? 0} Comments",
+                                                    const SizedBox(width: 2),
+                                                    Expanded(
+                                                      child: Text(
+                                                        "${reel['views_count'] ?? 0}",
                                                         style: const TextStyle(
-                                                          color: textGrey,
-                                                          fontSize: 11,
+                                                          color: Colors.white,
+                                                          fontSize: 10,
                                                           fontWeight:
                                                               FontWeight.bold,
                                                         ),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                                       ),
-                                                    ],
-                                                  ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
                                             ],
                                           ),
-                                        ],
+                                        ),
+                                      );
+                                    },
+                                  )
+                                : Container(
+                                    padding: const EdgeInsets.all(30),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: surfaceWhite,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: cardBorder,
+                                        width: 1.5,
                                       ),
-                                    );
-                                  },
-                                )
-                              : Container(
-                                  padding: const EdgeInsets.all(30),
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: surfaceWhite,
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: cardBorder,
-                                      width: 1.5,
+                                    ),
+                                    child: const Text(
+                                      "No educational reels shared by this user yet.",
+                                      style: TextStyle(
+                                        color: textGrey,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
-                                  child: const Text(
-                                    "No posts shared by this user yet.",
-                                    style: TextStyle(
-                                      color: textGrey,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
+                          ],
                         ],
                       ),
                     ),
@@ -1602,7 +1820,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
             children: [
               CircleAvatar(
                 radius: 16,
-                backgroundColor: const Color(0xFFFCE4EC),
+                backgroundColor: const Color(0xFFFAF4F6),
                 backgroundImage:
                     c['profiles']?['avatar_url'] != null &&
                         c['profiles']?['avatar_url'] != ''
@@ -1614,7 +1832,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                     ? const Icon(
                         Icons.person,
                         size: 16,
-                        color: Color(0xFFC2185B),
+                        color: Color(0xFFF494AC),
                       )
                     : null,
               ),
@@ -1729,7 +1947,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
           Expanded(
             child: isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFC2185B)),
+                    child: CircularProgressIndicator(color: Color(0xFFF494AC)),
                   )
                 : comments.isEmpty
                 ? const Center(
@@ -1781,7 +1999,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                           "Replying to $replyingToName",
                           style: const TextStyle(
                             fontSize: 12,
-                            color: Color(0xFFC2185B),
+                            color: Color(0xFFF494AC),
                             fontWeight: FontWeight.w900,
                           ),
                         ),
@@ -1802,7 +2020,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                       child: TextField(
                         controller: _commentController,
                         focusNode: _commentFocusNode,
-                        cursorColor: const Color(0xFFC2185B),
+                        cursorColor: const Color(0xFFF494AC),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -1831,7 +2049,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                     const SizedBox(width: 8),
                     Container(
                       decoration: const BoxDecoration(
-                        color: Color(0xFFC2185B),
+                        color: Color(0xFFF494AC),
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(

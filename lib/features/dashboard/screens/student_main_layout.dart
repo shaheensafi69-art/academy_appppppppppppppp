@@ -46,13 +46,13 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
   int _currentIndex = 0;
   Map<String, dynamic>? _userProfile;
 
-  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color primaryPink = Color(0xFFF494AC);
   static const Color backgroundWhite = Colors.white;
   static const Color surfaceColor = Colors.white;
   static const Color textColor = Color(0xFF111827);
   static const Color subTextColor = Color(0xFF6B7280);
   static const Color borderColor = Color(0xFFF3F4F6);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
 
   List<Widget> get _screens => [
     const StudentOverviewScreen(), // 0
@@ -253,7 +253,6 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
 
   // تشخیص اینکه آیا کاربر در بخش اجتماعی است یا خیر
   bool get _isInSocialSection =>
-      _currentIndex == 11 ||
       _currentIndex == 12 ||
       _currentIndex == 14 ||
       _currentIndex == 19 ||

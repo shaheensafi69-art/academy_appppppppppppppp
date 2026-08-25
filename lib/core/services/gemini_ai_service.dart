@@ -168,7 +168,8 @@ $availableTeachersStr
    "من دستیار هوشمند اختصاصی سافی آکادمی هستم و تنها امکان پاسخگویی به سوالات مرتبط با دوره‌ها و دروس آکادمی را دارم. چطور می‌توانم در زمینه دروس ثبت‌نام شده یا معرفی دوره‌های آکادمی به شما کمک کنم؟"
 
 4. **لحن و زبان**:
-   پاسخ‌های خود را با لحنی صمیمی، دلسوزانه، حرفه‌ای و به زبان فارسی/دری روان بنویسید.
+   پاسخ‌های خود را با لحنی صمیمی، دلسوزانه و حرفه‌ای بنویسید. زبان پاسخ شما باید دقیقاً و بدون استثنا همان زبانی باشد که کاربر پیام خود را ارسال کرده است (اگر کاربر به انگلیسی پرسید به انگلیسی، اگر به فارسی/دری پرسید به فارسی/دری، و به همین ترتیب برای هر زبان دیگری). حتماً از زبان کاربر پیروی کنید تا دستیار زبان‌های مختلف را پشتیبانی کند.
+   Write your responses in a friendly, compassionate, and professional tone. The language of your response MUST match the language of the user's prompt (if they ask in English, reply in English; if in Persian/Dari, reply in Persian/Dari; if in Pashto, reply in Pashto, etc.). You must follow the user's language choice.
 ''';
   }
 
@@ -214,21 +215,16 @@ $availableTeachersStr
           {"text": systemPrompt},
         ],
       },
-      "system_instruction": {
-        "parts": [
-          {"text": systemPrompt},
-        ],
-      },
       "contents": contents,
       "generationConfig": {"temperature": 0.7, "maxOutputTokens": 1500},
     });
 
-    // 3. فراخوانی API با مدل‌های جدید
+    // 3. فراخوانی API با مدل‌های جدید و استاندارد
     final endpoints = [
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=$key",
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$key",
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$key",
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=$key",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=$key",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=$key",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=$key",
     ];
 
     String aiText = "";
@@ -259,9 +255,7 @@ $availableTeachersStr
           final modelName = Uri.parse(
             endpoint,
           ).pathSegments.reversed.skip(1).first;
-          errorDetails.add(
-            "$modelName: HTTP ${response.statusCode} - $errBody",
-          );
+          errorDetails.add("$modelName: HTTP ${response.statusCode}");
           debugPrint(
             "Gemini Endpoint ($endpoint) Error Status: ${response.statusCode} Body: $errBody",
           );
@@ -273,10 +267,166 @@ $availableTeachersStr
     }
 
     if (aiText.isEmpty) {
-      aiText =
-          "متأسفانه مشکلی در ارتباط با هوش مصنوعی رخ داد. جزئیات خطا:\n${errorDetails.join('\n')}";
+      aiText = "سیستم قط است لطفا بعدا تلاش کنید";
     }
 
     return aiText;
+  }
+
+  /// تولید صدا با استفاده از قابلیت‌های متنی به صدای Gemini (TTS)
+  /// این تابع یا از مدل‌های اختصاصی TTS استفاده می‌کند یا از API تعاملی interactions
+  Future<String?> generateSpeech(String text, {String voice = 'Kore'}) async {
+    final key = _apiKey;
+    if (key.isEmpty) {
+      debugPrint("Gemini TTS Error: API key is empty.");
+      return null;
+    }
+
+    // پاکسازی متن از کاراکترها و فرمت‌های مارک‌داون مزاحم برای خروجی صوتی روان‌تر
+    final cleanText = text
+        .replaceAll(RegExp(r'\*\*?'), '') // حذف ستاره‌ها
+        .replaceAll(RegExp(r'#+'), '') // حذف هش‌های هدر
+        .replaceAll(RegExp(r'`'), '') // حذف بک‌تیک‌ها
+        .replaceAll(RegExp(r'\[.*?\]\(.*?\)'), '') // حذف لینک‌ها
+        .trim();
+
+    if (cleanText.isEmpty) return null;
+
+    // ۱. متد اول: فراخوانی مستقیم مدل gemini-3.1-flash-tts-preview با responseModalities
+    final generateContentUrl =
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-tts-preview:generateContent?key=$key";
+    try {
+      final response = await http
+          .post(
+            Uri.parse(generateContentUrl),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode({
+              "contents": [
+                {
+                  "parts": [
+                    {"text": cleanText},
+                  ],
+                },
+              ],
+              "generationConfig": {
+                "responseModalities": ["AUDIO"],
+                "speechConfig": {
+                  "voiceConfig": {
+                    "prebuiltVoiceConfig": {"voiceName": voice},
+                  },
+                },
+              },
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final candidates = data['candidates'] as List?;
+        if (candidates != null && candidates.isNotEmpty) {
+          final parts = candidates[0]['content']['parts'] as List?;
+          if (parts != null && parts.isNotEmpty) {
+            final inlineData = parts[0]['inlineData'];
+            if (inlineData != null && inlineData['data'] != null) {
+              return inlineData['data'].toString();
+            }
+          }
+        }
+      }
+      debugPrint(
+        "TTS Model API returned HTTP ${response.statusCode}: ${response.body}",
+      );
+    } catch (e) {
+      debugPrint("TTS Model generateContent Call Exception: $e");
+    }
+
+    // ۲. متد دوم (بک‌آپ): فراخوانی endpoint بتا interactions مطابق با راهنمای کاربر
+    final interactionsUrl =
+        "https://generativelanguage.googleapis.com/v1beta/interactions?key=$key";
+    try {
+      final response = await http
+          .post(
+            Uri.parse(interactionsUrl),
+            headers: {
+              "Content-Type": "application/json",
+              "Api-Revision": "2026-05-20",
+            },
+            body: jsonEncode({
+              "model": "gemini-3.1-flash-tts-preview",
+              "input": cleanText,
+              "response_format": {"type": "audio"},
+              "generation_config": {
+                "speech_config": [
+                  {"voice": voice},
+                ],
+              },
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['interaction'] != null &&
+            data['interaction']['output_audio'] != null) {
+          return data['interaction']['output_audio'].toString();
+        } else if (data['outputAudio'] != null) {
+          return data['outputAudio'].toString();
+        } else if (data['audioContent'] != null) {
+          return data['audioContent'].toString();
+        }
+      }
+      debugPrint(
+        "TTS Interactions API returned HTTP ${response.statusCode}: ${response.body}",
+      );
+    } catch (e) {
+      debugPrint("TTS Interactions API Call Exception: $e");
+    }
+
+    // ۳. متد سوم (بک‌آپ نهایی): مدل دیگر gemini-2.5-flash-preview-tts
+    final backupTtsUrl =
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=$key";
+    try {
+      final response = await http
+          .post(
+            Uri.parse(backupTtsUrl),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode({
+              "contents": [
+                {
+                  "parts": [
+                    {"text": cleanText},
+                  ],
+                },
+              ],
+              "generationConfig": {
+                "responseModalities": ["AUDIO"],
+                "speechConfig": {
+                  "voiceConfig": {
+                    "prebuiltVoiceConfig": {"voiceName": voice},
+                  },
+                },
+              },
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final candidates = data['candidates'] as List?;
+        if (candidates != null && candidates.isNotEmpty) {
+          final parts = candidates[0]['content']['parts'] as List?;
+          if (parts != null && parts.isNotEmpty) {
+            final inlineData = parts[0]['inlineData'];
+            if (inlineData != null && inlineData['data'] != null) {
+              return inlineData['data'].toString();
+            }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Backup TTS Model generateContent Exception: $e");
+    }
+
+    return null;
   }
 }

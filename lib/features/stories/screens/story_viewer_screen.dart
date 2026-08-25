@@ -55,18 +55,32 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
   VideoPlayerController? _videoController;
   bool _isLongPressing = false;
 
-  static const Color primaryPink = Color(0xFFC2185B);
+  bool isLiked = false;
+  bool isLiking = false;
+  final TextEditingController _replyController = TextEditingController();
+  final FocusNode _replyFocusNode = FocusNode();
+
+  static const Color primaryPink = Color(0xFFF494AC);
 
   @override
   void initState() {
     super.initState();
     _fetchUserActiveStories();
+    _replyFocusNode.addListener(() {
+      if (_replyFocusNode.hasFocus) {
+        _onLongPressStart();
+      } else {
+        _onLongPressEnd();
+      }
+    });
   }
 
   @override
   void dispose() {
     _timer?.cancel();
     _videoController?.dispose();
+    _replyController.dispose();
+    _replyFocusNode.dispose();
     super.dispose();
   }
 
@@ -135,14 +149,26 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
     final user = supabase.auth.currentUser;
     if (user == null) return;
 
+    if (currentStory.id.startsWith('story-demo')) {
+      if (mounted) {
+        setState(() => viewersCount = 1);
+      }
+      return;
+    }
+
     try {
-      // ثبت بازدید استوری در Supabase
-      await supabase.from("story_views").insert({
+      // ثبت یا بروزرسانی بازدید استوری در Supabase
+      await supabase.from("story_views").upsert({
         'story_id': currentStory.id,
         'viewer_id': user.id,
+        'viewed_at': DateTime.now().toIso8601String(),
       });
+    } catch (e) {
+      debugPrint("Error recording story view upsert: $e");
+    }
 
-      // شمارش بازدیدکنندگان
+    try {
+      // شمارش بازدیدکنندگان استوری (همیشه اجرا می‌شود)
       final viewsRes = await supabase
           .from("story_views")
           .select("id")
@@ -152,6 +178,153 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
         setState(() => viewersCount = viewsRes.length);
       }
     } catch (_) {}
+  }
+
+  Future<void> _checkIfStoryLiked() async {
+    if (stories.isEmpty) return;
+    final currentStory = stories[currentIndex];
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+
+    if (currentStory.id.startsWith('story-demo')) {
+      setState(() => isLiked = false);
+      return;
+    }
+
+    try {
+      final res = await supabase
+          .from("story_likes")
+          .select("id")
+          .eq("story_id", currentStory.id)
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+      if (mounted) {
+        setState(() {
+          isLiked = res != null;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => isLiked = false);
+    }
+  }
+
+  Future<void> _toggleStoryLike() async {
+    if (stories.isEmpty || isLiking) return;
+    final currentStory = stories[currentIndex];
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+
+    if (currentStory.id.startsWith('story-demo')) {
+      setState(() {
+        isLiked = !isLiked;
+      });
+      return;
+    }
+
+    setState(() => isLiking = true);
+
+    try {
+      if (isLiked) {
+        await supabase
+            .from("story_likes")
+            .delete()
+            .eq("story_id", currentStory.id)
+            .eq("user_id", user.id);
+
+        setState(() {
+          isLiked = false;
+          isLiking = false;
+        });
+      } else {
+        await supabase.from("story_likes").insert({
+          'story_id': currentStory.id,
+          'user_id': user.id,
+        });
+
+        if (currentStory.userId != user.id) {
+          try {
+            final senderProfile = await supabase
+                .from("profiles")
+                .select("first_name, last_name")
+                .eq("id", user.id)
+                .maybeSingle();
+
+            final String senderName = (senderProfile != null)
+                ? "${senderProfile['first_name'] ?? 'Someone'} ${senderProfile['last_name'] ?? ''}".trim()
+                : 'Someone';
+
+            await supabase.from("user_notifications").insert({
+              'user_id': currentStory.userId,
+              'sender_id': user.id,
+              'title': "Liked your Story ❤️",
+              'message': "$senderName liked your story.",
+              'notification_type': "story_like",
+              'link_url': "/story/${currentStory.id}",
+              'is_read': false,
+            });
+          } catch (_) {}
+        }
+
+        setState(() {
+          isLiked = true;
+          isLiking = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error toggling story like: $e");
+      setState(() => isLiking = false);
+    }
+  }
+
+  Future<void> _sendStoryReply(String replyText) async {
+    if (replyText.trim().isEmpty || stories.isEmpty) return;
+    final currentStory = stories[currentIndex];
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+
+    final String text = "💬 Reply to story: $replyText";
+
+    try {
+      await supabase.from("direct_messages").insert({
+        'sender_id': user.id,
+        'receiver_id': currentStory.userId,
+        'message_text': text,
+        'is_delivered': true,
+      });
+
+      try {
+        await supabase.from("user_notifications").insert({
+          'user_id': currentStory.userId,
+          'sender_id': user.id,
+          'title': "💬 Reply to Story",
+          'message': replyText,
+          'notification_type': "direct_message",
+          'link_url': "/chat/${user.id}",
+          'is_read': false,
+        });
+      } catch (_) {}
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Your reply was sent successfully! ✉️"),
+            backgroundColor: primaryPink,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("Error sending story reply: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error sending reply: $e"),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
   }
 
   void _loadStoryMedia() async {
@@ -169,6 +342,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
     final currentStory = stories[currentIndex];
 
     _recordStoryView();
+    _checkIfStoryLiked();
 
     if (currentStory.mediaType == 'video') {
       try {
@@ -477,7 +651,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
             if (currentStory.caption != null &&
                 currentStory.caption!.isNotEmpty)
               Positioned(
-                bottom: 80,
+                bottom: isMyStory ? 80 : 100,
                 left: 20,
                 right: 20,
                 child: Container(
@@ -525,6 +699,99 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            // کادر ارسال پاسخ و لایک استوری (برای استوری بقیه کاربران)
+            if (!isMyStory)
+              Positioned(
+                bottom: MediaQuery.of(context).padding.bottom + 16,
+                left: 16,
+                right: 16,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.25),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: TextField(
+                                controller: _replyController,
+                                focusNode: _replyFocusNode,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                decoration: const InputDecoration(
+                                  hintText: "Send reply...",
+                                  hintStyle: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                  ),
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                ),
+                                textInputAction: TextInputAction.send,
+                                onSubmitted: (val) {
+                                  _sendStoryReply(val);
+                                  _replyController.clear();
+                                  _replyFocusNode.unfocus();
+                                },
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.send_rounded,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                              onPressed: () {
+                                _sendStoryReply(_replyController.text);
+                                _replyController.clear();
+                                _replyFocusNode.unfocus();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: _toggleStoryLike,
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: isLiked
+                              ? primaryPink
+                              : Colors.white.withOpacity(0.18),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isLiked
+                                ? primaryPink
+                                : Colors.white.withOpacity(0.25),
+                            width: 1,
+                          ),
+                        ),
+                        child: Icon(
+                          isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ],

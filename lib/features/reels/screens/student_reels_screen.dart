@@ -38,7 +38,8 @@ class ReelItemData {
 
 class StudentReelsScreen extends StatefulWidget {
   final bool isActive;
-  const StudentReelsScreen({super.key, this.isActive = true});
+  final String? targetReelId;
+  const StudentReelsScreen({super.key, this.isActive = true, this.targetReelId});
 
   @override
   State<StudentReelsScreen> createState() => _StudentReelsScreenState();
@@ -50,8 +51,8 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
   List<ReelItemData> reels = [];
   int activeIndex = 0;
 
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
 
   final List<String> categories = [
     "🔥 All",
@@ -136,6 +137,14 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
         );
       }
 
+      if (widget.targetReelId != null) {
+        final targetIndex = loaded.indexWhere((r) => r.id == widget.targetReelId);
+        if (targetIndex != -1) {
+          final targetReel = loaded.removeAt(targetIndex);
+          loaded.insert(0, targetReel);
+        }
+      }
+
       if (mounted) {
         setState(() {
           reels = loaded;
@@ -174,6 +183,30 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
           'reel_id': reel.id,
           'user_id': user.id,
         });
+
+        if (reel.userId != user.id) {
+          try {
+            final senderProfile = await supabase
+                .from("profiles")
+                .select("first_name, last_name")
+                .eq("id", user.id)
+                .maybeSingle();
+            final String senderName = (senderProfile != null)
+                ? "${senderProfile['first_name'] ?? 'Someone'} ${senderProfile['last_name'] ?? ''}".trim()
+                : 'Someone';
+
+            await supabase.from("user_notifications").insert({
+              'user_id': reel.userId,
+              'sender_id': user.id,
+              'title': "Liked your Reel ❤️",
+              'message': "$senderName liked your educational video: \"${reel.title}\"",
+              'notification_type': "like",
+              'link_url': "/reel/${reel.id}",
+              'is_read': false,
+              'created_at': DateTime.now().toIso8601String(),
+            });
+          } catch (_) {}
+        }
       }
     } catch (e) {
       debugPrint("Error toggling reel like: $e");
@@ -453,7 +486,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
         // اطلاعات نویسنده و توضیحات در سمت چپ پایین
         Positioned(
           left: 16,
-          bottom: 40,
+          bottom: 95,
           right: 90,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -549,7 +582,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
         // دکمه‌های تعاملی سمت راست (Like, Comment, Share, Views)
         Positioned(
           right: 16,
-          bottom: 60,
+          bottom: 120,
           child: Column(
             children: [
               // لایک
@@ -640,20 +673,29 @@ class _ReelCommentsBottomSheet extends StatefulWidget {
 class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
   final supabase = Supabase.instance.client;
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   List<Map<String, dynamic>> comments = [];
   bool isLoading = true;
 
+  @pragma('vm:entry-point')
   @override
   void initState() {
     super.initState();
     _fetchComments();
   }
 
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
   Future<void> _fetchComments() async {
     try {
       final res = await supabase
           .from("reel_comments")
-          .select("*")
+          .select("*, profiles:user_id(first_name, last_name, avatar_url)")
           .eq("reel_id", widget.reelId)
           .order("created_at", ascending: true);
 
@@ -683,8 +725,50 @@ class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
         'comment_text': text,
       });
 
+      // ثبت نوتیفیکیشن کامنت ریلز
+      try {
+        final reelData = await supabase
+            .from("reels")
+            .select("user_id, title")
+            .eq("id", widget.reelId)
+            .maybeSingle();
+
+        if (reelData != null) {
+          final authorId = reelData['user_id']?.toString() ?? '';
+          final reelTitle = reelData['title'] ?? 'your reel';
+          if (authorId.isNotEmpty && authorId != user.id) {
+            final senderProfile = await supabase
+                .from("profiles")
+                .select("first_name, last_name")
+                .eq("id", user.id)
+                .maybeSingle();
+            final String senderName = (senderProfile != null)
+                ? "${senderProfile['first_name'] ?? 'Someone'} ${senderProfile['last_name'] ?? ''}".trim()
+                : 'Someone';
+
+            await supabase.from("user_notifications").insert({
+              'user_id': authorId,
+              'sender_id': user.id,
+              'title': "💬 Comment on your Reel",
+              'message': "$senderName commented on \"$reelTitle\": \"$text\"",
+              'notification_type': "comment",
+              'link_url': "/reel/${widget.reelId}",
+              'is_read': false,
+              'created_at': DateTime.now().toIso8601String(),
+            });
+          }
+        }
+      } catch (_) {}
+
       _fetchComments();
     } catch (_) {}
+  }
+
+  void _replyToUser(String username) {
+    setState(() {
+      _controller.text = "@$username $_controller.text";
+    });
+    _focusNode.requestFocus();
   }
 
   @override
@@ -724,7 +808,7 @@ class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
               child: isLoading
                   ? const Center(
                       child: CircularProgressIndicator(
-                        color: Color(0xFFC2185B),
+                        color: Color(0xFFF494AC),
                       ),
                     )
                   : comments.isEmpty
@@ -741,17 +825,61 @@ class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
                           itemCount: comments.length,
                           itemBuilder: (context, index) {
                             final c = comments[index];
+                            final profile = c['profiles'];
+                            final String authorName = (profile != null)
+                                ? "${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}".trim()
+                                : 'Academy Student';
+                            final String avatarUrl = (profile != null) ? (profile['avatar_url'] ?? '') : '';
+
                             return ListTile(
-                              leading: const CircleAvatar(
-                                backgroundColor: Color(0xFFFCE4EC),
-                                child: Icon(Icons.person,
-                                    color: Color(0xFFC2185B)),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              leading: CircleAvatar(
+                                radius: 18,
+                                backgroundColor: const Color(0xFFFAF4F6),
+                                backgroundImage: avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+                                child: avatarUrl.isEmpty
+                                    ? Text(
+                                        authorName.isNotEmpty ? authorName[0] : 'S',
+                                        style: const TextStyle(
+                                          color: Color(0xFFF494AC),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      )
+                                    : null,
                               ),
                               title: Text(
-                                c['comment_text'] ?? '',
+                                authorName,
                                 style: const TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
                                   color: Color(0xFF111827),
+                                ),
+                              ),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 2.0),
+                                child: Text(
+                                  c['comment_text'] ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF374151),
+                                  ),
+                                ),
+                              ),
+                              trailing: TextButton(
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                onPressed: () => _replyToUser(authorName),
+                                child: const Text(
+                                  "Reply",
+                                  style: TextStyle(
+                                    color: Color(0xFFF494AC),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 10,
+                                  ),
                                 ),
                               ),
                             );
@@ -765,6 +893,7 @@ class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
                   Expanded(
                     child: TextField(
                       controller: _controller,
+                      focusNode: _focusNode,
                       style: const TextStyle(
                         color: Color(0xFF111827),
                         fontSize: 13,
@@ -792,7 +921,7 @@ class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
                   IconButton(
                     icon: const Icon(
                       Icons.send_rounded,
-                      color: Color(0xFFC2185B),
+                      color: Color(0xFFF494AC),
                     ),
                     onPressed: _addComment,
                   ),
@@ -922,7 +1051,7 @@ class _ReelVideoPlayerWidgetState extends State<ReelVideoPlayerWidget> {
                 ),
               ),
             const CircularProgressIndicator(
-              color: Color(0xFFC2185B),
+              color: Color(0xFFF494AC),
               strokeWidth: 3,
             ),
           ],

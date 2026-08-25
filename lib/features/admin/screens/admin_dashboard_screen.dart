@@ -47,8 +47,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   AdminStats stats = AdminStats(totalStudents: 0, activeTickets: 0, totalRevenue: 0, pendingWithdrawals: 0, totalTeachers: 0, activeCourses: 0);
   List<Map<String, dynamic>> recentActivities = [];
 
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);

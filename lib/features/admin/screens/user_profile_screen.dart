@@ -22,8 +22,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   bool isActionLoading = false;
   int friendsCount = 0;
 
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
@@ -932,9 +932,9 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CircleAvatar(
-                radius: 16, backgroundColor: const Color(0xFFFCE4EC),
+                radius: 16, backgroundColor: const Color(0xFFFAF4F6),
                 backgroundImage: c['profiles']?['avatar_url'] != null && c['profiles']?['avatar_url'] != '' ? NetworkImage(c['profiles']['avatar_url']) : null,
-                child: c['profiles']?['avatar_url'] == null || c['profiles']?['avatar_url'] == '' ? const Icon(Icons.person, size: 16, color: Color(0xFFC2185B)) : null,
+                child: c['profiles']?['avatar_url'] == null || c['profiles']?['avatar_url'] == '' ? const Icon(Icons.person, size: 16, color: Color(0xFFF494AC)) : null,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -996,7 +996,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
           const Divider(height: 30),
           Expanded(
             child: isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFFC2185B)))
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFFF494AC)))
                 : comments.isEmpty
                     ? const Center(child: Text("No comments yet. Start the conversation!", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)))
                     : ListView(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), physics: const BouncingScrollPhysics(), children: _buildCommentTree(null, 0)),
@@ -1014,7 +1014,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Replying to $replyingToName", style: const TextStyle(fontSize: 12, color: Color(0xFFC2185B), fontWeight: FontWeight.w900)),
+                        Text("Replying to $replyingToName", style: const TextStyle(fontSize: 12, color: Color(0xFFF494AC), fontWeight: FontWeight.w900)),
                         GestureDetector(onTap: _cancelReply, child: const Icon(Icons.close_rounded, size: 18, color: Colors.grey))
                       ],
                     ),
@@ -1023,14 +1023,14 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                   children: [
                     Expanded(
                       child: TextField(
-                        controller: _commentController, focusNode: _commentFocusNode, cursorColor: const Color(0xFFC2185B), 
+                        controller: _commentController, focusNode: _commentFocusNode, cursorColor: const Color(0xFFF494AC), 
                         style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500), 
                         decoration: InputDecoration(hintText: replyingToName != null ? "Write a reply..." : "Add a comment...", hintStyle: const TextStyle(color: Colors.grey, fontSize: 12), filled: true, fillColor: const Color(0xFFF3F4F6), contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none)),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      decoration: const BoxDecoration(color: Color(0xFFC2185B), shape: BoxShape.circle),
+                      decoration: const BoxDecoration(color: Color(0xFFF494AC), shape: BoxShape.circle),
                       child: IconButton(icon: isSending ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.send_rounded, color: Colors.white, size: 18), onPressed: isSending ? null : _sendComment),
                     ),
                   ],

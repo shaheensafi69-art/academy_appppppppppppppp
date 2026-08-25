@@ -40,8 +40,8 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
   bool isLoading = true;
   List<CertificateItem> certificates = [];
 
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
@@ -383,9 +383,9 @@ class _AcademyThinkingLoadingAnimationState extends State<_AcademyThinkingLoadin
                   shape: BoxShape.circle,
                   gradient: SweepGradient(
                     colors: [
-                      const Color(0xFFC2185B).withOpacity(0.0),
-                      const Color(0xFFC2185B).withOpacity(0.8),
-                      const Color(0xFFC2185B),
+                      const Color(0xFFF494AC).withOpacity(0.0),
+                      const Color(0xFFF494AC).withOpacity(0.8),
+                      const Color(0xFFF494AC),
                     ],
                   ),
                 ),
@@ -403,9 +403,9 @@ class _AcademyThinkingLoadingAnimationState extends State<_AcademyThinkingLoadin
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: const Color(0xFFFCE4EC),
+                color: const Color(0xFFFAF4F6),
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFC2185B).withOpacity(0.25), width: 2),
+                border: Border.all(color: const Color(0xFFF494AC).withOpacity(0.25), width: 2),
               ),
               child: Stack(
                 alignment: Alignment.center,
@@ -413,7 +413,7 @@ class _AcademyThinkingLoadingAnimationState extends State<_AcademyThinkingLoadin
                   const Icon(
                     Icons.girl_rounded,
                     size: 54,
-                    color: Color(0xFFC2185B),
+                    color: Color(0xFFF494AC),
                   ),
                   Positioned(
                     bottom: 12,
@@ -430,7 +430,7 @@ class _AcademyThinkingLoadingAnimationState extends State<_AcademyThinkingLoadin
                       child: const Icon(
                         Icons.menu_book_rounded,
                         size: 14,
-                        color: Color(0xFFC2185B),
+                        color: Color(0xFFF494AC),
                       ),
                     ),
                   ),

@@ -72,8 +72,8 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
   bool isLinkCopied = false;
   bool isCodeCopied = false;
 
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
@@ -257,7 +257,7 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFFC2185B), Color(0xFF880E4F)], // گرادینت شیک کارت بانکی
+                            colors: [Color(0xFFF494AC), Color(0xFF880E4F)], // گرادینت شیک کارت بانکی
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -683,7 +683,7 @@ class AcademyLoadingOverlay extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const CircularProgressIndicator(color: Color(0xFFC2185B), strokeWidth: 3),
+                const CircularProgressIndicator(color: Color(0xFFF494AC), strokeWidth: 3),
                 const SizedBox(height: 20),
                 Text(
                   message,

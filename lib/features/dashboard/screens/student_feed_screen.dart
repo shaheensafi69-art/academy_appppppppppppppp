@@ -112,8 +112,8 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _isScrolled = false;
 
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
@@ -341,6 +341,30 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
           "post_id": post.id,
           "student_id": user.id,
         });
+
+        if (post.studentId != user.id) {
+          try {
+            final senderProfile = await supabase
+                .from("profiles")
+                .select("first_name, last_name")
+                .eq("id", user.id)
+                .maybeSingle();
+            final String senderName = (senderProfile != null)
+                ? "${senderProfile['first_name'] ?? 'Someone'} ${senderProfile['last_name'] ?? ''}".trim()
+                : 'Someone';
+
+            await supabase.from("user_notifications").insert({
+              'user_id': post.studentId,
+              'sender_id': user.id,
+              'title': "Liked your post ❤️",
+              'message': "$senderName liked your post: \"${post.cleanTitle}\"",
+              'notification_type': "like",
+              'link_url': "/post/${post.id}",
+              'is_read': false,
+              'created_at': DateTime.now().toIso8601String(),
+            });
+          } catch (_) {}
+        }
       }
     } catch (e) {
       debugPrint("Error toggling like: $e");
@@ -1594,6 +1618,41 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
 
       await supabase.from("discussion_comments").insert(insertData);
 
+      // ثبت نوتیفیکیشن کامنت پست فید
+      try {
+        final postData = await supabase
+            .from("discussion_posts")
+            .select("student_id, title")
+            .eq("id", widget.postId)
+            .maybeSingle();
+
+        if (postData != null) {
+          final authorId = postData['student_id']?.toString() ?? '';
+          final postTitle = postData['title'] ?? 'your post';
+          if (authorId.isNotEmpty && authorId != widget.currentUserId) {
+            final senderProfile = await supabase
+                .from("profiles")
+                .select("first_name, last_name")
+                .eq("id", widget.currentUserId)
+                .maybeSingle();
+            final String senderName = (senderProfile != null)
+                ? "${senderProfile['first_name'] ?? 'Someone'} ${senderProfile['last_name'] ?? ''}".trim()
+                : 'Someone';
+
+            await supabase.from("user_notifications").insert({
+              'user_id': authorId,
+              'sender_id': widget.currentUserId,
+              'title': "💬 Comment on your post",
+              'message': "$senderName commented on \"$postTitle\": \"$text\"",
+              'notification_type': "comment",
+              'link_url': "/post/${widget.postId}",
+              'is_read': false,
+              'created_at': DateTime.now().toIso8601String(),
+            });
+          }
+        }
+      } catch (_) {}
+
       _commentController.clear();
       _commentFocusNode.unfocus();
       setState(() {
@@ -1645,7 +1704,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
             children: [
               CircleAvatar(
                 radius: 16,
-                backgroundColor: const Color(0xFFFCE4EC),
+                backgroundColor: const Color(0xFFFAF4F6),
                 backgroundImage:
                     c['profiles']?['avatar_url'] != null &&
                         c['profiles']?['avatar_url'] != ''
@@ -1657,7 +1716,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                     ? const Icon(
                         Icons.person,
                         size: 16,
-                        color: Color(0xFFC2185B),
+                        color: Color(0xFFF494AC),
                       )
                     : null,
               ),
@@ -1773,7 +1832,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
           Expanded(
             child: isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFC2185B)),
+                    child: CircularProgressIndicator(color: Color(0xFFF494AC)),
                   )
                 : comments.isEmpty
                 ? const Center(
@@ -1826,7 +1885,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                           "Replying to $replyingToName",
                           style: const TextStyle(
                             fontSize: 12,
-                            color: Color(0xFFC2185B),
+                            color: Color(0xFFF494AC),
                             fontWeight: FontWeight.w900,
                           ),
                         ),
@@ -1847,7 +1906,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                       child: TextField(
                         controller: _commentController,
                         focusNode: _commentFocusNode,
-                        cursorColor: const Color(0xFFC2185B),
+                        cursorColor: const Color(0xFFF494AC),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -1877,7 +1936,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                     const SizedBox(width: 12),
                     Container(
                       decoration: const BoxDecoration(
-                        color: Color(0xFFC2185B),
+                        color: Color(0xFFF494AC),
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(

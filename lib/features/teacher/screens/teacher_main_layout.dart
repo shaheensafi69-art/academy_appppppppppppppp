@@ -39,8 +39,8 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
   int _currentIndex = 0;
   Map<String, dynamic>? _userProfile;
 
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
@@ -218,7 +218,6 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
   }
 
   bool get _isInSocialSection =>
-      _currentIndex == 11 ||
       _currentIndex == 12 ||
       _currentIndex == 13 ||
       _currentIndex == 15 ||

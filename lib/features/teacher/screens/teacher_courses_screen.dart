@@ -18,8 +18,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
   List<Map<String, dynamic>> classGroups = [];
   List<Map<String, dynamic>> enrolledStudents = [];
 
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);

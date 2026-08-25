@@ -11,8 +11,8 @@ class StudentClassDetailScreen extends StatelessWidget {
     required this.isPaid,
   });
 
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
@@ -62,7 +62,7 @@ class StudentClassDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFC2185B), Color(0xFF880E4F)],
+                  colors: [Color(0xFFF494AC), Color(0xFF880E4F)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),

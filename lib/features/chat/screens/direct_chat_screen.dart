@@ -51,8 +51,8 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
   List<DirectChatMessage> messages = [];
   RealtimeChannel? _chatChannel;
 
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
@@ -129,46 +129,60 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
       try {
         final friendCheck = await supabase
             .from("student_friends")
-            .select("id")
-            .or("and(sender_id.eq.$currentUserId,receiver_id.eq.${widget.peerId}),and(sender_id.eq.${widget.peerId},receiver_id.eq.$currentUserId)")
-            .eq("status", "accepted")
-            .maybeSingle();
+            .select("sender_id, receiver_id, status")
+            .or("sender_id.eq.$currentUserId,receiver_id.eq.$currentUserId");
 
-        friendStatus = friendCheck != null;
+        for (var f in (friendCheck as List)) {
+          final sId = f['sender_id']?.toString() ?? '';
+          final rId = f['receiver_id']?.toString() ?? '';
+          final stat = f['status']?.toString() ?? '';
+          if (((sId == currentUserId && rId == widget.peerId) ||
+                  (sId == widget.peerId && rId == currentUserId)) &&
+              stat == 'accepted') {
+            friendStatus = true;
+            break;
+          }
+        }
       } catch (_) {}
 
       // دریافت پیام‌های چت اختصاصی از جدول direct_messages
       final res = await supabase
           .from("direct_messages")
           .select("*")
-          .or("and(sender_id.eq.$currentUserId,receiver_id.eq.${widget.peerId}),and(sender_id.eq.${widget.peerId},receiver_id.eq.$currentUserId)")
+          .or("sender_id.eq.$currentUserId,receiver_id.eq.$currentUserId")
           .order("created_at", ascending: true);
 
       List<DirectChatMessage> loadedMessages = [];
 
       for (var m in (res as List)) {
         final senderId = m['sender_id']?.toString() ?? '';
-        final isRead = m['is_read'] == true;
-        final isDelivered = m['is_delivered'] == true || isRead;
+        final receiverId = m['receiver_id']?.toString() ?? '';
 
-        MessageStatus status = MessageStatus.sent;
-        if (isRead) {
-          status = MessageStatus.read; // تیک آبی دوتایی
-        } else if (isDelivered) {
-          status = MessageStatus.delivered; // تیک خاکستری دوتایی
-        } else {
-          status = MessageStatus.sent; // تک تیک خاکستری
+        // فقط پیام‌های بین کاربر فعلی و peerId را نگه می‌داریم
+        if ((senderId == currentUserId && receiverId == widget.peerId) ||
+            (senderId == widget.peerId && receiverId == currentUserId)) {
+          final isRead = m['is_read'] == true;
+          final isDelivered = m['is_delivered'] == true || isRead;
+
+          MessageStatus status = MessageStatus.sent;
+          if (isRead) {
+            status = MessageStatus.read; // تیک آبی دوتایی
+          } else if (isDelivered) {
+            status = MessageStatus.delivered; // تیک خاکستری دوتایی
+          } else {
+            status = MessageStatus.sent; // تک تیک خاکستری
+          }
+
+          loadedMessages.add(DirectChatMessage(
+            id: m['id']?.toString() ?? '',
+            senderId: senderId,
+            text: m['message_text'] ?? '',
+            attachmentUrl: m['attachment_url'],
+            createdAt: m['created_at'] ?? DateTime.now().toIso8601String(),
+            isMe: senderId == currentUserId,
+            status: status,
+          ));
         }
-
-        loadedMessages.add(DirectChatMessage(
-          id: m['id']?.toString() ?? '',
-          senderId: senderId,
-          text: m['message_text'] ?? '',
-          attachmentUrl: m['attachment_url'],
-          createdAt: m['created_at'] ?? DateTime.now().toIso8601String(),
-          isMe: senderId == currentUserId,
-          status: status,
-        ));
       }
 
       // علامت‌گذاری پیام‌های خوانده‌نشده به‌عنوان خوانده‌شده (تیک آبی)
@@ -212,13 +226,13 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("درخواست دوستی شما با موفقیت ارسال شد! 🤝")),
+          const SnackBar(content: Text("Friend request sent successfully! 🤝")),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("درخواست دوستی قبلاً ارسال شده یا خطایی رخ داد: $e")),
+          SnackBar(content: Text("Friend request already sent or an error occurred: $e")),
         );
       }
     }
@@ -264,7 +278,8 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
       try {
         await supabase.from("user_notifications").insert({
           'user_id': widget.peerId,
-          'title': "💬 پیام جدید",
+          'sender_id': user.id,
+          'title': "💬 New Message",
           'message': text,
           'notification_type': "direct_message",
           'link_url': "/chat/${user.id}",
@@ -290,7 +305,18 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
       }
     } catch (e) {
       debugPrint("Error sending direct message: $e");
-      if (mounted) setState(() => isSending = false);
+      if (mounted) {
+        setState(() {
+          messages.removeWhere((m) => m.id == tempMsg.id);
+          isSending = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error sending message: $e"),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
     }
   }
 
@@ -412,7 +438,7 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
                             const SizedBox(width: 10),
                             const Expanded(
                               child: Text(
-                                "شما باید ابتدا با این کاربر دوست شوید تا بتوانید به او پیام بفرستید.",
+                                "You must first become friends with this user to send them direct messages.",
                                 style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold, height: 1.3),
                               ),
                             ),
@@ -429,7 +455,7 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
                             ),
                             onPressed: _sendFriendRequest,
                             icon: const Icon(Icons.person_add_rounded, color: Colors.white, size: 16),
-                            label: const Text("ارسال درخواست دوستی", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                            label: const Text("Send Friend Request", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
                           ),
                         ),
                       ],

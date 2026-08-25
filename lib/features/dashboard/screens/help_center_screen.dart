@@ -17,8 +17,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
   final TextEditingController _messageController = TextEditingController();
   String _selectedDepartment = 'General Support';
 
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
@@ -528,7 +528,7 @@ class AcademyLoadingOverlay extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const CircularProgressIndicator(color: Color(0xFFC2185B), strokeWidth: 3),
+                const CircularProgressIndicator(color: Color(0xFFF494AC), strokeWidth: 3),
                 const SizedBox(height: 20),
                 Text(
                   message,

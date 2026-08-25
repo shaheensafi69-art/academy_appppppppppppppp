@@ -22,8 +22,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   bool isActionLoading = false;
   int friendsCount = 0;
 
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
@@ -1601,7 +1601,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
             children: [
               CircleAvatar(
                 radius: 16,
-                backgroundColor: const Color(0xFFFCE4EC),
+                backgroundColor: const Color(0xFFFAF4F6),
                 backgroundImage:
                     c['profiles']?['avatar_url'] != null &&
                         c['profiles']?['avatar_url'] != ''
@@ -1613,7 +1613,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                     ? const Icon(
                         Icons.person,
                         size: 16,
-                        color: Color(0xFFC2185B),
+                        color: Color(0xFFF494AC),
                       )
                     : null,
               ),
@@ -1728,7 +1728,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
           Expanded(
             child: isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFC2185B)),
+                    child: CircularProgressIndicator(color: Color(0xFFF494AC)),
                   )
                 : comments.isEmpty
                 ? const Center(
@@ -1780,7 +1780,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                           "Replying to $replyingToName",
                           style: const TextStyle(
                             fontSize: 12,
-                            color: Color(0xFFC2185B),
+                            color: Color(0xFFF494AC),
                             fontWeight: FontWeight.w900,
                           ),
                         ),
@@ -1801,7 +1801,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                       child: TextField(
                         controller: _commentController,
                         focusNode: _commentFocusNode,
-                        cursorColor: const Color(0xFFC2185B),
+                        cursorColor: const Color(0xFFF494AC),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -1830,7 +1830,7 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
                     const SizedBox(width: 8),
                     Container(
                       decoration: const BoxDecoration(
-                        color: Color(0xFFC2185B),
+                        color: Color(0xFFF494AC),
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(

@@ -53,8 +53,8 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   late Animation<Offset> _floatAnimation;
 
   // Color Palette (Clean Light Surface & Rich Pink Accent)
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
@@ -787,7 +787,7 @@ class _TypewriterTextState extends State<TypewriterText> {
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFF111827), fontStyle: FontStyle.italic),
         ),
         const SizedBox(height: 8),
-        const Text("— Safi Ecosystem Core", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFFC2185B), letterSpacing: 2)),
+        const Text("— Safi Ecosystem Core", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFFF494AC), letterSpacing: 2)),
       ],
     );
   }

@@ -19,7 +19,7 @@ class _AuthGateState extends State<AuthGate> {
   bool _isLoading = true;
   Widget _targetScreen = const WelcomeScreen();
 
-  static const Color primaryPink = Color(0xFFC2185B);
+  static const Color primaryPink = Color(0xFFF494AC);
 
   @override
   void initState() {

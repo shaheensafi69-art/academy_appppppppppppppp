@@ -2,9 +2,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'student_support_chat_screen.dart';
 
-const String telegramBotToken = "8994358206:AAHUpoHpMpqdnTxA_J30-xMipDg4l0vhBV8";
-const String telegramChatId = "5195615040";
+final String telegramBotToken =
+    dotenv.env['NEXT_PUBLIC_TELEGRAM_BOT_TOKEN2'] ??
+    "8994358206:AAHUpoHpMpqdnTxA_J30-xMipDg4l0vhBV8";
+final String telegramChatId =
+    dotenv.env['NEXT_PUBLIC_TELEGRAM_CHAT_ID2'] ?? "5195615040";
 
 class TicketItem {
   final String id;
@@ -43,7 +48,12 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
   bool isModalOpen = false;
 
   List<TicketItem> tickets = [];
-  Map<String, String> userInfo = {'id': '', 'firstName': '', 'lastName': '', 'email': ''};
+  Map<String, String> userInfo = {
+    'id': '',
+    'firstName': '',
+    'lastName': '',
+    'email': '',
+  };
 
   Map<String, int> stats = {'open': 0, 'answered': 0, 'total': 0};
 
@@ -53,8 +63,8 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
 
-  static const Color primaryPink = Color(0xFFC2185B);
-  static const Color lightPinkBg = Color(0xFFFCE4EC);
+  static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
@@ -95,7 +105,12 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
       final lName = profile?['last_name'] ?? '';
 
       setState(() {
-        userInfo = {'id': userId, 'firstName': fName, 'lastName': lName, 'email': userEmail};
+        userInfo = {
+          'id': userId,
+          'firstName': fName,
+          'lastName': lName,
+          'email': userEmail,
+        };
         _firstNameController.text = fName;
         _lastNameController.text = lName;
         _emailController.text = userEmail;
@@ -104,28 +119,44 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
       final ticketsData = await supabase
           .from("tickets")
           .select("*")
-          .eq("student_id", userId) 
+          .eq("student_id", userId)
           .order("created_at", ascending: false);
 
-      final allTickets = (ticketsData as List).map((t) => TicketItem.fromJson(t)).toList();
+      final allTickets = (ticketsData as List)
+          .map((t) => TicketItem.fromJson(t))
+          .toList();
       int openCount = allTickets.where((t) => t.status == "open").length;
-      int answeredCount = allTickets.where((t) => t.status == "answered").length;
+      int answeredCount = allTickets
+          .where((t) => t.status == "answered")
+          .length;
 
       setState(() {
         tickets = allTickets;
-        stats = {'open': openCount, 'answered': answeredCount, 'total': allTickets.length};
+        stats = {
+          'open': openCount,
+          'answered': answeredCount,
+          'total': allTickets.length,
+        };
       });
-        } catch (e) {
+    } catch (e) {
       debugPrint("Error fetching support data: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
   }
 
-  Future<void> _sendTicketAlertToTelegram(String fName, String lName, String email, String userId, String subject, String message) async {
+  Future<void> _sendTicketAlertToTelegram(
+    String fName,
+    String lName,
+    String email,
+    String userId,
+    String subject,
+    String message,
+  ) async {
     if (telegramBotToken.isEmpty || telegramChatId.isEmpty) return;
 
-    final telegramText = '''
+    final telegramText =
+        '''
 🛑 *New Support Ticket*
 
 👤 *User Information:*
@@ -201,18 +232,102 @@ $message
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Your support request has been logged and forwarded successfully."), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text(
+              "Your support request has been logged and forwarded successfully.",
+            ),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       debugPrint("Error creating ticket: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("An error occurred while creating the ticket."), backgroundColor: Colors.redAccent),
+          const SnackBar(
+            content: Text("An error occurred while creating the ticket."),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     } finally {
       if (mounted) setState(() => isSubmitting = false);
+    }
+  }
+
+  Future<void> _handleLiveChatClick() async {
+    setState(() => isLoading = true);
+    try {
+      final user = supabase.auth.currentUser;
+      if (user == null) return;
+      final userId = user.id;
+
+      // 1. Check if a ticket with subject 'General Live Support' and status != 'closed' exists
+      final existingTicket = await supabase
+          .from("tickets")
+          .select("*")
+          .eq("student_id", userId)
+          .eq("subject", "General Live Support")
+          .neq("status", "closed")
+          .order("created_at", ascending: false)
+          .limit(1)
+          .maybeSingle();
+
+      if (existingTicket != null) {
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => StudentSupportChatScreen(
+                ticketId: existingTicket['id'].toString(),
+                ticketSubject: existingTicket['subject'].toString(),
+                initialStatus: existingTicket['status'].toString(),
+              ),
+            ),
+          ).then((_) => _fetchInitialData());
+        }
+      } else {
+        // Create new ticket
+        final newTicket = await supabase
+            .from("tickets")
+            .insert({
+              'student_id': userId,
+              'subject': 'General Live Support',
+              'department': 'Technical',
+              'status': 'open',
+            })
+            .select()
+            .single();
+
+        // Insert initial message from AI
+        await supabase.from("ticket_messages").insert({
+          'ticket_id': newTicket['id'],
+          'sender_id': 'ai',
+          'message_text': 'سلام! خوش آمدید. من پشتیبان هوشمند سافی آکادمی هستم. چگونه می‌توانم به شما کمک کنم؟',
+        });
+
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => StudentSupportChatScreen(
+                ticketId: newTicket['id'].toString(),
+                ticketSubject: newTicket['subject'].toString(),
+                initialStatus: newTicket['status'].toString(),
+              ),
+            ),
+          ).then((_) => _fetchInitialData());
+        }
+      }
+    } catch (e) {
+      debugPrint("Error opening Live Chat: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("An error occurred opening Live Chat."), backgroundColor: Colors.redAccent),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
@@ -234,9 +349,20 @@ $message
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
+              const CircularProgressIndicator(
+                color: primaryPink,
+                strokeWidth: 2.5,
+              ),
               const SizedBox(height: 14),
-              Text("LOADING SUPPORT DESK...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(
+                "LOADING SUPPORT DESK...",
+                style: TextStyle(
+                  color: textGrey,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                ),
+              ),
             ],
           ),
         ),
@@ -261,9 +387,16 @@ $message
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                border: Border.all(
+                  color: primaryPink.withOpacity(0.15),
+                  width: 1.5,
+                ),
                 boxShadow: [
-                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                  BoxShadow(
+                    color: primaryPink.withOpacity(0.08),
+                    blurRadius: 25,
+                    offset: const Offset(0, 10),
+                  ),
                 ],
               ),
               child: Row(
@@ -273,20 +406,65 @@ $message
                     decoration: BoxDecoration(
                       color: lightPinkBg,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                      border: Border.all(
+                        color: primaryPink.withOpacity(0.3),
+                        width: 1.5,
+                      ),
                     ),
-                    child: const Icon(Icons.support_agent_rounded, color: primaryPink, size: 24),
+                    child: const Icon(
+                      Icons.support_agent_rounded,
+                      color: primaryPink,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("Support Desk", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                        const Text(
+                          "Support Desk",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: textDark,
+                          ),
+                        ),
                         const SizedBox(height: 3),
-                        const Text("Submit queries to our elite assistance unit.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                        const Text(
+                          "Submit queries to our elite assistance unit.",
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: textGrey,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ],
                     ),
+                  ),
+                   const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                    ),
+                    icon: const Icon(Icons.chat_rounded, size: 16),
+                    label: const Text(
+                      "Live Chat",
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    onPressed: _handleLiveChatClick,
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton.icon(
@@ -294,11 +472,22 @@ $message
                       backgroundColor: primaryPink,
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                     ),
                     icon: const Icon(Icons.add_rounded, size: 16),
-                    label: const Text("Ticket", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                    label: const Text(
+                      "Ticket",
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                     onPressed: () => setState(() => isModalOpen = true),
                   ),
                 ],
@@ -316,23 +505,51 @@ $message
                       color: surfaceWhite,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: cardBorder, width: 1.5),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(10)),
-                          child: const Icon(Icons.hourglass_top_rounded, color: primaryPink, size: 16),
+                          decoration: BoxDecoration(
+                            color: lightPinkBg,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.hourglass_top_rounded,
+                            color: primaryPink,
+                            size: 16,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text("OPEN", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                              const Text(
+                                "OPEN",
+                                style: TextStyle(
+                                  fontSize: 7,
+                                  fontWeight: FontWeight.w900,
+                                  color: textGrey,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
                               const SizedBox(height: 2),
-                              Text("${stats['open']}", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: textDark)),
+                              Text(
+                                "${stats['open']}",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w900,
+                                  color: textDark,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -348,23 +565,51 @@ $message
                       color: surfaceWhite,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: cardBorder, width: 1.5),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(color: Colors.green.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
-                          child: const Icon(Icons.check_circle_rounded, color: Colors.green, size: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.check_circle_rounded,
+                            color: Colors.green,
+                            size: 16,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text("ANSWERED", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                              const Text(
+                                "ANSWERED",
+                                style: TextStyle(
+                                  fontSize: 7,
+                                  fontWeight: FontWeight.w900,
+                                  color: textGrey,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
                               const SizedBox(height: 2),
-                              Text("${stats['answered']}", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: textDark)),
+                              Text(
+                                "${stats['answered']}",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w900,
+                                  color: textDark,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -380,23 +625,51 @@ $message
                       color: surfaceWhite,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: cardBorder, width: 1.5),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(color: Colors.blue.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
-                          child: const Icon(Icons.list_alt_rounded, color: Colors.blue, size: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.list_alt_rounded,
+                            color: Colors.blue,
+                            size: 16,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text("TOTAL", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                              const Text(
+                                "TOTAL",
+                                style: TextStyle(
+                                  fontSize: 7,
+                                  fontWeight: FontWeight.w900,
+                                  color: textGrey,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
                               const SizedBox(height: 2),
-                              Text("${stats['total']}", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: textDark)),
+                              Text(
+                                "${stats['total']}",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w900,
+                                  color: textDark,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -409,7 +682,14 @@ $message
             const SizedBox(height: 24),
 
             // ================= لیست تیکت‌ها =================
-            const Text("My Support Logs", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+            const Text(
+              "My Support Logs",
+              style: TextStyle(
+                color: textDark,
+                fontWeight: FontWeight.w900,
+                fontSize: 15,
+              ),
+            ),
             const SizedBox(height: 12),
 
             tickets.isNotEmpty
@@ -422,52 +702,109 @@ $message
                       final t = tickets[index];
                       bool isOpen = t.status == 'open';
 
-                      return Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: surfaceWhite,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: cardBorder, width: 1.5),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(12)),
-                                    child: const Icon(Icons.confirmation_number_rounded, color: primaryPink, size: 20),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(t.subject, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                        const SizedBox(height: 2),
-                                        Text("Submitted: ${_formatDate(t.createdAt)}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                                      ],
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => StudentSupportChatScreen(
+                                ticketId: t.id,
+                                ticketSubject: t.subject,
+                                initialStatus: t.status,
+                              ),
+                            ),
+                          ).then((_) {
+                            _fetchInitialData();
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: surfaceWhite,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: cardBorder, width: 1.5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.03),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: lightPinkBg,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Icon(
+                                        Icons.confirmation_number_rounded,
+                                        color: primaryPink,
+                                        size: 20,
+                                      ),
                                     ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            t.subject,
+                                            style: const TextStyle(
+                                              color: textDark,
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: 13,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            "Submitted: ${_formatDate(t.createdAt)}",
+                                            style: const TextStyle(
+                                              color: textGrey,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isOpen
+                                      ? lightPinkBg
+                                      : Colors.green.withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  isOpen ? 'Pending' : 'Answered',
+                                  style: TextStyle(
+                                    color: isOpen
+                                        ? primaryPink
+                                        : Colors.green.shade700,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: isOpen ? lightPinkBg : Colors.green.withOpacity(0.12),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                isOpen ? 'Pending' : 'Answered',
-                                style: TextStyle(color: isOpen ? primaryPink : Colors.green.shade700, fontSize: 9, fontWeight: FontWeight.w900),
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       );
                     },
@@ -482,11 +819,30 @@ $message
                     ),
                     child: Column(
                       children: [
-                        const Icon(Icons.mark_email_unread_rounded, color: textGrey, size: 36),
+                        const Icon(
+                          Icons.mark_email_unread_rounded,
+                          color: textGrey,
+                          size: 36,
+                        ),
                         const SizedBox(height: 10),
-                        const Text("No Support Logs Active", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                        const Text(
+                          "No Support Logs Active",
+                          style: TextStyle(
+                            color: textDark,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        const Text("Need help with something? Click above to open a ticket.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+                        const Text(
+                          "Need help with something? Click above to open a ticket.",
+                          style: TextStyle(
+                            color: textGrey,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ],
                     ),
                   ),
@@ -500,8 +856,17 @@ $message
                 decoration: BoxDecoration(
                   color: surfaceWhite,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 6))],
+                  border: Border.all(
+                    color: primaryPink.withOpacity(0.3),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -509,9 +874,20 @@ $message
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("Open Support Request", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                        const Text(
+                          "Open Support Request",
+                          style: TextStyle(
+                            color: textDark,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 15,
+                          ),
+                        ),
                         IconButton(
-                          icon: const Icon(Icons.close_rounded, color: textGrey, size: 20),
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: textGrey,
+                            size: 20,
+                          ),
                           onPressed: () => setState(() => isModalOpen = false),
                         ),
                       ],
@@ -523,9 +899,18 @@ $message
                     const SizedBox(height: 12),
                     _buildInput("Account Email *", _emailController),
                     const SizedBox(height: 12),
-                    _buildInput("Subject *", _subjectController, hint: "e.g., Database Sync Error"),
+                    _buildInput(
+                      "Subject *",
+                      _subjectController,
+                      hint: "e.g., Database Sync Error",
+                    ),
                     const SizedBox(height: 12),
-                    _buildInput("Message Details *", _messageController, hint: "Describe your difficulty...", maxLines: 4),
+                    _buildInput(
+                      "Message Details *",
+                      _messageController,
+                      hint: "Describe your difficulty...",
+                      maxLines: 4,
+                    ),
                     const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
@@ -535,10 +920,21 @@ $message
                           foregroundColor: Colors.white,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                         onPressed: isSubmitting ? null : _handleCreateTicket,
-                        child: Text(isSubmitting ? "Dispatching..." : "Submit Ticket Terminal 🚀", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                        child: Text(
+                          isSubmitting
+                              ? "Dispatching..."
+                              : "Submit Ticket Terminal 🚀",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11,
+                            letterSpacing: 1,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -551,25 +947,54 @@ $message
     );
   }
 
-  Widget _buildInput(String label, TextEditingController controller, {String? hint, int maxLines = 1}) {
+  Widget _buildInput(
+    String label,
+    TextEditingController controller, {
+    String? hint,
+    int maxLines = 1,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: textGrey,
+            fontSize: 9,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.8,
+          ),
+        ),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
           maxLines: maxLines,
-          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: textDark,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: const TextStyle(color: textGrey, fontSize: 11),
             filled: true,
             fillColor: cardBorder.withOpacity(0.5),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: cardBorder),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: cardBorder),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: primaryPink, width: 1.5),
+            ),
           ),
         ),
       ],

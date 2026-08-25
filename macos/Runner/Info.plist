@@ -28,5 +28,9 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app requires microphone access to record voice inputs for AI Chat and Support Desk.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This app requires speech recognition access to convert your spoken words to text.</string>
 </dict>
 </plist>
