@@ -22,6 +22,10 @@ class NotificationService {
 
   /// مقداردهی اولیه سیستم push notifications و فایربیس
   Future<void> initPushNotifications() async {
+    if (kIsWeb || (defaultTargetPlatform != TargetPlatform.android && defaultTargetPlatform != TargetPlatform.iOS)) {
+      debugPrint("FCM notifications are only supported on Android/iOS. Skipping Firebase initialization on macOS/desktop.");
+      return;
+    }
     try {
       await Firebase.initializeApp();
       FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -60,6 +64,9 @@ class NotificationService {
 
   /// گرفتن و ذخیره توکن FCM در جدول profiles کاربران در Supabase
   Future<void> saveFCMTokenToDatabase() async {
+    if (kIsWeb || (defaultTargetPlatform != TargetPlatform.android && defaultTargetPlatform != TargetPlatform.iOS)) {
+      return;
+    }
     try {
       final user = supabase.auth.currentUser;
       if (user == null) return;

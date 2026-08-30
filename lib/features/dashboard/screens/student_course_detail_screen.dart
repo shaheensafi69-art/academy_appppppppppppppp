@@ -7,13 +7,15 @@ class StudentCourseDetailScreen extends StatefulWidget {
   const StudentCourseDetailScreen({super.key, required this.courseId});
 
   @override
-  State<StudentCourseDetailScreen> createState() => _StudentCourseDetailScreenState();
+  State<StudentCourseDetailScreen> createState() =>
+      _StudentCourseDetailScreenState();
 }
 
 class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
   final supabase = Supabase.instance.client;
   bool isLoading = true;
   bool isEnrolling = false;
+  bool isAlreadyEnrolled = false;
   Map<String, dynamic>? courseData;
   List<Map<String, dynamic>> classGroups = [];
 
@@ -54,6 +56,8 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
   Future<void> _fetchCourseDetailsAndClasses() async {
     setState(() => isLoading = true);
     try {
+      final user = supabase.auth.currentUser;
+
       // ۱. واکشی جزئیات دوره از جدول courses
       final res = await supabase
           .from("courses")
@@ -68,14 +72,30 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
           .eq("course_id", widget.courseId)
           .eq("is_active", true);
 
+      // ۳. بررسی وضعیت ثبت‌نام دانشجو در این دوره
+      bool enrolled = false;
+      if (user != null) {
+        final enrollRes = await supabase
+            .from("enrollments")
+            .select("id")
+            .eq("student_id", user.id)
+            .eq("course_id", widget.courseId)
+            .maybeSingle();
+        if (enrollRes != null) {
+          enrolled = true;
+        }
+      }
+
       List<Map<String, dynamic>> groups = [];
       groups = List<Map<String, dynamic>>.from(groupsRes as List);
 
-      String initialInstructor = res['instructor_name'] ?? res['instructor'] ?? 'Safi Academy Faculty';
+      String initialInstructor =
+          res['instructor_name'] ?? res['instructor'] ?? 'Safi Academy Faculty';
 
       setState(() {
         courseData = res;
         classGroups = groups;
+        isAlreadyEnrolled = enrolled;
         if (groups.isNotEmpty) {
           selectedClassGroupId = groups[0]['id'].toString();
         }
@@ -84,7 +104,6 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
       });
 
       // پر کردن خودکار ایمیل کاربر اگر لاگین باشد
-      final user = supabase.auth.currentUser;
       if (user != null && user.email != null) {
         _emailController.text = user.email!;
       }
@@ -97,7 +116,10 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
   Future<void> _handleRegistrationSubmit() async {
     if (_fullNameController.text.isEmpty || _phoneController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill in all required fields."), backgroundColor: Colors.redAccent),
+        const SnackBar(
+          content: Text("Please fill in all required fields."),
+          backgroundColor: Colors.redAccent,
+        ),
       );
       return;
     }
@@ -107,7 +129,10 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
       final user = supabase.auth.currentUser;
       if (user == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Authentication required. Please login first."), backgroundColor: Colors.redAccent),
+          const SnackBar(
+            content: Text("Authentication required. Please login first."),
+            backgroundColor: Colors.redAccent,
+          ),
         );
         return;
       }
@@ -130,7 +155,10 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Registration & Seat Reservation Successful! 🎉"), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text("Registration & Seat Reservation Successful! 🎉"),
+            backgroundColor: Colors.green,
+          ),
         );
         Navigator.pop(context, true);
       }
@@ -138,7 +166,10 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
       debugPrint("Registration error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("You are already enrolled or an error occurred."), backgroundColor: Colors.redAccent),
+          const SnackBar(
+            content: Text("You are already enrolled or an error occurred."),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     } finally {
@@ -150,7 +181,10 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
     final link = "https://safiacademy.org/courses/${widget.courseId}";
     Clipboard.setData(ClipboardData(text: link));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Course master link copied to clipboard! 🔗"), backgroundColor: Colors.green),
+      const SnackBar(
+        content: Text("Course master link copied to clipboard! 🔗"),
+        backgroundColor: Colors.green,
+      ),
     );
   }
 
@@ -162,18 +196,29 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
         message: "LOADING COURSE DETAILS...",
         child: Scaffold(
           backgroundColor: surfaceWhite,
-          appBar: AppBar(backgroundColor: surfaceWhite, elevation: 0, iconTheme: const IconThemeData(color: textDark)),
-          body: const Center(child: Text("Course not found.", style: TextStyle(color: textDark, fontWeight: FontWeight.bold))),
+          appBar: AppBar(
+            backgroundColor: surfaceWhite,
+            elevation: 0,
+            iconTheme: const IconThemeData(color: textDark),
+          ),
+          body: const Center(
+            child: Text(
+              "Course not found.",
+              style: TextStyle(color: textDark, fontWeight: FontWeight.bold),
+            ),
+          ),
         ),
       );
     }
 
     // استخراج اساتید دوره از فیلدهای دیتابیس
     List<String> instructorOptions = [];
-    if (courseData!['instructor_name'] != null && courseData!['instructor_name'].toString().isNotEmpty) {
+    if (courseData!['instructor_name'] != null &&
+        courseData!['instructor_name'].toString().isNotEmpty) {
       instructorOptions.add(courseData!['instructor_name']);
     }
-    if (courseData!['instructor_2_name'] != null && courseData!['instructor_2_name'].toString().isNotEmpty) {
+    if (courseData!['instructor_2_name'] != null &&
+        courseData!['instructor_2_name'].toString().isNotEmpty) {
       instructorOptions.add(courseData!['instructor_2_name']);
     }
     if (instructorOptions.isEmpty) {
@@ -188,14 +233,21 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [const Color(0xFFFFF0F5), surfaceWhite, lightPinkBg.withOpacity(0.2)],
+              colors: [
+                const Color(0xFFFFF0F5),
+                surfaceWhite,
+                lightPinkBg.withOpacity(0.2),
+              ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
           ),
           child: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 16,
+              ),
               physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,21 +259,48 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                       GestureDetector(
                         onTap: () => Navigator.pop(context),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(color: surfaceWhite, borderRadius: BorderRadius.circular(12), border: Border.all(color: cardBorder, width: 1.5)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: surfaceWhite,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: cardBorder, width: 1.5),
+                          ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.arrow_back_rounded, color: textDark, size: 16),
+                              Icon(
+                                Icons.arrow_back_rounded,
+                                color: textDark,
+                                size: 16,
+                              ),
                               SizedBox(width: 6),
-                              Text("Back", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
+                              Text(
+                                "Back",
+                                style: TextStyle(
+                                  color: textDark,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       ),
                       IconButton(
-                        style: IconButton.styleFrom(backgroundColor: lightPinkBg, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                        icon: const Icon(Icons.share_rounded, color: primaryPink, size: 18),
+                        style: IconButton.styleFrom(
+                          backgroundColor: lightPinkBg,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(
+                          Icons.share_rounded,
+                          color: primaryPink,
+                          size: 18,
+                        ),
                         onPressed: _shareCourse,
                       ),
                     ],
@@ -232,87 +311,277 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(24),
                     child: Image.network(
-                      courseData!['thumbnail_url'] ?? 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80&w=800',
+                      courseData!['thumbnail_url'] ??
+                          'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80&w=800',
                       height: 200,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Container(height: 200, color: cardBorder),
+                      errorBuilder: (_, _, _) =>
+                          Container(height: 200, color: cardBorder),
                     ),
                   ),
                   const SizedBox(height: 16),
 
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                    child: Text((courseData!['category'] ?? 'Trading').toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: primaryPink)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: lightPinkBg,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      (courseData!['category'] ?? 'Trading').toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        color: primaryPink,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  Text(courseData!['title'] ?? '', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: textDark)),
+                  Text(
+                    courseData!['title'] ?? '',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: textDark,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text("Lead Instructor: ${courseData!['instructor_name'] ?? 'Safi Academy'}", style: const TextStyle(fontSize: 12, color: textGrey, fontWeight: FontWeight.bold)),
+                  Text(
+                    "Lead Instructor: ${courseData!['instructor_name'] ?? 'Safi Academy'}",
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: textGrey,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 20),
 
                   // ================= ویژگی‌ها (مدت‌زمان، گواهینامه، قیمت) =================
                   Row(
                     children: [
-                      _buildDetailBadge(Icons.timer_rounded, "${courseData!['duration_weeks'] ?? 4} Weeks"),
+                      _buildDetailBadge(
+                        Icons.timer_rounded,
+                        "${courseData!['duration_weeks'] ?? 4} Weeks",
+                      ),
                       const SizedBox(width: 10),
-                      _buildDetailBadge(Icons.emoji_events_rounded, (courseData!['includes_certificate'] ?? true) ? "Includes Certificate" : "No Certificate"),
+                      _buildDetailBadge(
+                        Icons.emoji_events_rounded,
+                        (courseData!['includes_certificate'] ?? true)
+                            ? "Includes Certificate"
+                            : "No Certificate",
+                      ),
                     ],
                   ),
                   const SizedBox(height: 10),
 
                   Row(
                     children: [
-                      _buildDetailBadge(Icons.attach_money_rounded, (courseData!['price'] ?? 0) > 0 ? "\$${(courseData!['price'] as num).toStringAsFixed(2)}" : "FREE SESSION"),
+                      _buildDetailBadge(
+                        Icons.attach_money_rounded,
+                        (courseData!['price'] ?? 0) > 0
+                            ? "\$${(courseData!['price'] as num).toStringAsFixed(2)}"
+                            : "FREE SESSION",
+                      ),
                       const SizedBox(width: 10),
-                      _buildDetailBadge(Icons.language_rounded, courseData!['language'] ?? 'English'),
+                      _buildDetailBadge(
+                        Icons.language_rounded,
+                        courseData!['language'] ?? 'English',
+                      ),
                     ],
                   ),
                   const SizedBox(height: 24),
 
+                  // 7-Day Free Trial Information Banner
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.purple.withOpacity(0.08),
+                          primaryPink.withOpacity(0.08),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.purple.withOpacity(0.2),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.purple.withOpacity(0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.card_giftcard_rounded,
+                            color: Colors.purple,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "7-Day Free Trial Available! 🎁",
+                                style: TextStyle(
+                                  color: Colors.purple,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                "رزرو صنف آزمایشی ۷ روزه رایگان فعال است. صنف پس از یک هفته خودکار قفل می‌گردد.",
+                                style: TextStyle(
+                                  color: Colors.purple,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
                   // ================= درباره دوره =================
-                  const Text("About Masterclass", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: textDark)),
+                  const Text(
+                    "About Masterclass",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      color: textDark,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text(courseData!['description'] ?? 'No description provided.', style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500, height: 1.5)),
+                  Text(
+                    courseData!['description'] ?? 'No description provided.',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: textGrey,
+                      fontWeight: FontWeight.w500,
+                      height: 1.5,
+                    ),
+                  ),
                   const SizedBox(height: 24),
 
                   // ================= لیست مدرسین =================
-                  const Text("Meet Your Instructors", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: textDark)),
+                  const Text(
+                    "Meet Your Instructors",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      color: textDark,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   _buildInstructorCard(
                     name: courseData!['instructor_name'] ?? 'Prof. Alex Safi',
-                    bio: courseData!['instructor_bio'] ?? 'Senior Trading Mentor & Academy Founder.',
+                    bio:
+                        courseData!['instructor_bio'] ??
+                        'Senior Trading Mentor & Academy Founder.',
                     imageUrl: courseData!['instructor_image_url'],
                   ),
-                  if (courseData!['instructor_2_name'] != null && courseData!['instructor_2_name'].toString().isNotEmpty) ...[
+                  if (courseData!['instructor_2_name'] != null &&
+                      courseData!['instructor_2_name']
+                          .toString()
+                          .isNotEmpty) ...[
                     const SizedBox(height: 10),
                     _buildInstructorCard(
                       name: courseData!['instructor_2_name'],
-                      bio: courseData!['instructor_2_bio'] ?? 'Professional Market Analyst.',
+                      bio:
+                          courseData!['instructor_2_bio'] ??
+                          'Professional Market Analyst.',
                       imageUrl: courseData!['instructor_2_image_url'],
                     ),
                   ],
                   const SizedBox(height: 30),
 
-                  // ================= دکمه باز کردن فرم ثبت‌نام =================
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: showRegistrationForm ? cardBorder : primaryPink,
-                        foregroundColor: showRegistrationForm ? textDark : Colors.white,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  // ================= دکمه ثبت‌نام / رزرو صنف یا دکمه Enrolled =================
+                  if (isAlreadyEnrolled)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.green.withOpacity(0.4),
+                          width: 1.5,
+                        ),
                       ),
-                      onPressed: () => setState(() => showRegistrationForm = !showRegistrationForm),
-                      child: Text(
-                        showRegistrationForm ? "Close Registration Form" : "Reserve Your Seat & Class 🚀",
-                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1),
+                      alignment: Alignment.center,
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.check_circle_rounded,
+                            color: Colors.green,
+                            size: 16,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            "ENROLLED ✓",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 11,
+                              color: Colors.green,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: showRegistrationForm
+                              ? cardBorder
+                              : primaryPink,
+                          foregroundColor: showRegistrationForm
+                              ? textDark
+                              : Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: () => setState(
+                          () => showRegistrationForm = !showRegistrationForm,
+                        ),
+                        child: Text(
+                          showRegistrationForm
+                              ? "Close Registration Form"
+                              : "Reserve Your Seat & Class 🚀",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11,
+                            letterSpacing: 1,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
 
                   // ================= فرم ثبت‌نام حرفه‌ای =================
                   if (showRegistrationForm) ...[
@@ -322,73 +591,172 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                       decoration: BoxDecoration(
                         color: surfaceWhite,
                         borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
-                        boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.06), blurRadius: 20, offset: const Offset(0, 8))],
+                        border: Border.all(
+                          color: primaryPink.withOpacity(0.3),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: primaryPink.withOpacity(0.06),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Secure Registration & Schedule", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: textDark)),
+                          const Text(
+                            "Secure Registration & Schedule",
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w900,
+                              color: textDark,
+                            ),
+                          ),
                           const SizedBox(height: 4),
-                          const Text("Fill out your details to finalize enrollment and class timing.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.bold)),
+                          const Text(
+                            "Fill out your details to finalize enrollment and class timing.",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: textGrey,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           const SizedBox(height: 20),
 
                           // Full Name
-                          const Text("FULL NAME *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey)),
+                          const Text(
+                            "FULL NAME *",
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              color: textGrey,
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           TextField(
                             controller: _fullNameController,
-                            style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: textDark,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                             decoration: _inputDecoration("John Doe"),
                           ),
                           const SizedBox(height: 14),
 
                           // Father's Name
-                          const Text("FATHER'S NAME *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey)),
+                          const Text(
+                            "FATHER'S NAME *",
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              color: textGrey,
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           TextField(
                             controller: _fatherNameController,
-                            style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: textDark,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                             decoration: _inputDecoration("Michael Doe"),
                           ),
                           const SizedBox(height: 14),
 
                           // Email
-                          const Text("EMAIL ADDRESS *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey)),
+                          const Text(
+                            "EMAIL ADDRESS *",
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              color: textGrey,
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           TextField(
                             controller: _emailController,
-                            style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: textDark,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                             decoration: _inputDecoration("you@example.com"),
                           ),
                           const SizedBox(height: 14),
 
                           // WhatsApp Number
-                          const Text("WHATSAPP NUMBER *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: primaryPink)),
+                          const Text(
+                            "WHATSAPP NUMBER *",
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              color: primaryPink,
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           TextField(
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,
-                            style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: textDark,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                             decoration: _inputDecoration("+1 234 567 8900"),
                           ),
                           const SizedBox(height: 14),
 
                           // Preferred Instructor
-                          const Text("PREFERRED INSTRUCTOR *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey)),
+                          const Text(
+                            "PREFERRED INSTRUCTOR *",
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              color: textGrey,
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(color: cardBorder, borderRadius: BorderRadius.circular(16)),
+                            decoration: BoxDecoration(
+                              color: cardBorder,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
-                                value: instructorOptions.contains(selectedInstructor) ? selectedInstructor : instructorOptions[0],
+                                dropdownColor: surfaceWhite,
+                                icon: const Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: primaryPink,
+                                ),
+                                value:
+                                    instructorOptions.contains(
+                                      selectedInstructor,
+                                    )
+                                    ? selectedInstructor
+                                    : instructorOptions[0],
                                 isExpanded: true,
                                 items: instructorOptions.map((inst) {
-                                  return DropdownMenuItem(value: inst, child: Text(inst, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)));
+                                  return DropdownMenuItem(
+                                    value: inst,
+                                    child: Text(
+                                      inst,
+                                      style: const TextStyle(
+                                        color: textDark,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  );
                                 }).toList(),
                                 onChanged: (val) {
-                                  if (val != null) setState(() => selectedInstructor = val);
+                                  if (val != null) {
+                                    setState(() => selectedInstructor = val);
+                                  }
                                 },
                               ),
                             ),
@@ -396,47 +764,107 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                           const SizedBox(height: 14),
 
                           // Class Group Selection
-                          const Text("SELECT CLASS & SCHEDULE *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: primaryPink)),
+                          const Text(
+                            "SELECT CLASS & SCHEDULE *",
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              color: primaryPink,
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           classGroups.isNotEmpty
                               ? Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                                  decoration: BoxDecoration(color: cardBorder, borderRadius: BorderRadius.circular(16)),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: cardBorder,
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
                                   child: DropdownButtonHideUnderline(
                                     child: DropdownButton<String>(
-                                      value: classGroups.any((g) => g['id'].toString() == selectedClassGroupId) ? selectedClassGroupId : classGroups[0]['id'].toString(),
+                                      dropdownColor: surfaceWhite,
+                                      icon: const Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        color: primaryPink,
+                                      ),
+                                      value:
+                                          classGroups.any(
+                                            (g) =>
+                                                g['id'].toString() ==
+                                                selectedClassGroupId,
+                                          )
+                                          ? selectedClassGroupId
+                                          : classGroups[0]['id'].toString(),
                                       isExpanded: true,
                                       items: classGroups.map((group) {
                                         return DropdownMenuItem(
                                           value: group['id'].toString(),
                                           child: Text(
                                             "${group['class_name']} | ⏰ ${group['class_time']} | 📅 ${group['class_days']}",
-                                            style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold),
+                                            style: const TextStyle(
+                                              color: textDark,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         );
                                       }).toList(),
                                       onChanged: (val) {
-                                        if (val != null) setState(() => selectedClassGroupId = val);
+                                        if (val != null) {
+                                          setState(
+                                            () => selectedClassGroupId = val,
+                                          );
+                                        }
                                       },
                                     ),
                                   ),
                                 )
                               : Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(12)),
-                                  child: const Text("No active class schedule listed. You can register and support will assign your batch.", style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.bold)),
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: lightPinkBg,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: primaryPink.withOpacity(0.3),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    "No active class schedule listed. Please register and support will contact you to set up a new cohort.\n\nدر حال حاضر صنفی برای این دوره وجود ندارد. ثبت‌نام کنید؛ برای تشکیل کلاس جدید با شما تماس می‌گیریم.",
+                                    style: TextStyle(
+                                      color: primaryPink,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      height: 1.4,
+                                    ),
+                                  ),
                                 ),
                           const SizedBox(height: 14),
 
                           // Notes
-                          const Text("ADDITIONAL NOTES (OPTIONAL)", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey)),
+                          const Text(
+                            "ADDITIONAL NOTES (OPTIONAL)",
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              color: textGrey,
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           TextField(
                             controller: _notesController,
                             maxLines: 3,
-                            style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                            decoration: _inputDecoration("Any specific questions..."),
+                            style: const TextStyle(
+                              color: textDark,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            decoration: _inputDecoration(
+                              "Any specific questions...",
+                            ),
                           ),
                           const SizedBox(height: 20),
 
@@ -448,16 +876,34 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                                 backgroundColor: primaryPink,
                                 foregroundColor: Colors.white,
                                 elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
                                 shadowColor: primaryPink.withOpacity(0.3),
                               ),
-                              onPressed: isEnrolling ? null : _handleRegistrationSubmit,
+                              onPressed: isEnrolling
+                                  ? null
+                                  : _handleRegistrationSubmit,
                               child: isEnrolling
-                                  ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                                  ? const SizedBox(
+                                      height: 18,
+                                      width: 18,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2.5,
+                                      ),
+                                    )
                                   : const Text(
                                       "Finalize Registration 🚀",
-                                      style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 0.8),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 12,
+                                        letterSpacing: 0.8,
+                                      ),
                                       textAlign: TextAlign.center,
                                     ),
                             ),
@@ -480,37 +926,70 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: surfaceWhite, borderRadius: BorderRadius.circular(16), border: Border.all(color: cardBorder, width: 1.5)),
+        decoration: BoxDecoration(
+          color: surfaceWhite,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: cardBorder, width: 1.5),
+        ),
         child: Row(
           children: [
             Icon(icon, color: primaryPink, size: 18),
             const SizedBox(width: 8),
-            Expanded(child: Text(text, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textDark), maxLines: 1, overflow: TextOverflow.ellipsis)),
+            Expanded(
+              child: Text(
+                text,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: textDark,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInstructorCard({required String name, required String bio, String? imageUrl}) {
+  Widget _buildInstructorCard({
+    required String name,
+    required String bio,
+    String? imageUrl,
+  }) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: surfaceWhite,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 3))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
             width: 48,
             height: 48,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), color: lightPinkBg),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: lightPinkBg,
+            ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(14),
               child: imageUrl != null && imageUrl.isNotEmpty
-                  ? Image.network(imageUrl, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(Icons.person, color: primaryPink))
+                  ? Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) =>
+                          const Icon(Icons.person, color: primaryPink),
+                    )
                   : const Icon(Icons.person, color: primaryPink),
             ),
           ),
@@ -519,9 +998,25 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                Text(
+                  name,
+                  style: const TextStyle(
+                    color: textDark,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(bio, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold), maxLines: 2, overflow: TextOverflow.ellipsis),
+                Text(
+                  bio,
+                  style: const TextStyle(
+                    color: textGrey,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
@@ -537,9 +1032,18 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
       filled: true,
       fillColor: cardBorder.withOpacity(0.6),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: cardBorder),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: cardBorder),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: primaryPink, width: 1.5),
+      ),
     );
   }
 }
@@ -581,16 +1085,22 @@ class _AcademyThinkingLoadingAnimation extends StatefulWidget {
   const _AcademyThinkingLoadingAnimation({required this.message});
 
   @override
-  State<_AcademyThinkingLoadingAnimation> createState() => _AcademyThinkingLoadingAnimationState();
+  State<_AcademyThinkingLoadingAnimation> createState() =>
+      _AcademyThinkingLoadingAnimationState();
 }
 
-class _AcademyThinkingLoadingAnimationState extends State<_AcademyThinkingLoadingAnimation> with SingleTickerProviderStateMixin {
+class _AcademyThinkingLoadingAnimationState
+    extends State<_AcademyThinkingLoadingAnimation>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(duration: const Duration(seconds: 2), vsync: this)..repeat();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
   }
 
   @override
@@ -638,7 +1148,10 @@ class _AcademyThinkingLoadingAnimationState extends State<_AcademyThinkingLoadin
               decoration: BoxDecoration(
                 color: const Color(0xFFFAF4F6),
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFF494AC).withOpacity(0.25), width: 2),
+                border: Border.all(
+                  color: const Color(0xFFF494AC).withOpacity(0.25),
+                  width: 2,
+                ),
               ),
               child: Stack(
                 alignment: Alignment.center,
@@ -657,7 +1170,10 @@ class _AcademyThinkingLoadingAnimationState extends State<_AcademyThinkingLoadin
                         color: Colors.white,
                         shape: BoxShape.circle,
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 6),
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.12),
+                            blurRadius: 6,
+                          ),
                         ],
                       ),
                       child: const Icon(

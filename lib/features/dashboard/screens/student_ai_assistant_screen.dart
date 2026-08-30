@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:ui';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import 'dart:math' as math;
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path_provider/path_provider.dart';
@@ -23,6 +26,32 @@ class Message {
   });
 }
 
+class AiCharacter {
+  final String key;
+  final String nameFa;
+  final String nameEn;
+  final String gender; // 'female' | 'male'
+  final String voice; // Gemini TTS voice name (هر کاراکتر صدای مشخص خودش را دارد)
+  final String tagline;
+  final IconData icon;
+  final List<Color> avatarGradient;
+
+  const AiCharacter({
+    required this.key,
+    required this.nameFa,
+    required this.nameEn,
+    required this.gender,
+    required this.voice,
+    required this.tagline,
+    required this.icon,
+    required this.avatarGradient,
+  });
+
+  String get displayName => nameFa.isNotEmpty ? nameFa : nameEn;
+  bool get isFemale => gender == 'female';
+  Color get accentColor => avatarGradient.first;
+}
+
 class StudentAiAssistantScreen extends StatefulWidget {
   final bool isFullScreen;
 
@@ -35,6 +64,63 @@ class StudentAiAssistantScreen extends StatefulWidget {
 
 class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
   final supabase = Supabase.instance.client;
+
+  void _showPremiumNotification(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
+        content: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isError
+                    ? Colors.redAccent.withOpacity(0.85)
+                    : Colors.green.withOpacity(0.85),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: (isError ? Colors.red : Colors.green).withOpacity(0.3),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      message,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
   final GeminiAiService _aiService = GeminiAiService();
   bool isLoadingHistory = true;
   bool isTyping = false;
@@ -50,8 +136,10 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final FlutterTts _flutterTts = FlutterTts();
   final SpeechToText _speechToText = SpeechToText();
-  String _speechLocale = "fa_IR"; // Default to Persian/Farsi input
-  String _selectedVoice = "Kore";
+  // زبان ورودی به صورت خودکار از زبان دستگاه تشخیص داده می‌شود (دکمه دستی حذف شد)
+  String _speechLocale = "fa_IR";
+  AiCharacter _selectedCharacter = kDefaultCharacter;
+  String get _selectedVoice => _selectedCharacter.voice;
   bool _isMuted = false;
   bool _isVoiceMode = false;
   bool _isListening = false;
@@ -83,17 +171,137 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
     "👑",
   ];
 
-  // Prebuilt Voice options from Gemini guidelines
-  final List<String> voiceOptions = [
-    "Kore",
-    "Zephyr",
-    "Puck",
-    "Leda",
-    "Charon",
-    "Fenrir",
-    "Aoede",
-    "Callirrhoe",
+  // ================= انتخاب شخصیت صوتی (کاراکتر زن / مرد) =================
+  // هر کاراکتر به یک صدای اختصاصی Gemini TTS متصل است (طبق مستندات صداها).
+  // زبان به صورت خودکار تشخیص داده می‌شود (فارسی / انگلیسی).
+  static final AiCharacter kDefaultCharacter = _femaleCharactersList.first;
+
+  static const List<AiCharacter> _femaleCharactersList = [
+    AiCharacter(
+      key: 'kore',
+      nameFa: 'کورا',
+      nameEn: 'Kore',
+      gender: 'female',
+      voice: 'Kore',
+      tagline: 'محکم، باوقار و دلسوز',
+      icon: Icons.face_retouching_natural_rounded,
+      avatarGradient: [Color(0xFFF494AC), Color(0xFFF9A8C5)],
+    ),
+    AiCharacter(
+      key: 'leda',
+      nameFa: 'لِدا',
+      nameEn: 'Leda',
+      gender: 'female',
+      voice: 'Leda',
+      tagline: 'جوان، شاداب و پرانرژی',
+      icon: Icons.face_rounded,
+      avatarGradient: [Color(0xFFA78BFA), Color(0xFFF0ABFC)],
+    ),
+    AiCharacter(
+      key: 'aoede',
+      nameFa: 'آئود',
+      nameEn: 'Aoede',
+      gender: 'female',
+      voice: 'Aoede',
+      tagline: 'ملایم، راحت و صمیمی',
+      icon: Icons.sentiment_satisfied_alt_rounded,
+      avatarGradient: [Color(0xFF34D399), Color(0xFFA7F3D0)],
+    ),
+    AiCharacter(
+      key: 'callirrhoe',
+      nameFa: 'کالیروئه',
+      nameEn: 'Callirrhoe',
+      gender: 'female',
+      voice: 'Callirrhoe',
+      tagline: 'آرام، صمیمی و مهربان',
+      icon: Icons.spa_rounded,
+      avatarGradient: [Color(0xFF60A5FA), Color(0xFFBFDBFE)],
+    ),
+    AiCharacter(
+      key: 'algieba',
+      nameFa: 'الجیبا',
+      nameEn: 'Algieba',
+      gender: 'female',
+      voice: 'Algieba',
+      tagline: 'لطیف، نرم و آرام‌بخش',
+      icon: Icons.auto_awesome_rounded,
+      avatarGradient: [Color(0xFFFBBF24), Color(0xFFFDE68A)],
+    ),
+    AiCharacter(
+      key: 'vindemiatrix',
+      nameFa: 'ويندمیاتریکس',
+      nameEn: 'Vindemiatrix',
+      gender: 'female',
+      voice: 'Vindemiatrix',
+      tagline: 'ملایم، مهربان و موقر',
+      icon: Icons.emoji_emotions_rounded,
+      avatarGradient: [Color(0xFFF472B6), Color(0xFFFBCFE8)],
+    ),
   ];
+
+  static const List<AiCharacter> _maleCharactersList = [
+    AiCharacter(
+      key: 'zephyr',
+      nameFa: 'زفیر',
+      nameEn: 'Zephyr',
+      gender: 'male',
+      voice: 'Zephyr',
+      tagline: 'درخشان، پرانرژی و شاد',
+      icon: Icons.face_outlined,
+      avatarGradient: [Color(0xFF38BDF8), Color(0xFF818CF8)],
+    ),
+    AiCharacter(
+      key: 'puck',
+      nameFa: 'پاک',
+      nameEn: 'Puck',
+      gender: 'male',
+      voice: 'Puck',
+      tagline: 'گرم، پرطراوت و صمیمی',
+      icon: Icons.sentiment_very_satisfied_rounded,
+      avatarGradient: [Color(0xFFFB923C), Color(0xFFFDBA74)],
+    ),
+    AiCharacter(
+      key: 'fenrir',
+      nameFa: 'فنریر',
+      nameEn: 'Fenrir',
+      gender: 'male',
+      voice: 'Fenrir',
+      tagline: 'عمیق، هیجانی و قدرتمند',
+      icon: Icons.graphic_eq_rounded,
+      avatarGradient: [Color(0xFF475569), Color(0xFF94A3B8)],
+    ),
+    AiCharacter(
+      key: 'charon',
+      nameFa: 'شارون',
+      nameEn: 'Charon',
+      gender: 'male',
+      voice: 'Charon',
+      tagline: 'رسمی، آموزشی و دقیق',
+      icon: Icons.menu_book_rounded,
+      avatarGradient: [Color(0xFF0EA5E9), Color(0xFF67E8F9)],
+    ),
+    AiCharacter(
+      key: 'orus',
+      nameFa: 'اوروس',
+      nameEn: 'Orus',
+      gender: 'male',
+      voice: 'Orus',
+      tagline: 'محکم، جدی و مطمئن',
+      icon: Icons.shield_rounded,
+      avatarGradient: [Color(0xFF7C3AED), Color(0xFFC4B5FD)],
+    ),
+    AiCharacter(
+      key: 'algenib',
+      nameFa: 'الجنیب',
+      nameEn: 'Algenib',
+      gender: 'male',
+      voice: 'Algenib',
+      tagline: 'گرفته، قدرتمند و با‌صلابت',
+      icon: Icons.record_voice_over_rounded,
+      avatarGradient: [Color(0xFFEF4444), Color(0xFFFCA5A5)],
+    ),
+  ];
+
 
   // Bubblegum Theme Colors
   static const Color primaryPink = Color(0xFFF494AC);
@@ -107,6 +315,15 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
   @override
   void initState() {
     super.initState();
+    // تشخیص خودکار زبان ورودی از زبان دستگاه (بدون دکمه دستی)
+    try {
+      final deviceLocale = Platform.localeName.toLowerCase();
+      _speechLocale = deviceLocale.contains('fa') || deviceLocale.contains('persian')
+          ? 'fa_IR'
+          : 'en_US';
+    } catch (_) {
+      _speechLocale = 'fa_IR';
+    }
     _fetchChatHistory();
     _initSpeech();
 
@@ -186,6 +403,25 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
     await _audioPlayer.stop();
     await _flutterTts.stop();
 
+    // Request microphone permission explicitly via permission_handler
+    try {
+      var status = await Permission.microphone.status;
+      if (!status.isGranted) {
+        status = await Permission.microphone.request();
+      }
+      if (!status.isGranted) {
+        if (mounted) {
+          _showPremiumNotification(
+            "Microphone permission is required to speak. Please allow microphone access in settings.",
+            isError: true,
+          );
+        }
+        return;
+      }
+    } catch (e) {
+      debugPrint("Error requesting microphone permission: $e");
+    }
+
     if (!_speechToText.isAvailable) {
       bool initialized = false;
       try {
@@ -215,11 +451,9 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
 
       if (!initialized) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Microphone access or speech recognition is not available. Please check your settings."),
-              backgroundColor: Colors.redAccent,
-            ),
+          _showPremiumNotification(
+            "Microphone access or speech recognition is not available. Please check your settings.",
+            isError: true,
           );
         }
         return;
@@ -399,7 +633,58 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
     }
   }
 
-  /// Synthesize speech and play (Gemini TTS for English, Native TTS for Persian/others)
+  bool _isPersian(String text) {
+    return text.contains(RegExp(r'[\u0600-\u06FF]'));
+  }
+
+  Future<List<int>?> _getGoogleTtsBytes(String text, String lang) async {
+    try {
+      final cleanText = text
+          .replaceAll(RegExp(r'\*\*?'), '')
+          .replaceAll(RegExp(r'#+'), '')
+          .replaceAll(RegExp(r'`'), '')
+          .replaceAll(RegExp(r'\[.*?\]\(.*?\)'), '')
+          .trim();
+
+      if (cleanText.isEmpty) return null;
+
+      List<String> chunks = [];
+      int start = 0;
+      while (start < cleanText.length) {
+        int end = start + 180;
+        if (end >= cleanText.length) {
+          chunks.add(cleanText.substring(start));
+          break;
+        }
+        int lastSpace = cleanText.lastIndexOf(' ', end);
+        if (lastSpace > start) {
+          chunks.add(cleanText.substring(start, lastSpace));
+          start = lastSpace + 1;
+        } else {
+          chunks.add(cleanText.substring(start, end));
+          start = end;
+        }
+      }
+
+      List<int> allBytes = [];
+      for (final chunk in chunks) {
+        if (chunk.trim().isEmpty) continue;
+        final url = "https://translate.google.com/translate_tts?ie=UTF-8&tl=$lang&client=tw-ob&q=${Uri.encodeComponent(chunk.trim())}";
+        final response = await http.get(Uri.parse(url), headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36"
+        });
+        if (response.statusCode == 200) {
+          allBytes.addAll(response.bodyBytes);
+        }
+      }
+      return allBytes.isNotEmpty ? allBytes : null;
+    } catch (e) {
+      debugPrint("Error fetching Google TTS: $e");
+      return null;
+    }
+  }
+
+  /// تولید گفتار با صدای کاراکتر انتخاب‌شده (Gemini TTS) - زبان به صورت خودکار تشخیص داده می‌شود
   Future<void> _speakText(String text) async {
     if (_isMuted) return;
     try {
@@ -409,36 +694,44 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
 
       if (mounted) setState(() => _isSpeaking = true);
 
-      final isEng = _isEnglish(text);
-      if (isEng) {
-        // Use premium Gemini TTS for English
-        final audioBase64 = await _aiService.generateSpeech(text, voice: _selectedVoice);
-        if (audioBase64 != null) {
-          final bytes = base64Decode(audioBase64);
+      // اولویت اول: صدای اختصاصی کاراکتر از طریق Gemini TTS (فارسی و انگلیسی)
+      final audioBase64 = await _aiService.generateSpeech(
+        text,
+        voice: _selectedVoice,
+      );
+      if (audioBase64 != null) {
+        final bytes = base64Decode(audioBase64);
 
-          // Prepend WAV header if it doesn't already have one (checking RIFF signature)
-          List<int> finalBytes;
-          if (bytes.length > 4 &&
-              bytes[0] == 0x52 &&
-              bytes[1] == 0x49 &&
-              bytes[2] == 0x46 &&
-              bytes[3] == 0x46) {
-            finalBytes = bytes;
-          } else {
-            finalBytes = _addWavHeader(bytes, 24000);
-          }
-
-          final tempDir = await getTemporaryDirectory();
-          final file = File('${tempDir.path}/gemini_tts.wav');
-          await file.writeAsBytes(finalBytes);
-
-          await _audioPlayer.play(DeviceFileSource(file.path));
+        // Prepend WAV header if it doesn't already have one (checking RIFF signature)
+        List<int> finalBytes;
+        if (bytes.length > 4 &&
+            bytes[0] == 0x52 &&
+            bytes[1] == 0x49 &&
+            bytes[2] == 0x46 &&
+            bytes[3] == 0x46) {
+          finalBytes = bytes;
         } else {
-          // Fallback to Native TTS if Gemini TTS fails
-          await _speakNativeTts(text, forceEnglish: true);
+          finalBytes = _addWavHeader(bytes, 24000);
         }
+
+        final tempDir = await getTemporaryDirectory();
+        final file = File('${tempDir.path}/gemini_tts.wav');
+        await file.writeAsBytes(finalBytes);
+
+        await _audioPlayer.play(DeviceFileSource(file.path));
+        return;
+      }
+
+      // بک‌آپ: Google Translate TTS متناسب با زبان متن (تشخیص خودکار)
+      final bool isFa = _isPersian(text);
+      final audioBytes = await _getGoogleTtsBytes(text, isFa ? "fa" : "en");
+      if (audioBytes != null) {
+        final tempDir = await getTemporaryDirectory();
+        final file = File('${tempDir.path}/${isFa ? "fa" : "en"}_tts.mp3');
+        await file.writeAsBytes(audioBytes);
+        await _audioPlayer.play(DeviceFileSource(file.path));
       } else {
-        // Use Native Speech Synthesis for Persian/Dari or other languages
+        // Native fallback if network fails
         await _speakNativeTts(text);
       }
     } catch (e) {
@@ -670,6 +963,318 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
     }
   }
 
+  /// کارت انتخاب کاراکتر صوتی (جایگاه برجسته و مقبول در نمای صوتی)
+  Widget _buildCharacterSelectorCard() {
+    final AiCharacter c = _selectedCharacter;
+    return GestureDetector(
+      onTap: _showCharacterSelector,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              c.accentColor.withOpacity(0.18),
+              Colors.white.withOpacity(0.04),
+            ],
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: c.accentColor.withOpacity(0.4), width: 1.5),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(colors: c.avatarGradient),
+                boxShadow: [
+                  BoxShadow(
+                    color: c.accentColor.withOpacity(0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Icon(c.icon, color: Colors.white, size: 26),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        c.displayName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: c.isFemale
+                              ? primaryPink.withOpacity(0.18)
+                              : Colors.lightBlue.withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              c.isFemale
+                                  ? Icons.female_rounded
+                                  : Icons.male_rounded,
+                              color: c.isFemale ? primaryPink : Colors.lightBlue,
+                              size: 12,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              c.isFemale ? "زن" : "مرد",
+                              style: TextStyle(
+                                color: c.isFemale ? primaryPink : Colors.lightBlue,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    c.tagline,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 11,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: c.accentColor.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: c.accentColor.withOpacity(0.5)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.swap_horiz_rounded, color: Colors.white, size: 14),
+                  SizedBox(width: 4),
+                  Text(
+                    "تغییر",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// شیت انتخاب حرفه‌ای کاراکتر صوتی با تب جنسیت (زن / مرد)
+  void _showCharacterSelector() {
+    String activeGender = _selectedCharacter.gender;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModal) {
+            final list =
+                activeGender == 'female' ? _femaleCharactersList : _maleCharactersList;
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.8,
+              decoration: BoxDecoration(
+                color: darkSpaceBg,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(28)),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 10),
+                  Container(
+                    width: 44,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "انتخاب هم‌صحبت صوتی",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "یک شخصیت زن یا مرد با صدای اختصاصی انتخاب کنید",
+                    style: TextStyle(color: Colors.white54, fontSize: 10),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _genderTab("female", "هم‌صحبت زن", Icons.female_rounded,
+                          primaryPink, activeGender, setModal),
+                      const SizedBox(width: 12),
+                      _genderTab("male", "هم‌صحبت مرد", Icons.male_rounded,
+                          Colors.lightBlue, activeGender, setModal),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: GridView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 4,
+                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 1.15,
+                      ),
+                      itemCount: list.length,
+                      itemBuilder: (context, index) {
+                        final AiCharacter c = list[index];
+                        final bool selected = c.key == _selectedCharacter.key;
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() => _selectedCharacter = c);
+                            Navigator.pop(context);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? c.accentColor.withOpacity(0.18)
+                                  : Colors.white.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: selected ? c.accentColor : Colors.white10,
+                                width: selected ? 2 : 1,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 56,
+                                  height: 56,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient:
+                                        LinearGradient(colors: c.avatarGradient),
+                                  ),
+                                  child:
+                                      Icon(c.icon, color: Colors.white, size: 28),
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  c.displayName,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  c.tagline,
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.6),
+                                    fontSize: 9,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _genderTab(
+    String gender,
+    String label,
+    IconData icon,
+    Color color,
+    String activeGender,
+    void Function(void Function()) setModal,
+  ) {
+    final bool active = activeGender == gender;
+    return GestureDetector(
+      onTap: () => setModal(() => activeGender = gender),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: active ? color.withOpacity(0.2) : Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: active ? color : Colors.white10,
+            width: active ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: active ? color : Colors.white54, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: active ? color : Colors.white70,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // ================= هدر اختصاصی صفحه هوش مصنوعی =================
@@ -796,74 +1401,10 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(
           children: [
-            // Top Status Indicators
+            // Top Status Indicators (بدون دکمه زبان - تشخیص خودکار)
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                // Voice Selector Dropdown
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.white10),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _selectedVoice,
-                      dropdownColor: darkSpaceBg,
-                      icon: const Icon(Icons.arrow_drop_down_rounded, color: primaryPink, size: 20),
-                      style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                      onChanged: (String? newVal) {
-                        if (newVal != null) {
-                          setState(() {
-                            _selectedVoice = newVal;
-                          });
-                        }
-                      },
-                      items: voiceOptions.map<DropdownMenuItem<String>>((String voice) {
-                        return DropdownMenuItem<String>(
-                          value: voice,
-                          child: Text(voice),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-                // Speech Input Language Selection
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.white10),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _speechLocale,
-                      dropdownColor: darkSpaceBg,
-                      icon: const Icon(Icons.language_rounded, color: primaryPink, size: 16),
-                      style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                      onChanged: (String? newVal) {
-                        if (newVal != null) {
-                          setState(() {
-                            _speechLocale = newVal;
-                          });
-                        }
-                      },
-                      items: const [
-                        DropdownMenuItem<String>(
-                          value: "fa_IR",
-                          child: Text("فارسی (FA)"),
-                        ),
-                        DropdownMenuItem<String>(
-                          value: "en_US",
-                          child: Text("English (EN)"),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
                 // Mute / Unmute Button
                 IconButton(
                   icon: Icon(
@@ -882,12 +1423,17 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
                 ),
               ],
             ),
+
+            // کارت انتخاب کاراکتر صوتی (جایگاه برجسته و مقبول - جایگزین دکمه قدیمی)
+            _buildCharacterSelectorCard(),
+
             const Spacer(),
 
             // Large pulsing visualizer orb in the center
             GlowingVoiceOrb(
               isListening: _isListening,
               isSpeaking: _isSpeaking,
+              characterColor: _selectedCharacter.accentColor,
               onTap: () {
                 if (_isSpeaking) {
                   _audioPlayer.stop();
@@ -1398,12 +1944,14 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
 class GlowingVoiceOrb extends StatefulWidget {
   final bool isListening;
   final bool isSpeaking;
+  final Color? characterColor;
   final VoidCallback onTap;
 
   const GlowingVoiceOrb({
     super.key,
     required this.isListening,
     required this.isSpeaking,
+    this.characterColor,
     required this.onTap,
   });
 
@@ -1437,7 +1985,7 @@ class _GlowingVoiceOrbState extends State<GlowingVoiceOrb>
 
   @override
   Widget build(BuildContext context) {
-    Color orbColor = const Color(0xFFF494AC); // Bubblegum Pink
+    Color orbColor = widget.characterColor ?? const Color(0xFFF494AC); // Bubblegum Pink
     if (widget.isListening) {
       orbColor = Colors.cyanAccent;
     } else if (widget.isSpeaking) {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -27,6 +28,7 @@ class TicketItem {
   final String status; // "OPEN" | "CLOSED" | "PENDING"
   final String createdAt;
   final ProfileInfo? student;
+  final String? role; // نقش درخواست‌دهنده: 'teacher' | 'student' | ...
 
   TicketItem({
     required this.id,
@@ -36,6 +38,7 @@ class TicketItem {
     required this.status,
     required this.createdAt,
     this.student,
+    this.role,
   });
 
   factory TicketItem.fromJson(Map<String, dynamic> json) {
@@ -50,8 +53,11 @@ class TicketItem {
       status: json['status'] ?? 'OPEN',
       createdAt: json['created_at'] ?? '',
       student: formattedStudent != null ? ProfileInfo.fromJson(formattedStudent) : null,
+      role: formattedStudent?['role'],
     );
   }
+
+  bool get isTeacher => role == 'teacher';
 }
 
 class TicketMessage {
@@ -100,6 +106,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
   List<TicketItem> tickets = [];
   String searchQuery = "";
   String filterStatus = "ALL"; // "ALL" | "OPEN" | "CLOSED"
+  String filterRole = "ALL"; // "ALL" | "STUDENT" | "TEACHER"
 
   TicketItem? selectedTicket;
   List<TicketMessage> messages = [];
@@ -107,6 +114,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
   final replyCtrl = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool isSending = false;
+  Timer? _adminPollTimer;
 
   // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
   static const Color primaryPink = Color(0xFFF494AC);
@@ -120,13 +128,74 @@ class _TicketsScreenState extends State<TicketsScreen> {
   void initState() {
     super.initState();
     _fetchTickets();
+    _startAdminPolling();
   }
 
   @override
   void dispose() {
+    _adminPollTimer?.cancel();
     replyCtrl.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _startAdminPolling() {
+    _adminPollTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (selectedTicket != null && !isLoadingMessages && !isSending) {
+        _pollSelectedTicketMessages();
+      }
+      _pollAllTicketsSilent();
+    });
+  }
+
+  Future<void> _pollSelectedTicketMessages() async {
+    if (selectedTicket == null) return;
+    try {
+      final response = await supabase
+          .from("ticket_messages")
+          .select("*, sender:profiles!sender_id(first_name, last_name, avatar_url, email)")
+          .eq("ticket_id", selectedTicket!.id)
+          .order("created_at", ascending: true);
+
+      final newMessages = (response as List).map((m) => TicketMessage.fromJson(m)).toList();
+      
+      if (newMessages.length != messages.length) {
+        if (mounted) {
+          setState(() {
+            messages = newMessages;
+          });
+          Future.delayed(const Duration(milliseconds: 50), _scrollToBottom);
+        }
+      }
+    } catch (e) {
+      debugPrint("Silent poll error: $e");
+    }
+  }
+
+  Future<void> _pollAllTicketsSilent() async {
+    try {
+      final response = await supabase
+          .from("tickets")
+          .select("*, student:profiles!student_id(first_name, last_name, avatar_url, email, role)")
+          .order("created_at", ascending: false);
+
+      final newTickets = (response as List).map((t) => TicketItem.fromJson(t)).toList();
+      
+      if (mounted) {
+        setState(() {
+          tickets = newTickets;
+          if (selectedTicket != null) {
+            final updated = tickets.firstWhere(
+              (t) => t.id == selectedTicket!.id,
+              orElse: () => selectedTicket!,
+            );
+            selectedTicket = updated;
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint("Silent tickets poll error: $e");
+    }
   }
 
   void _scrollToBottom() {
@@ -144,7 +213,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
     try {
       final response = await supabase
           .from("tickets")
-          .select("*, student:profiles!student_id(first_name, last_name, avatar_url, email)")
+          .select("*, student:profiles!student_id(first_name, last_name, avatar_url, email, role)")
           .order("created_at", ascending: false);
 
       setState(() {
@@ -258,7 +327,10 @@ class _TicketsScreenState extends State<TicketsScreen> {
       bool matchesSearch = searchQuery.isEmpty ||
           t.subject.toLowerCase().contains(searchQuery.toLowerCase()) ||
           (t.student?.firstName.toLowerCase().contains(searchQuery.toLowerCase()) ?? false);
-      return matchesFilter && matchesSearch;
+      bool matchesRole = filterRole == "ALL" ||
+          (filterRole == "TEACHER" && t.isTeacher) ||
+          (filterRole == "STUDENT" && !t.isTeacher);
+      return matchesFilter && matchesSearch && matchesRole;
     }).toList();
   }
 
@@ -353,8 +425,12 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      isAdmin ? "Support Agent" : (msg.sender?.firstName ?? 'User'),
-                                      style: TextStyle(color: isAdmin ? primaryPink : textGrey, fontSize: 9, fontWeight: FontWeight.w900),
+                                      msg.senderId == '' || msg.senderId == 'ai'
+                                          ? "Support AI 🤖"
+                                          : (msg.senderId == selectedTicket!.studentId
+                                              ? "${selectedTicket!.isTeacher ? 'استاد' : 'دانشجو'} ${msg.sender?.firstName ?? ''}".trim()
+                                              : "Support Agent (Human)"),
+                                      style: TextStyle(color: (msg.senderId == '' || msg.senderId == 'ai') ? Colors.purple : (isAdmin ? primaryPink : textGrey), fontSize: 9, fontWeight: FontWeight.w900),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(msg.messageText, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w500)),
@@ -516,6 +592,17 @@ class _TicketsScreenState extends State<TicketsScreen> {
                 Expanded(child: _buildFilterBtn("Closed", "CLOSED")),
               ],
             ),
+            const SizedBox(height: 10),
+            // فیلتر نقش درخواست‌دهنده (دانشجو / استاد)
+            Row(
+              children: [
+                Expanded(child: _buildRoleFilterBtn("All", "ALL")),
+                const SizedBox(width: 8),
+                Expanded(child: _buildRoleFilterBtn("Students", "STUDENT")),
+                const SizedBox(width: 8),
+                Expanded(child: _buildRoleFilterBtn("Teachers", "TEACHER")),
+              ],
+            ),
             const SizedBox(height: 16),
 
             // Tickets List
@@ -567,7 +654,38 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                 children: [
                                   Text(t.subject, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
                                   const SizedBox(height: 2),
-                                  Text(t.student != null ? "${t.student!.firstName} ${t.student!.lastName}" : "Unknown Student", style: const TextStyle(color: textGrey, fontSize: 10)),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                        decoration: BoxDecoration(
+                                          color: t.isTeacher
+                                              ? Colors.indigo.withOpacity(0.12)
+                                              : primaryPink.withOpacity(0.12),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          t.isTeacher ? "استاد" : "دانشجو",
+                                          style: TextStyle(
+                                            color: t.isTeacher ? Colors.indigo : primaryPink,
+                                            fontSize: 8,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          t.student != null
+                                              ? "${t.student!.firstName} ${t.student!.lastName}"
+                                              : "Unknown",
+                                          style: const TextStyle(color: textGrey, fontSize: 10),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -626,6 +744,41 @@ class _TicketsScreenState extends State<TicketsScreen> {
         ),
         alignment: Alignment.center,
         child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: isActive ? primaryPink : textGrey)),
+      ),
+    );
+  }
+
+  Widget _buildRoleFilterBtn(String label, String roleKey) {
+    bool isActive = filterRole == roleKey;
+    return GestureDetector(
+      onTap: () => setState(() => filterRole = roleKey),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        decoration: BoxDecoration(
+          color: isActive ? primaryPink.withOpacity(0.15) : cardBorder.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isActive ? primaryPink : cardBorder,
+            width: isActive ? 1.5 : 1,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              roleKey == "TEACHER"
+                  ? Icons.psychology_rounded
+                  : roleKey == "STUDENT"
+                      ? Icons.school_rounded
+                      : Icons.people_alt_rounded,
+              size: 13,
+              color: isActive ? primaryPink : textGrey,
+            ),
+            const SizedBox(width: 5),
+            Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: isActive ? primaryPink : textGrey)),
+          ],
+        ),
       ),
     );
   }

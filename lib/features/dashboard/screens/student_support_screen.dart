@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -14,7 +15,7 @@ final String telegramChatId =
 class TicketItem {
   final String id;
   final String subject;
-  final String status; // "open" | "answered" | "closed"
+  final String status;
   final String createdAt;
 
   TicketItem({
@@ -27,7 +28,7 @@ class TicketItem {
   factory TicketItem.fromJson(Map<String, dynamic> json) {
     return TicketItem(
       id: json['id'] ?? '',
-      subject: json['subject'] ?? '',
+      subject: json['subject'] ?? 'Live Support',
       status: json['status'] ?? 'open',
       createdAt: json['created_at'] ?? DateTime.now().toIso8601String(),
     );
@@ -35,7 +36,9 @@ class TicketItem {
 }
 
 class StudentSupportScreen extends StatefulWidget {
-  const StudentSupportScreen({super.key});
+  final String requesterRole; // 'student' | 'teacher'
+
+  const StudentSupportScreen({super.key, this.requesterRole = 'student'});
 
   @override
   State<StudentSupportScreen> createState() => _StudentSupportScreenState();
@@ -44,8 +47,6 @@ class StudentSupportScreen extends StatefulWidget {
 class _StudentSupportScreenState extends State<StudentSupportScreen> {
   final supabase = Supabase.instance.client;
   bool isLoading = true;
-  bool isSubmitting = false;
-  bool isModalOpen = false;
 
   List<TicketItem> tickets = [];
   Map<String, String> userInfo = {
@@ -55,35 +56,83 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
     'email': '',
   };
 
-  Map<String, int> stats = {'open': 0, 'answered': 0, 'total': 0};
-
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _subjectController = TextEditingController();
-  final TextEditingController _messageController = TextEditingController();
+  Map<String, int> stats = {'pending': 0, 'active': 0, 'closed': 0};
 
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
-  static const Color cardBorder = Color(0xFFF3F4F6);
+  static const Color cardBorder = Color(0xFFE5E7EB);
+
+  // رنگ‌بندی‌های اختصاصی وضعیت
+  static const Color colorPending = Color(0xFFFFB300); // زرد/کهربایی
+  static const Color colorActive = Color(0xFF43A047); // سبز
+  static const Color colorClosed = Color(0xFFE53935); // سرخ
+
+  void _showPremiumNotification(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
+        content: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isError
+                    ? Colors.redAccent.withOpacity(0.85)
+                    : Colors.green.withOpacity(0.85),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: (isError ? Colors.red : Colors.green).withOpacity(0.3),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    isError
+                        ? Icons.error_outline_rounded
+                        : Icons.check_circle_outline_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      message,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
     super.initState();
     _fetchInitialData();
-  }
-
-  @override
-  void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    _subjectController.dispose();
-    _messageController.dispose();
-    super.dispose();
   }
 
   Future<void> _fetchInitialData() async {
@@ -111,9 +160,6 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
           'lastName': lName,
           'email': userEmail,
         };
-        _firstNameController.text = fName;
-        _lastNameController.text = lName;
-        _emailController.text = userEmail;
       });
 
       final ticketsData = await supabase
@@ -125,17 +171,19 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
       final allTickets = (ticketsData as List)
           .map((t) => TicketItem.fromJson(t))
           .toList();
-      int openCount = allTickets.where((t) => t.status == "open").length;
-      int answeredCount = allTickets
-          .where((t) => t.status == "answered")
+
+      int pendingCount = allTickets.where((t) => t.status == "open").length;
+      int activeCount = allTickets
+          .where((t) => t.status == "escalated" || t.status == "answered")
           .length;
+      int closedCount = allTickets.where((t) => t.status == "closed").length;
 
       setState(() {
         tickets = allTickets;
         stats = {
-          'open': openCount,
-          'answered': answeredCount,
-          'total': allTickets.length,
+          'pending': pendingCount,
+          'active': activeCount,
+          'closed': closedCount,
         };
       });
     } catch (e) {
@@ -145,30 +193,24 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
     }
   }
 
-  Future<void> _sendTicketAlertToTelegram(
-    String fName,
-    String lName,
-    String email,
-    String userId,
-    String subject,
-    String message,
-  ) async {
+  Future<void> _sendLiveChatAlertToTelegram(String role) async {
     if (telegramBotToken.isEmpty || telegramChatId.isEmpty) return;
+
+    final bool isTeacher = role == 'teacher';
+    final String roleLabel = isTeacher ? 'استاد (Teacher)' : 'دانشجو (Student)';
 
     final telegramText =
         '''
-🛑 *New Support Ticket*
+🟢 <b>Live Support Chat Started</b>
 
-👤 *User Information:*
-👉 *First Name:* $fName
-👉 *Last Name:* $lName
-👉 *Account Email:* $email
-👉 *Database ID:* `$userId`
+👤 <b>Requester:</b> $roleLabel
+👉 <b>Name:</b> ${userInfo['firstName']} ${userInfo['lastName']}
+👉 <b>Email:</b> ${userInfo['email']}
+👉 <b>User ID:</b> <code>${userInfo['id']}</code>
 
-📌 *Subject:* $subject
+📌 <b>Subject:</b> General Live Support
 
-💬 *Message Details:*
-$message
+<i>The AI assistant is now handling the chat. If the user requests a human, it will be escalated automatically.</i>
 ''';
 
     try {
@@ -178,80 +220,11 @@ $message
         body: jsonEncode({
           "chat_id": telegramChatId,
           "text": telegramText,
-          "parse_mode": "Markdown",
+          "parse_mode": "HTML",
         }),
       );
     } catch (err) {
-      debugPrint("Telegram alert delivery failed: $err");
-    }
-  }
-
-  Future<void> _handleCreateTicket() async {
-    final subject = _subjectController.text.trim();
-    final message = _messageController.text.trim();
-    if (subject.isEmpty || message.isEmpty) return;
-
-    setState(() => isSubmitting = true);
-    try {
-      final userId = userInfo['id']!;
-
-      final newTicket = await supabase
-          .from("tickets")
-          .insert({
-            'student_id': userId,
-            'subject': subject,
-            'department': 'Technical',
-            'status': 'open',
-          })
-          .select()
-          .single();
-
-      await supabase.from("ticket_messages").insert({
-        'ticket_id': newTicket['id'],
-        'sender_id': userId,
-        'message_text': message,
-      });
-
-      await _sendTicketAlertToTelegram(
-        _firstNameController.text.trim(),
-        _lastNameController.text.trim(),
-        _emailController.text.trim(),
-        userId,
-        subject,
-        message,
-      );
-
-      setState(() {
-        isModalOpen = false;
-        _subjectController.clear();
-        _messageController.clear();
-        tickets.insert(0, TicketItem.fromJson(newTicket));
-        stats['open'] = (stats['open'] ?? 0) + 1;
-        stats['total'] = (stats['total'] ?? 0) + 1;
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              "Your support request has been logged and forwarded successfully.",
-            ),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint("Error creating ticket: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("An error occurred while creating the ticket."),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => isSubmitting = false);
+      debugPrint("Telegram live chat alert failed: $err");
     }
   }
 
@@ -262,7 +235,7 @@ $message
       if (user == null) return;
       final userId = user.id;
 
-      // 1. Check if a ticket with subject 'General Live Support' and status != 'closed' exists
+      // بررسی اینکه آیا چت لایو بازی وجود دارد یا خیر
       final existingTicket = await supabase
           .from("tickets")
           .select("*")
@@ -282,12 +255,13 @@ $message
                 ticketId: existingTicket['id'].toString(),
                 ticketSubject: existingTicket['subject'].toString(),
                 initialStatus: existingTicket['status'].toString(),
+                requesterRole: widget.requesterRole,
               ),
             ),
           ).then((_) => _fetchInitialData());
         }
       } else {
-        // Create new ticket
+        // ساخت چت لایو جدید
         final newTicket = await supabase
             .from("tickets")
             .insert({
@@ -299,12 +273,15 @@ $message
             .select()
             .single();
 
-        // Insert initial message from AI
+        // پیام پیش‌فرض خوشامدگویی از ربات
         await supabase.from("ticket_messages").insert({
           'ticket_id': newTicket['id'],
-          'sender_id': 'ai',
-          'message_text': 'سلام! خوش آمدید. من پشتیبان هوشمند سافی آکادمی هستم. چگونه می‌توانم به شما کمک کنم؟',
+          'sender_id': null,
+          'message_text':
+              'سلام! خوش آمدید. من پشتیبان هوشمند سافی آکادمی هستم. چگونه می‌توانم به شما کمک کنم؟',
         });
+
+        await _sendLiveChatAlertToTelegram(widget.requesterRole);
 
         if (mounted) {
           Navigator.push(
@@ -314,6 +291,7 @@ $message
                 ticketId: newTicket['id'].toString(),
                 ticketSubject: newTicket['subject'].toString(),
                 initialStatus: newTicket['status'].toString(),
+                requesterRole: widget.requesterRole,
               ),
             ),
           ).then((_) => _fetchInitialData());
@@ -322,8 +300,9 @@ $message
     } catch (e) {
       debugPrint("Error opening Live Chat: $e");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("An error occurred opening Live Chat."), backgroundColor: Colors.redAccent),
+        _showPremiumNotification(
+          "An error occurred opening Live Chat.",
+          isError: true,
         );
       }
     } finally {
@@ -338,6 +317,27 @@ $message
     } catch (_) {
       return dateStr;
     }
+  }
+
+  // توابع کمکی برای رنگ و لیبل بر اساس وضعیت
+  Color _getStatusColor(String status) {
+    if (status == 'closed') return colorClosed; // سرخ
+    if (status == 'escalated' || status == 'answered')
+      return colorActive; // سبز
+    return colorPending; // زرد برای open/pending
+  }
+
+  String _getStatusLabel(String status) {
+    if (status == 'closed') return 'Closed';
+    if (status == 'escalated' || status == 'answered') return 'In Conversation';
+    return 'Pending';
+  }
+
+  IconData _getStatusIcon(String status) {
+    if (status == 'closed') return Icons.lock_rounded;
+    if (status == 'escalated' || status == 'answered')
+      return Icons.support_agent_rounded;
+    return Icons.hourglass_empty_rounded;
   }
 
   @override
@@ -355,7 +355,7 @@ $message
               ),
               const SizedBox(height: 14),
               Text(
-                "LOADING SUPPORT DESK...",
+                "CONNECTING TO LIVE SUPPORT...",
                 style: TextStyle(
                   color: textGrey,
                   fontSize: 10,
@@ -370,327 +370,187 @@ $message
     }
 
     return Scaffold(
-      backgroundColor: surfaceWhite,
+      backgroundColor: lightPinkBg.withOpacity(0.3),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          "Support Center",
+          style: TextStyle(
+            color: textDark,
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: textGrey),
+            onPressed: _fetchInitialData,
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
         physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ================= هدر صفحه و دکمه ایجاد تیکت =================
-            Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+            // ================= بنر اصلی چت لایو =================
+            GestureDetector(
+              onTap: _handleLiveChatClick,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 28,
                 ),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(
-                  color: primaryPink.withOpacity(0.15),
-                  width: 1.5,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFE91E63), primaryPink],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryPink.withOpacity(0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: primaryPink.withOpacity(0.08),
-                    blurRadius: 25,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: lightPinkBg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: primaryPink.withOpacity(0.3),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.support_agent_rounded,
-                      color: primaryPink,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        const Text(
-                          "Support Desk",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                            color: textDark,
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.headset_mic_rounded,
+                            color: Colors.white,
+                            size: 28,
                           ),
                         ),
-                        const SizedBox(height: 3),
-                        const Text(
-                          "Submit queries to our elite assistance unit.",
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: textGrey,
-                            fontWeight: FontWeight.w500,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Live Support Agent",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                "AI & Human Agents are online",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  ),
-                   const SizedBox(width: 8),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                    const SizedBox(height: 24),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                    ),
-                    icon: const Icon(Icons.chat_rounded, size: 16),
-                    label: const Text(
-                      "Live Chat",
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    onPressed: _handleLiveChatClick,
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryPink,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "START CONVERSATION",
+                            style: TextStyle(
+                              color: Color(0xFFE91E63),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            color: Color(0xFFE91E63),
+                            size: 18,
+                          ),
+                        ],
                       ),
                     ),
-                    icon: const Icon(Icons.add_rounded, size: 16),
-                    label: const Text(
-                      "Ticket",
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    onPressed: () => setState(() => isModalOpen = true),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
-            // ================= باکس‌های آمار ریسپانسیو =================
+            // ================= باکس‌های آمار (زرد - سبز - سرخ) =================
             Row(
               children: [
                 Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: surfaceWhite,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: cardBorder, width: 1.5),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: lightPinkBg,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.hourglass_top_rounded,
-                            color: primaryPink,
-                            size: 16,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "OPEN",
-                                style: TextStyle(
-                                  fontSize: 7,
-                                  fontWeight: FontWeight.w900,
-                                  color: textGrey,
-                                  letterSpacing: 0.8,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                "${stats['open']}",
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w900,
-                                  color: textDark,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: _buildStatCard(
+                    "PENDING",
+                    stats['pending'] ?? 0,
+                    colorPending,
+                    Icons.hourglass_top_rounded,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: surfaceWhite,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: cardBorder, width: 1.5),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.check_circle_rounded,
-                            color: Colors.green,
-                            size: 16,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "ANSWERED",
-                                style: TextStyle(
-                                  fontSize: 7,
-                                  fontWeight: FontWeight.w900,
-                                  color: textGrey,
-                                  letterSpacing: 0.8,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                "${stats['answered']}",
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w900,
-                                  color: textDark,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: _buildStatCard(
+                    "ACTIVE",
+                    stats['active'] ?? 0,
+                    colorActive,
+                    Icons.forum_rounded,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: surfaceWhite,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: cardBorder, width: 1.5),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.list_alt_rounded,
-                            color: Colors.blue,
-                            size: 16,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "TOTAL",
-                                style: TextStyle(
-                                  fontSize: 7,
-                                  fontWeight: FontWeight.w900,
-                                  color: textGrey,
-                                  letterSpacing: 0.8,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                "${stats['total']}",
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w900,
-                                  color: textDark,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: _buildStatCard(
+                    "CLOSED",
+                    stats['closed'] ?? 0,
+                    colorClosed,
+                    Icons.check_circle_rounded,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 30),
 
-            // ================= لیست تیکت‌ها =================
+            // ================= لیست گفتگوهای قبلی =================
             const Text(
-              "My Support Logs",
+              "Recent Conversations",
               style: TextStyle(
                 color: textDark,
                 fontWeight: FontWeight.w900,
-                fontSize: 15,
+                fontSize: 16,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
             tickets.isNotEmpty
                 ? ListView.separated(
@@ -700,7 +560,7 @@ $message
                     separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final t = tickets[index];
-                      bool isOpen = t.status == 'open';
+                      final statusColor = _getStatusColor(t.status);
 
                       return GestureDetector(
                         onTap: () {
@@ -711,6 +571,7 @@ $message
                                 ticketId: t.id,
                                 ticketSubject: t.subject,
                                 initialStatus: t.status,
+                                requesterRole: widget.requesterRole,
                               ),
                             ),
                           ).then((_) {
@@ -718,88 +579,113 @@ $message
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: surfaceWhite,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: cardBorder, width: 1.5),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.03),
+                                color: Colors.black.withOpacity(0.02),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
                             ],
                           ),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Expanded(
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(10),
-                                      decoration: BoxDecoration(
-                                        color: lightPinkBg,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Icon(
-                                        Icons.confirmation_number_rounded,
-                                        color: primaryPink,
-                                        size: 20,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            t.subject,
-                                            style: const TextStyle(
-                                              color: textDark,
-                                              fontWeight: FontWeight.w900,
-                                              fontSize: 13,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            "Submitted: ${_formatDate(t.createdAt)}",
-                                            style: const TextStyle(
-                                              color: textGrey,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                              // نوار رنگی کناری نشان دهنده وضعیت
+                              Container(
+                                width: 5,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  color: statusColor,
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(20),
+                                    bottomLeft: Radius.circular(20),
+                                  ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isOpen
-                                      ? lightPinkBg
-                                      : Colors.green.withOpacity(0.12),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  isOpen ? 'Pending' : 'Answered',
-                                  style: TextStyle(
-                                    color: isOpen
-                                        ? primaryPink
-                                        : Colors.green.shade700,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w900,
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(12),
+                                              decoration: BoxDecoration(
+                                                color: statusColor.withOpacity(
+                                                  0.1,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(14),
+                                              ),
+                                              child: Icon(
+                                                _getStatusIcon(t.status),
+                                                color: statusColor,
+                                                size: 20,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 14),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    t.subject,
+                                                    style: const TextStyle(
+                                                      color: textDark,
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      fontSize: 14,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    "Started: ${_formatDate(t.createdAt)}",
+                                                    style: const TextStyle(
+                                                      color: textGrey,
+                                                      fontSize: 11,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: statusColor.withOpacity(0.12),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          _getStatusLabel(t.status),
+                                          style: TextStyle(
+                                            color: statusColor,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -820,25 +706,25 @@ $message
                     child: Column(
                       children: [
                         const Icon(
-                          Icons.mark_email_unread_rounded,
+                          Icons.chat_bubble_outline_rounded,
                           color: textGrey,
-                          size: 36,
+                          size: 48,
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 16),
                         const Text(
-                          "No Support Logs Active",
+                          "No Conversations Yet",
                           style: TextStyle(
                             color: textDark,
                             fontWeight: FontWeight.w900,
-                            fontSize: 13,
+                            fontSize: 14,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 6),
                         const Text(
-                          "Need help with something? Click above to open a ticket.",
+                          "Click the banner above to start a live chat.",
                           style: TextStyle(
                             color: textGrey,
-                            fontSize: 11,
+                            fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
                           textAlign: TextAlign.center,
@@ -846,100 +732,6 @@ $message
                       ],
                     ),
                   ),
-            const SizedBox(height: 30),
-
-            // ================= مودال ایجاد تیکت =================
-            if (isModalOpen)
-              Container(
-                padding: const EdgeInsets.all(20),
-                margin: const EdgeInsets.only(top: 10),
-                decoration: BoxDecoration(
-                  color: surfaceWhite,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: primaryPink.withOpacity(0.3),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 20,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Open Support Request",
-                          style: TextStyle(
-                            color: textDark,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 15,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.close_rounded,
-                            color: textGrey,
-                            size: 20,
-                          ),
-                          onPressed: () => setState(() => isModalOpen = false),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _buildInput("First Name *", _firstNameController),
-                    const SizedBox(height: 12),
-                    _buildInput("Last Name *", _lastNameController),
-                    const SizedBox(height: 12),
-                    _buildInput("Account Email *", _emailController),
-                    const SizedBox(height: 12),
-                    _buildInput(
-                      "Subject *",
-                      _subjectController,
-                      hint: "e.g., Database Sync Error",
-                    ),
-                    const SizedBox(height: 12),
-                    _buildInput(
-                      "Message Details *",
-                      _messageController,
-                      hint: "Describe your difficulty...",
-                      maxLines: 4,
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryPink,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        onPressed: isSubmitting ? null : _handleCreateTicket,
-                        child: Text(
-                          isSubmitting
-                              ? "Dispatching..."
-                              : "Submit Ticket Terminal 🚀",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 11,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             const SizedBox(height: 40),
           ],
         ),
@@ -947,57 +739,58 @@ $message
     );
   }
 
-  Widget _buildInput(
-    String label,
-    TextEditingController controller, {
-    String? hint,
-    int maxLines = 1,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: textGrey,
-            fontSize: 9,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 0.8,
+  // ویجت کمکی برای ساخت کارت‌های آمار
+  Widget _buildStatCard(String title, int count, Color color, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: surfaceWhite,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-        ),
-        const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          maxLines: maxLines,
-          style: const TextStyle(
-            color: textDark,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 16),
+              ),
+              Text(
+                "$count",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: color,
+                ),
+              ),
+            ],
           ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(color: textGrey, fontSize: 11),
-            filled: true,
-            fillColor: cardBorder.withOpacity(0.5),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: cardBorder),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: cardBorder),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: primaryPink, width: 1.5),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.w900,
+              color: textGrey,
+              letterSpacing: 1,
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

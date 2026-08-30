@@ -13,7 +13,7 @@ import 'finance_screen.dart';
 import 'awards_screen.dart';
 import 'announcements_screen.dart';
 import 'live_classes_screen.dart';
-import 'tickets_screen.dart';
+import 'admin_support_requests_screen.dart';
 import 'settings_screen.dart';
 
 import '../../dashboard/screens/student_feed_screen.dart';
@@ -57,7 +57,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     const AwardsScreen(), // 6: Honors
     const AnnouncementsScreen(), // 7: Notices
     const LiveClassesScreen(), // 8: Live Studio
-    const TicketsScreen(), // 9: Tickets
+    const AdminSupportRequestsScreen(), // 9: Support Requests
     const AdminSettingsScreen(), // 10: Settings
     CreatePostScreen(
       onPostSuccess: () => setState(() => _currentIndex = 12),
@@ -133,7 +133,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
       "color": const Color(0xFFD81B60),
     },
     {
-      "name": "Support Tickets",
+      "name": "Support Requests",
       "icon": Icons.headset_mic_rounded,
       "index": 9,
       "color": primaryPink,
@@ -410,7 +410,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                 color: primaryPink,
               ),
             ),
-            // دکمه وسط (+) با انتخاب دوگانه ریلز یا پست معمولی (Instagram Style)
+            // دکمه وسط (+)
             Expanded(
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
@@ -455,6 +455,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
       );
     }
 
+    // نوار پایین برای بخش مدیریت ادمین (Admin Nav)
     return ClipRRect(
       borderRadius: BorderRadius.circular(32),
       child: BackdropFilter(
@@ -498,6 +499,15 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                   "Students",
                   Icons.school_rounded,
                   color: const Color(0xFF00897B),
+                ),
+              ),
+              // دکمه جدید پشتیبانی اضافه شده به Bottom Nav
+              Expanded(
+                child: _buildNavTab(
+                  9,
+                  "Support",
+                  Icons.headset_mic_rounded,
+                  color: const Color(0xFFE53935),
                 ),
               ),
               Expanded(

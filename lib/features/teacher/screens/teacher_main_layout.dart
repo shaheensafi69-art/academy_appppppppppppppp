@@ -21,6 +21,7 @@ import '../../dashboard/screens/student_friends_screen.dart';
 import 'create_post_screen.dart';
 import '../../reels/screens/student_reels_screen.dart';
 import '../../reels/screens/upload_reel_screen.dart';
+import 'teacher_support_screen.dart';
 
 import '../../../core/routing/auth_gate.dart';
 
@@ -68,6 +69,7 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
     StudentReelsScreen(
       isActive: _currentIndex == 16,
     ), // 16 - صفحه ویدیوهای کوتاه ریلز
+    const TeacherSupportScreen(), // 17 - پشتیبانی و چت زنده با ادمین
   ];
 
   final List<Map<String, Object>> _menuItems = [
@@ -95,6 +97,7 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
     },
     {"index": 13, "name": "My Profile", "icon": Icons.person_rounded},
     {"index": 14, "name": "App Settings", "icon": Icons.settings_rounded},
+    {"index": 17, "name": "Support Chat", "icon": Icons.headset_mic_rounded},
   ];
 
   @override

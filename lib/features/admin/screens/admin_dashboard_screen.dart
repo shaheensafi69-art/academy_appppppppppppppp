@@ -44,7 +44,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final supabase = Supabase.instance.client;
   bool isLoading = true;
   String adminName = "Administrator";
-  AdminStats stats = AdminStats(totalStudents: 0, activeTickets: 0, totalRevenue: 0, pendingWithdrawals: 0, totalTeachers: 0, activeCourses: 0);
+  AdminStats stats = AdminStats(
+    totalStudents: 0,
+    activeTickets: 0,
+    totalRevenue: 0,
+    pendingWithdrawals: 0,
+    totalTeachers: 0,
+    activeCourses: 0,
+  );
   List<Map<String, dynamic>> recentActivities = [];
 
   static const Color primaryPink = Color(0xFFF494AC);
@@ -104,11 +111,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: primaryPink, strokeWidth: 3),
+              const CircularProgressIndicator(
+                color: primaryPink,
+                strokeWidth: 3,
+              ),
               const SizedBox(height: 16),
               const Text(
                 "INITIALIZING COMMAND CENTER...",
-                style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2),
+                style: TextStyle(
+                  color: textGrey,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                ),
               ),
             ],
           ),
@@ -121,18 +136,29 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [const Color(0xFFFFF0F5).withValues(alpha: 0.5), surfaceWhite],
+            colors: [
+              const Color(0xFFFFF0F5).withValues(alpha: 0.5),
+              surfaceWhite,
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
         child: SafeArea(
+          // حذف تنظیمات اضافی و بهینه‌سازی مارجین بالا
           child: RefreshIndicator(
             color: primaryPink,
             onRefresh: _fetchDashboardData,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+              padding: const EdgeInsets.fromLTRB(
+                16,
+                8,
+                16,
+                16,
+              ), // پدینگ بالای صفحه کاهش یافت
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 900),
@@ -144,14 +170,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
+                            colors: [
+                              surfaceWhite,
+                              lightPinkBg.withValues(alpha: 0.4),
+                            ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(28),
-                          border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
+                          border: Border.all(
+                            color: primaryPink.withValues(alpha: 0.15),
+                            width: 1.5,
+                          ),
                           boxShadow: [
-                            BoxShadow(color: primaryPink.withValues(alpha: 0.06), blurRadius: 25, offset: const Offset(0, 8)),
+                            BoxShadow(
+                              color: primaryPink.withValues(alpha: 0.06),
+                              blurRadius: 25,
+                              offset: const Offset(0, 8),
+                            ),
                           ],
                         ),
                         child: Column(
@@ -161,15 +197,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: lightPinkBg,
                                     borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: primaryPink.withValues(alpha: 0.3)),
+                                    border: Border.all(
+                                      color: primaryPink.withValues(alpha: 0.3),
+                                    ),
                                   ),
                                   child: const Text(
                                     "SYSTEM COMMAND CENTER",
-                                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1),
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w900,
+                                      color: primaryPink,
+                                      letterSpacing: 1,
+                                    ),
                                   ),
                                 ),
                                 Container(
@@ -178,49 +224,92 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                     color: primaryPink.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(14),
                                   ),
-                                  child: const Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 22),
+                                  child: const Icon(
+                                    Icons.admin_panel_settings_rounded,
+                                    color: primaryPink,
+                                    size: 22,
+                                  ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
                             Row(
                               children: [
-                                const Text("Welcome back, ", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: textDark)),
-                                Text(adminName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: primaryPink)),
+                                const Text(
+                                  "Welcome back, ",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w900,
+                                    color: textDark,
+                                  ),
+                                ),
+                                Text(
+                                  adminName,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w900,
+                                    color: primaryPink,
+                                  ),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 4),
                             const Text(
                               "Live performance overview and global academy control.",
-                              style: TextStyle(fontSize: 12, color: textGrey, fontWeight: FontWeight.w500),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: textGrey,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                             const SizedBox(height: 20),
                             LayoutBuilder(
                               builder: (context, boxConstraints) {
                                 bool isWide = boxConstraints.maxWidth > 500;
                                 return Flex(
-                                  direction: isWide ? Axis.horizontal : Axis.vertical,
+                                  direction: isWide
+                                      ? Axis.horizontal
+                                      : Axis.vertical,
                                   children: [
                                     Expanded(
                                       flex: isWide ? 1 : 0,
-                                      child: _buildMiniStatItem("Active Courses", stats.activeCourses.toString(), Icons.menu_book_rounded),
+                                      child: _buildMiniStatItem(
+                                        "Active Courses",
+                                        stats.activeCourses.toString(),
+                                        Icons.menu_book_rounded,
+                                      ),
                                     ),
-                                    SizedBox(width: isWide ? 12 : 0, height: isWide ? 0 : 12),
+                                    SizedBox(
+                                      width: isWide ? 12 : 0,
+                                      height: isWide ? 0 : 12,
+                                    ),
                                     Expanded(
                                       flex: isWide ? 1 : 0,
-                                      child: _buildMiniStatItem("Total Faculty", stats.totalTeachers.toString(), Icons.psychology_rounded),
+                                      child: _buildMiniStatItem(
+                                        "Total Faculty",
+                                        stats.totalTeachers.toString(),
+                                        Icons.psychology_rounded,
+                                      ),
                                     ),
                                   ],
                                 );
                               },
-                            )
+                            ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 24),
 
                       // ================= ۲. متریک‌های سیستم (کاملاً ریسپانسیو) =================
-                      const Text("SYSTEM METRICS", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.5)),
+                      const Text(
+                        "SYSTEM METRICS",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          color: textGrey,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
                       const SizedBox(height: 12),
                       LayoutBuilder(
                         builder: (context, constraintsGrid) {
@@ -229,13 +318,61 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           if (isWide) {
                             return Row(
                               children: [
-                                Expanded(child: _buildMetricCard("Total Students", stats.totalStudents.toString(), Icons.people_alt_rounded, const Color(0xFF00897B), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageStudentsScreen())))),
+                                Expanded(
+                                  child: _buildMetricCard(
+                                    "Total Students",
+                                    stats.totalStudents.toString(),
+                                    Icons.people_alt_rounded,
+                                    const Color(0xFF00897B),
+                                    () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const ManageStudentsScreen(),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                                 const SizedBox(width: 12),
-                                Expanded(child: _buildMetricCard("Gross Revenue", "\$${stats.totalRevenue.toInt()}", Icons.account_balance_wallet_rounded, const Color(0xFF2E7D32), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceScreen())))),
+                                Expanded(
+                                  child: _buildMetricCard(
+                                    "Gross Revenue",
+                                    "\$${stats.totalRevenue.toInt()}",
+                                    Icons.account_balance_wallet_rounded,
+                                    const Color(0xFF2E7D32),
+                                    () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const FinanceScreen(),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                                 const SizedBox(width: 12),
-                                Expanded(child: _buildMetricCard("Open Tickets", stats.activeTickets.toString(), Icons.support_agent_rounded, const Color(0xFFF57C00), () {})),
+                                Expanded(
+                                  child: _buildMetricCard(
+                                    "Open Tickets",
+                                    stats.activeTickets.toString(),
+                                    Icons.support_agent_rounded,
+                                    const Color(0xFFF57C00),
+                                    () {},
+                                  ),
+                                ),
                                 const SizedBox(width: 12),
-                                Expanded(child: _buildMetricCard("Pending Payouts", stats.pendingWithdrawals.toString(), Icons.pending_actions_rounded, primaryPink, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceScreen())))),
+                                Expanded(
+                                  child: _buildMetricCard(
+                                    "Pending Payouts",
+                                    stats.pendingWithdrawals.toString(),
+                                    Icons.pending_actions_rounded,
+                                    primaryPink,
+                                    () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const FinanceScreen(),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ],
                             );
                           } else {
@@ -243,17 +380,67 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    Expanded(child: _buildMetricCard("Total Students", stats.totalStudents.toString(), Icons.people_alt_rounded, const Color(0xFF00897B), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageStudentsScreen())))),
+                                    Expanded(
+                                      child: _buildMetricCard(
+                                        "Total Students",
+                                        stats.totalStudents.toString(),
+                                        Icons.people_alt_rounded,
+                                        const Color(0xFF00897B),
+                                        () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                const ManageStudentsScreen(),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                     const SizedBox(width: 12),
-                                    Expanded(child: _buildMetricCard("Gross Revenue", "\$${stats.totalRevenue.toInt()}", Icons.account_balance_wallet_rounded, const Color(0xFF2E7D32), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceScreen())))),
+                                    Expanded(
+                                      child: _buildMetricCard(
+                                        "Gross Revenue",
+                                        "\$${stats.totalRevenue.toInt()}",
+                                        Icons.account_balance_wallet_rounded,
+                                        const Color(0xFF2E7D32),
+                                        () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                const FinanceScreen(),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 12),
                                 Row(
                                   children: [
-                                    Expanded(child: _buildMetricCard("Open Tickets", stats.activeTickets.toString(), Icons.support_agent_rounded, const Color(0xFFF57C00), () {})),
+                                    Expanded(
+                                      child: _buildMetricCard(
+                                        "Open Tickets",
+                                        stats.activeTickets.toString(),
+                                        Icons.support_agent_rounded,
+                                        const Color(0xFFF57C00),
+                                        () {},
+                                      ),
+                                    ),
                                     const SizedBox(width: 12),
-                                    Expanded(child: _buildMetricCard("Pending Payouts", stats.pendingWithdrawals.toString(), Icons.pending_actions_rounded, primaryPink, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceScreen())))),
+                                    Expanded(
+                                      child: _buildMetricCard(
+                                        "Pending Payouts",
+                                        stats.pendingWithdrawals.toString(),
+                                        Icons.pending_actions_rounded,
+                                        primaryPink,
+                                        () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                const FinanceScreen(),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ],
@@ -261,7 +448,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           }
                         },
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 28),
 
                       // ================= ۳. فید تراکنش‌های اخیر =================
                       Row(
@@ -269,11 +456,28 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         children: [
                           const Text(
                             "RECENT TRANSACTIONS",
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.5),
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              color: textGrey,
+                              letterSpacing: 1.5,
+                            ),
                           ),
                           TextButton(
-                            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceScreen())),
-                            child: const Text("View All", style: TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 11)),
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const FinanceScreen(),
+                              ),
+                            ),
+                            child: const Text(
+                              "View All",
+                              style: TextStyle(
+                                color: primaryPink,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 11,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -284,7 +488,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: recentActivities.length,
-                              separatorBuilder: (_, _) => const SizedBox(height: 12),
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(height: 12),
                               itemBuilder: (context, index) {
                                 final act = recentActivities[index];
                                 bool isCompleted = act['status'] == 'COMPLETED';
@@ -294,11 +499,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                   decoration: BoxDecoration(
                                     color: surfaceWhite,
                                     borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(color: cardBorder, width: 1.5),
-                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                                    border: Border.all(
+                                      color: cardBorder,
+                                      width: 1.5,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.02,
+                                        ),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
                                   ),
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Row(
@@ -306,29 +523,62 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                             Container(
                                               padding: const EdgeInsets.all(12),
                                               decoration: BoxDecoration(
-                                                color: (isCompleted ? Colors.green : Colors.amber).withValues(alpha: 0.12),
-                                                borderRadius: BorderRadius.circular(14),
+                                                color:
+                                                    (isCompleted
+                                                            ? Colors.green
+                                                            : Colors.amber)
+                                                        .withValues(
+                                                          alpha: 0.12,
+                                                        ),
+                                                borderRadius:
+                                                    BorderRadius.circular(14),
                                               ),
                                               child: Icon(
-                                                isCompleted ? Icons.arrow_downward_rounded : Icons.hourglass_top_rounded,
-                                                color: isCompleted ? Colors.green.shade700 : Colors.amber.shade800,
+                                                isCompleted
+                                                    ? Icons
+                                                          .arrow_downward_rounded
+                                                    : Icons
+                                                          .hourglass_top_rounded,
+                                                color: isCompleted
+                                                    ? Colors.green.shade700
+                                                    : Colors.amber.shade800,
                                                 size: 20,
                                               ),
                                             ),
                                             const SizedBox(width: 14),
                                             Expanded(
                                               child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    (act['transaction_type'] ?? 'Transaction').toString().toUpperCase().replaceAll('_', ' '),
-                                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: textDark),
-                                                    overflow: TextOverflow.ellipsis,
+                                                    (act['transaction_type'] ??
+                                                            'Transaction')
+                                                        .toString()
+                                                        .toUpperCase()
+                                                        .replaceAll('_', ' '),
+                                                    style: const TextStyle(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      color: textDark,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                   ),
                                                   const SizedBox(height: 3),
                                                   Text(
-                                                    act['created_at'] != null ? act['created_at'].toString().split('T')[0] : 'Recent',
-                                                    style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.bold),
+                                                    act['created_at'] != null
+                                                        ? act['created_at']
+                                                              .toString()
+                                                              .split('T')[0]
+                                                        : 'Recent',
+                                                    style: const TextStyle(
+                                                      fontSize: 11,
+                                                      color: textGrey,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
                                                   ),
                                                 ],
                                               ),
@@ -338,26 +588,45 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                       ),
                                       const SizedBox(width: 12),
                                       Column(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
                                         children: [
                                           Text(
                                             "\$${(act['amount'] ?? 0).toDouble().toStringAsFixed(2)}",
                                             style: TextStyle(
                                               fontSize: 15,
                                               fontWeight: FontWeight.w900,
-                                              color: isCompleted ? Colors.green.shade700 : Colors.amber.shade800,
+                                              color: isCompleted
+                                                  ? Colors.green.shade700
+                                                  : Colors.amber.shade800,
                                             ),
                                           ),
                                           const SizedBox(height: 4),
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 2,
+                                            ),
                                             decoration: BoxDecoration(
-                                              color: (isCompleted ? Colors.green : Colors.amber).withValues(alpha: 0.1),
-                                              borderRadius: BorderRadius.circular(6),
+                                              color:
+                                                  (isCompleted
+                                                          ? Colors.green
+                                                          : Colors.amber)
+                                                      .withValues(alpha: 0.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
                                             ),
                                             child: Text(
-                                              (act['status'] ?? 'PENDING').toString().toUpperCase(),
-                                              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: isCompleted ? Colors.green.shade700 : Colors.amber.shade800),
+                                              (act['status'] ?? 'PENDING')
+                                                  .toString()
+                                                  .toUpperCase(),
+                                              style: TextStyle(
+                                                fontSize: 8,
+                                                fontWeight: FontWeight.w900,
+                                                color: isCompleted
+                                                    ? Colors.green.shade700
+                                                    : Colors.amber.shade800,
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -373,17 +642,31 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               decoration: BoxDecoration(
                                 color: surfaceWhite,
                                 borderRadius: BorderRadius.circular(24),
-                                border: Border.all(color: cardBorder, width: 1.5),
+                                border: Border.all(
+                                  color: cardBorder,
+                                  width: 1.5,
+                                ),
                               ),
                               child: const Column(
                                 children: [
-                                  Icon(Icons.receipt_long_outlined, size: 48, color: textGrey),
+                                  Icon(
+                                    Icons.receipt_long_outlined,
+                                    size: 48,
+                                    color: textGrey,
+                                  ),
                                   SizedBox(height: 12),
-                                  Text("No recent financial activity recorded.", style: TextStyle(color: textGrey, fontSize: 13, fontWeight: FontWeight.bold)),
+                                  Text(
+                                    "No recent financial activity recorded.",
+                                    style: TextStyle(
+                                      color: textGrey,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
-                      const SizedBox(height: 100), // فاصله برای Bottom Nav
+                      const SizedBox(height: 100),
                     ],
                   ),
                 ),
@@ -402,7 +685,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         color: surfaceWhite,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -419,9 +708,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                Text(
+                  title.toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                    color: textGrey,
+                    letterSpacing: 0.8,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: textDark,
+                  ),
+                ),
               ],
             ),
           ),
@@ -430,7 +734,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildMetricCard(String title, String value, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildMetricCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -439,7 +749,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           color: surfaceWhite,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: cardBorder, width: 1.5),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -456,15 +772,34 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ),
                   child: Icon(icon, color: color, size: 20),
                 ),
-                const Icon(Icons.arrow_forward_ios_rounded, color: textGrey, size: 14),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: textGrey,
+                  size: 14,
+                ),
               ],
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: color)),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: color,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(title.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                Text(
+                  title.toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                    color: textGrey,
+                    letterSpacing: 0.8,
+                  ),
+                ),
               ],
             ),
           ],

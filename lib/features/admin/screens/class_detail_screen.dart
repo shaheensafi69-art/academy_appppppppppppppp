@@ -60,7 +60,7 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
       // 2. دریافت لیست دانشجویان این کلاس از جدول class_students
       final classStudents = await supabase
           .from("class_students")
-          .select("student_id, joined_at, is_paid")
+          .select("student_id, joined_at, is_paid, is_trial, trial_ends_at")
           .eq("class_group_id", widget.classId)
           .order('joined_at', ascending: false);
 
@@ -93,6 +93,8 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
             ...profile,
             'joined_at': joinedData?['joined_at'] ?? DateTime.now().toIso8601String(),
             'is_paid': joinedData?['is_paid'] ?? false,
+            'is_trial': joinedData?['is_trial'] ?? false,
+            'trial_ends_at': joinedData?['trial_ends_at'],
             'progress_percentage': enrollData?['progress_percentage'] ?? 0,
           });
         }
@@ -342,7 +344,14 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                         separatorBuilder: (_, _) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           final s = students[index];
-                          bool isPaid = s['is_paid'];
+                          bool isPaid = s['is_paid'] ?? false;
+                          bool isTrial = s['is_trial'] ?? false;
+                          String? trialEndsAtStr = s['trial_ends_at'];
+                          bool isStillActiveTrial = false;
+                          if (isTrial && trialEndsAtStr != null) {
+                            final trialEndsAt = DateTime.tryParse(trialEndsAtStr);
+                            isStillActiveTrial = trialEndsAt != null && trialEndsAt.isAfter(DateTime.now());
+                          }
                           int progress = s['progress_percentage'] ?? 0;
 
                           return Container(
@@ -368,7 +377,16 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                                     children: [
                                       Text("${s['first_name'] ?? ''} ${s['last_name'] ?? ''}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
                                       const SizedBox(height: 2),
-                                      Text("${s['email'] ?? ''} • Progress: $progress%", style: const TextStyle(color: textGrey, fontSize: 10)),
+                                      Text(
+                                        "${s['email'] ?? ''} • Progress: $progress%${isTrial ? ' • Trial: ${isStillActiveTrial ? "Active ⏳" : "Expired 🔒"}' : ''}",
+                                        style: TextStyle(
+                                          color: isTrial 
+                                            ? (isStillActiveTrial ? Colors.purple : Colors.red) 
+                                            : textGrey, 
+                                          fontSize: 10,
+                                          fontWeight: isTrial ? FontWeight.bold : FontWeight.normal
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),

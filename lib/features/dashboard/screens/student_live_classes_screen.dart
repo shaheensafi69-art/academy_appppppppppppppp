@@ -36,6 +36,17 @@ class ClassGroup {
     final teacherObj = json['teacher'];
     final teacherData = teacherObj is List ? (teacherObj.isNotEmpty ? teacherObj[0] : null) : teacherObj;
 
+    final bool paid = studentRelation?['is_paid'] ?? false;
+    final bool isTrial = studentRelation?['is_trial'] ?? false;
+    final String? trialEndsAtStr = studentRelation?['trial_ends_at'];
+    bool hasAccess = paid;
+    if (isTrial && trialEndsAtStr != null) {
+      final trialEndsAt = DateTime.tryParse(trialEndsAtStr);
+      if (trialEndsAt != null && trialEndsAt.isAfter(DateTime.now())) {
+        hasAccess = true;
+      }
+    }
+
     return ClassGroup(
       id: json['id'] ?? '',
       className: json['class_name'] ?? 'Unknown Class',
@@ -44,7 +55,7 @@ class ClassGroup {
       startDate: json['start_date'] ?? '',
       meetingLink: json['meeting_link'],
       signalGroupLink: json['signal_group_link'],
-      isPaid: studentRelation?['is_paid'] ?? false,
+      isPaid: hasAccess,
       teacher: teacherData,
       rawData: json,
     );
@@ -83,9 +94,16 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
       if (user == null) return;
       final userId = user.id;
 
+      // Silently invoke the RPC to expire any outdated free trials in the database
+      try {
+        await supabase.rpc("expire_class_trials");
+      } catch (err) {
+        debugPrint("Silent trial expiration RPC failed: $err");
+      }
+
       final response = await supabase
           .from("class_groups")
-          .select("id, class_name, schedule_info, is_active, start_date, end_date, class_time, class_days, meeting_link, signal_group_link, teacher:profiles!teacher_id(first_name, last_name), class_students!inner(student_id, is_paid)")
+          .select("id, class_name, schedule_info, is_active, start_date, end_date, class_time, class_days, meeting_link, signal_group_link, teacher:profiles!teacher_id(first_name, last_name), class_students!inner(student_id, is_paid, is_trial, trial_ends_at)")
           .eq("class_students.student_id", userId)
           .order("is_active", ascending: false)
           .order("start_date", ascending: false);
