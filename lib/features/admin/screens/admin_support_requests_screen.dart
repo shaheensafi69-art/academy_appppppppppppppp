@@ -103,7 +103,6 @@ class _AdminSupportRequestsScreenState
   static const Color backgroundGrey = Color(0xFFF4F7FA);
   static const Color textDark = Color(0xFF1F2937);
   static const Color textGrey = Color(0xFF6B7280);
-  static const Color cardBorder = Color(0xFFE5E7EB);
 
   static const Color colorPending = Color(0xFFFFB300);
   static const Color colorActive = Color(0xFF10B981);

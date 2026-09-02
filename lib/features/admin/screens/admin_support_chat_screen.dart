@@ -66,7 +66,6 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
   // Premium Colors
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color deepPink = Color(0xFFD81B60);
-  static const Color backgroundGrey = Color(0xFFF9FAFB);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
@@ -613,8 +612,6 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                                   m.senderId == 'ai' ||
                                   m.senderId == null ||
                                   m.senderId == '';
-                              final bool isOtherAdmin =
-                                  !isMe && !isRequester && !isAi;
 
                               Alignment alignment;
                               Color bgColor;

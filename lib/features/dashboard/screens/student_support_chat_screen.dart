@@ -785,7 +785,6 @@ Answer in the exact language the user prompts. Strictly answer queries related t
                               msg.senderId == null ||
                               msg.senderId!.isEmpty ||
                               msg.senderId == 'ai';
-                          final bool isHumanAdmin = !isMe && !isAi;
 
                           Color bubbleBgColor;
                           Color bubbleBorderColor;
