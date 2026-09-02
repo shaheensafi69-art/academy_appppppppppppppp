@@ -16,19 +16,32 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
-  NotificationService._internal();
+  NotificationService._internal() {
+    supabase.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.signedOut) {
+        _lastSavedUserId = null;
+      }
+    });
+  }
 
   final supabase = Supabase.instance.client;
+  String? _lastSavedUserId;
 
   /// مقداردهی اولیه سیستم push notifications و فایربیس
   Future<void> initPushNotifications() async {
-    if (kIsWeb || (defaultTargetPlatform != TargetPlatform.android && defaultTargetPlatform != TargetPlatform.iOS)) {
-      debugPrint("FCM notifications are only supported on Android/iOS. Skipping Firebase initialization on macOS/desktop.");
+    if (kIsWeb ||
+        (defaultTargetPlatform != TargetPlatform.android &&
+            defaultTargetPlatform != TargetPlatform.iOS)) {
+      debugPrint(
+        "FCM notifications are only supported on Android/iOS. Skipping Firebase initialization on macOS/desktop.",
+      );
       return;
     }
     try {
       await Firebase.initializeApp();
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      FirebaseMessaging.onBackgroundMessage(
+        _firebaseMessagingBackgroundHandler,
+      );
 
       final messaging = FirebaseMessaging.instance;
 
@@ -43,19 +56,24 @@ class NotificationService {
         sound: true,
       );
 
-      debugPrint("User notification permission status: ${settings.authorizationStatus}");
+      debugPrint(
+        "User notification permission status: ${settings.authorizationStatus}",
+      );
 
       // ذخیره توکن فایربیس هنگام شروع اپلیکیشن
       await saveFCMTokenToDatabase();
 
       // گوش دادن به تغییرات توکن دستگاه
       messaging.onTokenRefresh.listen((newToken) {
+        _lastSavedUserId = null; // Reset to force updating the new token
         _updateTokenInSupabase(newToken);
       });
 
       // دریافت نوتیفیکیشن زمانی که برنامه باز است (Foreground)
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        debugPrint('Foreground Message received: ${message.notification?.title}');
+        debugPrint(
+          'Foreground Message received: ${message.notification?.title}',
+        );
       });
     } catch (e) {
       debugPrint("Push notification initialization error: $e");
@@ -64,12 +82,17 @@ class NotificationService {
 
   /// گرفتن و ذخیره توکن FCM در جدول profiles کاربران در Supabase
   Future<void> saveFCMTokenToDatabase() async {
-    if (kIsWeb || (defaultTargetPlatform != TargetPlatform.android && defaultTargetPlatform != TargetPlatform.iOS)) {
+    if (kIsWeb ||
+        (defaultTargetPlatform != TargetPlatform.android &&
+            defaultTargetPlatform != TargetPlatform.iOS)) {
       return;
     }
     try {
       final user = supabase.auth.currentUser;
       if (user == null) return;
+
+      // Skip if we already saved the token for this user session
+      if (_lastSavedUserId == user.id) return;
 
       final messaging = FirebaseMessaging.instance;
       String? token = await messaging.getToken();
@@ -87,12 +110,19 @@ class NotificationService {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
+      // Skip if we already saved the token for this user session
+      if (_lastSavedUserId == user.id) return;
+
       await supabase
           .from('profiles')
           .update({'fcm_token': token})
           .eq('id', user.id);
-      
-      debugPrint("Successfully saved FCM token to Supabase profile for user: ${user.id}");
+
+      _lastSavedUserId =
+          user.id; // Cache the user ID to prevent duplicate updates
+      debugPrint(
+        "Successfully saved FCM token to Supabase profile for user: ${user.id}",
+      );
     } catch (e) {
       debugPrint("Error updating fcm_token in profiles table: $e");
     }
@@ -103,7 +133,8 @@ class NotificationService {
     required String targetUserId,
     required String title,
     required String message,
-    required String notificationType, // 'like_comment', 'chat', 'class_reminder', 'admin_announcement', 'scheduled'
+    required String
+    notificationType, // 'like_comment', 'chat', 'class_reminder', 'admin_announcement', 'scheduled'
     String? linkUrl,
     String? senderId,
   }) async {

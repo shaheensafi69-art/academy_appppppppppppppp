@@ -445,7 +445,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                                                 _fetchCoursesAndData();
                                               }
                                             },
-                                            child: Text(isAlreadyEnrolled ? "View Hub 🚀" : "View Details 🚀", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                                            child: Text(isAlreadyEnrolled ? "View Hub" : "View Details", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
                                           ),
                                         ],
                                       ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../reels/screens/student_reels_screen.dart';
+import '../../feed/screens/reels_viewer_screen.dart';
 
 class ActivityNotificationItem {
   final String id;
@@ -77,9 +77,16 @@ class _ActivityNotificationsScreenState
         try {
           final res = await supabase
               .from("user_notifications")
-              .select("*, profiles!sender_id(first_name, last_name, avatar_url)")
+              .select(
+                "*, profiles!sender_id(first_name, last_name, avatar_url)",
+              )
               .eq("user_id", currentUserId)
-              .inFilter("notification_type", ["like_comment", "like", "comment", "story_like"])
+              .inFilter("notification_type", [
+                "like_comment",
+                "like",
+                "comment",
+                "story_like",
+              ])
               .order("created_at", ascending: false)
               .limit(30);
           notifRows = res as List;
@@ -88,7 +95,12 @@ class _ActivityNotificationsScreenState
               .from("user_notifications")
               .select()
               .eq("user_id", currentUserId)
-              .inFilter("notification_type", ["like_comment", "like", "comment", "story_like"])
+              .inFilter("notification_type", [
+                "like_comment",
+                "like",
+                "comment",
+                "story_like",
+              ])
               .order("created_at", ascending: false)
               .limit(30);
           notifRows = res as List;
@@ -351,14 +363,17 @@ class _ActivityNotificationsScreenState
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => StudentReelsScreen(targetReelId: reelId),
+                                    builder: (_) => StudentReelsScreen(
+                                      targetReelId: reelId,
+                                    ),
                                   ),
                                 );
                               } else if (item.linkUrl!.startsWith('/post/')) {
                                 final postId = item.linkUrl!.split('/').last;
                                 _showPostDetail(context, postId);
                               }
-                            } else if (item.type == 'like' || item.type == 'comment') {
+                            } else if (item.type == 'like' ||
+                                item.type == 'comment') {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -574,7 +589,8 @@ class _PostDetailBottomSheetState extends State<_PostDetailBottomSheet> {
                 .eq("id", user.id)
                 .maybeSingle();
             final String senderName = (senderProfile != null)
-                ? "${senderProfile['first_name'] ?? 'Someone'} ${senderProfile['last_name'] ?? ''}".trim()
+                ? "${senderProfile['first_name'] ?? 'Someone'} ${senderProfile['last_name'] ?? ''}"
+                      .trim()
                 : 'Someone';
 
             await supabase.from("user_notifications").insert({
@@ -608,226 +624,251 @@ class _PostDetailBottomSheetState extends State<_PostDetailBottomSheet> {
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: isPostLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFF494AC)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFFF494AC)),
+            )
           : postData == null
-              ? const Center(child: Text("Post not found", style: TextStyle(color: Colors.grey)))
-              : Column(
-                  children: [
-                    // Header Bar
-                    Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    Expanded(
-                      child: ListView(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+          ? const Center(
+              child: Text(
+                "Post not found",
+                style: TextStyle(color: Colors.grey),
+              ),
+            )
+          : Column(
+              children: [
+                // Header Bar
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    children: [
+                      // Author info
+                      Row(
                         children: [
-                          // Author info
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 20,
-                                backgroundColor: const Color(0xFFFAF4F6),
-                                backgroundImage: postData!['profiles']?['avatar_url'] != null &&
-                                        postData!['profiles']?['avatar_url'].toString().isNotEmpty == true
-                                    ? NetworkImage(postData!['profiles']!['avatar_url']!)
-                                    : null,
-                                child: postData!['profiles']?['avatar_url'] == null ||
-                                        postData!['profiles']?['avatar_url'].toString().isEmpty == true
-                                    ? Text(
-                                        (postData!['profiles']?['first_name'] ?? 'P').toString()[0],
-                                        style: const TextStyle(
-                                          color: Color(0xFFF494AC),
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "${postData!['profiles']?['first_name'] ?? 'Academy'} ${postData!['profiles']?['last_name'] ?? 'Member'}",
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundColor: const Color(0xFFFAF4F6),
+                            backgroundImage:
+                                postData!['profiles']?['avatar_url'] != null &&
+                                    postData!['profiles']?['avatar_url']
+                                            .toString()
+                                            .isNotEmpty ==
+                                        true
+                                ? NetworkImage(
+                                    postData!['profiles']!['avatar_url']!,
+                                  )
+                                : null,
+                            child:
+                                postData!['profiles']?['avatar_url'] == null ||
+                                    postData!['profiles']?['avatar_url']
+                                            .toString()
+                                            .isEmpty ==
+                                        true
+                                ? Text(
+                                    (postData!['profiles']?['first_name'] ??
+                                            'P')
+                                        .toString()[0],
                                     style: const TextStyle(
+                                      color: Color(0xFFF494AC),
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                      color: Color(0xFF111827),
                                     ),
-                                  ),
-                                  Text(
-                                    "Posted on Feed",
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.grey[500],
-                                    ),
-                                  ),
-                                ],
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${postData!['profiles']?['first_name'] ?? 'Academy'} ${postData!['profiles']?['last_name'] ?? 'Member'}",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: Color(0xFF111827),
+                                ),
+                              ),
+                              Text(
+                                "Posted on Feed",
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey[500],
+                                ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
-                          // Post Title
-                          Text(
-                            postData!['title'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                              color: Color(0xFF111827),
-                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // Post Title
+                      Text(
+                        postData!['title'] ?? '',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Post Content
+                      Text(
+                        postData!['content'] ?? '',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF374151),
+                          height: 1.4,
+                        ),
+                      ),
+                      if (postData!['image_url'] != null &&
+                          postData!['image_url'].toString().isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.network(
+                            postData!['image_url']!,
+                            fit: BoxFit.cover,
                           ),
-                          const SizedBox(height: 8),
-                          // Post Content
-                          Text(
-                            postData!['content'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF374151),
-                              height: 1.4,
-                            ),
+                        ),
+                      ],
+                      const SizedBox(height: 16),
+                      const Divider(),
+                      // Comments section title
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          "Comments 💬",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF111827),
                           ),
-                          if (postData!['image_url'] != null &&
-                              postData!['image_url'].toString().isNotEmpty) ...[
-                            const SizedBox(height: 12),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: Image.network(
-                                postData!['image_url']!,
-                                fit: BoxFit.cover,
+                        ),
+                      ),
+                      isCommentsLoading
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: Color(0xFFF494AC),
                               ),
-                            ),
-                          ],
-                          const SizedBox(height: 16),
-                          const Divider(),
-                          // Comments section title
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8),
-                            child: Text(
-                              "Comments 💬",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF111827),
-                              ),
-                            ),
-                          ),
-                          isCommentsLoading
-                              ? const Center(
-                                  child: CircularProgressIndicator(
-                                    color: Color(0xFFF494AC),
+                            )
+                          : comments.isEmpty
+                          ? const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 24),
+                              child: Center(
+                                child: Text(
+                                  "No comments yet. Write one below!",
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
                                   ),
-                                )
-                              : comments.isEmpty
-                                  ? const Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 24),
-                                      child: Center(
-                                        child: Text(
-                                          "No comments yet. Write one below!",
-                                          style: TextStyle(color: Colors.grey, fontSize: 12),
-                                        ),
-                                      ),
-                                    )
-                                  : ListView.builder(
-                                      shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      itemCount: comments.length,
-                                      itemBuilder: (context, index) {
-                                        final c = comments[index];
-                                        final commenterProfile = c['profiles'];
-                                        final String name = commenterProfile != null
-                                            ? "${commenterProfile['first_name'] ?? ''} ${commenterProfile['last_name'] ?? ''}".trim()
-                                            : 'Academy Student';
-                                        final String avatar = commenterProfile != null
-                                            ? (commenterProfile['avatar_url'] ?? '')
-                                            : '';
-                                        return ListTile(
-                                          contentPadding: EdgeInsets.zero,
-                                          leading: CircleAvatar(
-                                            radius: 16,
-                                            backgroundColor: const Color(0xFFFAF4F6),
-                                            backgroundImage: avatar.isNotEmpty ? NetworkImage(avatar) : null,
-                                            child: avatar.isEmpty
-                                                ? Text(
-                                                    name.isNotEmpty ? name[0] : 'S',
-                                                    style: const TextStyle(
-                                                      color: Color(0xFFF494AC),
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 10,
-                                                    ),
-                                                  )
-                                                : null,
-                                          ),
-                                          title: Text(
-                                            name,
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: comments.length,
+                              itemBuilder: (context, index) {
+                                final c = comments[index];
+                                final commenterProfile = c['profiles'];
+                                final String name = commenterProfile != null
+                                    ? "${commenterProfile['first_name'] ?? ''} ${commenterProfile['last_name'] ?? ''}"
+                                          .trim()
+                                    : 'Academy Student';
+                                final String avatar = commenterProfile != null
+                                    ? (commenterProfile['avatar_url'] ?? '')
+                                    : '';
+                                return ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: CircleAvatar(
+                                    radius: 16,
+                                    backgroundColor: const Color(0xFFFAF4F6),
+                                    backgroundImage: avatar.isNotEmpty
+                                        ? NetworkImage(avatar)
+                                        : null,
+                                    child: avatar.isEmpty
+                                        ? Text(
+                                            name.isNotEmpty ? name[0] : 'S',
                                             style: const TextStyle(
-                                              fontSize: 12,
+                                              color: Color(0xFFF494AC),
                                               fontWeight: FontWeight.bold,
-                                              color: Color(0xFF111827),
+                                              fontSize: 10,
                                             ),
-                                          ),
-                                          subtitle: Text(
-                                            c['comment_text'] ?? '',
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Color(0xFF374151),
-                                            ),
-                                          ),
-                                        );
-                                      },
+                                          )
+                                        : null,
+                                  ),
+                                  title: Text(
+                                    name,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF111827),
                                     ),
-                        ],
-                      ),
-                    ),
-                    const Divider(height: 1),
-                    // Comment input
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _commentController,
-                              style: const TextStyle(
-                                color: Color(0xFF111827),
-                                fontSize: 13,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: "Add a comment...",
-                                hintStyle: const TextStyle(
-                                  color: Color(0xFF9CA3AF),
-                                  fontSize: 13,
-                                ),
-                                filled: true,
-                                fillColor: const Color(0xFFF3F4F6),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 10,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(24),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
+                                  ),
+                                  subtitle: Text(
+                                    c['comment_text'] ?? '',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF374151),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.send_rounded,
-                              color: Color(0xFFF494AC),
-                            ),
-                            onPressed: _sendComment,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                const Divider(height: 1),
+                // Comment input
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _commentController,
+                          style: const TextStyle(
+                            color: Color(0xFF111827),
+                            fontSize: 13,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: "Add a comment...",
+                            hintStyle: const TextStyle(
+                              color: Color(0xFF9CA3AF),
+                              fontSize: 13,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF3F4F6),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(24),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.send_rounded,
+                          color: Color(0xFFF494AC),
+                        ),
+                        onPressed: _sendComment,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }

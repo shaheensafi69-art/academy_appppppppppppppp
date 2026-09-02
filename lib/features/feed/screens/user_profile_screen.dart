@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../chat/screens/direct_chat_screen.dart';
-import '../../reels/screens/student_reels_screen.dart';
+import 'reels_viewer_screen.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final String? userId;

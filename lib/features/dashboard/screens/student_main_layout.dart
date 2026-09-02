@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../screens/student_overview_screen.dart';
@@ -13,23 +12,24 @@ import '../screens/student_trading_journal_screen.dart';
 import '../screens/student_wallet_screen.dart';
 import '../screens/student_achievements_screen.dart';
 import '../screens/student_support_screen.dart';
-import '../screens/student_feed_screen.dart'; // صفحه فید اجتماعی
-import '../screens/student_friends_screen.dart'; // صفحه مدیریت دوستان
+import '../../feed/screens/feed_viewer_screen.dart'; // صفحه فید اجتماعی
+import '../../feed/screens/friends_viewer_screen.dart'; // صفحه مدیریت دوستان
 import '../screens/student_ai_assistant_screen.dart'; // دستیار هوشمند AI
-import '../../reels/screens/student_reels_screen.dart'; // صفحه ویدیوهای کوتاه ریلز
-import '../../reels/screens/upload_reel_screen.dart';
+import '../../feed/screens/reels_viewer_screen.dart'; // صفحه ویدیوهای کوتاه ریلز
+import '../../feed/screens/upload_reel_screen.dart';
 
 import 'certificates_screen.dart';
 import 'wishlist_screen.dart';
 import 'payments_screen.dart';
 import 'scholarships_screen.dart';
-import 'create_post_screen.dart'; // صفحه ساخت پست جدید
+import '../../feed/screens/create_post_screen.dart'; // صفحه ساخت پست جدید
 import 'settings_screen.dart';
 import 'help_center_screen.dart';
-import 'user_profile_screen.dart'; // صفحه پروفایل کاربر
+import '../../feed/screens/user_profile_screen.dart'; // صفحه پروفایل کاربر
 
 import '../../../core/routing/auth_gate.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/utils/system_ui_helper.dart';
 
 class StudentMainLayout extends StatefulWidget {
   const StudentMainLayout({super.key});
@@ -50,7 +50,9 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
   static const Color backgroundWhite = Colors.white;
   static const Color surfaceColor = Colors.white;
   static const Color textColor = Color(0xFF111827);
+  static const Color textDark = Color(0xFF111827);
   static const Color subTextColor = Color(0xFF6B7280);
+  static const Color textGrey = Color(0xFF6B7280);
   static const Color borderColor = Color(0xFFF3F4F6);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
 
@@ -202,28 +204,81 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
     }
 
     final bool isReels = _currentIndex == 21;
-    if (isReels) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-      SystemChrome.setSystemUIOverlayStyle(
-        const SystemUiOverlayStyle(
-          systemNavigationBarColor: Colors.black,
-          systemNavigationBarIconBrightness: Brightness.light,
-        ),
-      );
-    } else {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-      SystemChrome.setSystemUIOverlayStyle(
-        const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: Colors.white,
-          systemNavigationBarIconBrightness: Brightness.dark,
-        ),
-      );
-    }
+    SystemUiHelper.setSystemStyle(isReels: isReels);
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bool isWideScreen = screenWidth >= 600;
 
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     final floatBottomMargin = bottomPadding > 0 ? bottomPadding + 4 : 12.0;
+
+    if (isWideScreen) {
+      return Scaffold(
+        backgroundColor: backgroundWhite,
+        body: Row(
+          children: [
+            Container(
+              width: screenWidth >= 1024 ? 240 : 80,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(2, 0),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 30),
+                  Image.asset('assets/logo-without-b.png', height: 40, errorBuilder: (_, __, ___) => const Icon(Icons.school, color: primaryPink, size: 32)),
+                  const SizedBox(height: 24),
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      children: [
+                        _buildSidebarItem(0, Icons.dashboard_rounded, "Overview", isWideScreen),
+                        _buildSidebarItem(1, Icons.campaign_rounded, "Notices", isWideScreen),
+                        _buildSidebarItem(2, Icons.menu_book_rounded, "My Courses", isWideScreen),
+                        _buildSidebarItem(3, Icons.favorite_rounded, "Wishlist", isWideScreen),
+                        _buildSidebarItem(4, Icons.podcasts_rounded, "Live Campus", isWideScreen),
+                        _buildSidebarItem(5, Icons.assignment_rounded, "Assignments", isWideScreen),
+                        _buildSidebarItem(6, Icons.quiz_rounded, "Exams & Quizzes", isWideScreen),
+                        _buildSidebarItem(7, Icons.workspace_premium_rounded, "Certificates", isWideScreen),
+                        _buildSidebarItem(8, Icons.school_rounded, "Scholarships", isWideScreen),
+                        _buildSidebarItem(9, Icons.receipt_long_rounded, "Payments", isWideScreen),
+                        _buildSidebarItem(10, Icons.show_chart_rounded, "Trading Journal", isWideScreen),
+                        _buildSidebarItem(12, Icons.dynamic_feed_rounded, "Social Feed", isWideScreen),
+                        _buildSidebarItem(21, Icons.video_library_rounded, "Reels", isWideScreen),
+                        _buildSidebarItem(13, Icons.account_balance_wallet_rounded, "Wallet & Referral", isWideScreen),
+                        _buildSidebarItem(14, Icons.people_alt_rounded, "Friends & Network", isWideScreen),
+                        _buildSidebarItem(15, Icons.emoji_events_rounded, "Achievements", isWideScreen),
+                        _buildSidebarItem(16, Icons.smart_toy_rounded, "AI Assistant", isWideScreen),
+                        _buildSidebarItem(18, Icons.support_agent_rounded, "Support Tickets", isWideScreen),
+                        _buildSidebarItem(17, Icons.help_outline_rounded, "Help Center", isWideScreen),
+                        _buildSidebarItem(20, Icons.settings_rounded, "Settings", isWideScreen),
+                        _buildSidebarItem(19, Icons.person_rounded, "My Profile", isWideScreen),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: IconButton(
+                      icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+                      onPressed: () => Supabase.instance.client.auth.signOut(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: IndexedStack(index: _currentIndex, children: _screens),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: backgroundWhite,
@@ -233,7 +288,9 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
           Positioned.fill(
             child: Padding(
               padding: EdgeInsets.only(
-                top: (isReels || _isInSocialSection) ? 0 : (MediaQuery.of(context).padding.top + 8),
+                top: (isReels || _isInSocialSection)
+                    ? 0
+                    : (MediaQuery.of(context).padding.top + 8),
                 bottom: _isInSocialSection ? 0 : 85,
               ),
               child: IndexedStack(index: _currentIndex, children: _screens),
@@ -247,6 +304,33 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
           ),
           if (_isMobileMenuOpen) Positioned.fill(child: _buildFullScreenMenu()),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSidebarItem(int index, IconData icon, String label, bool isWide) {
+    final isSelected = _currentIndex == index;
+    final isExpanded = MediaQuery.of(context).size.width >= 1024;
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: isSelected ? primaryPink.withValues(alpha: 0.12) : Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: ListTile(
+        dense: true,
+        leading: Icon(icon, color: isSelected ? primaryPink : textGrey, size: 22),
+        title: isExpanded
+            ? Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? primaryPink : textDark,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 13,
+                ),
+              )
+            : null,
+        onTap: () => setState(() => _currentIndex = index),
       ),
     );
   }
@@ -612,7 +696,10 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const StudentAiAssistantScreen(isFullScreen: true),
+                                    builder: (_) =>
+                                        const StudentAiAssistantScreen(
+                                          isFullScreen: true,
+                                        ),
                                   ),
                                 );
                               } else {

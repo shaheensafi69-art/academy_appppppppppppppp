@@ -322,8 +322,9 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
   // توابع کمکی برای رنگ و لیبل بر اساس وضعیت
   Color _getStatusColor(String status) {
     if (status == 'closed') return colorClosed; // سرخ
-    if (status == 'escalated' || status == 'answered')
+    if (status == 'escalated' || status == 'answered') {
       return colorActive; // سبز
+    }
     return colorPending; // زرد برای open/pending
   }
 
@@ -335,8 +336,9 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
 
   IconData _getStatusIcon(String status) {
     if (status == 'closed') return Icons.lock_rounded;
-    if (status == 'escalated' || status == 'answered')
+    if (status == 'escalated' || status == 'answered') {
       return Icons.support_agent_rounded;
+    }
     return Icons.hourglass_empty_rounded;
   }
 

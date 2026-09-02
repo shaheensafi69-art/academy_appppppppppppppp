@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // ایمپورت صفحات پنل ادمین
@@ -16,14 +15,15 @@ import 'live_classes_screen.dart';
 import 'admin_support_requests_screen.dart';
 import 'settings_screen.dart';
 
-import '../../dashboard/screens/student_feed_screen.dart';
-import '../../dashboard/screens/student_friends_screen.dart';
-import 'create_post_screen.dart';
-import 'user_profile_screen.dart';
-import '../../reels/screens/student_reels_screen.dart';
-import '../../reels/screens/upload_reel_screen.dart';
+import '../../feed/screens/feed_viewer_screen.dart';
+import '../../feed/screens/friends_viewer_screen.dart';
+import '../../feed/screens/create_post_screen.dart';
+import '../../feed/screens/user_profile_screen.dart';
+import '../../feed/screens/reels_viewer_screen.dart';
+import '../../feed/screens/upload_reel_screen.dart';
 
 import '../../../core/routing/auth_gate.dart';
+import '../../../core/utils/system_ui_helper.dart';
 
 class AdminMainLayout extends StatefulWidget {
   const AdminMainLayout({super.key});
@@ -188,12 +188,39 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     }
   }
 
-  // بررسی اینکه ادمین در بخش سوشال (فید، نتورک، پست، پروفایل) است یا بخش مدیریتی
+  // بررسی اینکه ادمین در بخش سوشال (فید، نتورک، پست،  // تشخیص اینکه آیا کاربر در بخش اجتماعی است یا خیر
   bool get _isInSocialSection =>
+      _currentIndex == 11 ||
       _currentIndex == 12 ||
-      _currentIndex == 13 ||
       _currentIndex == 14 ||
       _currentIndex == 15;
+
+  Widget _buildSidebarItem(int index, IconData icon, String label, bool isWide) {
+    final isSelected = _currentIndex == index;
+    final isExpanded = MediaQuery.of(context).size.width >= 1024;
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: isSelected ? primaryPink.withValues(alpha: 0.12) : Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: ListTile(
+        dense: true,
+        leading: Icon(icon, color: isSelected ? primaryPink : textGrey, size: 22),
+        title: isExpanded
+            ? Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? primaryPink : textDark,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 13,
+                ),
+              )
+            : null,
+        onTap: () => setState(() => _currentIndex = index),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -223,30 +250,76 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
         ),
       );
     }
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bool isWideScreen = screenWidth >= 600;
 
-    final bool isReels = _currentIndex == 15;
-    if (isReels) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-      SystemChrome.setSystemUIOverlayStyle(
-        const SystemUiOverlayStyle(
-          systemNavigationBarColor: Colors.black,
-          systemNavigationBarIconBrightness: Brightness.light,
-        ),
-      );
-    } else {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-      SystemChrome.setSystemUIOverlayStyle(
-        const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: Colors.white,
-          systemNavigationBarIconBrightness: Brightness.dark,
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final contentBottomPadding = bottomPadding > 0 ? bottomPadding + 85 : 85.0;
+
+    if (isWideScreen) {
+      return Scaffold(
+        backgroundColor: surfaceWhite,
+        body: Row(
+          children: [
+            Container(
+              width: screenWidth >= 1024 ? 240 : 80,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(2, 0),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 30),
+                  Image.asset('assets/logo-without-b.png', height: 40, errorBuilder: (_, __, ___) => const Icon(Icons.school, color: primaryPink, size: 32)),
+                  const SizedBox(height: 24),
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      children: [
+                        _buildSidebarItem(0, Icons.dashboard_rounded, "Command Center", isWideScreen),
+                        _buildSidebarItem(1, Icons.school_rounded, "Students Control", isWideScreen),
+                        _buildSidebarItem(2, Icons.psychology_rounded, "Faculty Control", isWideScreen),
+                        _buildSidebarItem(3, Icons.menu_book_rounded, "Courses", isWideScreen),
+                        _buildSidebarItem(4, Icons.class_rounded, "Classes & Cohorts", isWideScreen),
+                        _buildSidebarItem(5, Icons.attach_money_rounded, "Finance & Treasury", isWideScreen),
+                        _buildSidebarItem(6, Icons.emoji_events_rounded, "Honors & Badges", isWideScreen),
+                        _buildSidebarItem(7, Icons.campaign_rounded, "Announcements", isWideScreen),
+                        _buildSidebarItem(8, Icons.podcasts_rounded, "Live Studio", isWideScreen),
+                        _buildSidebarItem(9, Icons.support_agent_rounded, "Support Requests", isWideScreen),
+                        _buildSidebarItem(10, Icons.settings_rounded, "Admin Settings", isWideScreen),
+                        _buildSidebarItem(12, Icons.dynamic_feed_rounded, "Community Feed", isWideScreen),
+                        _buildSidebarItem(15, Icons.video_library_rounded, "Short Reels", isWideScreen),
+                        _buildSidebarItem(13, Icons.people_alt_rounded, "Friends & Network", isWideScreen),
+                        _buildSidebarItem(14, Icons.person_rounded, "Admin Profile", isWideScreen),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: IconButton(
+                      icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+                      onPressed: () => Supabase.instance.client.auth.signOut(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: IndexedStack(index: _currentIndex, children: _screens),
+            ),
+          ],
         ),
       );
     }
 
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
-    final contentBottomPadding = bottomPadding > 0 ? bottomPadding + 85 : 85.0;
+    final bool isReels = _currentIndex == 15;
+    SystemUiHelper.setSystemStyle(isReels: isReels);
 
     return Scaffold(
       backgroundColor: surfaceWhite,

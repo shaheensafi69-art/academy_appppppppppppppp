@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/cloudflare_storage_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -190,8 +191,11 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
         final fileExt = _photoFile!.path.split('.').last;
         final fileName = '$userId-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
 
-        await supabase.storage.from('avatars').upload(fileName, _photoFile!);
-        avatarUrl = supabase.storage.from('avatars').getPublicUrl(fileName);
+        avatarUrl = await CloudflareStorageService.instance.upload(
+          bucket: 'avatars',
+          path: fileName,
+          file: _photoFile,
+        );
       }
 
       await supabase.from('profiles').upsert({

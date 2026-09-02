@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/cloudflare_storage_service.dart';
 
 class AddCourseScreen extends StatefulWidget {
   const AddCourseScreen({super.key});
@@ -12,24 +13,24 @@ class AddCourseScreen extends StatefulWidget {
 
 class _AddCourseScreenState extends State<AddCourseScreen> {
   final supabase = Supabase.instance.client;
-  
+
   // Controllers for form fields
   final titleCtrl = TextEditingController();
   final categoryCtrl = TextEditingController();
   final descCtrl = TextEditingController();
   final priceCtrl = TextEditingController();
-  
+
   final inst1NameCtrl = TextEditingController();
   final inst1BioCtrl = TextEditingController();
   final inst1ImgCtrl = TextEditingController();
-  
+
   final inst2NameCtrl = TextEditingController();
   final inst2BioCtrl = TextEditingController();
   final inst2ImgCtrl = TextEditingController();
 
   String selectedLanguage = 'English';
   bool isSubmitting = false;
-  
+
   File? thumbnailFile;
   final ImagePicker _picker = ImagePicker();
 
@@ -57,7 +58,12 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   }
 
   Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    final pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+      maxWidth: 1920,
+      maxHeight: 1920,
+    );
     if (pickedFile != null) {
       setState(() {
         thumbnailFile = File(pickedFile.path);
@@ -66,7 +72,10 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   }
 
   Future<void> _handleSubmit() async {
-    if (titleCtrl.text.isEmpty || categoryCtrl.text.isEmpty || descCtrl.text.isEmpty || priceCtrl.text.isEmpty) {
+    if (titleCtrl.text.isEmpty ||
+        categoryCtrl.text.isEmpty ||
+        descCtrl.text.isEmpty ||
+        priceCtrl.text.isEmpty) {
       _showError("Please fill all required fields.");
       return;
     }
@@ -80,9 +89,13 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
       if (thumbnailFile != null) {
         final fileExt = thumbnailFile!.path.split('.').last;
         final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
-        
-        await supabase.storage.from('course-thumbnails').upload(fileName, thumbnailFile!);
-        thumbnailUrl = supabase.storage.from('course-thumbnails').getPublicUrl(fileName);
+
+        final bytes = await thumbnailFile!.readAsBytes();
+        thumbnailUrl = await CloudflareStorageService.instance.upload(
+          bucket: 'safiacademy-media',
+          path: 'course-thumbnails/$fileName',
+          bytes: bytes,
+        );
       }
 
       // 2. Insert into Database
@@ -104,7 +117,10 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Course created successfully! 🚀"), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text("Course created successfully! 🚀"),
+            backgroundColor: Colors.green,
+          ),
         );
         Navigator.pop(context);
       }
@@ -130,7 +146,14 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: textDark),
-        title: const Text("Create Course", style: TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+        title: const Text(
+          "Create Course",
+          style: TextStyle(
+            color: textDark,
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(color: cardBorder, height: 1),
@@ -152,21 +175,58 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
-                boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 8))],
+                border: Border.all(
+                  color: primaryPink.withOpacity(0.15),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: primaryPink.withOpacity(0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(10)),
-                    child: const Text("ADMIN STUDIO", style: TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: lightPinkBg,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text(
+                      "ADMIN STUDIO",
+                      style: TextStyle(
+                        color: primaryPink,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 10),
-                  const Text("Design a premium course page.", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark)),
+                  const Text(
+                    "Design a premium course page.",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: textDark,
+                    ),
+                  ),
                   const SizedBox(height: 6),
-                  const Text("Upload assets, add instructors, and publish your course with high visual impact.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                  const Text(
+                    "Upload assets, add instructors, and publish your course with high visual impact.",
+                    style: TextStyle(
+                      color: textGrey,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -176,17 +236,34 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
             _buildSection(
               title: "Course Details",
               children: [
-                _buildTextField(titleCtrl, "Course Title *", "Fintech Mastery..."),
+                _buildTextField(
+                  titleCtrl,
+                  "Course Title *",
+                  "Fintech Mastery...",
+                ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(child: _buildTextField(categoryCtrl, "Category *", "Finance, Tech...")),
+                    Expanded(
+                      child: _buildTextField(
+                        categoryCtrl,
+                        "Category *",
+                        "Finance, Tech...",
+                      ),
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Language *", style: TextStyle(color: textDark, fontSize: 10, fontWeight: FontWeight.bold)),
+                          const Text(
+                            "Language *",
+                            style: TextStyle(
+                              color: textDark,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -199,12 +276,25 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                               child: DropdownButton<String>(
                                 value: selectedLanguage,
                                 dropdownColor: surfaceWhite,
-                                style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: textGrey),
-                                items: ['English', 'Persian', 'Pashto'].map((String value) {
-                                  return DropdownMenuItem<String>(value: value, child: Text(value));
+                                style: const TextStyle(
+                                  color: textDark,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                icon: const Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: textGrey,
+                                ),
+                                items: ['English', 'Persian', 'Pashto'].map((
+                                  String value,
+                                ) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
                                 }).toList(),
-                                onChanged: (val) => setState(() => selectedLanguage = val!),
+                                onChanged: (val) =>
+                                    setState(() => selectedLanguage = val!),
                               ),
                             ),
                           ),
@@ -214,7 +304,12 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildTextField(descCtrl, "Description *", "Write a compelling summary...", maxLines: 4),
+                _buildTextField(
+                  descCtrl,
+                  "Description *",
+                  "Write a compelling summary...",
+                  maxLines: 4,
+                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -227,7 +322,12 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
               children: [
                 _buildTextField(inst1NameCtrl, "Name", "Instructor Name"),
                 const SizedBox(height: 12),
-                _buildTextField(inst1BioCtrl, "Bio", "Brief background...", maxLines: 3),
+                _buildTextField(
+                  inst1BioCtrl,
+                  "Bio",
+                  "Brief background...",
+                  maxLines: 3,
+                ),
                 const SizedBox(height: 12),
                 _buildTextField(inst1ImgCtrl, "Image URL", "https://..."),
               ],
@@ -241,7 +341,12 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
               children: [
                 _buildTextField(inst2NameCtrl, "Name", "Instructor 2 Name"),
                 const SizedBox(height: 12),
-                _buildTextField(inst2BioCtrl, "Bio", "Brief background...", maxLines: 3),
+                _buildTextField(
+                  inst2BioCtrl,
+                  "Bio",
+                  "Brief background...",
+                  maxLines: 3,
+                ),
                 const SizedBox(height: 12),
                 _buildTextField(inst2ImgCtrl, "Image URL", "https://..."),
               ],
@@ -260,46 +365,92 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                     decoration: BoxDecoration(
                       color: cardBorder.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5, style: BorderStyle.solid),
+                      border: Border.all(
+                        color: primaryPink.withOpacity(0.3),
+                        width: 1.5,
+                        style: BorderStyle.solid,
+                      ),
                     ),
                     child: thumbnailFile != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(20),
-                            child: Image.file(thumbnailFile!, fit: BoxFit.cover),
+                            child: Image.file(
+                              thumbnailFile!,
+                              fit: BoxFit.cover,
+                            ),
                           )
                         : Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.image_outlined, color: primaryPink, size: 36),
+                              const Icon(
+                                Icons.image_outlined,
+                                color: primaryPink,
+                                size: 36,
+                              ),
                               const SizedBox(height: 10),
-                              const Text("Upload 16:9 Thumbnail", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900)),
+                              const Text(
+                                "Upload 16:9 Thumbnail",
+                                style: TextStyle(
+                                  color: textDark,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
                               const SizedBox(height: 4),
-                              const Text("Tap to browse gallery", style: TextStyle(color: textGrey, fontSize: 10)),
+                              const Text(
+                                "Tap to browse gallery",
+                                style: TextStyle(color: textGrey, fontSize: 10),
+                              ),
                               const SizedBox(height: 12),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                decoration: BoxDecoration(color: primaryPink, borderRadius: BorderRadius.circular(12)),
-                                child: const Text("Choose File", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 10)),
-                              )
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: primaryPink,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Text(
+                                  "Choose File",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                _buildTextField(priceCtrl, "Price (USD) *", "e.g. 99.99", isNumber: true),
+                _buildTextField(
+                  priceCtrl,
+                  "Price (USD) *",
+                  "e.g. 99.99",
+                  isNumber: true,
+                ),
                 const SizedBox(height: 14),
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: lightPinkBg.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: primaryPink.withOpacity(0.2), width: 1),
+                    border: Border.all(
+                      color: primaryPink.withOpacity(0.2),
+                      width: 1,
+                    ),
                   ),
                   child: const Text(
                     "The course is saved as a draft and will be published after you submit. You can edit it later.",
-                    style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: primaryPink,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                )
+                ),
               ],
             ),
             const SizedBox(height: 30),
@@ -313,12 +464,18 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                   foregroundColor: Colors.white,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 onPressed: isSubmitting ? null : _handleSubmit,
                 child: Text(
                   isSubmitting ? "Publishing..." : "PUBLISH COURSE NOW 🚀",
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1,
+                  ),
                 ),
               ),
             ),
@@ -329,14 +486,25 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
     );
   }
 
-  Widget _buildSection({required String title, String? subtitle, bool isRequired = false, required List<Widget> children}) {
+  Widget _buildSection({
+    required String title,
+    String? subtitle,
+    bool isRequired = false,
+    required List<Widget> children,
+  }) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: surfaceWhite,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,19 +515,47 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(color: textDark, fontSize: 15, fontWeight: FontWeight.w900)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: textDark,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 2),
-                    Text(subtitle, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500)),
-                  ]
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: textGrey,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ],
               ),
               if (isRequired)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                  child: const Text("REQUIRED", style: TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 1)),
-                )
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: lightPinkBg,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    "REQUIRED",
+                    style: TextStyle(
+                      color: primaryPink,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 16),
@@ -369,26 +565,54 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, String hint, {int maxLines = 1, bool isNumber = false}) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    String hint, {
+    int maxLines = 1,
+    bool isNumber = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: textGrey,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
           maxLines: maxLines,
           keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: textDark,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: const TextStyle(color: textGrey, fontSize: 11),
             filled: true,
             fillColor: cardBorder.withOpacity(0.5),
-            contentPadding: maxLines > 1 ? const EdgeInsets.all(14) : const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+            contentPadding: maxLines > 1
+                ? const EdgeInsets.all(14)
+                : const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: cardBorder),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: cardBorder),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: primaryPink, width: 1.5),
+            ),
           ),
         ),
       ],

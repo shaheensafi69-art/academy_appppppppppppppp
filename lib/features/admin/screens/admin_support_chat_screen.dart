@@ -185,6 +185,19 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
         'message_text': text,
       });
 
+      if (requesterId.isNotEmpty) {
+        await supabase.from("user_notifications").insert({
+          'user_id': requesterId,
+          'sender_id': myAdminId,
+          'title': "💬 Support Reply",
+          'message': text,
+          'notification_type': "support_message",
+          'link_url': "/support_chat/${widget.ticketId}",
+          'is_read': false,
+          'created_at': DateTime.now().toIso8601String(),
+        });
+      }
+
       if (ticketStatus.toLowerCase() == 'closed') {
         await supabase
             .from('tickets')

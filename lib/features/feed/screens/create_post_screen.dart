@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/services/cloudflare_storage_service.dart';
 
 class CreatePostScreen extends StatefulWidget {
   final VoidCallback? onPostSuccess;
@@ -94,8 +95,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       String? uploadedImageUrl;
       if (_selectedImageFile != null) {
         final fileName = "post_${DateTime.now().millisecondsSinceEpoch}.jpg";
-        await supabase.storage.from("feed").upload(fileName, _selectedImageFile!);
-        uploadedImageUrl = supabase.storage.from("feed").getPublicUrl(fileName);
+        uploadedImageUrl = await CloudflareStorageService.instance.upload(
+          bucket: "feed",
+          path: fileName,
+          file: _selectedImageFile,
+          contentType: "image/jpeg",
+        );
       }
 
       Map<String, dynamic> insertData = {

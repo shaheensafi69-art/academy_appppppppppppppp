@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/services/cloudflare_storage_service.dart';
 
 class TeacherProfileScreen extends StatefulWidget {
   const TeacherProfileScreen({super.key});
@@ -83,7 +84,12 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
   }
 
   Future<void> _handleAvatarUpload() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+      maxWidth: 1920,
+      maxHeight: 1920,
+    );
     if (image == null) return;
 
     setState(() => isSaving = true);
@@ -92,16 +98,16 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
       if (user == null) return;
 
       final fileExt = image.name.split('.').last;
-      final fileName = '${user.id}-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      final fileName =
+          '${user.id}-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
       final bytes = await image.readAsBytes();
 
-      await supabase.storage.from('avatars').uploadBinary(
-            fileName,
-            bytes,
-            fileOptions: const FileOptions(upsert: true),
-          );
-
-      final publicUrl = supabase.storage.from('avatars').getPublicUrl(fileName);
+      final publicUrl = await CloudflareStorageService.instance.upload(
+        bucket: 'avatars',
+        path: fileName,
+        bytes: bytes,
+        contentType: 'image/jpeg',
+      );
 
       await supabase
           .from('profiles')
@@ -114,14 +120,20 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profile picture updated successfully! ✅"), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text("Profile picture updated successfully! ✅"),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       debugPrint("Avatar upload error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to upload avatar."), backgroundColor: Colors.redAccent),
+          const SnackBar(
+            content: Text("Failed to upload avatar."),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     } finally {
@@ -141,7 +153,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
             'first_name': _firstNameController.text.trim(),
             'last_name': _lastNameController.text.trim(),
             'father_name': _fatherNameController.text.trim(),
-            'date_of_birth': _dobController.text.trim().isEmpty ? null : _dobController.text.trim(),
+            'date_of_birth': _dobController.text.trim().isEmpty
+                ? null
+                : _dobController.text.trim(),
             'phone_number': _phoneController.text.trim(),
             'country': _countryController.text.trim(),
             'bio': _bioController.text.trim(),
@@ -150,14 +164,20 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Instructor profile updated successfully! ✅"), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text("Instructor profile updated successfully! ✅"),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       debugPrint("Profile update error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Database error. Failed to save profile."), backgroundColor: Colors.redAccent),
+          const SnackBar(
+            content: Text("Database error. Failed to save profile."),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     } finally {
@@ -184,14 +204,24 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                     padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
+                        colors: [
+                          surfaceWhite,
+                          lightPinkBg.withValues(alpha: 0.4),
+                        ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
+                      border: Border.all(
+                        color: primaryPink.withValues(alpha: 0.15),
+                        width: 1.5,
+                      ),
                       boxShadow: [
-                        BoxShadow(color: primaryPink.withValues(alpha: 0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                        BoxShadow(
+                          color: primaryPink.withValues(alpha: 0.08),
+                          blurRadius: 25,
+                          offset: const Offset(0, 10),
+                        ),
                       ],
                     ),
                     child: Row(
@@ -201,18 +231,40 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                           decoration: BoxDecoration(
                             color: lightPinkBg,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
+                            border: Border.all(
+                              color: primaryPink.withValues(alpha: 0.3),
+                              width: 1.5,
+                            ),
                           ),
-                          child: const Icon(Icons.person_rounded, color: primaryPink, size: 24),
+                          child: const Icon(
+                            Icons.person_rounded,
+                            color: primaryPink,
+                            size: 24,
+                          ),
                         ),
                         const SizedBox(width: 14),
                         const Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Instructor Profile", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                              Text(
+                                "Instructor Profile",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  color: textDark,
+                                ),
+                              ),
                               SizedBox(height: 3),
-                              Text("Manage your faculty identity, credentials, and professional bio.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
+                              Text(
+                                "Manage your faculty identity, credentials, and professional bio.",
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: textGrey,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.3,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -223,19 +275,40 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
 
                   // ================= فرم اطلاعات پروفایل =================
                   isLoading
-                      ? const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5)))
+                      ? const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(40),
+                            child: CircularProgressIndicator(
+                              color: primaryPink,
+                              strokeWidth: 2.5,
+                            ),
+                          ),
+                        )
                       : Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
                             color: surfaceWhite,
                             borderRadius: BorderRadius.circular(28),
                             border: Border.all(color: cardBorder, width: 1.5),
-                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 6))],
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.03),
+                                blurRadius: 15,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text("Personal & Professional Identity", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                              const Text(
+                                "Personal & Professional Identity",
+                                style: TextStyle(
+                                  color: textDark,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 15,
+                                ),
+                              ),
                               const SizedBox(height: 20),
 
                               // بخش آواتار با افکت جذاب
@@ -255,11 +328,23 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                       child: CircleAvatar(
                                         radius: 46,
                                         backgroundColor: surfaceWhite,
-                                        backgroundImage: _avatarUrl.isNotEmpty ? NetworkImage(_avatarUrl) : null,
+                                        backgroundImage: _avatarUrl.isNotEmpty
+                                            ? NetworkImage(_avatarUrl)
+                                            : null,
                                         child: _avatarUrl.isEmpty
                                             ? Text(
-                                                _firstNameController.text.isNotEmpty ? _firstNameController.text[0].toUpperCase() : "I",
-                                                style: const TextStyle(color: primaryPink, fontSize: 28, fontWeight: FontWeight.w900),
+                                                _firstNameController
+                                                        .text
+                                                        .isNotEmpty
+                                                    ? _firstNameController
+                                                          .text[0]
+                                                          .toUpperCase()
+                                                    : "I",
+                                                style: const TextStyle(
+                                                  color: primaryPink,
+                                                  fontSize: 28,
+                                                  fontWeight: FontWeight.w900,
+                                                ),
                                               )
                                             : null,
                                       ),
@@ -274,10 +359,25 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                           decoration: BoxDecoration(
                                             color: primaryPink,
                                             shape: BoxShape.circle,
-                                            border: Border.all(color: surfaceWhite, width: 2.5),
-                                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 6, offset: const Offset(0, 2))],
+                                            border: Border.all(
+                                              color: surfaceWhite,
+                                              width: 2.5,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withValues(
+                                                  alpha: 0.1,
+                                                ),
+                                                blurRadius: 6,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
                                           ),
-                                          child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 16),
+                                          child: const Icon(
+                                            Icons.camera_alt_rounded,
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -295,25 +395,57 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                       children: [
                                         Row(
                                           children: [
-                                            Expanded(child: _buildTextField("First Name", _firstNameController)),
+                                            Expanded(
+                                              child: _buildTextField(
+                                                "First Name",
+                                                _firstNameController,
+                                              ),
+                                            ),
                                             const SizedBox(width: 14),
-                                            Expanded(child: _buildTextField("Last Name", _lastNameController)),
+                                            Expanded(
+                                              child: _buildTextField(
+                                                "Last Name",
+                                                _lastNameController,
+                                              ),
+                                            ),
                                           ],
                                         ),
                                         const SizedBox(height: 16),
                                         Row(
                                           children: [
-                                            Expanded(child: _buildTextField("Father's Name", _fatherNameController)),
+                                            Expanded(
+                                              child: _buildTextField(
+                                                "Father's Name",
+                                                _fatherNameController,
+                                              ),
+                                            ),
                                             const SizedBox(width: 14),
-                                            Expanded(child: _buildTextField("Date of Birth", _dobController)),
+                                            Expanded(
+                                              child: _buildTextField(
+                                                "Date of Birth",
+                                                _dobController,
+                                              ),
+                                            ),
                                           ],
                                         ),
                                         const SizedBox(height: 16),
                                         Row(
                                           children: [
-                                            Expanded(child: _buildReadOnlyField("Email Address", _email)),
+                                            Expanded(
+                                              child: _buildReadOnlyField(
+                                                "Email Address",
+                                                _email,
+                                              ),
+                                            ),
                                             const SizedBox(width: 14),
-                                            Expanded(child: _buildTextField("Phone Number", _phoneController, keyboardType: TextInputType.phone)),
+                                            Expanded(
+                                              child: _buildTextField(
+                                                "Phone Number",
+                                                _phoneController,
+                                                keyboardType:
+                                                    TextInputType.phone,
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ],
@@ -321,26 +453,52 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                   } else {
                                     return Column(
                                       children: [
-                                        _buildTextField("First Name", _firstNameController),
+                                        _buildTextField(
+                                          "First Name",
+                                          _firstNameController,
+                                        ),
                                         const SizedBox(height: 14),
-                                        _buildTextField("Last Name", _lastNameController),
+                                        _buildTextField(
+                                          "Last Name",
+                                          _lastNameController,
+                                        ),
                                         const SizedBox(height: 14),
-                                        _buildTextField("Father's Name", _fatherNameController),
+                                        _buildTextField(
+                                          "Father's Name",
+                                          _fatherNameController,
+                                        ),
                                         const SizedBox(height: 14),
-                                        _buildTextField("Date of Birth", _dobController),
+                                        _buildTextField(
+                                          "Date of Birth",
+                                          _dobController,
+                                        ),
                                         const SizedBox(height: 14),
-                                        _buildReadOnlyField("Email Address", _email),
+                                        _buildReadOnlyField(
+                                          "Email Address",
+                                          _email,
+                                        ),
                                         const SizedBox(height: 14),
-                                        _buildTextField("Phone Number", _phoneController, keyboardType: TextInputType.phone),
+                                        _buildTextField(
+                                          "Phone Number",
+                                          _phoneController,
+                                          keyboardType: TextInputType.phone,
+                                        ),
                                       ],
                                     );
                                   }
                                 },
                               ),
                               const SizedBox(height: 16),
-                              _buildTextField("Country / Region", _countryController),
+                              _buildTextField(
+                                "Country / Region",
+                                _countryController,
+                              ),
                               const SizedBox(height: 16),
-                              _buildTextField("Professional Bio / Headline", _bioController, maxLines: 3),
+                              _buildTextField(
+                                "Professional Bio / Headline",
+                                _bioController,
+                                maxLines: 3,
+                              ),
                               const SizedBox(height: 28),
 
                               // دکمه ذخیره نهایی
@@ -351,14 +509,28 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                     backgroundColor: primaryPink,
                                     foregroundColor: Colors.white,
                                     elevation: 0,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                    shadowColor: primaryPink.withValues(alpha: 0.3),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    shadowColor: primaryPink.withValues(
+                                      alpha: 0.3,
+                                    ),
                                   ),
-                                  onPressed: isSaving ? null : _handleSaveProfile,
+                                  onPressed: isSaving
+                                      ? null
+                                      : _handleSaveProfile,
                                   child: Text(
-                                    isSaving ? "SAVING CHANGES..." : "SAVE PROFILE DETAILS 🚀",
-                                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2),
+                                    isSaving
+                                        ? "SAVING CHANGES..."
+                                        : "SAVE PROFILE DETAILS 🚀",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 11,
+                                      letterSpacing: 1.2,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -375,24 +547,53 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {int maxLines = 1, TextInputType keyboardType = TextInputType.text}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
+    int maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: textGrey,
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.8,
+          ),
+        ),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
           maxLines: maxLines,
           keyboardType: keyboardType,
-          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: textDark,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
           decoration: InputDecoration(
             filled: true,
             fillColor: cardBorder.withValues(alpha: 0.5),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: cardBorder),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: cardBorder),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: primaryPink, width: 1.5),
+            ),
           ),
         ),
       ],
@@ -403,7 +604,15 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: textGrey,
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.8,
+          ),
+        ),
         const SizedBox(height: 6),
         Container(
           width: double.infinity,
@@ -415,7 +624,11 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
           ),
           child: Text(
             value.isEmpty ? "Not provided" : value,
-            style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: textGrey,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

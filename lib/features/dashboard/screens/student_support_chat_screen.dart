@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:intl/intl.dart' hide TextDirection;
 import '../../../core/services/gemini_ai_service.dart';
+import '../../../core/services/cloudflare_storage_service.dart';
 import 'package:file_picker/file_picker.dart' as fp;
 
 class SupportMessage {
@@ -196,29 +196,21 @@ class _StudentSupportChatScreenState extends State<StudentSupportChatScreen> {
           '${DateTime.now().millisecondsSinceEpoch}_${result.files.first.name}';
       final filePath = 'tickets/${widget.ticketId}/$fileName';
 
-      String? publicUrl;
+      final publicUrl = await CloudflareStorageService.instance.upload(
+        bucket: 'support',
+        path: filePath,
+        bytes: fileBytes,
+        file: fileStr != null ? File(fileStr) : null,
+      );
 
-      if (fileBytes != null) {
-        await supabase.storage
-            .from('support')
-            .uploadBinary(filePath, fileBytes);
-        publicUrl = supabase.storage.from('support').getPublicUrl(filePath);
-      } else if (fileStr != null) {
-        final file = File(fileStr);
-        await supabase.storage.from('support').upload(filePath, file);
-        publicUrl = supabase.storage.from('support').getPublicUrl(filePath);
-      }
+      await supabase.from("ticket_messages").insert({
+        'ticket_id': widget.ticketId,
+        'sender_id': myUserId,
+        'message_text': '📎 فایل ضمیمه شد',
+        'attachment_url': publicUrl,
+      });
 
-      if (publicUrl != null) {
-        await supabase.from("ticket_messages").insert({
-          'ticket_id': widget.ticketId,
-          'sender_id': myUserId,
-          'message_text': '📎 فایل ضمیمه شد',
-          'attachment_url': publicUrl,
-        });
-
-        await _fetchMessages(isSilent: true);
-      }
+      await _fetchMessages(isSilent: true);
     } catch (e) {
       debugPrint('Upload error: $e');
       _showPremiumNotification(
@@ -435,11 +427,12 @@ Answer in the exact language the user prompts. Strictly answer queries related t
       }
     } catch (e) {
       debugPrint("Error sending support message: $e");
-      if (mounted)
+      if (mounted) {
         _showPremiumNotification(
           "Connection issue. Unable to send message.",
           isError: true,
         );
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -918,7 +911,7 @@ Answer in the exact language the user prompts. Strictly answer queries related t
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  if (senderHeader != null) senderHeader,
+                                  senderHeader,
                                   Text(
                                     msg.messageText,
                                     textDirection:

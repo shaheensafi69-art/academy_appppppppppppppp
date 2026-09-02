@@ -4,9 +4,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'user_profile_screen.dart';
 import '../../chat/screens/direct_chat_list_screen.dart';
 import '../../chat/screens/direct_chat_screen.dart';
-import '../../stories/screens/create_story_screen.dart';
-import '../../stories/screens/story_viewer_screen.dart';
-import '../../reels/screens/student_reels_screen.dart';
+import 'create_story_screen.dart';
+import 'story_viewer_screen.dart';
+import 'reels_viewer_screen.dart';
 import '../../notifications/screens/activity_notifications_screen.dart';
 
 class FeedPostItem {
@@ -94,14 +94,18 @@ class ActiveFriendStory {
   });
 }
 
-class StudentFeedScreen extends StatefulWidget {
-  const StudentFeedScreen({super.key});
+typedef StudentFeedScreen = FeedViewerScreen;
+typedef TeacherFeedScreen = FeedViewerScreen;
+typedef AdminFeedScreen = FeedViewerScreen;
+
+class FeedViewerScreen extends StatefulWidget {
+  const FeedViewerScreen({super.key});
 
   @override
-  State<StudentFeedScreen> createState() => _StudentFeedScreenState();
+  State<FeedViewerScreen> createState() => _FeedViewerScreenState();
 }
 
-class _StudentFeedScreenState extends State<StudentFeedScreen> {
+class _FeedViewerScreenState extends State<FeedViewerScreen> {
   final supabase = Supabase.instance.client;
   bool isLoading = true;
   List<FeedPostItem> allPosts = [];
@@ -341,6 +345,31 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
           "post_id": post.id,
           "student_id": user.id,
         });
+
+        if (post.studentId != user.id) {
+          try {
+            final senderProfile = await supabase
+                .from("profiles")
+                .select("first_name, last_name")
+                .eq("id", user.id)
+                .maybeSingle();
+            final String senderName = (senderProfile != null)
+                ? "${senderProfile['first_name'] ?? 'Someone'} ${senderProfile['last_name'] ?? ''}"
+                      .trim()
+                : 'Someone';
+
+            await supabase.from("user_notifications").insert({
+              'user_id': post.studentId,
+              'sender_id': user.id,
+              'title': "Liked your post ❤️",
+              'message': "$senderName liked your post: \"${post.cleanTitle}\"",
+              'notification_type': "like",
+              'link_url': "/post/${post.id}",
+              'is_read': false,
+              'created_at': DateTime.now().toIso8601String(),
+            });
+          } catch (_) {}
+        }
       }
     } catch (e) {
       debugPrint("Error toggling like: $e");
@@ -1593,6 +1622,42 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
       }
 
       await supabase.from("discussion_comments").insert(insertData);
+
+      // ثبت نوتیفیکیشن کامنت پست فید
+      try {
+        final postData = await supabase
+            .from("discussion_posts")
+            .select("student_id, title")
+            .eq("id", widget.postId)
+            .maybeSingle();
+
+        if (postData != null) {
+          final authorId = postData['student_id']?.toString() ?? '';
+          final postTitle = postData['title'] ?? 'your post';
+          if (authorId.isNotEmpty && authorId != widget.currentUserId) {
+            final senderProfile = await supabase
+                .from("profiles")
+                .select("first_name, last_name")
+                .eq("id", widget.currentUserId)
+                .maybeSingle();
+            final String senderName = (senderProfile != null)
+                ? "${senderProfile['first_name'] ?? 'Someone'} ${senderProfile['last_name'] ?? ''}"
+                      .trim()
+                : 'Someone';
+
+            await supabase.from("user_notifications").insert({
+              'user_id': authorId,
+              'sender_id': widget.currentUserId,
+              'title': "💬 Comment on your post",
+              'message': "$senderName commented on \"$postTitle\": \"$text\"",
+              'notification_type': "comment",
+              'link_url': "/post/${widget.postId}",
+              'is_read': false,
+              'created_at': DateTime.now().toIso8601String(),
+            });
+          }
+        }
+      } catch (_) {}
 
       _commentController.clear();
       _commentFocusNode.unfocus();

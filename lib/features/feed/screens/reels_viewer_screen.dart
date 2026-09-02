@@ -1,6 +1,7 @@
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/cloudflare_storage_service.dart';
 import 'package:video_player/video_player.dart';
 import '../../chat/screens/direct_chat_screen.dart';
 
@@ -39,7 +40,11 @@ class ReelItemData {
 class StudentReelsScreen extends StatefulWidget {
   final bool isActive;
   final String? targetReelId;
-  const StudentReelsScreen({super.key, this.isActive = true, this.targetReelId});
+  const StudentReelsScreen({
+    super.key,
+    this.isActive = true,
+    this.targetReelId,
+  });
 
   @override
   State<StudentReelsScreen> createState() => _StudentReelsScreenState();
@@ -138,7 +143,9 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
       }
 
       if (widget.targetReelId != null) {
-        final targetIndex = loaded.indexWhere((r) => r.id == widget.targetReelId);
+        final targetIndex = loaded.indexWhere(
+          (r) => r.id == widget.targetReelId,
+        );
         if (targetIndex != -1) {
           final targetReel = loaded.removeAt(targetIndex);
           loaded.insert(0, targetReel);
@@ -192,14 +199,16 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                 .eq("id", user.id)
                 .maybeSingle();
             final String senderName = (senderProfile != null)
-                ? "${senderProfile['first_name'] ?? 'Someone'} ${senderProfile['last_name'] ?? ''}".trim()
+                ? "${senderProfile['first_name'] ?? 'Someone'} ${senderProfile['last_name'] ?? ''}"
+                      .trim()
                 : 'Someone';
 
             await supabase.from("user_notifications").insert({
               'user_id': reel.userId,
               'sender_id': user.id,
               'title': "Liked your Reel ❤️",
-              'message': "$senderName liked your educational video: \"${reel.title}\"",
+              'message':
+                  "$senderName liked your educational video: \"${reel.title}\"",
               'notification_type': "like",
               'link_url': "/reel/${reel.id}",
               'is_read': false,
@@ -278,16 +287,14 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                             final bytes = await video.readAsBytes();
                             final fileName =
                                 "reel_${DateTime.now().millisecondsSinceEpoch}.mp4";
-                            await supabase.storage.from("reels").uploadBinary(
-                                  fileName,
-                                  bytes,
-                                  fileOptions: const FileOptions(
-                                    contentType: 'video/mp4',
-                                  ),
+                            final publicUrl = await CloudflareStorageService
+                                .instance
+                                .upload(
+                                  bucket: "reels",
+                                  path: fileName,
+                                  bytes: bytes,
+                                  contentType: 'video/mp4',
                                 );
-                            final publicUrl = supabase.storage
-                                .from("reels")
-                                .getPublicUrl(fileName);
                             urlController.text = publicUrl;
                             setModalState(() => isUploadingFile = false);
                           } catch (e) {
@@ -328,8 +335,8 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                           isUploadingFile
                               ? "Uploading video to Supabase... ⏳"
                               : (urlController.text.isNotEmpty
-                                  ? "Video Uploaded! ✅"
-                                  : "Select Video File from Gallery 🎥"),
+                                    ? "Video Uploaded! ✅"
+                                    : "Select Video File from Gallery 🎥"),
                           style: const TextStyle(
                             color: primaryPink,
                             fontWeight: FontWeight.bold,
@@ -743,7 +750,8 @@ class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
                 .eq("id", user.id)
                 .maybeSingle();
             final String senderName = (senderProfile != null)
-                ? "${senderProfile['first_name'] ?? 'Someone'} ${senderProfile['last_name'] ?? ''}".trim()
+                ? "${senderProfile['first_name'] ?? 'Someone'} ${senderProfile['last_name'] ?? ''}"
+                      .trim()
                 : 'Someone';
 
             await supabase.from("user_notifications").insert({
@@ -812,79 +820,87 @@ class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
                       ),
                     )
                   : comments.isEmpty
-                      ? const Center(
-                          child: Text(
-                            "Be the first to comment!",
-                            style: TextStyle(
-                              color: Color(0xFF9CA3AF),
-                              fontWeight: FontWeight.w500,
+                  ? const Center(
+                      child: Text(
+                        "Be the first to comment!",
+                        style: TextStyle(
+                          color: Color(0xFF9CA3AF),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: comments.length,
+                      itemBuilder: (context, index) {
+                        final c = comments[index];
+                        final profile = c['profiles'];
+                        final String authorName = (profile != null)
+                            ? "${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}"
+                                  .trim()
+                            : 'Academy Student';
+                        final String avatarUrl = (profile != null)
+                            ? (profile['avatar_url'] ?? '')
+                            : '';
+
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          leading: CircleAvatar(
+                            radius: 18,
+                            backgroundColor: const Color(0xFFFAF4F6),
+                            backgroundImage: avatarUrl.isNotEmpty
+                                ? NetworkImage(avatarUrl)
+                                : null,
+                            child: avatarUrl.isEmpty
+                                ? Text(
+                                    authorName.isNotEmpty ? authorName[0] : 'S',
+                                    style: const TextStyle(
+                                      color: Color(0xFFF494AC),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  )
+                                : null,
+                          ),
+                          title: Text(
+                            authorName,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF111827),
                             ),
                           ),
-                        )
-                      : ListView.builder(
-                          itemCount: comments.length,
-                          itemBuilder: (context, index) {
-                            final c = comments[index];
-                            final profile = c['profiles'];
-                            final String authorName = (profile != null)
-                                ? "${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}".trim()
-                                : 'Academy Student';
-                            final String avatarUrl = (profile != null) ? (profile['avatar_url'] ?? '') : '';
-
-                            return ListTile(
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              leading: CircleAvatar(
-                                radius: 18,
-                                backgroundColor: const Color(0xFFFAF4F6),
-                                backgroundImage: avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
-                                child: avatarUrl.isEmpty
-                                    ? Text(
-                                        authorName.isNotEmpty ? authorName[0] : 'S',
-                                        style: const TextStyle(
-                                          color: Color(0xFFF494AC),
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                        ),
-                                      )
-                                    : null,
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 2.0),
+                            child: Text(
+                              c['comment_text'] ?? '',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF374151),
                               ),
-                              title: Text(
-                                authorName,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF111827),
-                                ),
+                            ),
+                          ),
+                          trailing: TextButton(
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: () => _replyToUser(authorName),
+                            child: const Text(
+                              "Reply",
+                              style: TextStyle(
+                                color: Color(0xFFF494AC),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
                               ),
-                              subtitle: Padding(
-                                padding: const EdgeInsets.only(top: 2.0),
-                                child: Text(
-                                  c['comment_text'] ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF374151),
-                                  ),
-                                ),
-                              ),
-                              trailing: TextButton(
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: Size.zero,
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                onPressed: () => _replyToUser(authorName),
-                                child: const Text(
-                                  "Reply",
-                                  style: TextStyle(
-                                    color: Color(0xFFF494AC),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
@@ -1065,13 +1081,35 @@ class _ReelVideoPlayerWidgetState extends State<ReelVideoPlayerWidget> {
         alignment: Alignment.center,
         children: [
           Positioned.fill(
-            child: FittedBox(
-              fit: BoxFit.cover,
-              clipBehavior: Clip.hardEdge,
-              child: SizedBox(
-                width: _controller.value.size.width,
-                height: _controller.value.size.height,
-                child: VideoPlayer(_controller),
+            child: Container(
+              color: Colors.black,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (_controller.value.aspectRatio > 1.1)
+                    Positioned.fill(
+                      child: FittedBox(
+                        fit: BoxFit.cover,
+                        child: SizedBox(
+                          width: _controller.value.size.width,
+                          height: _controller.value.size.height,
+                          child: VideoPlayer(_controller),
+                        ),
+                      ),
+                    ),
+                  if (_controller.value.aspectRatio > 1.1)
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.black.withValues(alpha: 0.75),
+                      ),
+                    ),
+                  Center(
+                    child: AspectRatio(
+                      aspectRatio: _controller.value.aspectRatio,
+                      child: VideoPlayer(_controller),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

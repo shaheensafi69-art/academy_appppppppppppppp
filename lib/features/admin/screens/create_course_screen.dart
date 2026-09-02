@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/services/cloudflare_storage_service.dart';
 
 class CreateCourseScreen extends StatefulWidget {
   const CreateCourseScreen({super.key});
@@ -143,8 +144,11 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
       final fileExt = pickedFile.path.split('.').last;
       final fileName = 'course-thumb-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
 
-      await supabase.storage.from('avatars').upload(fileName, file);
-      final publicUrl = supabase.storage.from('avatars').getPublicUrl(fileName);
+      final publicUrl = await CloudflareStorageService.instance.upload(
+        bucket: 'course-thumbnails',
+        path: fileName,
+        file: file,
+      );
 
       setState(() {
         thumbCtrl.text = publicUrl;

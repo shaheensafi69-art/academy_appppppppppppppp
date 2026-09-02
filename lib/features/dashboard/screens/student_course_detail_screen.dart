@@ -573,7 +573,7 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                         child: Text(
                           showRegistrationForm
                               ? "Close Registration Form"
-                              : "Reserve Your Seat & Class 🚀",
+                              : "Reserve Your Seat & Class",
                           style: const TextStyle(
                             fontWeight: FontWeight.w900,
                             fontSize: 11,
@@ -898,7 +898,7 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                                       ),
                                     )
                                   : const Text(
-                                      "Finalize Registration 🚀",
+                                      "Finalize Registration",
                                       style: TextStyle(
                                         fontWeight: FontWeight.w900,
                                         fontSize: 12,

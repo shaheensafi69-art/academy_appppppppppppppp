@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/services/cloudflare_storage_service.dart';
 
 class StudentSettingsScreen extends StatefulWidget {
   const StudentSettingsScreen({super.key});
@@ -85,7 +86,12 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
   }
 
   Future<void> _handleAvatarUpload() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+      maxWidth: 1920,
+      maxHeight: 1920,
+    );
     if (image == null) return;
 
     setState(() => isSaving = true);
@@ -94,16 +100,16 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
       if (user == null) return;
 
       final fileExt = image.name.split('.').last;
-      final fileName = '${user.id}-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      final fileName =
+          '${user.id}-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
       final bytes = await image.readAsBytes();
 
-      await supabase.storage.from('avatars').uploadBinary(
-            fileName,
-            bytes,
-            fileOptions: const FileOptions(upsert: true),
-          );
-
-      final publicUrl = supabase.storage.from('avatars').getPublicUrl(fileName);
+      final publicUrl = await CloudflareStorageService.instance.upload(
+        bucket: 'avatars',
+        path: fileName,
+        bytes: bytes,
+        contentType: 'image/jpeg',
+      );
 
       await supabase
           .from('profiles')
@@ -116,14 +122,20 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profile picture updated successfully! ✅"), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text("Profile picture updated successfully! ✅"),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       debugPrint("Avatar upload error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to upload avatar."), backgroundColor: Colors.redAccent),
+          const SnackBar(
+            content: Text("Failed to upload avatar."),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     } finally {
@@ -143,7 +155,9 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
             'first_name': _firstNameController.text.trim(),
             'last_name': _lastNameController.text.trim(),
             'father_name': _fatherNameController.text.trim(),
-            'date_of_birth': _dobController.text.trim().isEmpty ? null : _dobController.text.trim(),
+            'date_of_birth': _dobController.text.trim().isEmpty
+                ? null
+                : _dobController.text.trim(),
             'phone_number': _phoneController.text.trim(),
             'country': _countryController.text.trim(),
             'bio': _bioController.text.trim(),
@@ -152,14 +166,20 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profile details saved successfully! ✅"), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text("Profile details saved successfully! ✅"),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       debugPrint("Profile update error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Database error. Failed to save details."), backgroundColor: Colors.redAccent),
+          const SnackBar(
+            content: Text("Database error. Failed to save details."),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     } finally {
@@ -187,9 +207,16 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                border: Border.all(
+                  color: primaryPink.withOpacity(0.15),
+                  width: 1.5,
+                ),
                 boxShadow: [
-                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                  BoxShadow(
+                    color: primaryPink.withOpacity(0.08),
+                    blurRadius: 25,
+                    offset: const Offset(0, 10),
+                  ),
                 ],
               ),
               child: Row(
@@ -199,18 +226,40 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                     decoration: BoxDecoration(
                       color: lightPinkBg,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                      border: Border.all(
+                        color: primaryPink.withOpacity(0.3),
+                        width: 1.5,
+                      ),
                     ),
-                    child: const Icon(Icons.person_rounded, color: primaryPink, size: 24),
+                    child: const Icon(
+                      Icons.person_rounded,
+                      color: primaryPink,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 14),
                   const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("My Profile", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                        Text(
+                          "My Profile",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: textDark,
+                          ),
+                        ),
                         SizedBox(height: 3),
-                        Text("Manage your personal identity and account credentials.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
+                        Text(
+                          "Manage your personal identity and account credentials.",
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: textGrey,
+                            fontWeight: FontWeight.w500,
+                            height: 1.3,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -221,19 +270,40 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
 
             // ================= فرم اطلاعات پروفایل =================
             isLoading
-                ? const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5)))
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(40),
+                      child: CircularProgressIndicator(
+                        color: primaryPink,
+                        strokeWidth: 2.5,
+                      ),
+                    ),
+                  )
                 : Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: surfaceWhite,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(color: cardBorder, width: 1.5),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("Personal Identity", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                        const Text(
+                          "Personal Identity",
+                          style: TextStyle(
+                            color: textDark,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 15,
+                          ),
+                        ),
                         const SizedBox(height: 16),
 
                         // بخش عکس پروفایل با قابلیت آپلود
@@ -245,11 +315,20 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                                 CircleAvatar(
                                   radius: 42,
                                   backgroundColor: lightPinkBg,
-                                  backgroundImage: _avatarUrl.isNotEmpty ? NetworkImage(_avatarUrl) : null,
+                                  backgroundImage: _avatarUrl.isNotEmpty
+                                      ? NetworkImage(_avatarUrl)
+                                      : null,
                                   child: _avatarUrl.isEmpty
                                       ? Text(
-                                          _firstNameController.text.isNotEmpty ? _firstNameController.text[0].toUpperCase() : "U",
-                                          style: const TextStyle(color: primaryPink, fontSize: 24, fontWeight: FontWeight.w900),
+                                          _firstNameController.text.isNotEmpty
+                                              ? _firstNameController.text[0]
+                                                    .toUpperCase()
+                                              : "U",
+                                          style: const TextStyle(
+                                            color: primaryPink,
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w900,
+                                          ),
                                         )
                                       : null,
                                 ),
@@ -258,8 +337,19 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                                   right: 0,
                                   child: Container(
                                     padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(color: primaryPink, shape: BoxShape.circle, border: Border.all(color: surfaceWhite, width: 2)),
-                                    child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 14),
+                                    decoration: BoxDecoration(
+                                      color: primaryPink,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: surfaceWhite,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.camera_alt_rounded,
+                                      color: Colors.white,
+                                      size: 14,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -278,11 +368,19 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                         const SizedBox(height: 14),
                         _buildReadOnlyField("Email Address", _email),
                         const SizedBox(height: 14),
-                        _buildTextField("Phone Number", _phoneController, keyboardType: TextInputType.phone),
+                        _buildTextField(
+                          "Phone Number",
+                          _phoneController,
+                          keyboardType: TextInputType.phone,
+                        ),
                         const SizedBox(height: 14),
                         _buildTextField("Country / Region", _countryController),
                         const SizedBox(height: 14),
-                        _buildTextField("Bio / Headline", _bioController, maxLines: 3),
+                        _buildTextField(
+                          "Bio / Headline",
+                          _bioController,
+                          maxLines: 3,
+                        ),
                         const SizedBox(height: 20),
 
                         SizedBox(
@@ -293,10 +391,19 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
                             ),
                             onPressed: isSaving ? null : _handleSaveProfile,
-                            child: Text(isSaving ? "Saving..." : "Save Profile Details", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                            child: Text(
+                              isSaving ? "Saving..." : "Save Profile Details",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 11,
+                                letterSpacing: 1,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -309,24 +416,53 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {int maxLines = 1, TextInputType keyboardType = TextInputType.text}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
+    int maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: textGrey,
+            fontSize: 9,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.8,
+          ),
+        ),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
           maxLines: maxLines,
           keyboardType: keyboardType,
-          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: textDark,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
           decoration: InputDecoration(
             filled: true,
             fillColor: cardBorder.withOpacity(0.5),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: cardBorder),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: cardBorder),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: primaryPink, width: 1.5),
+            ),
           ),
         ),
       ],
@@ -337,7 +473,15 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: textGrey,
+            fontSize: 9,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.8,
+          ),
+        ),
         const SizedBox(height: 6),
         Container(
           width: double.infinity,
@@ -347,7 +491,14 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: cardBorder),
           ),
-          child: Text(value, style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.bold)),
+          child: Text(
+            value,
+            style: const TextStyle(
+              color: textGrey,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ],
     );
