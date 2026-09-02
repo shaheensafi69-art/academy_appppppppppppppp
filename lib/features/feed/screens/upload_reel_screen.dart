@@ -58,8 +58,8 @@ class _UploadReelScreenState extends State<UploadReelScreen> {
       final fileName = "reel_${DateTime.now().millisecondsSinceEpoch}_$uId.mp4";
 
       final publicUrl = await CloudflareStorageService.instance.upload(
-        bucket: "reels",
-        path: fileName,
+        bucket: "safiacademy-media",
+        path: "reels/$fileName",
         bytes: bytes,
         contentType: 'video/mp4',
       );

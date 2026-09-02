@@ -96,8 +96,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       if (_selectedImageFile != null) {
         final fileName = "post_${DateTime.now().millisecondsSinceEpoch}.jpg";
         uploadedImageUrl = await CloudflareStorageService.instance.upload(
-          bucket: "feed",
-          path: fileName,
+          bucket: "safiacademy-media",
+          path: "feed/$fileName",
           file: _selectedImageFile,
           contentType: "image/jpeg",
         );

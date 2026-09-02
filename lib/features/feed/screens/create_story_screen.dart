@@ -60,8 +60,8 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
         final fileName = "story_${DateTime.now().millisecondsSinceEpoch}.$ext";
 
         final publicUrl = await CloudflareStorageService.instance.upload(
-          bucket: "story",
-          path: fileName,
+          bucket: "safiacademy-media",
+          path: "story/$fileName",
           bytes: bytes,
           contentType: mediaType == 'image' ? 'image/jpeg' : 'video/mp4',
         );

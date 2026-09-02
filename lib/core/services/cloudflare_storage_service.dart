@@ -44,16 +44,25 @@ class CloudflareStorageService {
       throw Exception('No file data provided for upload.');
     }
 
-    final sanitizedPath = path.startsWith('/') ? path.substring(1) : path;
+    final defaultBucket = _defaultBucket.isNotEmpty ? _defaultBucket : 'safiacademy-media';
+    String targetBucket = defaultBucket;
+    String sanitizedPath = path.startsWith('/') ? path.substring(1) : path;
+
+    // If caller passed a subfolder name as 'bucket' (e.g. 'reels', 'story', 'feed', 'avatars', etc.),
+    // automatically prepend it to path and set targetBucket to safiacademy-media!
+    if (bucket != defaultBucket && bucket.isNotEmpty && !sanitizedPath.startsWith('$bucket/')) {
+      sanitizedPath = '$bucket/$sanitizedPath';
+    }
+
     final mimeType = contentType ?? _inferContentType(sanitizedPath);
 
     if (isConfigured) {
       try {
         debugPrint(
-          '[CloudflareStorageService] Uploading to R2: $bucket/$sanitizedPath',
+          '[CloudflareStorageService] Uploading to R2: $targetBucket/$sanitizedPath (${fileBytes.length} bytes)',
         );
         final r2Url = await _uploadToR2(
-          bucket: bucket,
+          bucket: targetBucket,
           path: sanitizedPath,
           bytes: fileBytes,
           contentType: mimeType,
@@ -90,7 +99,7 @@ class CloudflareStorageService {
     required Uint8List bytes,
     required String contentType,
   }) async {
-    final targetBucket = bucket.isNotEmpty ? bucket : _defaultBucket;
+    final targetBucket = bucket.isNotEmpty ? bucket : (_defaultBucket.isNotEmpty ? _defaultBucket : 'safiacademy-media');
     final host = '$_accountId.r2.cloudflarestorage.com';
     final requestPath = '/$targetBucket/$path';
     final uri = Uri.parse('https://$host$requestPath');
@@ -144,23 +153,31 @@ class CloudflareStorageService {
       'x-amz-date': isoDate,
       'x-amz-content-sha256': payloadHash,
       'Content-Type': contentType,
+      'Content-Length': bytes.length.toString(),
       'Authorization': authorization,
     };
 
-    final response = await http.put(uri, headers: requestHeaders, body: bytes);
+    final client = http.Client();
+    try {
+      final response = await client
+          .put(uri, headers: requestHeaders, body: bytes)
+          .timeout(const Duration(minutes: 5));
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      if (_publicDomain.isNotEmpty) {
-        final domain = _publicDomain.endsWith('/')
-            ? _publicDomain.substring(0, _publicDomain.length - 1)
-            : _publicDomain;
-        return '$domain/$path';
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (_publicDomain.isNotEmpty) {
+          final domain = _publicDomain.endsWith('/')
+              ? _publicDomain.substring(0, _publicDomain.length - 1)
+              : _publicDomain;
+          return '$domain/$path';
+        }
+        return 'https://$host$requestPath';
+      } else {
+        throw Exception(
+          'R2 Upload HTTP Error ${response.statusCode}: ${response.body}',
+        );
       }
-      return 'https://$host$requestPath';
-    } else {
-      throw Exception(
-        'R2 Upload HTTP Error ${response.statusCode}: ${response.body}',
-      );
+    } finally {
+      client.close();
     }
   }
 

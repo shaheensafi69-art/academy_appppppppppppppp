@@ -231,9 +231,11 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
               ),
               child: Column(
                 children: [
-                  const SizedBox(height: 30),
-                  Image.asset('assets/logo-without-b.png', height: 40, errorBuilder: (_, __, ___) => const Icon(Icons.school, color: primaryPink, size: 32)),
                   const SizedBox(height: 24),
+                  Image.asset('assets/logo-without-b.png', height: 40, errorBuilder: (_, __, _) => const Icon(Icons.school, color: primaryPink, size: 32)),
+                  const SizedBox(height: 16),
+                  _buildSidebarCreateButton(screenWidth >= 1024),
+                  const SizedBox(height: 12),
                   Expanded(
                     child: ListView(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -341,6 +343,51 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
       _currentIndex == 14 ||
       _currentIndex == 19 ||
       _currentIndex == 21;
+
+  Widget _buildSidebarCreateButton(bool isExpanded) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      width: double.infinity,
+      height: 44,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [primaryPink, Color(0xFFE91E63)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: primaryPink.withOpacity(0.4),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: _showCreateOptionsModal,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.add_circle_rounded, color: Colors.white, size: 22),
+              if (isExpanded) ...[
+                const SizedBox(width: 8),
+                const Text(
+                  "Create Post / Reel",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   void _showCreateOptionsModal() {
     showModalBottomSheet(
