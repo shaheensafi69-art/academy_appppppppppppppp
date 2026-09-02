@@ -195,18 +195,29 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
       _currentIndex == 14 ||
       _currentIndex == 15;
 
-  Widget _buildSidebarItem(int index, IconData icon, String label, bool isWide) {
+  Widget _buildSidebarItem(
+    int index,
+    IconData icon,
+    String label,
+    bool isWide,
+  ) {
     final isSelected = _currentIndex == index;
     final isExpanded = MediaQuery.of(context).size.width >= 1024;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
-        color: isSelected ? primaryPink.withValues(alpha: 0.12) : Colors.transparent,
+        color: isSelected
+            ? primaryPink.withValues(alpha: 0.12)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(14),
       ),
       child: ListTile(
         dense: true,
-        leading: Icon(icon, color: isSelected ? primaryPink : textGrey, size: 22),
+        leading: Icon(
+          icon,
+          color: isSelected ? primaryPink : textGrey,
+          size: 22,
+        ),
         title: isExpanded
             ? Text(
                 label,
@@ -276,7 +287,12 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
               child: Column(
                 children: [
                   const SizedBox(height: 24),
-                  Image.asset('assets/logo-without-b.png', height: 40, errorBuilder: (_, __, _) => const Icon(Icons.school, color: primaryPink, size: 32)),
+                  Image.asset(
+                    'assets/logo-without-b.png',
+                    height: 40,
+                    errorBuilder: (_, _, _) =>
+                        const Icon(Icons.school, color: primaryPink, size: 32),
+                  ),
                   const SizedBox(height: 16),
                   _buildSidebarCreateButton(screenWidth >= 1024),
                   const SizedBox(height: 12),
@@ -284,28 +300,106 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                     child: ListView(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       children: [
-                        _buildSidebarItem(0, Icons.dashboard_rounded, "Command Center", isWideScreen),
-                        _buildSidebarItem(1, Icons.school_rounded, "Students Control", isWideScreen),
-                        _buildSidebarItem(2, Icons.psychology_rounded, "Faculty Control", isWideScreen),
-                        _buildSidebarItem(3, Icons.menu_book_rounded, "Courses", isWideScreen),
-                        _buildSidebarItem(4, Icons.class_rounded, "Classes & Cohorts", isWideScreen),
-                        _buildSidebarItem(5, Icons.attach_money_rounded, "Finance & Treasury", isWideScreen),
-                        _buildSidebarItem(6, Icons.emoji_events_rounded, "Honors & Badges", isWideScreen),
-                        _buildSidebarItem(7, Icons.campaign_rounded, "Announcements", isWideScreen),
-                        _buildSidebarItem(8, Icons.podcasts_rounded, "Live Studio", isWideScreen),
-                        _buildSidebarItem(9, Icons.support_agent_rounded, "Support Requests", isWideScreen),
-                        _buildSidebarItem(10, Icons.settings_rounded, "Admin Settings", isWideScreen),
-                        _buildSidebarItem(12, Icons.dynamic_feed_rounded, "Community Feed", isWideScreen),
-                        _buildSidebarItem(15, Icons.video_library_rounded, "Short Reels", isWideScreen),
-                        _buildSidebarItem(13, Icons.people_alt_rounded, "Friends & Network", isWideScreen),
-                        _buildSidebarItem(14, Icons.person_rounded, "Admin Profile", isWideScreen),
+                        _buildSidebarItem(
+                          0,
+                          Icons.dashboard_rounded,
+                          "Command Center",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          1,
+                          Icons.school_rounded,
+                          "Students Control",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          2,
+                          Icons.psychology_rounded,
+                          "Faculty Control",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          3,
+                          Icons.menu_book_rounded,
+                          "Courses",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          4,
+                          Icons.class_rounded,
+                          "Classes & Cohorts",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          5,
+                          Icons.attach_money_rounded,
+                          "Finance & Treasury",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          6,
+                          Icons.emoji_events_rounded,
+                          "Honors & Badges",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          7,
+                          Icons.campaign_rounded,
+                          "Announcements",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          8,
+                          Icons.podcasts_rounded,
+                          "Live Studio",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          9,
+                          Icons.support_agent_rounded,
+                          "Support Requests",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          10,
+                          Icons.settings_rounded,
+                          "Admin Settings",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          12,
+                          Icons.dynamic_feed_rounded,
+                          "Community Feed",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          15,
+                          Icons.video_library_rounded,
+                          "Short Reels",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          13,
+                          Icons.people_alt_rounded,
+                          "Friends & Network",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          14,
+                          Icons.person_rounded,
+                          "Admin Profile",
+                          isWideScreen,
+                        ),
                       ],
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: IconButton(
-                      icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+                      icon: const Icon(
+                        Icons.logout_rounded,
+                        color: Colors.redAccent,
+                      ),
                       onPressed: () => Supabase.instance.client.auth.signOut(),
                     ),
                   ),
@@ -383,7 +477,11 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.add_circle_rounded, color: Colors.white, size: 22),
+              const Icon(
+                Icons.add_circle_rounded,
+                color: Colors.white,
+                size: 22,
+              ),
               if (isExpanded) ...[
                 const SizedBox(width: 8),
                 const Text(

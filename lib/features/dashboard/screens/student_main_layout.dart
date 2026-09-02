@@ -232,7 +232,12 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
               child: Column(
                 children: [
                   const SizedBox(height: 24),
-                  Image.asset('assets/logo-without-b.png', height: 40, errorBuilder: (_, __, _) => const Icon(Icons.school, color: primaryPink, size: 32)),
+                  Image.asset(
+                    'assets/logo-without-b.png',
+                    height: 40,
+                    errorBuilder: (_, _, _) =>
+                        const Icon(Icons.school, color: primaryPink, size: 32),
+                  ),
                   const SizedBox(height: 16),
                   _buildSidebarCreateButton(screenWidth >= 1024),
                   const SizedBox(height: 12),
@@ -240,34 +245,142 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                     child: ListView(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       children: [
-                        _buildSidebarItem(0, Icons.dashboard_rounded, "Overview", isWideScreen),
-                        _buildSidebarItem(1, Icons.campaign_rounded, "Notices", isWideScreen),
-                        _buildSidebarItem(2, Icons.menu_book_rounded, "My Courses", isWideScreen),
-                        _buildSidebarItem(3, Icons.favorite_rounded, "Wishlist", isWideScreen),
-                        _buildSidebarItem(4, Icons.podcasts_rounded, "Live Campus", isWideScreen),
-                        _buildSidebarItem(5, Icons.assignment_rounded, "Assignments", isWideScreen),
-                        _buildSidebarItem(6, Icons.quiz_rounded, "Exams & Quizzes", isWideScreen),
-                        _buildSidebarItem(7, Icons.workspace_premium_rounded, "Certificates", isWideScreen),
-                        _buildSidebarItem(8, Icons.school_rounded, "Scholarships", isWideScreen),
-                        _buildSidebarItem(9, Icons.receipt_long_rounded, "Payments", isWideScreen),
-                        _buildSidebarItem(10, Icons.show_chart_rounded, "Trading Journal", isWideScreen),
-                        _buildSidebarItem(12, Icons.dynamic_feed_rounded, "Social Feed", isWideScreen),
-                        _buildSidebarItem(21, Icons.video_library_rounded, "Reels", isWideScreen),
-                        _buildSidebarItem(13, Icons.account_balance_wallet_rounded, "Wallet & Referral", isWideScreen),
-                        _buildSidebarItem(14, Icons.people_alt_rounded, "Friends & Network", isWideScreen),
-                        _buildSidebarItem(15, Icons.emoji_events_rounded, "Achievements", isWideScreen),
-                        _buildSidebarItem(16, Icons.smart_toy_rounded, "AI Assistant", isWideScreen),
-                        _buildSidebarItem(18, Icons.support_agent_rounded, "Support Tickets", isWideScreen),
-                        _buildSidebarItem(17, Icons.help_outline_rounded, "Help Center", isWideScreen),
-                        _buildSidebarItem(20, Icons.settings_rounded, "Settings", isWideScreen),
-                        _buildSidebarItem(19, Icons.person_rounded, "My Profile", isWideScreen),
+                        _buildSidebarItem(
+                          0,
+                          Icons.dashboard_rounded,
+                          "Overview",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          1,
+                          Icons.campaign_rounded,
+                          "Notices",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          2,
+                          Icons.menu_book_rounded,
+                          "My Courses",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          3,
+                          Icons.favorite_rounded,
+                          "Wishlist",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          4,
+                          Icons.podcasts_rounded,
+                          "Live Campus",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          5,
+                          Icons.assignment_rounded,
+                          "Assignments",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          6,
+                          Icons.quiz_rounded,
+                          "Exams & Quizzes",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          7,
+                          Icons.workspace_premium_rounded,
+                          "Certificates",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          8,
+                          Icons.school_rounded,
+                          "Scholarships",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          9,
+                          Icons.receipt_long_rounded,
+                          "Payments",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          10,
+                          Icons.show_chart_rounded,
+                          "Trading Journal",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          12,
+                          Icons.dynamic_feed_rounded,
+                          "Social Feed",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          21,
+                          Icons.video_library_rounded,
+                          "Reels",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          13,
+                          Icons.account_balance_wallet_rounded,
+                          "Wallet & Referral",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          14,
+                          Icons.people_alt_rounded,
+                          "Friends & Network",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          15,
+                          Icons.emoji_events_rounded,
+                          "Achievements",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          16,
+                          Icons.smart_toy_rounded,
+                          "AI Assistant",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          18,
+                          Icons.support_agent_rounded,
+                          "Support Tickets",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          17,
+                          Icons.help_outline_rounded,
+                          "Help Center",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          20,
+                          Icons.settings_rounded,
+                          "Settings",
+                          isWideScreen,
+                        ),
+                        _buildSidebarItem(
+                          19,
+                          Icons.person_rounded,
+                          "My Profile",
+                          isWideScreen,
+                        ),
                       ],
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: IconButton(
-                      icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+                      icon: const Icon(
+                        Icons.logout_rounded,
+                        color: Colors.redAccent,
+                      ),
                       onPressed: () => Supabase.instance.client.auth.signOut(),
                     ),
                   ),
@@ -310,18 +423,29 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
     );
   }
 
-  Widget _buildSidebarItem(int index, IconData icon, String label, bool isWide) {
+  Widget _buildSidebarItem(
+    int index,
+    IconData icon,
+    String label,
+    bool isWide,
+  ) {
     final isSelected = _currentIndex == index;
     final isExpanded = MediaQuery.of(context).size.width >= 1024;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
-        color: isSelected ? primaryPink.withValues(alpha: 0.12) : Colors.transparent,
+        color: isSelected
+            ? primaryPink.withValues(alpha: 0.12)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(14),
       ),
       child: ListTile(
         dense: true,
-        leading: Icon(icon, color: isSelected ? primaryPink : textGrey, size: 22),
+        leading: Icon(
+          icon,
+          color: isSelected ? primaryPink : textGrey,
+          size: 22,
+        ),
         title: isExpanded
             ? Text(
                 label,
@@ -370,7 +494,11 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.add_circle_rounded, color: Colors.white, size: 22),
+              const Icon(
+                Icons.add_circle_rounded,
+                color: Colors.white,
+                size: 22,
+              ),
               if (isExpanded) ...[
                 const SizedBox(width: 8),
                 const Text(
