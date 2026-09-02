@@ -276,7 +276,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
               child: Column(
                 children: [
                   const SizedBox(height: 30),
-                  Image.asset('assets/logo-without-b.png', height: 40, errorBuilder: (_, __, ___) => const Icon(Icons.school, color: primaryPink, size: 32)),
+                  Image.asset('assets/logo-without-b.png', height: 40, errorBuilder: (_, __, _) => const Icon(Icons.school, color: primaryPink, size: 32)),
                   const SizedBox(height: 24),
                   Expanded(
                     child: ListView(
