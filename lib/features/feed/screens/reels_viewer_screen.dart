@@ -12,7 +12,11 @@ import '../../../core/services/cloudflare_storage_service.dart';
 import '../../chat/screens/direct_chat_screen.dart';
 
 /// Modern 2-second floating toast in English with no system paths
-void _showReelsToast(BuildContext context, String message, {bool isError = false}) {
+void _showReelsToast(
+  BuildContext context,
+  String message, {
+  bool isError = false,
+}) {
   ScaffoldMessenger.of(context).removeCurrentSnackBar();
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
@@ -48,7 +52,9 @@ void _showReelsToast(BuildContext context, String message, {bool isError = false
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                isError ? Icons.error_outline_rounded : Icons.check_circle_rounded,
+                isError
+                    ? Icons.error_outline_rounded
+                    : Icons.check_circle_rounded,
                 color: isError ? Colors.white : const Color(0xFFF494AC),
                 size: 19,
               ),
@@ -97,13 +103,17 @@ class _InstagramHeartOverlayState extends State<_InstagramHeartOverlay>
 
     _scaleAnim = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.2, end: 1.3)
-            .chain(CurveTween(curve: Curves.elasticOut)),
+        tween: Tween<double>(
+          begin: 0.2,
+          end: 1.3,
+        ).chain(CurveTween(curve: Curves.elasticOut)),
         weight: 60,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.3, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeIn)),
+        tween: Tween<double>(
+          begin: 1.3,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeIn)),
         weight: 40,
       ),
     ]).animate(_animCtrl);
@@ -111,8 +121,10 @@ class _InstagramHeartOverlayState extends State<_InstagramHeartOverlay>
     _opacityAnim = TweenSequence<double>([
       TweenSequenceItem(tween: ConstantTween<double>(1.0), weight: 65),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 0.0)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween<double>(
+          begin: 1.0,
+          end: 0.0,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 35,
       ),
     ]).animate(_animCtrl);
@@ -373,11 +385,13 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
         return score;
       }
 
-      List<Map<String, dynamic>> rawList =
-          List<Map<String, dynamic>>.from(res as List);
+      List<Map<String, dynamic>> rawList = List<Map<String, dynamic>>.from(
+        res as List,
+      );
       // مرتب‌سازی اکسپلور بر اساس بالاترین تعامل
       rawList.sort(
-          (a, b) => calculateExploreScore(b).compareTo(calculateExploreScore(a)));
+        (a, b) => calculateExploreScore(b).compareTo(calculateExploreScore(a)),
+      );
 
       List<ReelItemData> loaded = [];
 
@@ -390,8 +404,8 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
 
         if (profilesMap.containsKey(uId)) {
           final prof = profilesMap[uId]!;
-          authorName =
-              '${prof['first_name'] ?? ''} ${prof['last_name'] ?? ''}'.trim();
+          authorName = '${prof['first_name'] ?? ''} ${prof['last_name'] ?? ''}'
+              .trim();
           if (authorName.isEmpty) authorName = 'Academy Member';
           authorAvatar = prof['avatar_url'] ?? '';
         }
@@ -435,13 +449,13 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
       }
 
       allForYouReels = loaded;
-      allFriendsReels =
-          loaded.where((r) => friendIds.contains(r.userId)).toList();
+      allFriendsReels = loaded
+          .where((r) => friendIds.contains(r.userId))
+          .toList();
 
       if (mounted) {
         setState(() {
-          reels =
-              (selectedTab == 'friends') ? allFriendsReels : allForYouReels;
+          reels = (selectedTab == 'friends') ? allFriendsReels : allForYouReels;
           isLoading = false;
         });
 
@@ -553,7 +567,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                 .maybeSingle();
             final String senderName = (senderProfile != null)
                 ? '${senderProfile['first_name'] ?? 'Someone'} ${senderProfile['last_name'] ?? ''}'
-                    .trim()
+                      .trim()
                 : 'Someone';
 
             await supabase.from('user_notifications').insert({
@@ -610,18 +624,19 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
           return AlertDialog(
             backgroundColor: const Color(0xFF1F2937),
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20)),
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: const Row(
               children: [
-                Icon(Icons.downloading_rounded,
-                    color: primaryPink, size: 28),
+                Icon(Icons.downloading_rounded, color: primaryPink, size: 28),
                 SizedBox(width: 10),
                 Text(
                   'Downloading Reel...',
                   style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold),
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -632,8 +647,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                   reel.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      color: Colors.white70, fontSize: 13),
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
                 ),
                 const SizedBox(height: 16),
                 LinearProgressIndicator(
@@ -647,9 +661,10 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                 Text(
                   '${(progress * 100).toInt()}%',
                   style: const TextStyle(
-                      color: primaryPink,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14),
+                    color: primaryPink,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
               ],
             ),
@@ -793,8 +808,10 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: const Color(0xFFF3F4F6),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,
@@ -803,13 +820,15 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                 items: const [
                   DropdownMenuItem(value: 'Explore', child: Text('🌟 Explore')),
                   DropdownMenuItem(
-                      value: 'Educational', child: Text('🎓 Educational')),
+                    value: 'Educational',
+                    child: Text('🎓 Educational'),
+                  ),
+                  DropdownMenuItem(value: 'Trading', child: Text('📊 Trading')),
+                  DropdownMenuItem(value: 'Coding', child: Text('💻 Coding')),
                   DropdownMenuItem(
-                      value: 'Trading', child: Text('📊 Trading')),
-                  DropdownMenuItem(
-                      value: 'Coding', child: Text('💻 Coding')),
-                  DropdownMenuItem(
-                      value: 'Motivation', child: Text('🔥 Motivation')),
+                    value: 'Motivation',
+                    child: Text('🔥 Motivation'),
+                  ),
                 ],
                 onChanged: (val) {
                   if (val != null) {
@@ -837,11 +856,11 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                             final publicUrl = await CloudflareStorageService
                                 .instance
                                 .upload(
-                              bucket: 'safiacademy-media',
-                              path: 'reels/$fileName',
-                              bytes: bytes,
-                              contentType: 'video/mp4',
-                            );
+                                  bucket: 'safiacademy-media',
+                                  path: 'reels/$fileName',
+                                  bytes: bytes,
+                                  contentType: 'video/mp4',
+                                );
                             urlController.text = publicUrl;
                             setModalState(() => isUploadingFile = false);
                           } catch (e) {
@@ -882,8 +901,8 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                           isUploadingFile
                               ? 'Uploading video to Cloudflare... ⏳'
                               : (urlController.text.isNotEmpty
-                                  ? 'Video Uploaded! ✅'
-                                  : 'Select Video File from Gallery 🎥'),
+                                    ? 'Video Uploaded! ✅'
+                                    : 'Select Video File from Gallery 🎥'),
                           style: const TextStyle(
                             color: primaryPink,
                             fontWeight: FontWeight.bold,
@@ -993,8 +1012,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: primaryPink))
+          ? const Center(child: CircularProgressIndicator(color: primaryPink))
           : Stack(
               children: [
                 // اگر تب دوستان خالی بود، پیام مناسب نمایش داده شود
@@ -1065,7 +1083,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                             ? FontWeight.w900
                             : FontWeight.w600,
                         shadows: const [
-                          Shadow(color: Colors.black87, blurRadius: 4)
+                          Shadow(color: Colors.black87, blurRadius: 4),
                         ],
                       ),
                     ),
@@ -1117,7 +1135,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                             ? FontWeight.w900
                             : FontWeight.w600,
                         shadows: const [
-                          Shadow(color: Colors.black87, blurRadius: 4)
+                          Shadow(color: Colors.black87, blurRadius: 4),
                         ],
                       ),
                     ),
@@ -1186,8 +1204,10 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryPink,
                 foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -1386,9 +1406,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                         color: Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        shadows: [
-                          Shadow(color: Colors.black87, blurRadius: 4)
-                        ],
+                        shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
                       ),
                     ),
                   ],
@@ -1413,9 +1431,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                         color: Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        shadows: [
-                          Shadow(color: Colors.black87, blurRadius: 4)
-                        ],
+                        shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
                       ),
                     ),
                   ],
@@ -1428,11 +1444,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                 onTap: () => _downloadReel(reel),
                 child: const Column(
                   children: [
-                    Icon(
-                      Icons.download_rounded,
-                      color: Colors.white,
-                      size: 28,
-                    ),
+                    Icon(Icons.download_rounded, color: Colors.white, size: 28),
                     SizedBox(height: 4),
                     Text(
                       'Save',
@@ -1440,9 +1452,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                         color: Colors.white,
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        shadows: [
-                          Shadow(color: Colors.black87, blurRadius: 4)
-                        ],
+                        shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
                       ),
                     ),
                   ],
@@ -1455,11 +1465,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                 onTap: () => _openShareModal(reel),
                 child: const Column(
                   children: [
-                    Icon(
-                      Icons.share_rounded,
-                      color: Colors.white,
-                      size: 28,
-                    ),
+                    Icon(Icons.share_rounded, color: Colors.white, size: 28),
                     SizedBox(height: 4),
                     Text(
                       'Share',
@@ -1467,9 +1473,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                         color: Colors.white,
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        shadows: [
-                          Shadow(color: Colors.black87, blurRadius: 4)
-                        ],
+                        shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
                       ),
                     ),
                   ],
@@ -1492,9 +1496,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                       color: Colors.white70,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      shadows: [
-                        Shadow(color: Colors.black87, blurRadius: 4)
-                      ],
+                      shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
                     ),
                   ),
                 ],
@@ -1605,7 +1607,7 @@ class _ReelShareBottomSheetState extends State<_ReelShareBottomSheet> {
             .maybeSingle();
         final myName = (myProfile != null)
             ? '${myProfile['first_name'] ?? 'Friend'} ${myProfile['last_name'] ?? ''}'
-                .trim()
+                  .trim()
             : 'A friend';
 
         await supabase.from('user_notifications').insert({
@@ -1636,7 +1638,8 @@ class _ReelShareBottomSheetState extends State<_ReelShareBottomSheet> {
 
   void _copyReelLink() {
     // تنها لینک ویدیو بدون هیچ متن اضافی طبق خواسته کاربر:
-    final pureLink = 'https://www.safiacademy.org/en/feed/reels?id=${widget.reel.id}';
+    final pureLink =
+        'https://www.safiacademy.org/en/feed/reels?id=${widget.reel.id}';
     Clipboard.setData(ClipboardData(text: pureLink));
     Navigator.pop(context);
     _showReelsToast(context, 'Link copied to clipboard 📋');
@@ -1701,8 +1704,11 @@ class _ReelShareBottomSheetState extends State<_ReelShareBottomSheet> {
                       color: primaryPink,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.link_rounded,
-                        color: Colors.white, size: 20),
+                    child: const Icon(
+                      Icons.link_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   const Expanded(
@@ -1753,81 +1759,82 @@ class _ReelShareBottomSheetState extends State<_ReelShareBottomSheet> {
                     child: CircularProgressIndicator(color: primaryPink),
                   )
                 : friends.isEmpty
-                    ? Center(
-                        child: Text(
-                          'You haven\'t added any friends yet.',
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                ? Center(
+                    child: Text(
+                      'You haven\'t added any friends yet.',
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: friends.length,
+                    itemBuilder: (context, index) {
+                      final friend = friends[index];
+                      final friendId = friend['id']?.toString() ?? '';
+                      final isSent = sentFriendIds.contains(friendId);
+                      final name =
+                          '${friend['first_name'] ?? ''} ${friend['last_name'] ?? ''}'
+                              .trim();
+                      final avatar = friend['avatar_url'] ?? '';
+
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: CircleAvatar(
+                          radius: 20,
+                          backgroundColor: lightPinkBg,
+                          backgroundImage: avatar.isNotEmpty
+                              ? NetworkImage(avatar)
+                              : null,
+                          child: avatar.isEmpty
+                              ? Text(
+                                  name.isNotEmpty ? name[0] : 'F',
+                                  style: const TextStyle(
+                                    color: primaryPink,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        title: Text(
+                          name.isNotEmpty ? name : 'Academy Student',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF111827),
                           ),
                         ),
-                      )
-                    : ListView.builder(
-                        itemCount: friends.length,
-                        itemBuilder: (context, index) {
-                          final friend = friends[index];
-                          final friendId =
-                              friend['id']?.toString() ?? '';
-                          final isSent = sentFriendIds.contains(friendId);
-                          final name =
-                              '${friend['first_name'] ?? ''} ${friend['last_name'] ?? ''}'
-                                  .trim();
-                          final avatar = friend['avatar_url'] ?? '';
-
-                          return ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: CircleAvatar(
-                              radius: 20,
-                              backgroundColor: lightPinkBg,
-                              backgroundImage: avatar.isNotEmpty
-                                  ? NetworkImage(avatar)
-                                  : null,
-                              child: avatar.isEmpty
-                                  ? Text(
-                                      name.isNotEmpty ? name[0] : 'F',
-                                      style: const TextStyle(
-                                        color: primaryPink,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    )
-                                  : null,
+                        trailing: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isSent
+                                ? Colors.green
+                                : primaryPink,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 6,
                             ),
-                            title: Text(
-                              name.isNotEmpty ? name : 'Academy Student',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF111827),
-                              ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            trailing: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: isSent
-                                    ? Colors.green
-                                    : primaryPink,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 6),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              onPressed: isSent
-                                  ? null
-                                  : () => _sendToFriend(friend),
-                              child: Text(
-                                isSent ? 'Sent ✅' : 'Send',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                          ),
+                          onPressed: isSent
+                              ? null
+                              : () => _sendToFriend(friend),
+                          child: Text(
+                            isSent ? 'Sent ✅' : 'Send',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           ),
           const SizedBox(height: 10),
         ],
@@ -1841,10 +1848,7 @@ class _ReelCommentsBottomSheet extends StatefulWidget {
   final String reelId;
   final ValueChanged<int>? onCommentAdded;
 
-  const _ReelCommentsBottomSheet({
-    required this.reelId,
-    this.onCommentAdded,
-  });
+  const _ReelCommentsBottomSheet({required this.reelId, this.onCommentAdded});
 
   @override
   State<_ReelCommentsBottomSheet> createState() =>
@@ -1940,7 +1944,7 @@ class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
                 .maybeSingle();
             final String senderName = (senderProfile != null)
                 ? '${senderProfile['first_name'] ?? 'Someone'} ${senderProfile['last_name'] ?? ''}'
-                    .trim()
+                      .trim()
                 : 'Someone';
 
             await supabase.from('user_notifications').insert({
@@ -2009,90 +2013,87 @@ class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
                       ),
                     )
                   : comments.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'Be the first to comment!',
-                            style: TextStyle(
-                              color: Color(0xFF9CA3AF),
-                              fontWeight: FontWeight.w500,
+                  ? const Center(
+                      child: Text(
+                        'Be the first to comment!',
+                        style: TextStyle(
+                          color: Color(0xFF9CA3AF),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: comments.length,
+                      itemBuilder: (context, index) {
+                        final c = comments[index];
+                        final profile = c['profiles'];
+                        final String authorName = (profile != null)
+                            ? '${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}'
+                                  .trim()
+                            : 'Academy Student';
+                        final String avatarUrl = (profile != null)
+                            ? (profile['avatar_url'] ?? '')
+                            : '';
+
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          leading: CircleAvatar(
+                            radius: 18,
+                            backgroundColor: const Color(0xFFFAF4F6),
+                            backgroundImage: avatarUrl.isNotEmpty
+                                ? NetworkImage(avatarUrl)
+                                : null,
+                            child: avatarUrl.isEmpty
+                                ? Text(
+                                    authorName.isNotEmpty ? authorName[0] : 'S',
+                                    style: const TextStyle(
+                                      color: Color(0xFFF494AC),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  )
+                                : null,
+                          ),
+                          title: Text(
+                            authorName,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF111827),
                             ),
                           ),
-                        )
-                      : ListView.builder(
-                          itemCount: comments.length,
-                          itemBuilder: (context, index) {
-                            final c = comments[index];
-                            final profile = c['profiles'];
-                            final String authorName = (profile != null)
-                                ? '${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}'
-                                    .trim()
-                                : 'Academy Student';
-                            final String avatarUrl = (profile != null)
-                                ? (profile['avatar_url'] ?? '')
-                                : '';
-
-                            return ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 2.0),
+                            child: Text(
+                              c['comment_text'] ?? '',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF374151),
                               ),
-                              leading: CircleAvatar(
-                                radius: 18,
-                                backgroundColor: const Color(0xFFFAF4F6),
-                                backgroundImage: avatarUrl.isNotEmpty
-                                    ? NetworkImage(avatarUrl)
-                                    : null,
-                                child: avatarUrl.isEmpty
-                                    ? Text(
-                                        authorName.isNotEmpty
-                                            ? authorName[0]
-                                            : 'S',
-                                        style: const TextStyle(
-                                          color: Color(0xFFF494AC),
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                        ),
-                                      )
-                                    : null,
+                            ),
+                          ),
+                          trailing: TextButton(
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: () => _replyToUser(authorName),
+                            child: const Text(
+                              'Reply',
+                              style: TextStyle(
+                                color: Color(0xFFF494AC),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
                               ),
-                              title: Text(
-                                authorName,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF111827),
-                                ),
-                              ),
-                              subtitle: Padding(
-                                padding: const EdgeInsets.only(top: 2.0),
-                                child: Text(
-                                  c['comment_text'] ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF374151),
-                                  ),
-                                ),
-                              ),
-                              trailing: TextButton(
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                onPressed: () => _replyToUser(authorName),
-                                child: const Text(
-                                  'Reply',
-                                  style: TextStyle(
-                                    color: Color(0xFFF494AC),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
@@ -2252,8 +2253,7 @@ class _ReelVideoPlayerWidgetState extends State<ReelVideoPlayerWidget> {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            if (widget.thumbnailUrl != null &&
-                widget.thumbnailUrl!.isNotEmpty)
+            if (widget.thumbnailUrl != null && widget.thumbnailUrl!.isNotEmpty)
               Positioned.fill(
                 child: Image.network(
                   widget.thumbnailUrl!,
