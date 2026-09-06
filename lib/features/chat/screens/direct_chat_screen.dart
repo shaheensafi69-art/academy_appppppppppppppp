@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../feed/screens/reels_viewer_screen.dart';
 
 enum MessageStatus { sending, sent, delivered, read }
 
@@ -9,6 +10,7 @@ class DirectChatMessage {
   final String senderId;
   final String text;
   final String? attachmentUrl;
+  final String? attachmentType;
   final String createdAt;
   final bool isMe;
   final MessageStatus status;
@@ -18,6 +20,7 @@ class DirectChatMessage {
     required this.senderId,
     required this.text,
     this.attachmentUrl,
+    this.attachmentType,
     required this.createdAt,
     required this.isMe,
     this.status = MessageStatus.sent,
@@ -50,6 +53,7 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
   bool showEmojiPicker = false;
   List<DirectChatMessage> messages = [];
   RealtimeChannel? _chatChannel;
+  DirectChatMessage? replyingToMessage;
 
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
@@ -178,6 +182,7 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
             senderId: senderId,
             text: m['message_text'] ?? '',
             attachmentUrl: m['attachment_url'],
+            attachmentType: m['attachment_type']?.toString(),
             createdAt: m['created_at'] ?? DateTime.now().toIso8601String(),
             isMe: senderId == currentUserId,
             status: status,
@@ -239,8 +244,17 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
   }
 
   Future<void> _sendMessage() async {
-    final text = _messageController.text.trim();
-    if (text.isEmpty || isSending) return;
+    final rawText = _messageController.text.trim();
+    if (rawText.isEmpty || isSending) return;
+
+    String textToSend = rawText;
+    if (replyingToMessage != null) {
+      final replyAuthor = replyingToMessage!.isMe ? 'You' : widget.peerName;
+      final preview = replyingToMessage!.text.replaceAll('\n', ' ');
+      final shortPreview =
+          preview.length > 35 ? '${preview.substring(0, 35)}...' : preview;
+      textToSend = "↩️ Replying to $replyAuthor: \"$shortPreview\"\n$rawText";
+    }
 
     _messageController.clear();
     final user = supabase.auth.currentUser;
@@ -249,13 +263,14 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
     final tempMsg = DirectChatMessage(
       id: "temp-${DateTime.now().millisecondsSinceEpoch}",
       senderId: user.id,
-      text: text,
+      text: textToSend,
       createdAt: DateTime.now().toIso8601String(),
       isMe: true,
       status: MessageStatus.sending, // در حال ارسال (آیکون ساعت)
     );
 
     setState(() {
+      replyingToMessage = null;
       messages.add(tempMsg);
       isSending = true;
       showEmojiPicker = false;
@@ -268,7 +283,7 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
           .insert({
             'sender_id': user.id,
             'receiver_id': widget.peerId,
-            'message_text': text,
+            'message_text': textToSend,
             'is_delivered': true, // تحویل به سرور
           })
           .select()
@@ -280,7 +295,7 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
           'user_id': widget.peerId,
           'sender_id': user.id,
           'title': "💬 New Message",
-          'message': text,
+          'message': textToSend,
           'notification_type': "direct_message",
           'link_url': "/chat/${user.id}",
           'is_read': false,
@@ -295,6 +310,7 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
             senderId: user.id,
             text: inserted['message_text'],
             attachmentUrl: inserted['attachment_url'],
+            attachmentType: inserted['attachment_type']?.toString(),
             createdAt: inserted['created_at'],
             isMe: true,
             status: MessageStatus.sent, // تک تیک خاکستری
@@ -420,6 +436,60 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
               ),
             ),
 
+          // ================= کادر پیش‌نمایش پاسخ (Reply Preview) =================
+          if (replyingToMessage != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3F4F6),
+                border: Border(
+                  top: BorderSide(color: cardBorder, width: 1),
+                  bottom: BorderSide(color: cardBorder, width: 1),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 3,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: primaryPink,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Replying to ${replyingToMessage!.isMe ? 'yourself' : widget.peerName}",
+                          style: const TextStyle(
+                            color: primaryPink,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          replyingToMessage!.text,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: textDark,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, size: 18, color: textGrey),
+                    onPressed: () => setState(() => replyingToMessage = null),
+                  ),
+                ],
+              ),
+            ),
+
           // ================= ورودی پیام یا کادر غیرفعال برای غیر دوستان =================
           SafeArea(
             top: false,
@@ -508,7 +578,7 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
     );
   }
 
-  /// ساخت حباب چت و آیکون‌های وضعیت (۱ تیک، ۲ تیک، ۲ تیک آبی)
+  /// ساخت حباب چت و آیکون‌های وضعیت (۱ تیک، ۲ تیک، ۲ تیک آبی) به همراه پشتیبانی از ویدیوهای ریلز
   Widget _buildChatBubble(DirectChatMessage msg) {
     bool isMe = msg.isMe;
 
@@ -531,62 +601,277 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
         break;
     }
 
+    final bool isReel = msg.attachmentType == 'reel' ||
+        msg.text.contains("safiacademy.org/en/feed/reels") ||
+        msg.text.contains("safiacademy.org/reel/") ||
+        msg.text.contains("media.safiacademy.org/reel/") ||
+        (msg.attachmentUrl != null && msg.attachmentUrl!.contains("/reels/"));
+
+    String? reelId;
+    if (isReel) {
+      final queryMatch = RegExp(r'[?&]id=([a-zA-Z0-9_-]+)').firstMatch(msg.text);
+      final pathMatch = RegExp(r'safiacademy\.org/reel/([a-zA-Z0-9_-]+)').firstMatch(msg.text);
+      if (queryMatch != null && queryMatch.groupCount >= 1) {
+        reelId = queryMatch.group(1);
+      } else if (pathMatch != null && pathMatch.groupCount >= 1) {
+        reelId = pathMatch.group(1);
+      } else if (msg.attachmentUrl != null && msg.attachmentUrl!.contains('/reels/')) {
+        final segments = Uri.tryParse(msg.attachmentUrl!)?.pathSegments;
+        if (segments != null && segments.isNotEmpty) {
+          reelId = segments.last.replaceAll('.mp4', '');
+        }
+      }
+    }
+
+    if (isReel) {
+      return Align(
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.78,
+          ),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1F2937), Color(0xFF111827)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(20),
+              topRight: const Radius.circular(20),
+              bottomLeft: Radius.circular(isMe ? 20 : 4),
+              bottomRight: Radius.circular(isMe ? 4 : 20),
+            ),
+            border: Border.all(
+              color: primaryPink.withValues(alpha: 0.4),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // نوار بالای کارت ریلز
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: primaryPink.withValues(alpha: 0.15),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.video_collection_rounded, color: primaryPink, size: 16),
+                    SizedBox(width: 6),
+                    Text(
+                      "Educational Reel 🎬",
+                      style: TextStyle(
+                        color: primaryPink,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      msg.text.replaceAll(RegExp(r'https?://\S+'), '').trim().isNotEmpty
+                          ? msg.text.replaceAll(RegExp(r'https?://\S+'), '').trim()
+                          : "Check out this educational reel! 🌟",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    // دکمه تماشای ریلز
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryPink,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => StudentReelsScreen(targetReelId: reelId),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.play_circle_fill_rounded, size: 18),
+                        label: const Text(
+                          "Watch Reel 🎥",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              replyingToMessage = msg;
+                            });
+                          },
+                          child: const Row(
+                            children: [
+                              Icon(Icons.reply_rounded, color: Colors.white60, size: 14),
+                              SizedBox(width: 4),
+                              Text(
+                                "Reply",
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              _formatTime(msg.createdAt),
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.6),
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (isMe) ...[
+                              const SizedBox(width: 4),
+                              statusIcon,
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-        decoration: BoxDecoration(
-          color: isMe ? primaryPink : lightPinkBg,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(20),
-            topRight: const Radius.circular(20),
-            bottomLeft: Radius.circular(isMe ? 20 : 4),
-            bottomRight: Radius.circular(isMe ? 4 : 20),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            )
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              msg.text,
-              style: TextStyle(
-                color: isMe ? Colors.white : textDark,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                height: 1.4,
-              ),
+      child: GestureDetector(
+        onLongPress: () {
+          setState(() {
+            replyingToMessage = msg;
+          });
+        },
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+          decoration: BoxDecoration(
+            color: isMe ? primaryPink : lightPinkBg,
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(20),
+              topRight: const Radius.circular(20),
+              bottomLeft: Radius.circular(isMe ? 20 : 4),
+              bottomRight: Radius.circular(isMe ? 4 : 20),
             ),
-            const SizedBox(height: 4),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Row(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              )
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                msg.text,
+                style: TextStyle(
+                  color: isMe ? Colors.white : textDark,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Row(
                 mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    _formatTime(msg.createdAt),
-                    style: TextStyle(
-                      color: isMe ? Colors.white.withValues(alpha: 0.8) : textGrey,
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        replyingToMessage = msg;
+                      });
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.reply_rounded,
+                          color: isMe ? Colors.white60 : textGrey,
+                          size: 13,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          "Reply",
+                          style: TextStyle(
+                            color: isMe ? Colors.white70 : textGrey,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  if (isMe) ...[
-                    const SizedBox(width: 4),
-                    statusIcon,
-                  ],
+                  const SizedBox(width: 12),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _formatTime(msg.createdAt),
+                        style: TextStyle(
+                          color: isMe ? Colors.white.withValues(alpha: 0.8) : textGrey,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (isMe) ...[
+                        const SizedBox(width: 4),
+                        statusIcon,
+                      ],
+                    ],
+                  ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

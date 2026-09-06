@@ -3,9 +3,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/routing/auth_gate.dart';
+import 'core/services/deep_link_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/utils/system_ui_helper.dart';
 import 'features/auth/screens/welcome_screen.dart';
+
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +32,9 @@ Future<void> main() async {
 
     // مقداردهی اولیه فایربیس و نوتیفیکیشن‌ها
     NotificationService().initPushNotifications();
+
+    // مقداردهی اولیه دیپ‌لینک‌ها برای باز کردن مستقیم ویدیوهای ریلز
+    DeepLinkService().init(appNavigatorKey);
   } catch (e) {
     debugPrint('Supabase initialization failed: $e');
   }
@@ -44,6 +50,7 @@ class SafiAcademyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: appNavigatorKey,
       title: 'Safi Academy',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(

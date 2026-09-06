@@ -23,7 +23,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final TextEditingController _contentController = TextEditingController();
 
   String selectedMood = "🚀 Excited";
-  final List<String> moods = ["🚀 Excited", "💡 Learning", "📊 Analysis", "🔥 Motivated", "📢 Announcement"];
+  final List<String> moods = ["🚀 Excited", "🌟 Explore", "💡 Learning", "📊 Analysis", "🔥 Motivated", "📢 Announcement"];
 
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);

@@ -17,8 +17,9 @@ class _UploadReelScreenState extends State<UploadReelScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
 
-  String selectedCategory = 'Educational';
+  String selectedCategory = 'Explore';
   final List<String> categories = [
+    'Explore',
     'Educational',
     'Trading',
     'Coding',
