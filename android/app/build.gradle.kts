@@ -70,4 +70,7 @@ dependencies {
     // پکیج‌های مورد نیاز فایربیس (آنالیتیکس و پیام‌رسانی/نوتیفیکیشن)
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-messaging")
+
+    // پشتیبانی رسمی Edge-to-Edge برای اندروید 15 و 16
+    implementation("androidx.activity:activity:1.9.3")
 }

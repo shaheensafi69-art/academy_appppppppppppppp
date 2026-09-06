@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dio/dio.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'certificates_screen.dart';
 
@@ -76,23 +75,25 @@ class _CertificateDetailScreenState extends State<CertificateDetailScreen> {
         downloadProgress = 0.0;
       });
 
-      var status = await Permission.storage.request();
-      if (!status.isGranted && Platform.isAndroid) {
-        await Permission.manageExternalStorage.request();
-      }
-
       Directory? directory;
       if (Platform.isAndroid) {
-        directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          directory = await getExternalStorageDirectory();
-        }
+        final publicDownloadDir = Directory('/storage/emulated/0/Download');
+        try {
+          if (await publicDownloadDir.exists()) {
+            final testFile = File('${publicDownloadDir.path}/.perm_test_${DateTime.now().millisecondsSinceEpoch}');
+            await testFile.writeAsString('test');
+            await testFile.delete();
+            directory = publicDownloadDir;
+          }
+        } catch (_) {}
+        directory ??= await getExternalStorageDirectory();
+        directory ??= await getApplicationDocumentsDirectory();
       } else {
         directory = await getApplicationDocumentsDirectory();
       }
 
       String fileName = "Certificate_${widget.certificate.certificateCode}.${_isImage(urlString) ? 'jpg' : 'pdf'}";
-      String savePath = "${directory?.path}/$fileName";
+      String savePath = "${directory.path}/$fileName";
 
       Dio dio = Dio();
       await dio.download(
