@@ -221,7 +221,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
   int activeIndex = 0;
   final PageController _pageController = PageController();
 
-  final Set<String> _viewedReelIdsInSession = {};
+  final Set<String> _viewedReelIds = {};
   String? _activeHeartReelId;
   int _heartAnimTrigger = 0;
 
@@ -288,6 +288,21 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
               .toSet();
         } catch (e) {
           debugPrint('Error fetching user likes batch: $e');
+        }
+
+        // ۲.۵. دریافت تمام ویدیوهایی که این کاربر قبلاً دیده تا ویوی تکراری حتی پس از بستن و باز کردن اپ ثبت نشود
+        try {
+          final myViews = await supabase
+              .from('reel_views')
+              .select('reel_id')
+              .eq('viewer_id', currentUserId);
+          final viewedIds = (myViews as List)
+              .map((e) => e['reel_id']?.toString() ?? '')
+              .where((s) => s.isNotEmpty)
+              .toSet();
+          _viewedReelIds.addAll(viewedIds);
+        } catch (e) {
+          debugPrint('Error fetching user views batch: $e');
         }
       }
 
@@ -441,21 +456,39 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
     }
   }
 
-  // ثبت بازدید در جدول اختصاصی reel_views و جدول reels
+  // ثبت بازدید یکتا در جدول اختصاصی reel_views و جدول reels (تنها یک‌بار برای هر کاربر)
   Future<void> _recordView(ReelItemData reel) async {
-    if (_viewedReelIdsInSession.contains(reel.id)) return;
-    _viewedReelIdsInSession.add(reel.id);
-
     final user = supabase.auth.currentUser;
+    final currentUserId = user?.id ?? '';
+
+    // ۱. بررسی فوری در کش محلی: اگر این ویدیو قبلاً توسط این کاربر دیده شده، ثبت مجدد نمی‌شود
+    if (_viewedReelIds.contains(reel.id)) return;
+    _viewedReelIds.add(reel.id);
+
+    if (currentUserId.isEmpty) return;
+
     try {
-      // ثبت در جدول reel_views
+      // ۲. بررسی دیتابیس برای اطمینان قطعی از اینکه کاربر قبلاً این ریلز را ندیده باشد
+      final existingView = await supabase
+          .from('reel_views')
+          .select('id')
+          .eq('reel_id', reel.id)
+          .eq('viewer_id', currentUserId)
+          .maybeSingle();
+
+      if (existingView != null) {
+        // کاربر قبلاً این ویدیو را دیده؛ ویو نباید اضافه شود
+        return;
+      }
+
+      // ۳. ثبت رکورد جدید در جدول reel_views
       await supabase.from('reel_views').insert({
         'reel_id': reel.id,
-        if (user != null) 'viewer_id': user.id,
+        'viewer_id': currentUserId,
         'viewed_at': DateTime.now().toIso8601String(),
       });
 
-      // افزایش شمارنده views_count در جدول اصلی reels
+      // ۴. افزایش شمارنده views_count در جدول اصلی reels
       reel.viewsCount += 1;
       await supabase
           .from('reels')
@@ -464,7 +497,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
 
       if (mounted) setState(() {});
     } catch (e) {
-      debugPrint('Error recording reel view: $e');
+      debugPrint('Error recording unique reel view: $e');
     }
   }
 
