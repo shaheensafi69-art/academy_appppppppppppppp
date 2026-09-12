@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/routing/auth_gate.dart';
 import 'core/services/deep_link_service.dart';
 import 'core/services/notification_service.dart';
+import 'core/services/ad_service.dart';
 import 'core/utils/system_ui_helper.dart';
 import 'features/auth/screens/welcome_screen.dart';
 
@@ -35,6 +36,9 @@ Future<void> main() async {
 
     // مقداردهی اولیه دیپ‌لینک‌ها برای باز کردن مستقیم ویدیوهای ریلز
     DeepLinkService().init(appNavigatorKey);
+
+    // مقداردهی اولیه سرویس تبلیغات گوگل بدون کند کردن شروع برنامه
+    AdService.instance.initialize();
   } catch (e) {
     debugPrint('Supabase initialization failed: $e');
   }

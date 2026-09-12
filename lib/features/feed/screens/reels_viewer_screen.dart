@@ -9,7 +9,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../core/services/cloudflare_storage_service.dart';
+import '../../../core/services/ad_service.dart';
 import '../../chat/screens/direct_chat_screen.dart';
+import '../widgets/reels_ad_card.dart';
 
 /// Modern 2-second floating toast in English with no system paths
 void _showReelsToast(
@@ -1022,15 +1024,40 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                   PageView.builder(
                     controller: _pageController,
                     scrollDirection: Axis.vertical,
-                    itemCount: reels.length,
+                    itemCount: AdService.instance.calculateTotalCount(
+                      reels.length,
+                      AdService.reelsAdInterval,
+                    ),
                     onPageChanged: (index) {
                       setState(() => activeIndex = index);
-                      if (index >= 0 && index < reels.length) {
-                        _recordView(reels[index]);
+                      if (!AdService.instance.isAdPosition(
+                        index,
+                        AdService.reelsAdInterval,
+                      )) {
+                        final rawIndex = AdService.instance.getRawItemIndex(
+                          index,
+                          AdService.reelsAdInterval,
+                        );
+                        if (rawIndex >= 0 && rawIndex < reels.length) {
+                          _recordView(reels[rawIndex]);
+                        }
                       }
                     },
                     itemBuilder: (context, index) {
-                      final reel = reels[index];
+                      if (AdService.instance.isAdPosition(
+                        index,
+                        AdService.reelsAdInterval,
+                      )) {
+                        return const ReelsAdCard();
+                      }
+                      final rawIndex = AdService.instance.getRawItemIndex(
+                        index,
+                        AdService.reelsAdInterval,
+                      );
+                      if (rawIndex >= reels.length) {
+                        return const SizedBox.shrink();
+                      }
+                      final reel = reels[rawIndex];
                       return _buildReelPage(reel, index);
                     },
                   ),

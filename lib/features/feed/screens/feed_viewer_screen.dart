@@ -8,6 +8,8 @@ import 'create_story_screen.dart';
 import 'story_viewer_screen.dart';
 import 'reels_viewer_screen.dart';
 import '../../notifications/screens/activity_notifications_screen.dart';
+import '../../../core/services/ad_service.dart';
+import '../widgets/feed_ad_card.dart';
 
 class FeedPostItem {
   final String id;
@@ -789,10 +791,26 @@ class _FeedViewerScreenState extends State<FeedViewerScreen> {
                         top: topPadding + (_isScrolled ? 80 : 215),
                         bottom: 100,
                       ),
-                      itemCount: filteredPosts.length,
+                      itemCount: AdService.instance.calculateTotalCount(
+                        filteredPosts.length,
+                        AdService.feedAdInterval,
+                      ),
                       separatorBuilder: (_, _) => const SizedBox(height: 16),
                       itemBuilder: (context, index) {
-                        final post = filteredPosts[index];
+                        if (AdService.instance.isAdPosition(
+                          index,
+                          AdService.feedAdInterval,
+                        )) {
+                          return const FeedAdCard();
+                        }
+                        final rawIndex = AdService.instance.getRawItemIndex(
+                          index,
+                          AdService.feedAdInterval,
+                        );
+                        if (rawIndex >= filteredPosts.length) {
+                          return const SizedBox.shrink();
+                        }
+                        final post = filteredPosts[rawIndex];
                         return _buildPostCard(post);
                       },
                     ),
