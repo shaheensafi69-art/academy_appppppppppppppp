@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-/// Central Ad Service managing non-intrusive Google AdMob ads for Feed & Reels
+/// Central Ad Service managing background preloading and non-intrusive Google AdMob ads for Feed & Reels
 class AdService {
   AdService._privateConstructor();
   static final AdService instance = AdService._privateConstructor();
@@ -12,13 +13,25 @@ class AdService {
   bool get isInitialized => _isInitialized;
 
   // Non-intrusive frequency control
-  static const int feedAdInterval = 5; // 1 ad every 5 user posts
-  static const int reelsAdInterval = 7; // 1 ad every 7 reels
+  static const int feedAdInterval = 3; // 1 ad every 3 user posts
+  static const int reelsAdInterval = 5; // 1 ad every 5 reels
 
-  /// Initialize Google Mobile Ads SDK safely
+  // استخر کش تبلیغات برای نمایش فوری بدون معطلی و بدون لودینگ
+  final List<NativeAd> _feedAdPool = [];
+  final List<NativeAd> _reelsAdPool = [];
+  bool _isLoadingFeedAd = false;
+  bool _isLoadingReelsAd = false;
+
+  static const int maxPoolSize = 2;
+
+  /// Check if the platform supports mobile ads
+  bool get isPlatformSupported =>
+      !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+
+  /// Initialize Google Mobile Ads SDK safely and start preloading immediately
   Future<void> initialize() async {
     if (_isInitialized) return;
-    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+    if (!isPlatformSupported) {
       debugPrint('[AdService] Mobile ads skipped: platform not Android or iOS');
       return;
     }
@@ -27,9 +40,179 @@ class AdService {
       await MobileAds.instance.initialize();
       _isInitialized = true;
       debugPrint('[AdService] Google Mobile Ads initialized successfully');
+
+      // 🔥 به محض بالا آمدن برنامه، ادز را در بکگراند لود کن تا کاربر بدون لودینگ آن را ببیند
+      preloadAds();
     } catch (e) {
       debugPrint('[AdService] Failed to initialize MobileAds: $e');
     }
+  }
+
+  /// Start background preloading for both Feed and Reels
+  void preloadAds() {
+    preloadFeedAd();
+    preloadReelsAd();
+  }
+
+  /// Preload a Native Ad for Feed into memory ahead of time
+  void preloadFeedAd() {
+    if (!isPlatformSupported) return;
+    if (_feedAdPool.length >= maxPoolSize || _isLoadingFeedAd) return;
+
+    final unitId = nativeAdUnitId;
+    if (unitId.isEmpty) return;
+
+    _isLoadingFeedAd = true;
+    debugPrint('[AdService] ⏳ Preloading Feed Native Ad in background...');
+
+    final ad = NativeAd(
+      adUnitId: unitId,
+      request: const AdRequest(),
+      nativeTemplateStyle: NativeTemplateStyle(
+        templateType: TemplateType.medium,
+        mainBackgroundColor: Colors.white,
+        cornerRadius: 24.0,
+        callToActionTextStyle: NativeTemplateTextStyle(
+          textColor: Colors.white,
+          backgroundColor: const Color(0xFFF494AC),
+          style: NativeTemplateFontStyle.bold,
+          size: 14.0,
+        ),
+        primaryTextStyle: NativeTemplateTextStyle(
+          textColor: const Color(0xFF1E293B),
+          style: NativeTemplateFontStyle.bold,
+          size: 15.0,
+        ),
+        secondaryTextStyle: NativeTemplateTextStyle(
+          textColor: const Color(0xFF64748B),
+          style: NativeTemplateFontStyle.normal,
+          size: 13.0,
+        ),
+      ),
+      nativeAdOptions: NativeAdOptions(
+        videoOptions: VideoOptions(
+          startMuted: true,
+          clickToExpandRequested: true,
+        ),
+      ),
+      listener: NativeAdListener(
+        onAdLoaded: (loadedAd) {
+          debugPrint(
+            '[AdService] ✅ Feed Native Ad preloaded & ready in memory!',
+          );
+          _feedAdPool.add(loadedAd as NativeAd);
+          _isLoadingFeedAd = false;
+          if (_feedAdPool.length < maxPoolSize) {
+            preloadFeedAd();
+          }
+        },
+        onAdFailedToLoad: (failedAd, error) {
+          debugPrint(
+            '[AdService] ❌ Failed to preload Feed Native Ad: ${error.message}',
+          );
+          failedAd.dispose();
+          _isLoadingFeedAd = false;
+        },
+      ),
+    );
+
+    ad.load();
+  }
+
+  /// Get a preloaded Feed ad immediately (0ms delay) and replenish the pool
+  NativeAd? getPreloadedFeedAd() {
+    if (_feedAdPool.isNotEmpty) {
+      final ad = _feedAdPool.removeAt(0);
+      debugPrint(
+        '[AdService] ⚡ Consumed preloaded Feed ad from memory. Remaining: ${_feedAdPool.length}',
+      );
+      // بلافاصله ادز بعدی را در پس‌زمینه بارگذاری کن تا استخر پر بماند
+      preloadFeedAd();
+      return ad;
+    }
+    // اگر خالی بود، فوراً درخواست لود بفرست
+    preloadFeedAd();
+    return null;
+  }
+
+  /// Preload a Native Ad for Reels into memory ahead of time
+  void preloadReelsAd() {
+    if (!isPlatformSupported) return;
+    if (_reelsAdPool.length >= maxPoolSize || _isLoadingReelsAd) return;
+
+    final unitId = nativeAdUnitId;
+    if (unitId.isEmpty) return;
+
+    _isLoadingReelsAd = true;
+    debugPrint('[AdService] ⏳ Preloading Reels Native Ad in background...');
+
+    final ad = NativeAd(
+      adUnitId: unitId,
+      request: const AdRequest(),
+      nativeTemplateStyle: NativeTemplateStyle(
+        templateType: TemplateType.medium,
+        mainBackgroundColor: const Color(0xFF1E293B),
+        cornerRadius: 24.0,
+        callToActionTextStyle: NativeTemplateTextStyle(
+          textColor: Colors.white,
+          backgroundColor: const Color(0xFFF494AC),
+          style: NativeTemplateFontStyle.bold,
+          size: 14.0,
+        ),
+        primaryTextStyle: NativeTemplateTextStyle(
+          textColor: Colors.white,
+          style: NativeTemplateFontStyle.bold,
+          size: 15.0,
+        ),
+        secondaryTextStyle: NativeTemplateTextStyle(
+          textColor: const Color(0xFF94A3B8),
+          style: NativeTemplateFontStyle.normal,
+          size: 13.0,
+        ),
+      ),
+      nativeAdOptions: NativeAdOptions(
+        videoOptions: VideoOptions(
+          startMuted: false,
+          clickToExpandRequested: true,
+        ),
+        mediaAspectRatio: MediaAspectRatio.any,
+      ),
+      listener: NativeAdListener(
+        onAdLoaded: (loadedAd) {
+          debugPrint(
+            '[AdService] ✅ Reels Native Ad preloaded & ready in memory!',
+          );
+          _reelsAdPool.add(loadedAd as NativeAd);
+          _isLoadingReelsAd = false;
+          if (_reelsAdPool.length < maxPoolSize) {
+            preloadReelsAd();
+          }
+        },
+        onAdFailedToLoad: (failedAd, error) {
+          debugPrint(
+            '[AdService] ❌ Failed to preload Reels Native Ad: ${error.message}',
+          );
+          failedAd.dispose();
+          _isLoadingReelsAd = false;
+        },
+      ),
+    );
+
+    ad.load();
+  }
+
+  /// Get a preloaded Reels ad immediately (0ms delay) and replenish the pool
+  NativeAd? getPreloadedReelsAd() {
+    if (_reelsAdPool.isNotEmpty) {
+      final ad = _reelsAdPool.removeAt(0);
+      debugPrint(
+        '[AdService] ⚡ Consumed preloaded Reels ad from memory. Remaining: ${_reelsAdPool.length}',
+      );
+      preloadReelsAd();
+      return ad;
+    }
+    preloadReelsAd();
+    return null;
   }
 
   /// Official Native Ad Unit ID with anti-ban protection (Google Test in Debug, Production in Release)
@@ -47,9 +230,9 @@ class AdService {
   String get feedBannerAdUnitId {
     if (kDebugMode) {
       if (!kIsWeb && Platform.isAndroid) {
-        return 'ca-app-pub-3940256099942544/6300978111'; // Google Official Android Test Banner
+        return 'ca-app-pub-3940256099942544/6300978111';
       } else if (!kIsWeb && Platform.isIOS) {
-        return 'ca-app-pub-3940256099942544/2934735716'; // Google Official iOS Test Banner
+        return 'ca-app-pub-3940256099942544/2934735716';
       }
     }
     final envId = dotenv.env['ADMOB_FEED_AD_UNIT_ID'];
@@ -61,9 +244,9 @@ class AdService {
   String get reelsAdUnitId {
     if (kDebugMode) {
       if (!kIsWeb && Platform.isAndroid) {
-        return 'ca-app-pub-3940256099942544/6300978111'; // Google Official Android Test Ad Unit
+        return 'ca-app-pub-3940256099942544/6300978111';
       } else if (!kIsWeb && Platform.isIOS) {
-        return 'ca-app-pub-3940256099942544/2934735716'; // Google Official iOS Test Ad Unit
+        return 'ca-app-pub-3940256099942544/2934735716';
       }
     }
     final envId = dotenv.env['ADMOB_REELS_AD_UNIT_ID'];

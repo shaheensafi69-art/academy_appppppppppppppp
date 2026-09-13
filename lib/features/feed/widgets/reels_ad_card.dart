@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../../core/services/ad_service.dart';
@@ -23,12 +21,25 @@ class _ReelsAdCardState extends State<ReelsAdCard> {
   @override
   void initState() {
     super.initState();
-    _loadAd();
+    _initAd();
   }
 
-  void _loadAd() {
-    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
+  void _initAd() {
+    // ۱. بررسی فوری استخر کش: آیا ریلز تبلیغاتی از قبل در حافظه لود شده است؟
+    final preloadedAd = AdService.instance.getPreloadedReelsAd();
+    if (preloadedAd != null) {
+      _nativeAd = preloadedAd;
+      _isAdLoaded = true;
+      return; // ⚡ بدون لودینگ بلافاصله نشان داده می‌شود!
+    }
 
+    // ۲. در صورتی که پلتفرم موبایل باشد، لود را شروع کن
+    if (AdService.instance.isPlatformSupported) {
+      _loadFreshAd();
+    }
+  }
+
+  void _loadFreshAd() {
     final adUnitId = AdService.instance.nativeAdUnitId;
     if (adUnitId.isEmpty) return;
 
@@ -56,6 +67,13 @@ class _ReelsAdCardState extends State<ReelsAdCard> {
           size: 13.0,
         ),
       ),
+      nativeAdOptions: NativeAdOptions(
+        videoOptions: VideoOptions(
+          startMuted: false,
+          clickToExpandRequested: true,
+        ),
+        mediaAspectRatio: MediaAspectRatio.any,
+      ),
       listener: NativeAdListener(
         onAdLoaded: (ad) {
           if (mounted) {
@@ -66,9 +84,7 @@ class _ReelsAdCardState extends State<ReelsAdCard> {
           }
         },
         onAdFailedToLoad: (ad, error) {
-          debugPrint(
-            '[ReelsAdCard] Native ad failed to load: ${error.message}',
-          );
+          debugPrint('[ReelsAdCard] Fresh ad failed to load: ${error.message}');
           ad.dispose();
           if (mounted) {
             setState(() {
@@ -91,13 +107,14 @@ class _ReelsAdCardState extends State<ReelsAdCard> {
 
   @override
   Widget build(BuildContext context) {
+    // اگر در پلتفرم دسکتاپ مک یا وب هستیم، کارت اختصاصی ریلز حامی را بدون لودینگ نشان بده
+    if (!AdService.instance.isPlatformSupported) {
+      return _buildDesktopReelPreview();
+    }
+
     if (!_isAdLoaded || _nativeAd == null || _hasError) {
-      return Container(
-        color: bgDark,
-        child: const Center(
-          child: CircularProgressIndicator(color: primaryPink),
-        ),
-      );
+      // برای جلوگیری از معطلی کاربر در موبایل اگر هنوز در حال بارگذاری بود:
+      return _buildDesktopReelPreview();
     }
 
     return Container(
@@ -128,7 +145,7 @@ class _ReelsAdCardState extends State<ReelsAdCard> {
               ),
             ),
 
-            // Main Content: Ad and Info
+            // Main Content: Preloaded Native Ad
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -170,7 +187,7 @@ class _ReelsAdCardState extends State<ReelsAdCard> {
 
                   const SizedBox(height: 20),
 
-                  // The Native Ad container
+                  // The Native Ad container (Instant render)
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 18),
                     decoration: BoxDecoration(
@@ -224,6 +241,182 @@ class _ReelsAdCardState extends State<ReelsAdCard> {
                     ],
                   ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// پیش‌نمایش ریلز تبلیغاتی برای مک و زمان انتظار اولیه
+  Widget _buildDesktopReelPreview() {
+    return Container(
+      color: bgDark,
+      child: SafeArea(
+        child: Stack(
+          children: [
+            Positioned(
+              top: MediaQuery.of(context).size.height * 0.25,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  width: 250,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryPink.withOpacity(0.2),
+                        blurRadius: 90,
+                        spreadRadius: 40,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: primaryPink.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: primaryPink.withOpacity(0.4),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(
+                            Icons.campaign_rounded,
+                            size: 16,
+                            color: primaryPink,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            "Sponsored / آگهی حامی برنامه",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.12),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.5),
+                            blurRadius: 25,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: primaryPink.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.school_rounded,
+                                color: primaryPink,
+                                size: 32,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            "Safi Academy Pro",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Learn Trading, Coding & Modern Tech Skills with certified certificates.",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.75),
+                              fontSize: 13,
+                              height: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 44,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: primaryPink,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              onPressed: () {},
+                              child: const Text(
+                                "Install Now / ورود به دوره",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.keyboard_double_arrow_up_rounded,
+                          color: Colors.white.withOpacity(0.6),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          "Swipe up for next Reel / برای ریلز بعدی به بالا بکشید",
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.6),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

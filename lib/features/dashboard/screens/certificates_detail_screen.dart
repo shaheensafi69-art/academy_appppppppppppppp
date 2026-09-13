@@ -273,8 +273,9 @@ class _CertificateDetailScreenState extends State<CertificateDetailScreen> {
                                         widget.certificate.certificateUrl!,
                                         fit: BoxFit.contain,
                                         loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null)
+                                          if (loadingProgress == null) {
                                             return child;
+                                          }
                                           return Center(
                                             child: CircularProgressIndicator(
                                               value:
