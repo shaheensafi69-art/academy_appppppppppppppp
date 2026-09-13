@@ -38,8 +38,21 @@ class AdService {
 
     try {
       await MobileAds.instance.initialize();
+
+      // ثبت شناسه دستگاه تستی توسعه‌دهنده جهت نمایش امن تبلیغات تستی روی دستگاه شما
+      // گوگل ادموب روی این دستگاه تبلیغ تستی می‌دهد و در پروداکشن برای بقیه کاربران تبلیغات واقعی و درآمدزا پخش می‌کند
+      await MobileAds.instance.updateRequestConfiguration(
+        RequestConfiguration(
+          testDeviceIds: [
+            '6a39eaef-a912-4bd9-af60-926f848b5573',
+          ],
+        ),
+      );
+
       _isInitialized = true;
-      debugPrint('[AdService] Google Mobile Ads initialized successfully');
+      debugPrint(
+        '[AdService] Google Mobile Ads initialized successfully (Test Device ID registered)',
+      );
 
       // 🔥 به محض بالا آمدن برنامه، ادز را در بکگراند لود کن تا کاربر بدون لودینگ آن را ببیند
       preloadAds();
@@ -215,12 +228,11 @@ class AdService {
     return null;
   }
 
-  /// Official Native Ad Unit ID with anti-ban protection (Google Test in Debug, Production in Release)
+  /// Official Native Ad Unit ID for Feed & Reels
+  /// Using official Google AdMob Unit ID:
+  /// Test ads will be delivered safely to your registered test device (6a39eaef-a912-4bd9-af60-926f848b5573),
+  /// while real revenue-generating ads are delivered to production users.
   String get nativeAdUnitId {
-    if (kDebugMode) {
-      // Official Google AdMob Native Test Unit to prevent "Invalid Traffic" account ban
-      return 'ca-app-pub-3940256099942544/2247696110';
-    }
     final envId = dotenv.env['ADMOB_FEED_AD_UNIT_ID'];
     if (envId != null && envId.isNotEmpty) return envId;
     return 'ca-app-pub-6551903544426492/4488573138';
@@ -228,13 +240,6 @@ class AdService {
 
   /// Ad Unit ID for Feed Banner / Inline Ad
   String get feedBannerAdUnitId {
-    if (kDebugMode) {
-      if (!kIsWeb && Platform.isAndroid) {
-        return 'ca-app-pub-3940256099942544/6300978111';
-      } else if (!kIsWeb && Platform.isIOS) {
-        return 'ca-app-pub-3940256099942544/2934735716';
-      }
-    }
     final envId = dotenv.env['ADMOB_FEED_AD_UNIT_ID'];
     if (envId != null && envId.isNotEmpty) return envId;
     return 'ca-app-pub-6551903544426492/4488573138';
@@ -242,13 +247,6 @@ class AdService {
 
   /// Ad Unit ID for Reels In-Stream / Sponsored Ad
   String get reelsAdUnitId {
-    if (kDebugMode) {
-      if (!kIsWeb && Platform.isAndroid) {
-        return 'ca-app-pub-3940256099942544/6300978111';
-      } else if (!kIsWeb && Platform.isIOS) {
-        return 'ca-app-pub-3940256099942544/2934735716';
-      }
-    }
     final envId = dotenv.env['ADMOB_REELS_AD_UNIT_ID'];
     if (envId != null && envId.isNotEmpty) return envId;
     return 'ca-app-pub-6551903544426492/4488573138';
