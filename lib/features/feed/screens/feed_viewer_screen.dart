@@ -10,6 +10,7 @@ import 'reels_viewer_screen.dart';
 import '../../notifications/screens/activity_notifications_screen.dart';
 import '../../../core/services/ad_service.dart';
 import '../widgets/feed_ad_card.dart';
+import '../../../core/widgets/auth_required_modal.dart';
 
 class FeedPostItem {
   final String id;
@@ -323,7 +324,10 @@ class _FeedViewerScreenState extends State<FeedViewerScreen> {
 
   Future<void> _toggleLike(FeedPostItem post) async {
     final user = supabase.auth.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      AuthRequiredModal.show(context, actionName: "like posts");
+      return;
+    }
 
     setState(() {
       if (post.isLikedByMe) {
@@ -377,6 +381,22 @@ class _FeedViewerScreenState extends State<FeedViewerScreen> {
       debugPrint("Error toggling like: $e");
       _fetchFeedPosts();
     }
+  }
+
+  void _sharePost(FeedPostItem post) {
+    final user = supabase.auth.currentUser;
+    if (user == null) {
+      AuthRequiredModal.show(context, actionName: "share posts");
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Post link ready to share: "${post.cleanTitle}"'),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: const Color(0xFF1E293B),
+      ),
+    );
   }
 
   void _openCommentsBottomSheet(String postId) {
@@ -860,6 +880,14 @@ class _FeedViewerScreenState extends State<FeedViewerScreen> {
                                 // دکمه چت دایرکت (Direct Chat)
                                 GestureDetector(
                                   onTap: () {
+                                    final user = supabase.auth.currentUser;
+                                    if (user == null) {
+                                      AuthRequiredModal.show(
+                                        context,
+                                        actionName: "open direct messages",
+                                      );
+                                      return;
+                                    }
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -929,6 +957,16 @@ class _FeedViewerScreenState extends State<FeedViewerScreen> {
                                       : GestureDetector(
                                           key: const ValueKey('notif_btn'),
                                           onTap: () {
+                                            final user =
+                                                supabase.auth.currentUser;
+                                            if (user == null) {
+                                              AuthRequiredModal.show(
+                                                context,
+                                                actionName:
+                                                    "view notifications",
+                                              );
+                                              return;
+                                            }
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
@@ -1037,6 +1075,11 @@ class _FeedViewerScreenState extends State<FeedViewerScreen> {
           // دکمه افزودن استوری ۲۴ ساعته جدید
           GestureDetector(
             onTap: () async {
+              final user = supabase.auth.currentUser;
+              if (user == null) {
+                AuthRequiredModal.show(context, actionName: "add your story");
+                return;
+              }
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const CreateStoryScreen()),
@@ -1274,6 +1317,14 @@ class _FeedViewerScreenState extends State<FeedViewerScreen> {
                     ),
                     tooltip: "Message Author",
                     onPressed: () {
+                      final user = supabase.auth.currentUser;
+                      if (user == null) {
+                        AuthRequiredModal.show(
+                          context,
+                          actionName: "message this author",
+                        );
+                        return;
+                      }
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -1529,6 +1580,30 @@ class _FeedViewerScreenState extends State<FeedViewerScreen> {
                     ),
                   ),
                 ),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => _sharePost(post),
+                    borderRadius: BorderRadius.circular(12),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.share_outlined, color: textGrey, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            "Share",
+                            style: TextStyle(
+                              color: textGrey,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -1624,6 +1699,11 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
   }
 
   Future<void> _sendComment() async {
+    if (widget.currentUserId.isEmpty) {
+      AuthRequiredModal.show(context, actionName: "post comments");
+      return;
+    }
+
     final text = _commentController.text.trim();
     if (text.isEmpty) return;
 
@@ -1692,6 +1772,10 @@ class _CommentsWidgetState extends State<_CommentsWidget> {
   }
 
   void _startReplying(String commentId, String authorName) {
+    if (widget.currentUserId.isEmpty) {
+      AuthRequiredModal.show(context, actionName: "reply to comments");
+      return;
+    }
     setState(() {
       replyingToCommentId = commentId;
       replyingToName = authorName;

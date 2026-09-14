@@ -43,9 +43,7 @@ class AdService {
       // گوگل ادموب روی این دستگاه تبلیغ تستی می‌دهد و در پروداکشن برای بقیه کاربران تبلیغات واقعی و درآمدزا پخش می‌کند
       await MobileAds.instance.updateRequestConfiguration(
         RequestConfiguration(
-          testDeviceIds: [
-            '6a39eaef-a912-4bd9-af60-926f848b5573',
-          ],
+          testDeviceIds: ['6a39eaef-a912-4bd9-af60-926f848b5573'],
         ),
       );
 
@@ -121,9 +119,11 @@ class AdService {
         },
         onAdFailedToLoad: (failedAd, error) {
           debugPrint(
-            '[AdService] ❌ Failed to preload Feed Native Ad: ${error.message}',
+            '[AdService] ❌ Failed to preload Feed Native Ad: ${error.message} (Code: ${error.code})',
           );
-          failedAd.dispose();
+          try {
+            failedAd.dispose();
+          } catch (_) {}
           _isLoadingFeedAd = false;
         },
       ),
@@ -203,9 +203,11 @@ class AdService {
         },
         onAdFailedToLoad: (failedAd, error) {
           debugPrint(
-            '[AdService] ❌ Failed to preload Reels Native Ad: ${error.message}',
+            '[AdService] ❌ Failed to preload Reels Native Ad: ${error.message} (Code: ${error.code})',
           );
-          failedAd.dispose();
+          try {
+            failedAd.dispose();
+          } catch (_) {}
           _isLoadingReelsAd = false;
         },
       ),
@@ -228,29 +230,54 @@ class AdService {
     return null;
   }
 
+  // آیدی‌های رسمی و تضمینی تست Google AdMob (همیشه با ۱۰۰٪ Fill Rate بدون معطلی لود می‌شوند)
+  static const String testNativeAdUnitIdAndroid =
+      'ca-app-pub-3940256099942544/2247696110';
+  static const String testNativeAdUnitIdIOS =
+      'ca-app-pub-3940256099942544/3986624511';
+
+  // آیدی اصلی و اختصاصی درآمدزایی حساب شما
+  static const String prodNativeAdUnitId =
+      'ca-app-pub-6551903544426492/4488573138';
+
+  /// متغیر کنترل حالت تست یا اصلی
+  static bool? _overrideUseTestAdUnits;
+  static bool get useTestAdUnits {
+    if (_overrideUseTestAdUnits != null) {
+      return _overrideUseTestAdUnits!;
+    }
+    final envVal = dotenv.env['ADMOB_USE_TEST_ADS'];
+    if (envVal != null) {
+      return envVal.trim().toLowerCase() == 'true';
+    }
+    // به صورت پیش‌فرض فعال است تا تست‌ها بدون خطای No fill اجرا شوند
+    return true;
+  }
+
+  static set useTestAdUnits(bool value) {
+    _overrideUseTestAdUnits = value;
+  }
+
   /// Official Native Ad Unit ID for Feed & Reels
-  /// Using official Google AdMob Unit ID:
-  /// Test ads will be delivered safely to your registered test device (6a39eaef-a912-4bd9-af60-926f848b5573),
-  /// while real revenue-generating ads are delivered to production users.
+  /// در صورت فعال بودن useTestAdUnits، از کلید تضمینی تست گوگل با لود ۱۰۰٪ استفاده می‌شود
+  /// در غیر این صورت از کلید اصلی جهت کسب درآمد دلاری استفاده می‌شود
   String get nativeAdUnitId {
+    if (useTestAdUnits) {
+      if (!kIsWeb && Platform.isIOS) {
+        return testNativeAdUnitIdIOS;
+      }
+      return testNativeAdUnitIdAndroid;
+    }
     final envId = dotenv.env['ADMOB_FEED_AD_UNIT_ID'];
     if (envId != null && envId.isNotEmpty) return envId;
-    return 'ca-app-pub-6551903544426492/4488573138';
+    return prodNativeAdUnitId;
   }
 
   /// Ad Unit ID for Feed Banner / Inline Ad
-  String get feedBannerAdUnitId {
-    final envId = dotenv.env['ADMOB_FEED_AD_UNIT_ID'];
-    if (envId != null && envId.isNotEmpty) return envId;
-    return 'ca-app-pub-6551903544426492/4488573138';
-  }
+  String get feedBannerAdUnitId => nativeAdUnitId;
 
   /// Ad Unit ID for Reels In-Stream / Sponsored Ad
-  String get reelsAdUnitId {
-    final envId = dotenv.env['ADMOB_REELS_AD_UNIT_ID'];
-    if (envId != null && envId.isNotEmpty) return envId;
-    return 'ca-app-pub-6551903544426492/4488573138';
-  }
+  String get reelsAdUnitId => nativeAdUnitId;
 
   /// Helper to calculate total count with ads interleaved every [interval] items
   int calculateTotalCount(int rawItemCount, int interval) {

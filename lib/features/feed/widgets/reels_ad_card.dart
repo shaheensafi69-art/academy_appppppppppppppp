@@ -84,8 +84,12 @@ class _ReelsAdCardState extends State<ReelsAdCard> {
           }
         },
         onAdFailedToLoad: (ad, error) {
-          debugPrint('[ReelsAdCard] Fresh ad failed to load: ${error.message}');
-          ad.dispose();
+          debugPrint(
+            '[ReelsAdCard] Fresh ad failed to load: ${error.message} (Code: ${error.code})',
+          );
+          try {
+            ad.dispose();
+          } catch (_) {}
           if (mounted) {
             setState(() {
               _isAdLoaded = false;

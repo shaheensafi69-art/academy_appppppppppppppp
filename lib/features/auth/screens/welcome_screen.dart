@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
+import '../../feed/screens/guest_feed_layout.dart';
 
 class OnboardingItem {
   final String title;
@@ -36,27 +37,50 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   final List<OnboardingItem> _pages = [
     OnboardingItem(
       title: "Welcome to Safi Academy",
-      subtitle: "Your premier gateway to mastering financial markets, software engineering, and modern digital business.",
+      subtitle:
+          "Your premier gateway to mastering financial markets, software engineering, and modern digital business.",
       iconData: Icons.school_rounded,
     ),
     OnboardingItem(
+      title: "Social Feed & Discussions",
+      subtitle:
+          "Explore real-time trade analyses, coding tutorials, market insights, and student discussions directly from the community.",
+      iconData: Icons.dynamic_feed_rounded,
+    ),
+    OnboardingItem(
+      title: "Educational Video Reels",
+      subtitle:
+          "Watch bite-sized educational video reels, trading setups, programming tips, and market recaps with vertical swipe.",
+      iconData: Icons.play_circle_fill_rounded,
+    ),
+    OnboardingItem(
+      title: "Direct Messaging & Community Hub",
+      subtitle:
+          "Connect with classmates, share direct media messages, collaborate with mentors, and stay updated with live alerts.",
+      iconData: Icons.forum_rounded,
+    ),
+    OnboardingItem(
       title: "Live Campus & Interactive Hubs",
-      subtitle: "Attend corporate Microsoft Teams lectures, sync with secure Signal operations, and check in to daily classes.",
+      subtitle:
+          "Attend corporate Microsoft Teams lectures, sync with secure Signal operations, and check in to daily classes.",
       iconData: Icons.live_tv_rounded,
     ),
     OnboardingItem(
       title: "Professional Trading Journal",
-      subtitle: "Log your forex and crypto executions, manage risk, track R/R multiples, and build your edge like a pro.",
+      subtitle:
+          "Log your forex and crypto executions, manage risk, track R/R multiples, and build your edge like a pro.",
       iconData: Icons.trending_up_rounded,
     ),
     OnboardingItem(
       title: "Examination Center & Quizzes",
-      subtitle: "Test your knowledge through descriptive academic exams, complete homework, and track your official grades.",
+      subtitle:
+          "Test your knowledge through descriptive academic exams, complete homework, and track your official grades.",
       iconData: Icons.assignment_turned_in_rounded,
     ),
     OnboardingItem(
       title: "Earn & Grow Together",
-      subtitle: "Invite friends using your unique referral code, earn instant cash bonuses, and unlock verified blockchain credentials.",
+      subtitle:
+          "Invite friends using your unique referral code, earn instant cash bonuses, and unlock verified blockchain credentials.",
       iconData: Icons.verified_rounded,
     ),
   ];
@@ -90,6 +114,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 
+  void _navigateToGuestFeed() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const GuestFeedLayout()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final int totalPages = _pages.length + 1;
@@ -99,7 +130,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         // پس‌زمینه گرادینت ملایم مشابه دیزاین مرجع
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [const Color(0xFFFFF0F5), surfaceWhite, lightPinkBg.withOpacity(0.3)],
+            colors: [
+              const Color(0xFFFFF0F5),
+              surfaceWhite,
+              lightPinkBg.withOpacity(0.3),
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -109,7 +144,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             children: [
               // هدر بالای صفحه (برند و دکمه Skip)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -121,20 +159,42 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             color: surfaceWhite,
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
-                              BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4)),
+                              BoxShadow(
+                                color: primaryPink.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
                             ],
                           ),
-                          child: const Icon(Icons.school_rounded, color: primaryPink, size: 18),
+                          child: const Icon(
+                            Icons.school_rounded,
+                            color: primaryPink,
+                            size: 18,
+                          ),
                         ),
                         const SizedBox(width: 10),
-                        const Text("SAFI ACADEMY", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1.2)),
+                        const Text(
+                          "SAFI ACADEMY",
+                          style: TextStyle(
+                            color: textDark,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 12,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
                       ],
                     ),
                     if (_currentIndex < totalPages - 1)
                       TextButton(
-                        onPressed: _navigateToLogin,
+                        onPressed: _navigateToGuestFeed,
                         style: TextButton.styleFrom(foregroundColor: textGrey),
-                        child: const Text("Skip", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          "Skip to Feed",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                   ],
                 ),
@@ -162,24 +222,45 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               decoration: BoxDecoration(
                                 color: surfaceWhite,
                                 borderRadius: BorderRadius.circular(36),
-                                border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.5),
+                                border: Border.all(
+                                  color: primaryPink.withOpacity(0.2),
+                                  width: 1.5,
+                                ),
                                 boxShadow: [
-                                  BoxShadow(color: primaryPink.withOpacity(0.15), blurRadius: 35, offset: const Offset(0, 15)),
+                                  BoxShadow(
+                                    color: primaryPink.withOpacity(0.15),
+                                    blurRadius: 35,
+                                    offset: const Offset(0, 15),
+                                  ),
                                 ],
                               ),
                               alignment: Alignment.center,
-                              child: const Icon(Icons.school_rounded, size: 64, color: primaryPink),
+                              child: const Icon(
+                                Icons.school_rounded,
+                                size: 64,
+                                color: primaryPink,
+                              ),
                             ),
                             const SizedBox(height: 36),
                             const Text(
                               "Ready to Begin?",
-                              style: TextStyle(color: textDark, fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                              style: TextStyle(
+                                color: textDark,
+                                fontSize: 26,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.5,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 12),
                             const Text(
                               "Log in to your account or create a new one to access elite training and live campus tools.",
-                              style: TextStyle(color: textGrey, fontSize: 13, height: 1.6, fontWeight: FontWeight.w500),
+                              style: TextStyle(
+                                color: textGrey,
+                                fontSize: 13,
+                                height: 1.6,
+                                fontWeight: FontWeight.w500,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                           ],
@@ -202,22 +283,40 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               borderRadius: BorderRadius.circular(38),
                               border: Border.all(color: cardBorder, width: 2),
                               boxShadow: [
-                                BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 30, offset: const Offset(0, 12)),
+                                BoxShadow(
+                                  color: primaryPink.withOpacity(0.08),
+                                  blurRadius: 30,
+                                  offset: const Offset(0, 12),
+                                ),
                               ],
                             ),
                             alignment: Alignment.center,
-                            child: Icon(item.iconData, size: 60, color: primaryPink),
+                            child: Icon(
+                              item.iconData,
+                              size: 60,
+                              color: primaryPink,
+                            ),
                           ),
                           const SizedBox(height: 44),
                           Text(
                             item.title,
-                            style: const TextStyle(color: textDark, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                            style: const TextStyle(
+                              color: textDark,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 14),
                           Text(
                             item.subtitle,
-                            style: const TextStyle(color: textGrey, fontSize: 13, height: 1.6, fontWeight: FontWeight.w500),
+                            style: const TextStyle(
+                              color: textGrey,
+                              fontSize: 13,
+                              height: 1.6,
+                              fontWeight: FontWeight.w500,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ],
@@ -243,7 +342,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           width: _currentIndex == index ? 28 : 8,
                           height: 8,
                           decoration: BoxDecoration(
-                            color: _currentIndex == index ? primaryPink : cardBorder,
+                            color: _currentIndex == index
+                                ? primaryPink
+                                : cardBorder,
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
@@ -261,11 +362,20 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(vertical: 18),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                             shadowColor: primaryPink.withOpacity(0.4),
                           ),
                           onPressed: _navigateToLogin,
-                          child: const Text("Login to Account 🚀", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+                          child: const Text(
+                            "Login to Account 🚀",
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -274,12 +384,67 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
                             foregroundColor: primaryPink,
-                            side: const BorderSide(color: primaryPink, width: 1.5),
+                            side: const BorderSide(
+                              color: primaryPink,
+                              width: 1.5,
+                            ),
                             padding: const EdgeInsets.symmetric(vertical: 18),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                           ),
                           onPressed: _navigateToRegister,
-                          child: const Text("Create New Account", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+                          child: const Text(
+                            "Create New Account",
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: lightPinkBg,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: primaryPink.withOpacity(0.4),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: _navigateToGuestFeed,
+                              borderRadius: BorderRadius.circular(16),
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.explore_rounded,
+                                      color: primaryPink,
+                                      size: 18,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      "Explore Feed & Reels as Guest 🌟",
+                                      style: TextStyle(
+                                        color: textDark,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ] else ...[
@@ -291,10 +456,19 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(vertical: 18),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                           ),
                           onPressed: _onNext,
-                          child: const Text("Continue", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+                          child: const Text(
+                            "Continue",
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
                         ),
                       ),
                     ],

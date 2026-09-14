@@ -42,6 +42,7 @@ class AppTheme {
       error: Color(0xFFEF4444),
     ),
     fontFamily: 'Inter',
+    fontFamilyFallback: const ['Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
     textTheme: const TextTheme(
       headlineLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: textLight),
       headlineMedium: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: textLight),
@@ -96,6 +97,7 @@ class AppTheme {
       error: Color(0xFFEF4444),
     ),
     fontFamily: 'Inter',
+    fontFamilyFallback: const ['Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
     textTheme: const TextTheme(
       headlineLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: textDark),
       headlineMedium: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: textDark),

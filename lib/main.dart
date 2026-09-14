@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/routing/auth_gate.dart';
-import 'core/services/deep_link_service.dart';
-import 'core/services/notification_service.dart';
 import 'core/services/ad_service.dart';
+import 'core/services/deep_link_service.dart';
+import 'core/services/language_service.dart';
+import 'core/services/notification_service.dart';
 import 'core/utils/system_ui_helper.dart';
 import 'features/auth/screens/welcome_screen.dart';
+import 'l10n/generated/app_localizations.dart';
 
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -15,6 +18,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await SystemUiHelper.init();
+
+  // مقداردهی اولیه سرویس زبان
+  await LanguageService.instance.init();
 
   try {
     await dotenv.load(fileName: ".env");
@@ -53,16 +59,29 @@ class SafiAcademyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: appNavigatorKey,
-      title: 'Safi Academy',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFF020202),
-        colorScheme: const ColorScheme.dark(primary: Colors.white),
-        useMaterial3: true,
-      ),
-      home: supabaseReady ? const AuthGate() : const WelcomeScreen(),
+    return ValueListenableBuilder<Locale>(
+      valueListenable: LanguageService.instance.localeNotifier,
+      builder: (context, currentLocale, _) {
+        return MaterialApp(
+          navigatorKey: appNavigatorKey,
+          title: 'Safi Academy',
+          debugShowCheckedModeBanner: false,
+          locale: currentLocale,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          theme: ThemeData(
+            scaffoldBackgroundColor: const Color(0xFF020202),
+            colorScheme: const ColorScheme.dark(primary: Colors.white),
+            useMaterial3: true,
+          ),
+          home: supabaseReady ? const AuthGate() : const WelcomeScreen(),
+        );
+      },
     );
   }
 }

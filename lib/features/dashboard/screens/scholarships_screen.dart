@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/services/language_service.dart';
 
 class ScholarshipItem {
   final String id;
@@ -268,11 +269,16 @@ class _ScholarshipsScreenState extends State<ScholarshipsScreen> {
     try {
       final response = await supabase.from("scholarships").select("*");
 
-      // خواندن و فیلتر دقیق فقط زبان انگلیسی (en)
-      allScholarships = (response as List)
-          .map((s) => ScholarshipItem.fromJson(s))
-          .where((item) => item.language == 'en')
-          .toList();
+      // خواندن و فیلتر بر اساس زبان فعال اپلیکیشن (با بازگشت به زبان انگلیسی در صورت نبود ترجمه)
+      final currentLang = LanguageService.instance.currentLanguageCode;
+      final parsedList = (response as List).map((s) => ScholarshipItem.fromJson(s)).toList();
+      final localizedList = parsedList.where((item) => item.language == currentLang).toList();
+      allScholarships = localizedList.isNotEmpty
+          ? localizedList
+          : parsedList.where((item) => item.language == 'en' || item.language.isEmpty).toList();
+      if (allScholarships.isEmpty) {
+        allScholarships = parsedList;
+      }
 
       Set<String> regionSet = {"All"};
       for (var item in allScholarships) {

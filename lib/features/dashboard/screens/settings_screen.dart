@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:local_auth/local_auth.dart';
 import '../../../core/routing/auth_gate.dart';
+import '../../../core/services/language_service.dart';
+import '../../../core/widgets/language_selector_sheet.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -21,7 +23,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _newPasswordController = TextEditingController();
 
   // تنظیمات امنیتی و اپ
-  String _selectedLanguage = 'English';
   bool _notificationsEnabled = true;
   bool _biometricEnabled = false;
   bool _pinLockEnabled = false;
@@ -459,23 +460,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     child: const Icon(Icons.language_rounded, color: textDark, size: 20),
                                   ),
                                   const SizedBox(width: 14),
-                                  const Text("Language", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                                  Text(context.l10n.language, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                                 ],
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                                decoration: BoxDecoration(color: cardBorder.withOpacity(0.5), borderRadius: BorderRadius.circular(12)),
-                                child: DropdownButton<String>(
-                                  value: _selectedLanguage,
-                                  underline: const SizedBox(),
-                                  icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
-                                  items: ['English', 'Persian (Dari)', 'Arabic'].map((lang) {
-                                    return DropdownMenuItem(value: lang, child: Text(lang, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textDark)));
-                                  }).toList(),
-                                  onChanged: (val) {
-                                    if (val != null) setState(() => _selectedLanguage = val);
-                                  },
-                                ),
+                              ValueListenableBuilder<Locale>(
+                                valueListenable: LanguageService.instance.localeNotifier,
+                                builder: (context, locale, child) {
+                                  final currentLang = LanguageService.instance.currentLanguage;
+                                  return InkWell(
+                                    onTap: () => LanguageSelectorSheet.show(context),
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: cardBorder.withValues(alpha: 0.5),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: cardBorder, width: 1),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(currentLang.flag, style: const TextStyle(fontSize: 16)),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            currentLang.name,
+                                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textDark),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: textDark),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:local_auth/local_auth.dart';
 import '../../../core/routing/auth_gate.dart';
+import '../../../core/services/language_service.dart';
+import '../../../core/widgets/language_selector_sheet.dart';
 
 class TeacherSettingsScreen extends StatefulWidget {
   const TeacherSettingsScreen({super.key});
@@ -17,7 +19,6 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
   bool isSaving = false;
   final TextEditingController _newPasswordController = TextEditingController();
 
-  String _selectedLanguage = 'English';
   bool _notificationsEnabled = true;
   bool _biometricEnabled = false;
   bool _pinLockEnabled = false;
@@ -402,68 +403,39 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                                     child: const Icon(Icons.language_rounded, color: textDark, size: 22),
                                   ),
                                   const SizedBox(width: 14),
-                                  const Text("Language", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                                  Text(context.l10n.language, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                                 ],
                               ),
-                              PopupMenuButton<String>(
-                                offset: const Offset(0, 8),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                                color: surfaceWhite,
-                                elevation: 10,
-                                itemBuilder: (context) => [
-                                  const PopupMenuItem(
-                                    value: 'English',
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text("English", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: textDark)),
-                                        Icon(Icons.check_rounded, color: primaryPink, size: 18),
-                                      ],
-                                    ),
-                                  ),
-                                  const PopupMenuItem(
-                                    enabled: false,
-                                    value: 'Persian (Soon)',
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text("Persian (Dari)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: textGrey)),
-                                        Text("SOON", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink)),
-                                      ],
-                                    ),
-                                  ),
-                                  const PopupMenuItem(
-                                    enabled: false,
-                                    value: 'Arabic (Soon)',
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text("Arabic", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: textGrey)),
-                                        Text("SOON", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink)),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                                onSelected: (val) {
-                                  if (val == 'English') {
-                                    setState(() => _selectedLanguage = val);
-                                  }
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: cardBorder.withValues(alpha: 0.6),
+                              ValueListenableBuilder<Locale>(
+                                valueListenable: LanguageService.instance.localeNotifier,
+                                builder: (context, locale, child) {
+                                  final currentLang = LanguageService.instance.currentLanguage;
+                                  return InkWell(
+                                    onTap: () => LanguageSelectorSheet.show(context),
                                     borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(color: cardBorder, width: 1.5),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Text(_selectedLanguage, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: textDark)),
-                                      const SizedBox(width: 8),
-                                      const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: primaryPink),
-                                    ],
-                                  ),
-                                ),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: cardBorder.withValues(alpha: 0.6),
+                                        borderRadius: BorderRadius.circular(14),
+                                        border: Border.all(color: cardBorder, width: 1.5),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(currentLang.flag, style: const TextStyle(fontSize: 16)),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            currentLang.name,
+                                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: textDark),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: primaryPink),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),

@@ -78,8 +78,12 @@ class _FeedAdCardState extends State<FeedAdCard> {
           }
         },
         onAdFailedToLoad: (ad, error) {
-          debugPrint('[FeedAdCard] Fresh ad failed to load: ${error.message}');
-          ad.dispose();
+          debugPrint(
+            '[FeedAdCard] Fresh ad failed to load: ${error.message} (Code: ${error.code})',
+          );
+          try {
+            ad.dispose();
+          } catch (_) {}
           if (mounted) {
             setState(() {
               _isAdLoaded = false;
@@ -107,6 +111,10 @@ class _FeedAdCardState extends State<FeedAdCard> {
     }
 
     if (!_isAdLoaded || _nativeAd == null || _hasError) {
+      // در صورت بروز خطا در حالت تست، پیش‌نمایش را نشان بده تا ساختار فید به‌هم نریزد
+      if (AdService.useTestAdUnits) {
+        return _buildDesktopPreviewCard();
+      }
       return const SizedBox.shrink();
     }
 

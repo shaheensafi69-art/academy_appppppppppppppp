@@ -10,6 +10,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/services/ad_service.dart';
+import '../../../core/widgets/auth_required_modal.dart';
 import '../../chat/screens/direct_chat_screen.dart';
 import '../widgets/reels_ad_card.dart';
 
@@ -521,9 +522,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
   Future<void> _toggleLikeReel(ReelItemData reel) async {
     final user = supabase.auth.currentUser;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please log in to like reels! ❤️')),
-      );
+      AuthRequiredModal.show(context, actionName: "like reels");
       return;
     }
 
@@ -736,6 +735,11 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
 
   // باز کردن پنجره اشتراک‌گذاری و ارسال مستقیم به دوستان
   void _openShareModal(ReelItemData reel) {
+    final user = supabase.auth.currentUser;
+    if (user == null) {
+      AuthRequiredModal.show(context, actionName: "share reels");
+      return;
+    }
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -762,6 +766,11 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
   }
 
   void _showUploadReelDialog() {
+    final user = supabase.auth.currentUser;
+    if (user == null) {
+      AuthRequiredModal.show(context, actionName: "upload reels");
+      return;
+    }
     final titleController = TextEditingController();
     final urlController = TextEditingController();
     bool isUploadingFile = false;
@@ -1085,6 +1094,14 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
               // دکمه تب دوستان
               GestureDetector(
                 onTap: () {
+                  final user = supabase.auth.currentUser;
+                  if (user == null) {
+                    AuthRequiredModal.show(
+                      context,
+                      actionName: "view friends' reels",
+                    );
+                    return;
+                  }
                   if (selectedTab != 'friends') {
                     setState(() {
                       selectedTab = 'friends';
@@ -1349,6 +1366,14 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () {
+                      final user = supabase.auth.currentUser;
+                      if (user == null) {
+                        AuthRequiredModal.show(
+                          context,
+                          actionName: "send direct messages",
+                        );
+                        return;
+                      }
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -1925,9 +1950,13 @@ class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
-    _controller.clear();
     final user = supabase.auth.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      AuthRequiredModal.show(context, actionName: "comment on reels");
+      return;
+    }
+
+    _controller.clear();
 
     try {
       // ۱. ثبت کامنت در جدول اختصاصی reel_comments
@@ -1993,6 +2022,11 @@ class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
   }
 
   void _replyToUser(String username) {
+    final user = supabase.auth.currentUser;
+    if (user == null) {
+      AuthRequiredModal.show(context, actionName: "reply to comments");
+      return;
+    }
     setState(() {
       _controller.text = '@$username ${_controller.text}';
     });
