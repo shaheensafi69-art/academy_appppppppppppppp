@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class TeacherProfileScreen extends StatefulWidget {
   const TeacherProfileScreen({super.key});
@@ -120,8 +121,8 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Profile picture updated successfully! ✅"),
+          SnackBar(
+            content: Text(context.l10n.avatarUpdatedSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -130,8 +131,8 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
       debugPrint("Avatar upload error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Failed to upload avatar."),
+          SnackBar(
+            content: Text(context.l10n.avatarUploadFailed),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -164,8 +165,8 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Instructor profile updated successfully! ✅"),
+          SnackBar(
+            content: Text(context.l10n.instructorProfileUpdated),
             backgroundColor: Colors.green,
           ),
         );
@@ -174,8 +175,8 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
       debugPrint("Profile update error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Database error. Failed to save profile."),
+          SnackBar(
+            content: Text(context.l10n.databaseSaveError),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -243,22 +244,22 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                           ),
                         ),
                         const SizedBox(width: 14),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Instructor Profile",
-                                style: TextStyle(
+                                context.l10n.instructorProfile,
+                                style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w900,
                                   color: textDark,
                                 ),
                               ),
-                              SizedBox(height: 3),
+                              const SizedBox(height: 3),
                               Text(
-                                "Manage your faculty identity, credentials, and professional bio.",
-                                style: TextStyle(
+                                context.l10n.instructorProfileSubtitle,
+                                style: const TextStyle(
                                   fontSize: 10,
                                   color: textGrey,
                                   fontWeight: FontWeight.w500,
@@ -301,9 +302,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                "Personal & Professional Identity",
-                                style: TextStyle(
+                              Text(
+                                context.l10n.personalProfessionalIdentity,
+                                style: const TextStyle(
                                   color: textDark,
                                   fontWeight: FontWeight.w900,
                                   fontSize: 15,
@@ -317,7 +318,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                   children: [
                                     Container(
                                       padding: const EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
+                                      decoration: const BoxDecoration(
                                         shape: BoxShape.circle,
                                         gradient: LinearGradient(
                                           colors: [primaryPink, lightPinkBg],
@@ -397,14 +398,14 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                           children: [
                                             Expanded(
                                               child: _buildTextField(
-                                                "First Name",
+                                                context.l10n.firstName,
                                                 _firstNameController,
                                               ),
                                             ),
                                             const SizedBox(width: 14),
                                             Expanded(
                                               child: _buildTextField(
-                                                "Last Name",
+                                                context.l10n.lastName,
                                                 _lastNameController,
                                               ),
                                             ),
@@ -415,14 +416,14 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                           children: [
                                             Expanded(
                                               child: _buildTextField(
-                                                "Father's Name",
+                                                context.l10n.fatherName,
                                                 _fatherNameController,
                                               ),
                                             ),
                                             const SizedBox(width: 14),
                                             Expanded(
                                               child: _buildTextField(
-                                                "Date of Birth",
+                                                context.l10n.dateOfBirth,
                                                 _dobController,
                                               ),
                                             ),
@@ -433,14 +434,14 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                           children: [
                                             Expanded(
                                               child: _buildReadOnlyField(
-                                                "Email Address",
+                                                context.l10n.emailAddress,
                                                 _email,
                                               ),
                                             ),
                                             const SizedBox(width: 14),
                                             Expanded(
                                               child: _buildTextField(
-                                                "Phone Number",
+                                                context.l10n.phoneNumber,
                                                 _phoneController,
                                                 keyboardType:
                                                     TextInputType.phone,
@@ -454,32 +455,32 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                     return Column(
                                       children: [
                                         _buildTextField(
-                                          "First Name",
+                                          context.l10n.firstName,
                                           _firstNameController,
                                         ),
                                         const SizedBox(height: 14),
                                         _buildTextField(
-                                          "Last Name",
+                                          context.l10n.lastName,
                                           _lastNameController,
                                         ),
                                         const SizedBox(height: 14),
                                         _buildTextField(
-                                          "Father's Name",
+                                          context.l10n.fatherName,
                                           _fatherNameController,
                                         ),
                                         const SizedBox(height: 14),
                                         _buildTextField(
-                                          "Date of Birth",
+                                          context.l10n.dateOfBirth,
                                           _dobController,
                                         ),
                                         const SizedBox(height: 14),
                                         _buildReadOnlyField(
-                                          "Email Address",
+                                          context.l10n.emailAddress,
                                           _email,
                                         ),
                                         const SizedBox(height: 14),
                                         _buildTextField(
-                                          "Phone Number",
+                                          context.l10n.phoneNumber,
                                           _phoneController,
                                           keyboardType: TextInputType.phone,
                                         ),
@@ -490,12 +491,12 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                               ),
                               const SizedBox(height: 16),
                               _buildTextField(
-                                "Country / Region",
+                                context.l10n.countryRegion,
                                 _countryController,
                               ),
                               const SizedBox(height: 16),
                               _buildTextField(
-                                "Professional Bio / Headline",
+                                context.l10n.professionalBio,
                                 _bioController,
                                 maxLines: 3,
                               ),
@@ -524,8 +525,8 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                                       : _handleSaveProfile,
                                   child: Text(
                                     isSaving
-                                        ? "SAVING CHANGES..."
-                                        : "SAVE PROFILE DETAILS 🚀",
+                                        ? context.l10n.savingChanges
+                                        : context.l10n.saveProfileDetails,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w900,
                                       fontSize: 11,
@@ -623,7 +624,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
             border: Border.all(color: cardBorder),
           ),
           child: Text(
-            value.isEmpty ? "Not provided" : value,
+            value.isEmpty ? context.l10n.notProvided : value,
             style: const TextStyle(
               color: textGrey,
               fontSize: 12,

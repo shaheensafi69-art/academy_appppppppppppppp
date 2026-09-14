@@ -81,7 +81,7 @@ class ScholarshipDetailScreen extends StatelessWidget {
         backgroundColor: surfaceWhite,
         elevation: 0,
         centerTitle: true,
-        title: const Text("Scholarship Overview", style: TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.w900)),
+        title: Text(context.l10n.scholarshipOverview, style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.w900)),
         iconTheme: const IconThemeData(color: textDark),
       ),
       body: SafeArea(
@@ -132,7 +132,7 @@ class ScholarshipDetailScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("Deadline", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                    Text(context.l10n.deadline, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                     Text(scholarship.deadline.split('T')[0], style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.w900)),
                   ],
                 ),
@@ -140,13 +140,13 @@ class ScholarshipDetailScreen extends StatelessWidget {
               const SizedBox(height: 20),
 
               // توضیحات
-              const Text("Description", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
+              Text(context.l10n.overview, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
               const SizedBox(height: 6),
               Text(scholarship.description, style: const TextStyle(color: textGrey, fontSize: 11, height: 1.4, fontWeight: FontWeight.w500)),
               const SizedBox(height: 16),
 
               // شرایط پذیرش فشرده
-              const Text("Eligibility Criteria", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
+              Text(context.l10n.eligibilityCriteria, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
               const SizedBox(height: 6),
               Container(
                 width: double.infinity,
@@ -157,7 +157,7 @@ class ScholarshipDetailScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // مدارک مورد نیاز فشرده
-              const Text("Required Documents", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
+              Text(context.l10n.requiredDocuments, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
               const SizedBox(height: 6),
               Container(
                 width: double.infinity,
@@ -180,7 +180,7 @@ class ScholarshipDetailScreen extends StatelessWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
                     icon: const Icon(Icons.rocket_launch_rounded, size: 16),
-                    label: const Text("APPLY NOW 🚀", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                    label: Text(context.l10n.applyNow, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                     onPressed: () => _launchURL(scholarship.applyLink!),
                   ),
                 ),
@@ -334,13 +334,13 @@ class _ScholarshipsScreenState extends State<ScholarshipsScreen> {
                       child: const Icon(Icons.school_rounded, color: primaryPink, size: 22),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Global Scholarships", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
-                          SizedBox(height: 2),
-                          Text("Explore English academic grants & opportunities.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                          Text(context.l10n.globalScholarships, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
+                          const SizedBox(height: 2),
+                          Text(context.l10n.globalScholarshipsDesc, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                         ],
                       ),
                     ),
@@ -370,7 +370,7 @@ class _ScholarshipsScreenState extends State<ScholarshipsScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
-                            reg,
+                            reg == "All" ? context.l10n.exploreAll : reg,
                             style: TextStyle(
                               color: isSelected ? Colors.white : textGrey,
                               fontSize: 9,
@@ -385,7 +385,7 @@ class _ScholarshipsScreenState extends State<ScholarshipsScreen> {
                 const SizedBox(height: 16),
               ],
 
-              const Text("Available Opportunities", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+              Text(context.l10n.availableOpportunities, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
               const SizedBox(height: 10),
 
               isLoading
@@ -465,7 +465,7 @@ class _ScholarshipsScreenState extends State<ScholarshipsScreen> {
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: cardBorder, width: 1.5),
                           ),
-                          child: const Text("No active English scholarships available.", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                          child: Text(context.l10n.noScholarshipsFound, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                         ),
               const SizedBox(height: 40),
             ],

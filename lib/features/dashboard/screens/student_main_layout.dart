@@ -28,8 +28,10 @@ import 'help_center_screen.dart';
 import '../../feed/screens/user_profile_screen.dart'; // صفحه پروفایل کاربر
 
 import '../../../core/routing/auth_gate.dart';
+import '../../../core/services/language_service.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/utils/system_ui_helper.dart';
+import '../../../core/widgets/language_selector_sheet.dart';
 
 class StudentMainLayout extends StatefulWidget {
   const StudentMainLayout({super.key});
@@ -85,49 +87,52 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
     ), // 21 - ویدیوهای کوتاه ریلز
   ];
 
-  final List<Map<String, Object>> _menuItems = [
-    {"index": 0, "name": "Overview", "icon": Icons.dashboard_rounded},
-    {"index": 1, "name": "Announcements", "icon": Icons.campaign_rounded},
-    {"index": 2, "name": "My Courses", "icon": Icons.menu_book_rounded},
-    {"index": 3, "name": "Wishlist", "icon": Icons.favorite_rounded},
-    {"index": 4, "name": "Live Campus", "icon": Icons.podcasts_rounded},
-    {"index": 5, "name": "Assignments", "icon": Icons.assignment_rounded},
-    {"index": 6, "name": "Exams & Quizzes", "icon": Icons.quiz_rounded},
-    {
-      "index": 7,
-      "name": "Certificates",
-      "icon": Icons.workspace_premium_rounded,
-    },
-    {"index": 8, "name": "Scholarships", "icon": Icons.school_rounded},
-    {
-      "index": 9,
-      "name": "Payments & Invoices",
-      "icon": Icons.receipt_long_rounded,
-    },
-    {"index": 10, "name": "Trading Journal", "icon": Icons.show_chart_rounded},
-    {"index": 11, "name": "Create Post", "icon": Icons.add_rounded},
-    {"index": 12, "name": "Social Feed", "icon": Icons.dynamic_feed_rounded},
-    {
-      "index": 13,
-      "name": "Wallet & Referral",
-      "icon": Icons.account_balance_wallet_rounded,
-    },
-    {
-      "index": 14,
-      "name": "Friends & Network",
-      "icon": Icons.people_alt_rounded,
-    },
-    {"index": 15, "name": "Achievements", "icon": Icons.emoji_events_rounded},
-    {"index": 16, "name": "Safi AI Assistant", "icon": Icons.smart_toy_rounded},
-    {"index": 17, "name": "Help Center", "icon": Icons.help_outline_rounded},
-    {
-      "index": 18,
-      "name": "Support Tickets",
-      "icon": Icons.support_agent_rounded,
-    },
-    {"index": 19, "name": "My Profile", "icon": Icons.person_rounded},
-    {"index": 20, "name": "App Settings", "icon": Icons.settings_rounded},
-  ];
+  List<Map<String, Object>> _getMenuItems(BuildContext context) {
+    final l10n = context.l10n;
+    return [
+      {"index": 0, "name": l10n.overview, "icon": Icons.dashboard_rounded},
+      {"index": 1, "name": l10n.announcements, "icon": Icons.campaign_rounded},
+      {"index": 2, "name": l10n.myCourses, "icon": Icons.menu_book_rounded},
+      {"index": 3, "name": l10n.wishlist, "icon": Icons.favorite_rounded},
+      {"index": 4, "name": l10n.liveCampus, "icon": Icons.podcasts_rounded},
+      {"index": 5, "name": l10n.assignments, "icon": Icons.assignment_rounded},
+      {"index": 6, "name": l10n.examsQuizzes, "icon": Icons.quiz_rounded},
+      {
+        "index": 7,
+        "name": l10n.certificates,
+        "icon": Icons.workspace_premium_rounded,
+      },
+      {"index": 8, "name": l10n.scholarships, "icon": Icons.school_rounded},
+      {
+        "index": 9,
+        "name": l10n.paymentsInvoices,
+        "icon": Icons.receipt_long_rounded,
+      },
+      {"index": 10, "name": l10n.tradingJournal, "icon": Icons.show_chart_rounded},
+      {"index": 11, "name": l10n.createPost, "icon": Icons.add_rounded},
+      {"index": 12, "name": l10n.socialFeed, "icon": Icons.dynamic_feed_rounded},
+      {
+        "index": 13,
+        "name": l10n.walletReferral,
+        "icon": Icons.account_balance_wallet_rounded,
+      },
+      {
+        "index": 14,
+        "name": l10n.friendsNetwork,
+        "icon": Icons.people_alt_rounded,
+      },
+      {"index": 15, "name": l10n.achievements, "icon": Icons.emoji_events_rounded},
+      {"index": 16, "name": l10n.safiAiAssistant, "icon": Icons.smart_toy_rounded},
+      {"index": 17, "name": l10n.helpCenter, "icon": Icons.help_outline_rounded},
+      {
+        "index": 18,
+        "name": l10n.supportTickets,
+        "icon": Icons.support_agent_rounded,
+      },
+      {"index": 19, "name": l10n.myProfile, "icon": Icons.person_rounded},
+      {"index": 20, "name": l10n.appSettings, "icon": Icons.settings_rounded},
+    ];
+  }
 
   @override
   void initState() {
@@ -248,127 +253,127 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                         _buildSidebarItem(
                           0,
                           Icons.dashboard_rounded,
-                          "Overview",
+                          context.l10n.overview,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           1,
                           Icons.campaign_rounded,
-                          "Notices",
+                          context.l10n.notices,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           2,
                           Icons.menu_book_rounded,
-                          "My Courses",
+                          context.l10n.myCourses,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           3,
                           Icons.favorite_rounded,
-                          "Wishlist",
+                          context.l10n.wishlist,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           4,
                           Icons.podcasts_rounded,
-                          "Live Campus",
+                          context.l10n.liveCampus,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           5,
                           Icons.assignment_rounded,
-                          "Assignments",
+                          context.l10n.assignments,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           6,
                           Icons.quiz_rounded,
-                          "Exams & Quizzes",
+                          context.l10n.examsQuizzes,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           7,
                           Icons.workspace_premium_rounded,
-                          "Certificates",
+                          context.l10n.certificates,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           8,
                           Icons.school_rounded,
-                          "Scholarships",
+                          context.l10n.scholarships,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           9,
                           Icons.receipt_long_rounded,
-                          "Payments",
+                          context.l10n.paymentsInvoices,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           10,
                           Icons.show_chart_rounded,
-                          "Trading Journal",
+                          context.l10n.tradingJournal,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           12,
                           Icons.dynamic_feed_rounded,
-                          "Social Feed",
+                          context.l10n.socialFeed,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           21,
                           Icons.video_library_rounded,
-                          "Reels",
+                          context.l10n.reels,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           13,
                           Icons.account_balance_wallet_rounded,
-                          "Wallet & Referral",
+                          context.l10n.walletReferral,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           14,
                           Icons.people_alt_rounded,
-                          "Friends & Network",
+                          context.l10n.friendsNetwork,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           15,
                           Icons.emoji_events_rounded,
-                          "Achievements",
+                          context.l10n.achievements,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           16,
                           Icons.smart_toy_rounded,
-                          "AI Assistant",
+                          context.l10n.aiAssistant,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           18,
                           Icons.support_agent_rounded,
-                          "Support Tickets",
+                          context.l10n.supportTickets,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           17,
                           Icons.help_outline_rounded,
-                          "Help Center",
+                          context.l10n.helpCenter,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           20,
                           Icons.settings_rounded,
-                          "Settings",
+                          context.l10n.settings,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           19,
                           Icons.person_rounded,
-                          "My Profile",
+                          context.l10n.myProfile,
                           isWideScreen,
                         ),
                       ],
@@ -501,9 +506,9 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
               ),
               if (isExpanded) ...[
                 const SizedBox(width: 8),
-                const Text(
-                  "Create Post / Reel",
-                  style: TextStyle(
+                Text(
+                  context.l10n.createPost,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
@@ -630,10 +635,10 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             Expanded(
-              child: _buildNavItem(12, "FEED", Icons.dynamic_feed_rounded),
+              child: _buildNavItem(12, context.l10n.feed.toUpperCase(), Icons.dynamic_feed_rounded),
             ),
             Expanded(
-              child: _buildNavItem(21, "REELS", Icons.video_library_rounded),
+              child: _buildNavItem(21, context.l10n.reels.toUpperCase(), Icons.video_library_rounded),
             ),
             // دکمه وسط (+) با انتخاب دوگانه ریلز یا پست معمولی (Instagram Style)
             Expanded(
@@ -660,9 +665,9 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
               ),
             ),
             Expanded(
-              child: _buildNavItem(14, "FRIENDS", Icons.people_alt_rounded),
+              child: _buildNavItem(14, context.l10n.friends.toUpperCase(), Icons.people_alt_rounded),
             ),
-            Expanded(child: _buildNavItem(19, "PROFILE", Icons.person_rounded)),
+            Expanded(child: _buildNavItem(19, context.l10n.profile.toUpperCase(), Icons.person_rounded)),
           ],
         ),
       );
@@ -698,14 +703,14 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Expanded(
-                child: _buildNavItem(0, "Overview", Icons.dashboard_rounded),
+                child: _buildNavItem(0, context.l10n.overview, Icons.dashboard_rounded),
               ),
               Expanded(
-                child: _buildNavItem(2, "Courses", Icons.menu_book_rounded),
+                child: _buildNavItem(2, context.l10n.courses, Icons.menu_book_rounded),
               ),
-              Expanded(child: _buildNavItem(4, "Live", Icons.podcasts_rounded)),
+              Expanded(child: _buildNavItem(4, context.l10n.live, Icons.podcasts_rounded)),
               Expanded(
-                child: _buildNavItem(12, "Feed", Icons.dynamic_feed_rounded),
+                child: _buildNavItem(12, context.l10n.feed, Icons.dynamic_feed_rounded),
               ),
               Expanded(
                 child: GestureDetector(
@@ -735,12 +740,12 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                         ),
                         const SizedBox(height: 1),
                         Text(
-                          "MENU",
-                          style: TextStyle(
-                            fontSize: 7,
+                          context.l10n.menu,
+                          style: const TextStyle(
+                            fontSize: 8,
                             fontWeight: FontWeight.w900,
                             color: primaryPink,
-                            letterSpacing: 0.8,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ],
@@ -819,47 +824,85 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          "STUDENT PORTAL MENU",
-                          style: TextStyle(
+                        Text(
+                          context.l10n.studentPortalMenu,
+                          style: const TextStyle(
                             color: primaryPink,
                             fontSize: 11,
                             fontWeight: FontWeight.w900,
-                            letterSpacing: 1.5,
+                            letterSpacing: 1.2,
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () =>
-                              setState(() => _isMobileMenuOpen = false),
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: primaryPink.withOpacity(0.15),
-                              shape: BoxShape.circle,
+                        Row(
+                          children: [
+                            // دکمه تغییر سریع زبان در بالای منو
+                            InkWell(
+                              onTap: () => LanguageSelectorSheet.show(context),
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: primaryPink.withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: primaryPink.withOpacity(0.3), width: 1),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      LanguageService.instance.currentLanguage.flag,
+                                      style: const TextStyle(fontSize: 13),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      LanguageService.instance.currentLanguage.code.toUpperCase(),
+                                      style: const TextStyle(
+                                        color: primaryPink,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                            child: const Icon(
-                              Icons.close,
-                              color: primaryPink,
-                              size: 16,
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () => setState(() => _isMobileMenuOpen = false),
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: primaryPink.withOpacity(0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.close,
+                                  color: primaryPink,
+                                  size: 16,
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ],
                     ),
                   ),
                   Expanded(
-                    child: ListView.separated(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      itemCount: _menuItems.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 6),
-                      itemBuilder: (context, index) {
-                        final item = _menuItems[index];
-                        final int screenIndex = item['index'] as int;
-                        final bool isSelected = _currentIndex == screenIndex;
-                        final bool isSoon = item['soon'] == true;
+                    child: Builder(
+                      builder: (context) {
+                        final menuItems = _getMenuItems(context);
+                        return ListView.separated(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
+                          itemCount: menuItems.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 6),
+                          itemBuilder: (context, index) {
+                            final item = menuItems[index];
+                            final int screenIndex = item['index'] as int;
+                            final bool isSelected = _currentIndex == screenIndex;
+                            final bool isSoon = item['soon'] == true;
 
                         return GestureDetector(
                           onTap: () {
@@ -965,9 +1008,11 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                           ),
                         );
                       },
-                    ),
-                  ),
-                  GestureDetector(
+                    );
+                  },
+                ),
+              ),
+              GestureDetector(
                     onTap: () {
                       setState(() {
                         _currentIndex = 19;
@@ -1024,7 +1069,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                                 ),
                                 const SizedBox(height: 1),
                                 Text(
-                                  "BAL: \$${_formatNumber(_userProfile?['wallet_balance'])}",
+                                  "${context.l10n.balance}: \$${_formatNumber(_userProfile?['wallet_balance'])}",
                                   style: const TextStyle(
                                     color: Colors.green,
                                     fontSize: 8,
@@ -1056,9 +1101,9 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                                 ),
                               ),
                               icon: const Icon(Icons.logout_rounded, size: 14),
-                              label: const Text(
-                                "LOG OUT",
-                                style: TextStyle(
+                              label: Text(
+                                context.l10n.logOut,
+                                style: const TextStyle(
                                   fontSize: 9,
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: 0.5,

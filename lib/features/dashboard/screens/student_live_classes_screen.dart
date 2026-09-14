@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/language_service.dart';
 import 'student_class_detail_screen.dart';
 
 class ClassGroup {
@@ -125,7 +126,7 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
 
     return AcademyLoadingOverlay(
       isLoading: isLoading,
-      message: "LOADING LIVE CAMPUS...",
+      message: context.l10n.loading,
       child: Scaffold(
         backgroundColor: surfaceWhite,
         body: SingleChildScrollView(
@@ -161,13 +162,13 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
                       child: const Icon(Icons.podcasts_rounded, color: primaryPink, size: 24),
                     ),
                     const SizedBox(width: 14),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Live Campus & Hubs", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                          SizedBox(height: 3),
-                          Text("Access official Microsoft Teams corporate lecture rooms and sync with Signal encrypted operations.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
+                          Text(context.l10n.liveCampus, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                          const SizedBox(height: 3),
+                          Text(context.l10n.joinLiveMeetingRoom, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
                         ],
                       ),
                     ),
@@ -181,7 +182,7 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
                 children: [
                   Container(width: 8, height: 8, decoration: const BoxDecoration(color: Colors.redAccent, shape: BoxShape.circle)),
                   const SizedBox(width: 6),
-                  Text("Live Transmissions (${liveSessions.length})", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                  Text("${context.l10n.live} (${liveSessions.length})", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
                 ],
               ),
               const SizedBox(height: 12),
@@ -219,12 +220,12 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
                                         ? Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                             decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(8)),
-                                            child: const Text("LIVE NOW", style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900)),
+                                            child: Text(context.l10n.live, style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900)),
                                           )
                                         : Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                             decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8), border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5)),
-                                            child: const Text("PENDING PAYMENT", style: TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900)),
+                                            child: Text(context.l10n.pending, style: const TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900)),
                                           ),
                                     const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: textGrey),
                                   ],
@@ -232,8 +233,8 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
                                 const SizedBox(height: 10),
                                 Text(room.className, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
                                 const SizedBox(height: 4),
-                                Text("Instructor: ${room.teacher != null ? '${room.teacher!['first_name']} ${room.teacher!['last_name']}' : 'Faculty Member'}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
-                                Text("Schedule: ${room.scheduleInfo}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                                Text("${context.l10n.instructor}: ${room.teacher != null ? '${room.teacher!['first_name']} ${room.teacher!['last_name']}' : 'Faculty Member'}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                                Text("${context.l10n.schedule}: ${room.scheduleInfo}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
                               ],
                             ),
                           ),
@@ -248,12 +249,12 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: cardBorder, width: 1.5),
                       ),
-                      child: const Text("No live broadcasts running at this moment.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                      child: Text(context.l10n.noClassesToday, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                     ),
               const SizedBox(height: 28),
 
               // کلاس‌های برنامه‌ریزی‌شده
-              const Text("Scheduled & Standby Channels", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+              Text(context.l10n.upcomingClasses, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
               const SizedBox(height: 12),
 
               generalClasses.isNotEmpty
@@ -289,12 +290,12 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
                                         ? Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                             decoration: BoxDecoration(color: cardBorder, borderRadius: BorderRadius.circular(8)),
-                                            child: const Text("STANDBY", style: TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.w900)),
+                                            child: Text(context.l10n.schedule, style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.w900)),
                                           )
                                         : Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                             decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8), border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5)),
-                                            child: const Text("LOCKED", style: TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                            child: Text(context.l10n.pending, style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
                                           ),
                                     const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: textGrey),
                                   ],
@@ -302,8 +303,8 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
                                 const SizedBox(height: 10),
                                 Text(room.className, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                                 const SizedBox(height: 4),
-                                Text("Instructor: ${room.teacher != null ? '${room.teacher!['first_name']} ${room.teacher!['last_name']}' : 'Faculty Member'}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
-                                Text("Schedule: ${room.scheduleInfo}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                                Text("${context.l10n.instructor}: ${room.teacher != null ? '${room.teacher!['first_name']} ${room.teacher!['last_name']}' : 'Faculty Member'}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                                Text("${context.l10n.schedule}: ${room.scheduleInfo}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
                               ],
                             ),
                           ),
@@ -318,7 +319,7 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: cardBorder, width: 1.5),
                       ),
-                      child: const Text("No upcoming or standby classes at the moment.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                      child: Text(context.l10n.noActiveClasses, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                     ),
               const SizedBox(height: 40),
             ],

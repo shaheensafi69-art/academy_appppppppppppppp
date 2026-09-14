@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class QuestionBankItem {
   final String id;
@@ -182,7 +183,10 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: textDark),
-        title: Text("$quizTitle Bank", style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+        title: Text(
+          quizTitle.isEmpty ? context.l10n.quizQuestions : "$quizTitle - ${context.l10n.questionBank}",
+          style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900),
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(color: cardBorder, height: 1),
@@ -206,11 +210,11 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Total Questions: ${questions.length}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
+                  Text("${context.l10n.totalQuestions}: ${questions.length}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
-                    child: Text("Total Points: $totalPoints", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w900, fontSize: 11)),
+                    child: Text("${context.l10n.totalPoints}: $totalPoints", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w900, fontSize: 11)),
                   ),
                 ],
               ),
@@ -228,7 +232,7 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Add New Question", style: TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 13)),
+                  Text(context.l10n.addNewQuestion, style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 13)),
                   const SizedBox(height: 12),
 
                   // انتخاب نوع سوال
@@ -244,9 +248,9 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: cardBorder)),
                       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'multiple_choice', child: Text("Multiple Choice (4 Options)")),
-                      DropdownMenuItem(value: 'descriptive', child: Text("Descriptive (Written)")),
+                    items: [
+                      DropdownMenuItem(value: 'multiple_choice', child: Text(context.l10n.multipleChoice)),
+                      DropdownMenuItem(value: 'descriptive', child: Text(context.l10n.descriptive)),
                     ],
                     onChanged: (val) => setState(() => selectedQuestionType = val!),
                   ),
@@ -258,7 +262,7 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
                     maxLines: 2,
                     style: const TextStyle(color: textDark, fontSize: 12),
                     decoration: InputDecoration(
-                      hintText: "Enter question text...",
+                      hintText: context.l10n.enterQuestionText,
                       hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                       filled: true,
                       fillColor: surfaceWhite,
@@ -272,23 +276,23 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
 
                   // اگر نوع سوال چهارگزینه‌ای بود، فیلد گزینه‌ها نمایش داده شود
                   if (selectedQuestionType == 'multiple_choice') ...[
-                    _buildInput(_optAController, "Option A"),
+                    _buildInput(_optAController, context.l10n.optionA),
                     const SizedBox(height: 8),
-                    _buildInput(_optBController, "Option B"),
+                    _buildInput(_optBController, context.l10n.optionB),
                     const SizedBox(height: 8),
-                    _buildInput(_optCController, "Option C"),
+                    _buildInput(_optCController, context.l10n.optionC),
                     const SizedBox(height: 8),
-                    _buildInput(_optDController, "Option D"),
+                    _buildInput(_optDController, context.l10n.optionD),
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        const Text("Correct Option:", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
+                        Text("${context.l10n.correctOption}:", style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
                         const SizedBox(width: 10),
                         DropdownButton<String>(
                           value: selectedCorrectOption,
                           dropdownColor: surfaceWhite,
                           style: const TextStyle(color: primaryPink, fontSize: 12, fontWeight: FontWeight.w900),
-                          items: ['A', 'B', 'C', 'D'].map((opt) => DropdownMenuItem(value: opt, child: Text("Option $opt"))).toList(),
+                          items: ['A', 'B', 'C', 'D'].map((opt) => DropdownMenuItem(value: opt, child: Text("${context.l10n.option} $opt"))).toList(),
                           onChanged: (val) => setState(() => selectedCorrectOption = val!),
                         ),
                       ],
@@ -302,7 +306,7 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
                     keyboardType: TextInputType.number,
                     style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                     decoration: InputDecoration(
-                      labelText: "Points",
+                      labelText: context.l10n.points,
                       labelStyle: const TextStyle(color: textGrey, fontSize: 11),
                       filled: true,
                       fillColor: surfaceWhite,
@@ -326,7 +330,10 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
                       onPressed: isSubmitting ? null : _addQuestion,
-                      child: Text(isSubmitting ? "Saving..." : "Save Question 💾", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                      child: Text(
+                        isSubmitting ? context.l10n.saving : "${context.l10n.saveQuestion} 💾",
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900),
+                      ),
                     ),
                   ),
                 ],
@@ -335,7 +342,7 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
             const SizedBox(height: 24),
 
             // لیست سوالات موجود در بانک
-            const Text("Current Inventory", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+            Text(context.l10n.currentInventory, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
             const SizedBox(height: 12),
 
             questions.isNotEmpty
@@ -367,9 +374,12 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
                                 children: [
                                   Text(q.questionText, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
                                   const SizedBox(height: 4),
-                                  Text(isMCQ ? "Type: Multiple Choice" : "Type: Descriptive", style: const TextStyle(color: textGrey, fontSize: 10)),
+                                  Text(
+                                    "${context.l10n.type}: ${isMCQ ? context.l10n.multipleChoice : context.l10n.descriptive}",
+                                    style: const TextStyle(color: textGrey, fontSize: 10),
+                                  ),
                                   const SizedBox(height: 4),
-                                  Text("${q.points} Points", style: const TextStyle(color: Colors.amber, fontSize: 10, fontWeight: FontWeight.w900)),
+                                  Text("${q.points} ${context.l10n.points}", style: const TextStyle(color: Colors.amber, fontSize: 10, fontWeight: FontWeight.w900)),
                                 ],
                               ),
                             ),
@@ -390,7 +400,7 @@ class _TeacherQuizQuestionsScreenState extends State<TeacherQuizQuestionsScreen>
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: cardBorder),
                     ),
-                    child: const Text("No questions added yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                    child: Text(context.l10n.noQuestionsAdded, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                   ),
             const SizedBox(height: 40),
           ],

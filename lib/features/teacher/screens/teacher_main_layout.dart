@@ -24,6 +24,7 @@ import 'teacher_support_screen.dart';
 
 import '../../../core/routing/auth_gate.dart';
 import '../../../core/utils/system_ui_helper.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class TeacherMainLayout extends StatefulWidget {
   const TeacherMainLayout({super.key});
@@ -72,32 +73,32 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
     const TeacherSupportScreen(), // 17 - پشتیبانی و چت زنده با ادمین
   ];
 
-  final List<Map<String, Object>> _menuItems = [
-    {"index": 0, "name": "Overview", "icon": Icons.dashboard_rounded},
-    {"index": 1, "name": "Announcements", "icon": Icons.campaign_rounded},
-    {"index": 2, "name": "My Courses", "icon": Icons.menu_book_rounded},
-    {"index": 3, "name": "Live Classes", "icon": Icons.podcasts_rounded},
-    {"index": 4, "name": "My Students", "icon": Icons.group_rounded},
-    {"index": 5, "name": "Assignments", "icon": Icons.assignment_rounded},
-    {"index": 6, "name": "Exams & Quizzes", "icon": Icons.quiz_rounded},
-    {"index": 7, "name": "Trading Journal", "icon": Icons.show_chart_rounded},
-    {"index": 8, "name": "Achievements", "icon": Icons.emoji_events_rounded},
+  List<Map<String, Object>> _getMenuItems(BuildContext context) => [
+    {"index": 0, "name": context.l10n.overview, "icon": Icons.dashboard_rounded},
+    {"index": 1, "name": context.l10n.announcements, "icon": Icons.campaign_rounded},
+    {"index": 2, "name": context.l10n.myCourses, "icon": Icons.menu_book_rounded},
+    {"index": 3, "name": context.l10n.liveCampus, "icon": Icons.podcasts_rounded},
+    {"index": 4, "name": context.l10n.myStudents, "icon": Icons.group_rounded},
+    {"index": 5, "name": context.l10n.assignments, "icon": Icons.assignment_rounded},
+    {"index": 6, "name": context.l10n.examsQuizzes, "icon": Icons.quiz_rounded},
+    {"index": 7, "name": context.l10n.tradingJournal, "icon": Icons.show_chart_rounded},
+    {"index": 8, "name": context.l10n.achievements, "icon": Icons.emoji_events_rounded},
     {
       "index": 9,
-      "name": "Certificates",
+      "name": context.l10n.certificates,
       "icon": Icons.workspace_premium_rounded,
     },
-    {"index": 10, "name": "Help Center", "icon": Icons.help_outline_rounded},
-    {"index": 11, "name": "Create Post", "icon": Icons.add_rounded},
-    {"index": 12, "name": "Academy Feed", "icon": Icons.dynamic_feed_rounded},
+    {"index": 10, "name": context.l10n.helpCenter, "icon": Icons.help_outline_rounded},
+    {"index": 11, "name": context.l10n.createPost, "icon": Icons.add_rounded},
+    {"index": 12, "name": context.l10n.academyFeed, "icon": Icons.dynamic_feed_rounded},
     {
       "index": 15,
-      "name": "Faculty & Network",
+      "name": context.l10n.facultyAndNetwork,
       "icon": Icons.people_alt_rounded,
     },
-    {"index": 13, "name": "My Profile", "icon": Icons.person_rounded},
-    {"index": 14, "name": "App Settings", "icon": Icons.settings_rounded},
-    {"index": 17, "name": "Support Chat", "icon": Icons.headset_mic_rounded},
+    {"index": 13, "name": context.l10n.myProfile, "icon": Icons.person_rounded},
+    {"index": 14, "name": context.l10n.settings, "icon": Icons.settings_rounded},
+    {"index": 17, "name": context.l10n.supportChat, "icon": Icons.headset_mic_rounded},
   ];
 
   @override
@@ -145,17 +146,17 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: surfaceWhite,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(color: primaryPink, strokeWidth: 3),
-              SizedBox(height: 16),
+              const CircularProgressIndicator(color: primaryPink, strokeWidth: 3),
+              const SizedBox(height: 16),
               Text(
-                "INITIALIZING INSTRUCTOR PORTAL...",
-                style: TextStyle(
+                context.l10n.loadingDashboard,
+                style: const TextStyle(
                   color: textDark,
                   fontSize: 11,
                   fontWeight: FontWeight.w900,
@@ -213,103 +214,103 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                         _buildSidebarItem(
                           0,
                           Icons.dashboard_rounded,
-                          "Overview",
+                          context.l10n.overview,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           1,
                           Icons.campaign_rounded,
-                          "Announcements",
+                          context.l10n.announcements,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           2,
                           Icons.menu_book_rounded,
-                          "My Courses",
+                          context.l10n.myCourses,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           3,
                           Icons.podcasts_rounded,
-                          "Live Broadcasts",
+                          context.l10n.liveCampus,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           4,
                           Icons.group_rounded,
-                          "My Students",
+                          context.l10n.myStudents,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           5,
                           Icons.assignment_rounded,
-                          "Assignments",
+                          context.l10n.assignments,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           6,
                           Icons.quiz_rounded,
-                          "Exams & Quizzes",
+                          context.l10n.examsQuizzes,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           7,
                           Icons.show_chart_rounded,
-                          "Trading Journal",
+                          context.l10n.tradingJournal,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           8,
                           Icons.emoji_events_rounded,
-                          "Achievements",
+                          context.l10n.achievements,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           9,
                           Icons.workspace_premium_rounded,
-                          "Certificates",
+                          context.l10n.certificates,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           10,
                           Icons.help_outline_rounded,
-                          "Help Center",
+                          context.l10n.helpCenter,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           12,
                           Icons.dynamic_feed_rounded,
-                          "Community Feed",
+                          context.l10n.academyFeed,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           16,
                           Icons.video_library_rounded,
-                          "Reels",
+                          context.l10n.reels,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           15,
                           Icons.people_alt_rounded,
-                          "Faculty & Network",
+                          context.l10n.facultyAndNetwork,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           17,
                           Icons.headset_mic_rounded,
-                          "Support Center",
+                          context.l10n.supportChat,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           14,
                           Icons.settings_rounded,
-                          "Settings",
+                          context.l10n.settings,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           13,
                           Icons.person_rounded,
-                          "My Profile",
+                          context.l10n.myProfile,
                           isWideScreen,
                         ),
                       ],
@@ -441,9 +442,9 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
               ),
               if (isExpanded) ...[
                 const SizedBox(width: 8),
-                const Text(
-                  "Create Post / Reel",
-                  style: TextStyle(
+                Text(
+                  context.l10n.createPost,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
@@ -479,9 +480,9 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                "Create New Content 🚀",
-                style: TextStyle(
+              Text(
+                "${context.l10n.createPost} 🚀",
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
                   color: Color(0xFF111827),
@@ -501,17 +502,17 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                     size: 24,
                   ),
                 ),
-                title: const Text(
-                  "Upload Educational Reel 🎬",
-                  style: TextStyle(
+                title: Text(
+                  "${context.l10n.educationalReels} 🎬",
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                     color: Color(0xFF111827),
                   ),
                 ),
-                subtitle: const Text(
-                  "Share short trading or coding videos with peers",
-                  style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                subtitle: Text(
+                  context.l10n.reels,
+                  style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -535,17 +536,17 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                     size: 24,
                   ),
                 ),
-                title: const Text(
-                  "Create Feed Post 📝",
-                  style: TextStyle(
+                title: Text(
+                  "${context.l10n.createPost} 📝",
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                     color: Color(0xFF111827),
                   ),
                 ),
-                subtitle: const Text(
-                  "Share text, questions, or images on the academy feed",
-                  style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                subtitle: Text(
+                  context.l10n.feed,
+                  style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -570,10 +571,10 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             Expanded(
-              child: _buildNavItem(12, "FEED", Icons.dynamic_feed_rounded),
+              child: _buildNavItem(12, context.l10n.feed, Icons.dynamic_feed_rounded),
             ),
             Expanded(
-              child: _buildNavItem(16, "REELS", Icons.video_library_rounded),
+              child: _buildNavItem(16, context.l10n.reels, Icons.video_library_rounded),
             ),
             // دکمه وسط (+) با انتخاب دوگانه ریلز یا پست معمولی (Instagram Style)
             Expanded(
@@ -600,9 +601,9 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
               ),
             ),
             Expanded(
-              child: _buildNavItem(15, "FRIENDS", Icons.people_alt_rounded),
+              child: _buildNavItem(15, context.l10n.friends, Icons.people_alt_rounded),
             ),
-            Expanded(child: _buildNavItem(13, "PROFILE", Icons.person_rounded)),
+            Expanded(child: _buildNavItem(13, context.l10n.profile, Icons.person_rounded)),
           ],
         ),
       );
@@ -638,14 +639,14 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Expanded(
-                child: _buildNavItem(0, "Overview", Icons.dashboard_rounded),
+                child: _buildNavItem(0, context.l10n.overview, Icons.dashboard_rounded),
               ),
               Expanded(
-                child: _buildNavItem(2, "Courses", Icons.menu_book_rounded),
+                child: _buildNavItem(2, context.l10n.courses, Icons.menu_book_rounded),
               ),
-              Expanded(child: _buildNavItem(3, "Live", Icons.podcasts_rounded)),
+              Expanded(child: _buildNavItem(3, context.l10n.live, Icons.podcasts_rounded)),
               Expanded(
-                child: _buildNavItem(12, "Feed", Icons.dynamic_feed_rounded),
+                child: _buildNavItem(12, context.l10n.feed, Icons.dynamic_feed_rounded),
               ),
               Expanded(
                 child: GestureDetector(
@@ -665,18 +666,18 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                         width: 1.5,
                       ),
                     ),
-                    child: const Column(
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.grid_view_rounded,
                           color: primaryPink,
                           size: 20,
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Text(
-                          "MENU",
-                          style: TextStyle(
+                          context.l10n.menu,
+                          style: const TextStyle(
                             fontSize: 8,
                             fontWeight: FontWeight.w900,
                             color: primaryPink,
@@ -759,9 +760,9 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          "INSTRUCTOR PORTAL MENU",
-                          style: TextStyle(
+                        Text(
+                          context.l10n.teacherPortal.toUpperCase(),
+                          style: const TextStyle(
                             color: primaryPink,
                             fontSize: 13,
                             fontWeight: FontWeight.w900,
@@ -788,88 +789,93 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                     ),
                   ),
                   Expanded(
-                    child: ListView.separated(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 8,
-                      ),
-                      itemCount: _menuItems.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 8),
-                      itemBuilder: (context, index) {
-                        final item = _menuItems[index];
-                        final int screenIndex = item['index'] as int;
-                        final bool isSelected = _currentIndex == screenIndex;
-
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _currentIndex = screenIndex;
-                              _isMobileMenuOpen = false;
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? primaryPink.withOpacity(0.15)
-                                  : cardBorder.withOpacity(0.5),
-                              border: Border.all(
-                                color: isSelected
-                                    ? primaryPink.withOpacity(0.4)
-                                    : cardBorder,
-                                width: 1.5,
-                              ),
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? primaryPink
-                                        : surfaceWhite,
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.04),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Icon(
-                                    item['icon'] as IconData,
-                                    size: 18,
-                                    color: isSelected
-                                        ? Colors.white
-                                        : primaryPink,
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Text(
-                                    item['name'] as String,
-                                    style: TextStyle(
-                                      color: isSelected
-                                          ? primaryPink
-                                          : textDark,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  size: 14,
-                                  color: isSelected ? primaryPink : textGrey,
-                                ),
-                              ],
-                            ),
+                    child: Builder(
+                      builder: (context) {
+                        final menuItems = _getMenuItems(context);
+                        return ListView.separated(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 8,
                           ),
+                          itemCount: menuItems.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final item = menuItems[index];
+                            final int screenIndex = item['index'] as int;
+                            final bool isSelected = _currentIndex == screenIndex;
+
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _currentIndex = screenIndex;
+                                  _isMobileMenuOpen = false;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 14,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? primaryPink.withOpacity(0.15)
+                                      : cardBorder.withOpacity(0.5),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? primaryPink.withOpacity(0.4)
+                                        : cardBorder,
+                                    width: 1.5,
+                                  ),
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? primaryPink
+                                            : surfaceWhite,
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.04),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Icon(
+                                        item['icon'] as IconData,
+                                        size: 18,
+                                        color: isSelected
+                                            ? Colors.white
+                                            : primaryPink,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Text(
+                                        item['name'] as String,
+                                        style: TextStyle(
+                                          color: isSelected
+                                              ? primaryPink
+                                              : textDark,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.arrow_forward_ios_rounded,
+                                      size: 14,
+                                      color: isSelected ? primaryPink : textGrey,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
                         );
                       },
                     ),
@@ -928,7 +934,7 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "${_userProfile?['first_name'] ?? 'Instructor'} ${_userProfile?['last_name'] ?? ''}",
+                                  "${_userProfile?['first_name'] ?? context.l10n.instructor} ${_userProfile?['last_name'] ?? ''}",
                                   style: const TextStyle(
                                     color: textDark,
                                     fontWeight: FontWeight.w900,
@@ -938,9 +944,9 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 2),
-                                const Text(
-                                  "Faculty Member",
-                                  style: TextStyle(
+                                Text(
+                                  context.l10n.faculty,
+                                  style: const TextStyle(
                                     color: primaryPink,
                                     fontSize: 9,
                                     fontWeight: FontWeight.w900,
@@ -972,9 +978,9 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                                 ),
                               ),
                               icon: const Icon(Icons.logout_rounded, size: 16),
-                              label: const Text(
-                                "SIGN OUT",
-                                style: TextStyle(
+                              label: Text(
+                                context.l10n.logOut,
+                                style: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: 1,

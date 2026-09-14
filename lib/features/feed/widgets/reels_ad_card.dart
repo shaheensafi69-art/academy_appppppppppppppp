@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../../core/services/ad_service.dart';
+import '../../../core/services/language_service.dart';
 
 /// A full-screen non-intrusive Reel Ad card that users can effortlessly swipe past
 class ReelsAdCard extends StatefulWidget {
@@ -170,16 +171,16 @@ class _ReelsAdCardState extends State<ReelsAdCard> {
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(
+                      children: [
+                        const Icon(
                           Icons.campaign_rounded,
                           size: 16,
                           color: primaryPink,
                         ),
-                        SizedBox(width: 6),
+                        const SizedBox(width: 6),
                         Text(
-                          "Sponsored / آگهی حامی برنامه",
-                          style: TextStyle(
+                          context.l10n.sponsored,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -235,7 +236,7 @@ class _ReelsAdCardState extends State<ReelsAdCard> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        "Swipe up for next Reel / برای ریلز بعدی به بالا بکشید",
+                        context.l10n.swipeUpForNextReel,
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.6),
                           fontSize: 12,
@@ -302,16 +303,16 @@ class _ReelsAdCardState extends State<ReelsAdCard> {
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(
+                        children: [
+                          const Icon(
                             Icons.campaign_rounded,
                             size: 16,
                             color: primaryPink,
                           ),
-                          SizedBox(width: 6),
+                          const SizedBox(width: 6),
                           Text(
-                            "Sponsored / آگهی حامی برنامه",
-                            style: TextStyle(
+                            context.l10n.sponsored,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -387,9 +388,9 @@ class _ReelsAdCardState extends State<ReelsAdCard> {
                                 ),
                               ),
                               onPressed: () {},
-                              child: const Text(
-                                "Install Now / ورود به دوره",
-                                style: TextStyle(
+                              child: Text(
+                                context.l10n.installNow,
+                                style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
                                 ),
@@ -410,7 +411,7 @@ class _ReelsAdCardState extends State<ReelsAdCard> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          "Swipe up for next Reel / برای ریلز بعدی به بالا بکشید",
+                          context.l10n.swipeUpForNextReel,
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.6),
                             fontSize: 12,

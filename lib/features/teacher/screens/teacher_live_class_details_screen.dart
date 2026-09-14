@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/localization/l10n_extensions.dart';
 import 'teacher_edit_class_screen.dart';
 import 'teacher_class_students_screen.dart';
 
@@ -190,7 +191,7 @@ class _TeacherLiveClassDetailsScreenState extends State<TeacherLiveClassDetailsS
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                details!.isActive ? "● Broadcast Active" : "○ Standby Mode",
+                                details!.isActive ? "● ${context.l10n.active.toUpperCase()}" : "○ ${context.l10n.draft}",
                                 style: TextStyle(
                                   color: details!.isActive ? Colors.green.shade700 : textGrey,
                                   fontSize: 9,
@@ -235,7 +236,7 @@ class _TeacherLiveClassDetailsScreenState extends State<TeacherLiveClassDetailsS
                                           padding: const EdgeInsets.symmetric(vertical: 12),
                                         ),
                                         icon: const Icon(Icons.video_call_rounded, size: 18),
-                                        label: const Text("Launch Room", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                        label: Text(context.l10n.startClass, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                                         onPressed: () => _launchURL(details!.meetingLink!),
                                       ),
                                     ),
@@ -255,7 +256,7 @@ class _TeacherLiveClassDetailsScreenState extends State<TeacherLiveClassDetailsS
                                           padding: const EdgeInsets.symmetric(vertical: 12),
                                         ),
                                         icon: const Icon(Icons.chat_bubble_rounded, size: 16, color: primaryPink),
-                                        label: const Text("Open Signal", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                        label: const Text("Signal", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                                         onPressed: () => _launchURL(details!.signalGroupLink!),
                                       ),
                                     ),
@@ -270,7 +271,7 @@ class _TeacherLiveClassDetailsScreenState extends State<TeacherLiveClassDetailsS
                   const SizedBox(height: 24),
 
                   // ================= دکمه‌های ابزارهای سریع (ریسپانسیو) =================
-                  const Text("Quick Operations", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                  Text(context.l10n.actions, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                   const SizedBox(height: 10),
                   LayoutBuilder(
                     builder: (context, constraints) {
@@ -291,7 +292,7 @@ class _TeacherLiveClassDetailsScreenState extends State<TeacherLiveClassDetailsS
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                 ),
                                 icon: const Icon(Icons.group_rounded, size: 16, color: primaryPink),
-                                label: const Text("Manage Roster", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                label: Text(context.l10n.manageStudents, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                                 onPressed: () {
                                   Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherClassStudentsScreen(classId: widget.classId)));
                                 },
@@ -312,7 +313,7 @@ class _TeacherLiveClassDetailsScreenState extends State<TeacherLiveClassDetailsS
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                 ),
                                 icon: const Icon(Icons.settings_rounded, size: 16, color: primaryPink),
-                                label: const Text("Class Settings", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                label: Text(context.l10n.settings, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                                 onPressed: () {
                                   Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherEditClassScreen(classId: widget.classId)))
                                       .then((_) => _fetchDetails());
@@ -327,7 +328,7 @@ class _TeacherLiveClassDetailsScreenState extends State<TeacherLiveClassDetailsS
                   const SizedBox(height: 28),
 
                   // ================= اساتید کلاس =================
-                  const Text("Assigned Faculty Instructors", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                  Text(context.l10n.faculty, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                   const SizedBox(height: 10),
                   Container(
                     padding: const EdgeInsets.all(16),
@@ -350,9 +351,9 @@ class _TeacherLiveClassDetailsScreenState extends State<TeacherLiveClassDetailsS
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text("PRIMARY INSTRUCTOR", style: TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900)),
+                              Text(context.l10n.primaryInstructor.toUpperCase(), style: const TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900)),
                               const SizedBox(height: 2),
-                              Text(details!.instructorName ?? 'Verified Faculty', style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                              Text(details!.instructorName ?? 'Faculty Member', style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
                               const SizedBox(height: 2),
                               Text(details!.instructorBio ?? 'Academy Instructor', style: const TextStyle(color: textGrey, fontSize: 10), maxLines: 2, overflow: TextOverflow.ellipsis),
                             ],

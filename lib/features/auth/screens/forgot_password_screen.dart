@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/language_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -205,9 +206,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 24),
           
-          const Text(
-            'Reset Password',
-            style: TextStyle(
+          Text(
+            context.l10n.resetPassword,
+            style: const TextStyle(
               color: textDark,
               fontSize: 26,
               fontWeight: FontWeight.w900,
@@ -216,9 +217,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 8),
           
-          const Text(
-            'Enter the email address associated with your Safi Academy account and we\'ll send you a secure reset link.',
-            style: TextStyle(
+          Text(
+            context.l10n.verificationLinkSent,
+            style: const TextStyle(
               color: textGrey,
               fontSize: 13,
               height: 1.5,
@@ -228,9 +229,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           const SizedBox(height: 32),
 
           // فیلد ایمیل
-          const Text(
-            'EMAIL ADDRESS',
-            style: TextStyle(
+          Text(
+            context.l10n.email.toUpperCase(),
+            style: const TextStyle(
               color: textGrey,
               fontSize: 10,
               fontWeight: FontWeight.w900,
@@ -316,9 +317,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       height: 20,
                       child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
                     )
-                  : const Text(
-                      'SEND RESET LINK',
-                      style: TextStyle(
+                  : Text(
+                      context.l10n.sendResetLink,
+                      style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 1.2,
@@ -346,9 +347,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           child: const Icon(Icons.mark_email_read_rounded, color: Colors.green, size: 36),
         ),
         const SizedBox(height: 24),
-        const Text(
-          'Check Your Inbox',
-          style: TextStyle(
+        Text(
+          context.l10n.checkYourInbox,
+          style: const TextStyle(
             color: textDark,
             fontSize: 24,
             fontWeight: FontWeight.w900,
@@ -356,7 +357,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'We\'ve sent a password reset link to\n${_emailController.text}',
+          '${context.l10n.verificationLinkSent}\n${_emailController.text}',
           textAlign: TextAlign.center,
           style: const TextStyle(
             color: textGrey,
@@ -372,10 +373,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             color: lightPinkBg.withOpacity(0.5),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Text(
-            'لطفاً پوشه Spam یا Junk را نیز بررسی کنید.',
+          child: Text(
+            context.l10n.checkSpamFolder,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               color: primaryPink,
               fontSize: 11,
               fontWeight: FontWeight.bold,
@@ -399,9 +400,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 borderRadius: BorderRadius.circular(16),
               ),
             ),
-            child: const Text(
-              'TRY ANOTHER EMAIL',
-              style: TextStyle(
+            child: Text(
+              context.l10n.retry.toUpperCase(),
+              style: const TextStyle(
                 color: textGrey,
                 fontSize: 12,
                 fontWeight: FontWeight.w900,

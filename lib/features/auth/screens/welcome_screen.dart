@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../core/services/language_service.dart';
+import '../../../core/widgets/language_selector_sheet.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
 import '../../feed/screens/guest_feed_layout.dart';
@@ -34,53 +36,45 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   static const Color textGrey = Color(0xFF6B7280);
   static const Color cardBorder = Color(0xFFF3F4F6);
 
-  final List<OnboardingItem> _pages = [
+  List<OnboardingItem> _getPages(BuildContext context) => [
     OnboardingItem(
-      title: "Welcome to Safi Academy",
-      subtitle:
-          "Your premier gateway to mastering financial markets, software engineering, and modern digital business.",
+      title: context.l10n.welcomeOnboarding1Title,
+      subtitle: context.l10n.welcomeOnboarding1Desc,
       iconData: Icons.school_rounded,
     ),
     OnboardingItem(
-      title: "Social Feed & Discussions",
-      subtitle:
-          "Explore real-time trade analyses, coding tutorials, market insights, and student discussions directly from the community.",
+      title: context.l10n.welcomeOnboarding2Title,
+      subtitle: context.l10n.welcomeOnboarding2Desc,
       iconData: Icons.dynamic_feed_rounded,
     ),
     OnboardingItem(
-      title: "Educational Video Reels",
-      subtitle:
-          "Watch bite-sized educational video reels, trading setups, programming tips, and market recaps with vertical swipe.",
+      title: context.l10n.welcomeOnboarding3Title,
+      subtitle: context.l10n.welcomeOnboarding3Desc,
       iconData: Icons.play_circle_fill_rounded,
     ),
     OnboardingItem(
-      title: "Direct Messaging & Community Hub",
-      subtitle:
-          "Connect with classmates, share direct media messages, collaborate with mentors, and stay updated with live alerts.",
+      title: context.l10n.welcomeOnboarding4Title,
+      subtitle: context.l10n.welcomeOnboarding4Desc,
       iconData: Icons.forum_rounded,
     ),
     OnboardingItem(
-      title: "Live Campus & Interactive Hubs",
-      subtitle:
-          "Attend corporate Microsoft Teams lectures, sync with secure Signal operations, and check in to daily classes.",
+      title: context.l10n.welcomeOnboarding5Title,
+      subtitle: context.l10n.welcomeOnboarding5Desc,
       iconData: Icons.live_tv_rounded,
     ),
     OnboardingItem(
-      title: "Professional Trading Journal",
-      subtitle:
-          "Log your forex and crypto executions, manage risk, track R/R multiples, and build your edge like a pro.",
+      title: context.l10n.welcomeOnboarding6Title,
+      subtitle: context.l10n.welcomeOnboarding6Desc,
       iconData: Icons.trending_up_rounded,
     ),
     OnboardingItem(
-      title: "Examination Center & Quizzes",
-      subtitle:
-          "Test your knowledge through descriptive academic exams, complete homework, and track your official grades.",
+      title: context.l10n.welcomeOnboarding7Title,
+      subtitle: context.l10n.welcomeOnboarding7Desc,
       iconData: Icons.assignment_turned_in_rounded,
     ),
     OnboardingItem(
-      title: "Earn & Grow Together",
-      subtitle:
-          "Invite friends using your unique referral code, earn instant cash bonuses, and unlock verified blockchain credentials.",
+      title: context.l10n.welcomeOnboarding8Title,
+      subtitle: context.l10n.welcomeOnboarding8Desc,
       iconData: Icons.verified_rounded,
     ),
   ];
@@ -91,8 +85,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     super.dispose();
   }
 
-  void _onNext() {
-    if (_currentIndex < _pages.length) {
+  void _onNext(int totalPages) {
+    if (_currentIndex < totalPages - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
@@ -123,7 +117,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final int totalPages = _pages.length + 1;
+    final pages = _getPages(context);
+    final int totalPages = pages.length + 1;
 
     return Scaffold(
       body: Container(
@@ -142,11 +137,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // هدر بالای صفحه (برند و دکمه Skip)
+              // هدر بالای صفحه (برند، انتخاب زبان و دکمه Skip)
               Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 16,
+                  horizontal: 20,
+                  vertical: 14,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -184,18 +179,49 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         ),
                       ],
                     ),
-                    if (_currentIndex < totalPages - 1)
-                      TextButton(
-                        onPressed: _navigateToGuestFeed,
-                        style: TextButton.styleFrom(foregroundColor: textGrey),
-                        child: const Text(
-                          "Skip to Feed",
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                    Row(
+                      children: [
+                        // دکمه انتخاب زبان
+                        IconButton(
+                          icon: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: surfaceWhite,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: primaryPink.withOpacity(0.35),
+                                width: 1.2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: primaryPink.withOpacity(0.08),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.language_rounded,
+                              color: primaryPink,
+                              size: 18,
+                            ),
                           ),
+                          onPressed: () => LanguageSelectorSheet.show(context),
                         ),
-                      ),
+                        if (_currentIndex < totalPages - 1)
+                          TextButton(
+                            onPressed: _navigateToGuestFeed,
+                            style: TextButton.styleFrom(foregroundColor: textGrey),
+                            child: Text(
+                              context.l10n.skipToFeed,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -209,7 +235,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     setState(() => _currentIndex = index);
                   },
                   itemBuilder: (context, index) {
-                    if (index == _pages.length) {
+                    if (index == pages.length) {
                       // صفحه نهایی (Welcome / Login / Register)
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 28.0),
@@ -242,9 +268,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               ),
                             ),
                             const SizedBox(height: 36),
-                            const Text(
-                              "Ready to Begin?",
-                              style: TextStyle(
+                            Text(
+                              context.l10n.readyToBegin,
+                              style: const TextStyle(
                                 color: textDark,
                                 fontSize: 26,
                                 fontWeight: FontWeight.w900,
@@ -253,9 +279,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 12),
-                            const Text(
-                              "Log in to your account or create a new one to access elite training and live campus tools.",
-                              style: TextStyle(
+                            Text(
+                              context.l10n.readyToBeginDesc,
+                              style: const TextStyle(
                                 color: textGrey,
                                 fontSize: 13,
                                 height: 1.6,
@@ -269,7 +295,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     }
 
                     // صفحات اسلایدر میانی
-                    final item = _pages[index];
+                    final item = pages[index];
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 28.0),
                       child: Column(
@@ -368,9 +394,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             shadowColor: primaryPink.withOpacity(0.4),
                           ),
                           onPressed: _navigateToLogin,
-                          child: const Text(
-                            "Login to Account 🚀",
-                            style: TextStyle(
+                          child: Text(
+                            context.l10n.loginToAccount,
+                            style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 0.8,
@@ -394,9 +420,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             ),
                           ),
                           onPressed: _navigateToRegister,
-                          child: const Text(
-                            "Create New Account",
-                            style: TextStyle(
+                          child: Text(
+                            context.l10n.createNewAccount,
+                            style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 0.8,
@@ -421,20 +447,20 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             child: InkWell(
                               onTap: _navigateToGuestFeed,
                               borderRadius: BorderRadius.circular(16),
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 16),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.explore_rounded,
                                       color: primaryPink,
                                       size: 18,
                                     ),
-                                    SizedBox(width: 8),
+                                    const SizedBox(width: 8),
                                     Text(
-                                      "Explore Feed & Reels as Guest 🌟",
-                                      style: TextStyle(
+                                      context.l10n.exploreFeedAsGuest,
+                                      style: const TextStyle(
                                         color: textDark,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w900,
@@ -460,10 +486,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               borderRadius: BorderRadius.circular(16),
                             ),
                           ),
-                          onPressed: _onNext,
-                          child: const Text(
-                            "Continue",
-                            style: TextStyle(
+                          onPressed: () => _onNext(totalPages),
+                          child: Text(
+                            context.l10n.continueText,
+                            style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 0.8,

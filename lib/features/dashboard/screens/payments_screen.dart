@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/language_service.dart';
 
 class TransactionItem {
   final String id;
@@ -107,17 +108,16 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
           .maybeSingle();
 
       if (res != null) {
-        final discount = res['discount_percentage'] ?? 0;
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Coupon applied successfully! $discount% discount unlocked. 🎉"), backgroundColor: Colors.green),
+            SnackBar(content: Text(context.l10n.couponSuccess), backgroundColor: Colors.green),
           );
           _couponController.clear();
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Invalid or expired coupon code. ❌"), backgroundColor: Colors.redAccent),
+            SnackBar(content: Text(context.l10n.couponInvalid), backgroundColor: Colors.redAccent),
           );
         }
       }
@@ -202,15 +202,15 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
               const SizedBox(height: 24),
 
               // جزئیات
-              _detailRow("Transaction ID", tx.id),
+              _detailRow(context.l10n.transactionId, tx.id),
               const SizedBox(height: 16),
-              _detailRow("Type", tx.transactionType.toUpperCase()),
+              _detailRow(context.l10n.type, tx.transactionType.toUpperCase()),
               const SizedBox(height: 16),
-              _detailRow("Gateway", tx.paymentGateway.toUpperCase()),
+              _detailRow(context.l10n.gateway, tx.paymentGateway.toUpperCase()),
               const SizedBox(height: 16),
-              _detailRow("Reference", tx.referenceId),
+              _detailRow(context.l10n.reference, tx.referenceId),
               const SizedBox(height: 16),
-              _detailRow("Date & Time", tx.createdAt.replaceFirst('T', ' ').substring(0, 16)),
+              _detailRow(context.l10n.dateTime, tx.createdAt.replaceFirst('T', ' ').substring(0, 16)),
               
               const SizedBox(height: 32),
               SizedBox(
@@ -224,7 +224,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("CLOSE", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900)),
+                  child: Text(context.l10n.close.toUpperCase(), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900)),
                 ),
               ),
               const SizedBox(height: 16),
@@ -283,13 +283,13 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                       child: const Icon(Icons.receipt_long_rounded, color: primaryPink, size: 28),
                     ),
                     const SizedBox(width: 16),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Payments & Invoices", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark, letterSpacing: -0.5)),
-                          SizedBox(height: 4),
-                          Text("Track transaction history, receipts, and apply discount coupons.", style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
+                          Text(context.l10n.paymentsAndInvoices, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark, letterSpacing: -0.5)),
+                          const SizedBox(height: 4),
+                          Text(context.l10n.paymentsAndInvoicesDesc, style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
                         ],
                       ),
                     ),
@@ -299,7 +299,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
               const SizedBox(height: 24),
 
               // --- بخش اعمال کد تخفیف ---
-              const Text("Discount & Scholarships", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+              Text(context.l10n.discountAndScholarships, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(20),
@@ -319,7 +319,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                         // رنگ تیره اجباری برای خوانایی در حالت لایت‌مود
                         style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900),
                         decoration: InputDecoration(
-                          hintText: "Enter coupon code...",
+                          hintText: context.l10n.enterCouponCode,
                           hintStyle: const TextStyle(color: textGrey, fontSize: 13, fontWeight: FontWeight.w500),
                           filled: true,
                           fillColor: cardBorder.withOpacity(0.5),
@@ -341,7 +341,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                       onPressed: isApplyingCoupon ? null : _applyCoupon,
                       child: isApplyingCoupon
                           ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : const Text("Apply", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900)),
+                          : Text(context.l10n.apply, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900)),
                     ),
                   ],
                 ),
@@ -349,7 +349,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
               const SizedBox(height: 30),
 
               // --- بخش تاریخچه تراکنش‌ها ---
-              const Text("Transaction History", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+              Text(context.l10n.transactionHistory, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
               const SizedBox(height: 12),
 
               isLoading
@@ -389,7 +389,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                                           children: [
                                             Text(tx.transactionType.toUpperCase(), style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
                                             const SizedBox(height: 4),
-                                            Text("Gateway: ${tx.paymentGateway}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                            Text("${context.l10n.gateway}: ${tx.paymentGateway}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                                             const SizedBox(height: 2),
                                             Text(tx.createdAt.split('T')[0], style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500)),
                                           ],
@@ -422,11 +422,11 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(color: cardBorder, width: 1.5),
                           ),
-                          child: const Column(
+                          child: Column(
                             children: [
-                              Icon(Icons.receipt_long_outlined, size: 40, color: textGrey),
-                              SizedBox(height: 12),
-                              Text("No payment history found.", style: TextStyle(color: textGrey, fontSize: 13, fontWeight: FontWeight.bold)),
+                              const Icon(Icons.receipt_long_outlined, size: 40, color: textGrey),
+                              const SizedBox(height: 12),
+                              Text(context.l10n.noTransactionsYet, style: const TextStyle(color: textGrey, fontSize: 13, fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),

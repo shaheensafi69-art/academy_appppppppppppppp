@@ -63,7 +63,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get edit => 'Modifier';
 
   @override
-  String get search => 'Rechercher...';
+  String get search => 'Rechercher';
 
   @override
   String get loading => 'Chargement...';
@@ -196,4 +196,2245 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get soon => 'Bientôt disponible';
+
+  @override
+  String get overview => 'Aperçu';
+
+  @override
+  String get wishlist => 'Favoris';
+
+  @override
+  String get liveCampus => 'Campus en direct';
+
+  @override
+  String get live => 'En direct';
+
+  @override
+  String get examsQuizzes => 'Examens & Quiz';
+
+  @override
+  String get paymentsInvoices => 'Paiements & Factures';
+
+  @override
+  String get tradingJournal => 'Journal de trading';
+
+  @override
+  String get createPost => 'Créer une publication';
+
+  @override
+  String get socialFeed => 'Fil d\'actualité';
+
+  @override
+  String get feed => 'Fil';
+
+  @override
+  String get walletReferral => 'Portefeuille & Parrainage';
+
+  @override
+  String get friendsNetwork => 'Amis & Réseau';
+
+  @override
+  String get friends => 'Amis';
+
+  @override
+  String get achievements => 'Réalisations';
+
+  @override
+  String get safiAiAssistant => 'Assistant IA Safi';
+
+  @override
+  String get helpCenter => 'Centre d\'aide';
+
+  @override
+  String get supportTickets => 'Tickets de support';
+
+  @override
+  String get myProfile => 'Mon profil';
+
+  @override
+  String get appSettings => 'Paramètres de l\'application';
+
+  @override
+  String get studentPortalMenu => 'MENU DU PORTAIL ÉTUDIANT';
+
+  @override
+  String get logOut => 'DÉCONNEXION';
+
+  @override
+  String get menu => 'MENU';
+
+  @override
+  String get loadingDashboard => 'CHARGEMENT DU TABLEAU DE BORD...';
+
+  @override
+  String get academyStudent => 'ÉTUDIANT DE L\'ACADÉMIE';
+
+  @override
+  String get walletBalance => 'Solde du portefeuille';
+
+  @override
+  String get dailyStreak => 'SÉRIE QUOTIDIENNE';
+
+  @override
+  String get longestStreak => 'MEILLEURE SÉRIE';
+
+  @override
+  String daysCount(String count) {
+    return '$count Jours';
+  }
+
+  @override
+  String get enrolled => 'Inscrit';
+
+  @override
+  String get score => 'Score';
+
+  @override
+  String get certs => 'Certificats';
+
+  @override
+  String get continueLearning => 'Continuer l\'apprentissage';
+
+  @override
+  String get upcomingClasses => 'Cours en direct à venir';
+
+  @override
+  String get noClassesToday => 'Aucun cours en direct prévu aujourd\'hui';
+
+  @override
+  String get exploreAll => 'Explorer tout';
+
+  @override
+  String get myEnrolled => 'Mes cours inscrits';
+
+  @override
+  String get searchCourses => 'Rechercher par titre de cours, instructeur...';
+
+  @override
+  String get allCategories => 'Toutes les catégories';
+
+  @override
+  String get filterByCategory => 'Filtrer par catégorie';
+
+  @override
+  String get getStarted => 'Commencer';
+
+  @override
+  String get exploreAsGuest => 'Explorer en tant qu\'invité';
+
+  @override
+  String get alreadyHaveAccount => 'Vous avez déjà un compte ? Connexion';
+
+  @override
+  String get dontHaveAccount => 'Pas encore de compte ? S\'inscrire';
+
+  @override
+  String get stepIntoDigitalCampus => 'Entrez dans votre campus numérique.';
+
+  @override
+  String get emailAddress => 'ADRESSE E-MAIL';
+
+  @override
+  String get enterYourEmail => 'Entrez votre e-mail';
+
+  @override
+  String get newPassword => 'Nouveau mot de passe';
+
+  @override
+  String get enterStrongPassword => 'Entrez un mot de passe fort...';
+
+  @override
+  String get forgot => 'Oublié ?';
+
+  @override
+  String get rememberMe => 'Se souvenir de moi';
+
+  @override
+  String get signIn => 'SE CONNECTER';
+
+  @override
+  String get signUp => 'SINSCRIRE';
+
+  @override
+  String get newHere => 'Nouveau ici ?';
+
+  @override
+  String get createAccount => 'Créer un compte';
+
+  @override
+  String get loginToAccount => 'Connexion au compte 🚀';
+
+  @override
+  String get createNewAccount => 'Créer un nouveau compte';
+
+  @override
+  String get skipToFeed => 'Passer au fil dactualité';
+
+  @override
+  String get readyToBegin => 'Prêt à commencer ?';
+
+  @override
+  String get readyToBeginDesc =>
+      'Connectez-vous ou créez un compte pour accéder aux formations délite et aux outils de campus en direct.';
+
+  @override
+  String get continueText => 'Continuer';
+
+  @override
+  String get exploreFeedAsGuest =>
+      'Explorer le fil et les reels en tant quinvité 🌟';
+
+  @override
+  String get personalDetails => 'Informations personnelles';
+
+  @override
+  String get contactAndCountry => 'Contact et pays';
+
+  @override
+  String get accountSecurity => 'Sécurité du compte';
+
+  @override
+  String get learningGoals => 'Objectifs dapprentissage';
+
+  @override
+  String get fatherName => 'Nom du père';
+
+  @override
+  String get dateOfBirth => 'Date de naissance';
+
+  @override
+  String get country => 'Pays';
+
+  @override
+  String get phoneNumber => 'Numéro de téléphone';
+
+  @override
+  String get bio => 'Biographie / Résumé';
+
+  @override
+  String get referralCode => 'Code de parrainage (Optionnel)';
+
+  @override
+  String get profilePhotoRequired => 'La photo de profil est obligatoire.';
+
+  @override
+  String get fillPersonalDetails =>
+      'Veuillez remplir toutes les informations personnelles.';
+
+  @override
+  String get countryPhoneRequired =>
+      'Le pays et le numéro de téléphone sont obligatoires.';
+
+  @override
+  String get verifyEmailBeforeLogin =>
+      'Veuillez vérifier votre adresse e-mail avant de vous connecter.';
+
+  @override
+  String get networkConnectionFailed =>
+      'Échec de connexion réseau. Veuillez vérifier votre connexion Internet.';
+
+  @override
+  String get passwordMinLength =>
+      'Le mot de passe doit comporter au moins 6 caractères.';
+
+  @override
+  String get passwordChangedSuccess => 'Mot de passe changé avec succès ! 🔒';
+
+  @override
+  String get updatePassword => 'METTRE À JOUR LE MOT DE PASSE 🔒';
+
+  @override
+  String get appLockAndPrivacy => 'Verrouillage et confidentialité';
+
+  @override
+  String get biometricAuth => 'Authentification biométrique';
+
+  @override
+  String get biometricAuthDesc =>
+      'Utilisez lempreinte digitale ou la reconnaissance faciale.';
+
+  @override
+  String get biometricLoginEnabled => 'Connexion biométrique activée ! 🔓';
+
+  @override
+  String get biometricsNotSupported =>
+      'La biométrie nest pas prise en charge sur cet appareil.';
+
+  @override
+  String get pinLock => 'Code PIN à 4 chiffres';
+
+  @override
+  String get pinLockDesc => 'Définissez un code PIN pour un accès rapide.';
+
+  @override
+  String get setSecretPin => 'Définir le code PIN à 4 chiffres';
+
+  @override
+  String get savePin => 'Enregistrer le PIN';
+
+  @override
+  String get pinSavedSuccess => 'Code PIN enregistré avec succès ! 🔑';
+
+  @override
+  String get pinMustBe4Digits => 'Le PIN doit comporter 4 chiffres.';
+
+  @override
+  String get preferencesAndLanguage => 'Préférences et langue';
+
+  @override
+  String get pushNotifications => 'Notifications Push';
+
+  @override
+  String get pushNotificationsDesc =>
+      'Recevez les mises à jour des cours, alertes et messages.';
+
+  @override
+  String get liveCampusSession => 'SESSION DE CAMPUS EN DIRECT';
+
+  @override
+  String get joinLiveMeetingRoom => 'Rejoindre la réunion en direct 🚀';
+
+  @override
+  String get join => 'Rejoindre 🚀';
+
+  @override
+  String get schedule => 'Horaire';
+
+  @override
+  String get inProgress => 'EN COURS';
+
+  @override
+  String get noCoursesEnrolledYet => 'Vous nêtes encore inscrit à aucun cours.';
+
+  @override
+  String get activeLiveCampusClasses => 'Classes actives en direct';
+
+  @override
+  String get noActiveClasses => 'Aucun groupe de classe actif trouvé.';
+
+  @override
+  String get academyLearningHub => 'Centre dapprentissage de lacadémie';
+
+  @override
+  String get academyHubSubtitle =>
+      'Explorez les masterclasses, consultez vos inscriptions et améliorez vos compétences.';
+
+  @override
+  String get noCoursesFound => 'Aucun cours ne correspond à votre recherche.';
+
+  @override
+  String get all => 'Tous';
+
+  @override
+  String get categories => 'Catégories';
+
+  @override
+  String get notices => 'Avis';
+
+  @override
+  String get myProgress => 'Mes progrès';
+
+  @override
+  String get completedCourses => 'Cours terminés';
+
+  @override
+  String get totalLessons => 'Total des leçons';
+
+  @override
+  String get downloadCertificate => 'Télécharger le certificat';
+
+  @override
+  String get shareCertificate => 'Partager le certificat';
+
+  @override
+  String get walletDeposit => 'Déposer des fonds';
+
+  @override
+  String get walletWithdraw => 'Retirer des fonds';
+
+  @override
+  String get inviteFriends => 'Inviter des amis';
+
+  @override
+  String get copyReferral => 'Copier le lien de parrainage';
+
+  @override
+  String get copiedToClipboard => 'Copié dans le presse-papiers !';
+
+  @override
+  String get close => 'Fermer';
+
+  @override
+  String get welcomeOnboarding1Title => 'Bienvenue à Safi Academy';
+
+  @override
+  String get welcomeOnboarding1Desc =>
+      'Votre passerelle délite pour maîtriser la finance, le développement logiciel et le business numérique.';
+
+  @override
+  String get welcomeOnboarding2Title => 'Fil social et discussions';
+
+  @override
+  String get welcomeOnboarding2Desc =>
+      'Explorez les analyses de marché et les tutoriels directement depuis la communauté.';
+
+  @override
+  String get welcomeOnboarding3Title => 'Vidéos éducatives courtes';
+
+  @override
+  String get welcomeOnboarding3Desc =>
+      'Regardez des vidéos éducatives condensées et des conseils pratiques.';
+
+  @override
+  String get welcomeOnboarding4Title => 'Messagerie directe et communauté';
+
+  @override
+  String get welcomeOnboarding4Desc =>
+      'Communiquez avec vos camarades et mentors en temps réel.';
+
+  @override
+  String get welcomeOnboarding5Title => 'Campus en direct et interactif';
+
+  @override
+  String get welcomeOnboarding5Desc =>
+      'Participez aux cours en direct et collaborez avec les formateurs.';
+
+  @override
+  String get welcomeOnboarding6Title => 'Journal de trading professionnel';
+
+  @override
+  String get welcomeOnboarding6Desc =>
+      'Enregistrez vos trades et gérez votre risque avec rigueur.';
+
+  @override
+  String get welcomeOnboarding7Title => 'Centre dexamens et quiz';
+
+  @override
+  String get welcomeOnboarding7Desc =>
+      'Évaluez vos compétences et suivez vos notes officielles.';
+
+  @override
+  String get welcomeOnboarding8Title => 'Apprenez et gagnez ensemble';
+
+  @override
+  String get welcomeOnboarding8Desc =>
+      'Parrainez vos proches, gagnez des bonus et obtenez des diplômes certifiés.';
+
+  @override
+  String get loadingExams => 'Chargement des examens...';
+
+  @override
+  String get examinationCenter => 'Centre d\'examens';
+
+  @override
+  String get examinationCenterDesc =>
+      'Passez vos examens académiques et suivez vos notes officielles.';
+
+  @override
+  String get totalExams => 'Total des examens';
+
+  @override
+  String get passed => 'Réussi';
+
+  @override
+  String get toDo => 'À faire';
+
+  @override
+  String get attempted => 'Effectué';
+
+  @override
+  String get passMark => 'Note de passage';
+
+  @override
+  String get startExam => 'Commencer l\'examen';
+
+  @override
+  String get statusPassed => 'Réussi';
+
+  @override
+  String get statusFailed => 'Échoué';
+
+  @override
+  String get awaitingGrading => 'En attente de notation';
+
+  @override
+  String get noExamsAvailable => 'Aucun examen disponible pour le moment.';
+
+  @override
+  String get assignmentsAttendance => 'Devoirs et présence';
+
+  @override
+  String get assignmentsDesc =>
+      'Signez votre présence du jour, soumettez vos devoirs et suivez vos progrès.';
+
+  @override
+  String get todaysCheckIn => 'Présence du jour';
+
+  @override
+  String get signed => 'Signé';
+
+  @override
+  String get signNow => 'Signer maintenant';
+
+  @override
+  String get signing => 'Enregistrement...';
+
+  @override
+  String get teamsRoom => 'Salle Teams';
+
+  @override
+  String get signalGroup => 'Groupe Signal';
+
+  @override
+  String get classAssignments => 'Devoirs du cours';
+
+  @override
+  String get submitAssignment => 'Soumettre le devoir';
+
+  @override
+  String get uploadSolution => 'Téléverser la solution';
+
+  @override
+  String get downloadAttachment => 'Télécharger la pièce jointe';
+
+  @override
+  String get noAssignmentsFound => 'Aucun devoir trouvé.';
+
+  @override
+  String get due => 'Échéance';
+
+  @override
+  String get submitted => 'Soumis';
+
+  @override
+  String get graded => 'Noté';
+
+  @override
+  String get feedback => 'Commentaire';
+
+  @override
+  String get globalScholarships => 'Bourses internationales';
+
+  @override
+  String get globalScholarshipsDesc =>
+      'Découvrez des bourses universitaires mondiales vérifiées.';
+
+  @override
+  String get availableOpportunities => 'Opportunités disponibles';
+
+  @override
+  String get scholarshipOverview => 'Aperçu de la bourse';
+
+  @override
+  String get noScholarshipsFound => 'Aucune bourse trouvée pour cette région.';
+
+  @override
+  String get applyNow => 'Postuler maintenant';
+
+  @override
+  String get deadline => 'Date limite';
+
+  @override
+  String get eligibilityCriteria => 'Critères d\'éligibilité';
+
+  @override
+  String get requiredDocuments => 'Documents requis';
+
+  @override
+  String get myAchievements => 'Mes réalisations';
+
+  @override
+  String get myAchievementsDesc =>
+      'Un dossier structuré de vos étapes académiques.';
+
+  @override
+  String get officialCertificates => 'Certificats officiels';
+
+  @override
+  String get badgesAndHonors => 'Badges et distinctions';
+
+  @override
+  String get verifiedCredential => 'Titre certifié';
+
+  @override
+  String get issued => 'Délivré le';
+
+  @override
+  String get viewPdf => 'Voir le PDF';
+
+  @override
+  String get noCertificatesYet => 'Aucun certificat pour l\'instant.';
+
+  @override
+  String get noBadgesYet => 'Aucun badge pour l\'instant.';
+
+  @override
+  String get points => 'Pts';
+
+  @override
+  String get helpCenterTitle => 'Centre d\'aide et d\'assistance';
+
+  @override
+  String get helpCenterDesc =>
+      'Soumettez des tickets, consultez la FAQ et contactez notre équipe.';
+
+  @override
+  String get submitTicket => 'Envoyer le ticket';
+
+  @override
+  String get submittingTicket => 'Envoi du ticket en cours...';
+
+  @override
+  String get ticketSubject => 'Objet du ticket';
+
+  @override
+  String get ticketMessage => 'Message';
+
+  @override
+  String get ticketDepartment => 'Département';
+
+  @override
+  String get ticketSuccess => 'Ticket d\'assistance envoyé avec succès ! 🎫';
+
+  @override
+  String get faqTitle => 'Foire aux questions';
+
+  @override
+  String get contactSupport => 'Contacter l\'assistance';
+
+  @override
+  String get howCanWeHelp => 'Comment pouvons-nous vous aider ?';
+
+  @override
+  String get howCanWeHelpDesc =>
+      'Ouvrez un ticket, explorez la FAQ ou contactez-nous directement.';
+
+  @override
+  String get submitSupportTicket => 'Soumettre un ticket d\'assistance';
+
+  @override
+  String get fillSubjectAndMessage =>
+      'Veuillez remplir l\'objet et le message.';
+
+  @override
+  String get subjectHint => 'Objet / Résumé du problème...';
+
+  @override
+  String get messageHint => 'Décrivez votre problème ou demande en détail...';
+
+  @override
+  String get generalSupport => 'Assistance générale';
+
+  @override
+  String get technicalIssue => 'Problème technique';
+
+  @override
+  String get billingAndPayments => 'Facturation & Paiements';
+
+  @override
+  String get courseContent => 'Contenu du cours';
+
+  @override
+  String get directCommunications => 'Communications directes';
+
+  @override
+  String get officialEmail => 'E-mail officiel';
+
+  @override
+  String get academyHotline => 'Ligne directe de l\'académie';
+
+  @override
+  String get officialChannelsAndSocials => 'Canaux officiels & Réseaux sociaux';
+
+  @override
+  String get whatsappCommunity => 'Canal communautaire WhatsApp';
+
+  @override
+  String get whatsappCommunityDesc =>
+      'Rejoignez notre canal officiel pour recevoir des alertes instantanées';
+
+  @override
+  String get faq1Q => 'Comment rejoindre les cours en direct ?';
+
+  @override
+  String get faq1A =>
+      'Rejoignez vos sessions en direct depuis la section \'Campus en direct\' avec le lien fourni pour votre groupe. Vérifiez que Zoom ou Meet est installé.';
+
+  @override
+  String get faq2Q => 'Comment les certificats officiels sont-ils délivrés ?';
+
+  @override
+  String get faq2A =>
+      'Une fois vos examens finaux réussis et les exigences du cours remplies, votre certificat vérifié apparaîtra dans la section \'Certificats\' au format PDF.';
+
+  @override
+  String get faq3Q => 'Puis-je postuler à des bourses internationales ?';
+
+  @override
+  String get faq3A =>
+      'Absolument ! Explorez notre portail \'Bourses\' pour découvrir des bourses mondiales intégralement financées sélectionnées par la Safi Academy.';
+
+  @override
+  String get paymentsAndInvoices => 'Paiements & Factures';
+
+  @override
+  String get paymentsAndInvoicesDesc =>
+      'Consultez l\'historique de vos transactions, reçus et appliquez des coupons.';
+
+  @override
+  String get discountAndScholarships => 'Réductions & Bourses';
+
+  @override
+  String get enterCouponCode => 'Entrez le code promo...';
+
+  @override
+  String get apply => 'Appliquer';
+
+  @override
+  String get couponSuccess =>
+      'Code promo appliqué avec succès ! Réduction débloquée. 🎉';
+
+  @override
+  String get couponInvalid => 'Code promo invalide ou expiré. ❌';
+
+  @override
+  String get transactionHistory => 'Historique des transactions';
+
+  @override
+  String get transactionDetails => 'Détails de la transaction';
+
+  @override
+  String get transactionId => 'ID de transaction';
+
+  @override
+  String get gateway => 'Moyen de paiement';
+
+  @override
+  String get reference => 'Référence';
+
+  @override
+  String get dateTime => 'Date & Heure';
+
+  @override
+  String get noTransactionsYet => 'Aucun historique de paiement trouvé.';
+
+  @override
+  String get safiCommunity => 'Communauté Safi';
+
+  @override
+  String get safiCommunityDesc =>
+      'Échangez en temps réel. Accédez à vos groupes de classe officiels sur Signal.';
+
+  @override
+  String get searchActiveChannels => 'Rechercher des canaux actifs...';
+
+  @override
+  String get faculty => 'Corps professoral';
+
+  @override
+  String get enterSignalGroup => 'Accéder au canal Signal sécurisé...';
+
+  @override
+  String get signalSyncPending => 'Synchronisation Signal en attente';
+
+  @override
+  String get noEnrolledChannels => 'Aucun canal actif';
+
+  @override
+  String get joinCurriculumToUnlock =>
+      'Inscrivez-vous à un cours pour débloquer votre espace d\'apprentissage.';
+
+  @override
+  String get loadingCommunity => 'CHARGEMENT DE LA COMMUNAUTÉ...';
+
+  @override
+  String get downloadFile => 'Télécharger le fichier';
+
+  @override
+  String get downloadFileToDevice => 'Télécharger sur l\'appareil 📥';
+
+  @override
+  String get downloadSuccess =>
+      'Fichier téléchargé avec succès dans le dossier Téléchargements ! 📁';
+
+  @override
+  String get downloadingFile => 'TÉLÉCHARGEMENT DU FICHIER...';
+
+  @override
+  String get loadingPdfViewer => 'Chargement du lecteur PDF...';
+
+  @override
+  String get couldNotLoadPdf => 'Impossible de charger le document PDF.';
+
+  @override
+  String get noDocumentAttached => 'Aucun document joint.';
+
+  @override
+  String get leadInstructor => 'Instructeur principal';
+
+  @override
+  String get includesCertificate => 'Certificat inclus';
+
+  @override
+  String get noCertificate => 'Sans certificat';
+
+  @override
+  String get freeSession => 'SESSION GRATUITE';
+
+  @override
+  String get freeTrialBannerTitle => 'Essai gratuit de 7 jours disponible ! 🎁';
+
+  @override
+  String get freeTrialBannerDesc =>
+      'Réservation d\'essai gratuit de 7 jours active. L\'accès se verrouille automatiquement après une semaine.';
+
+  @override
+  String get classHubAndDetails => 'Espace de classe & Détails';
+
+  @override
+  String get enrolledAndActive => 'INSCRIT ET ACTIF ✓';
+
+  @override
+  String get paymentPending => 'PAIEMENT EN ATTENTE';
+
+  @override
+  String get registerForCourse => 'S\'inscrire au cours';
+
+  @override
+  String get alreadyEnrolled => 'Déjà inscrit';
+
+  @override
+  String get courseSyllabus => 'Programme du cours';
+
+  @override
+  String get selectClassBatch => 'Choisir le groupe et l\'horaire';
+
+  @override
+  String get scheduleInfo => 'Informations sur les horaires';
+
+  @override
+  String get classDaysTime => 'Jours et heures de cours';
+
+  @override
+  String get joinMeeting => 'Rejoindre la salle de réunion';
+
+  @override
+  String get joinSignalGroup => 'Rejoindre le groupe Signal';
+
+  @override
+  String get examPaper => 'Feuille d\'examen';
+
+  @override
+  String get answered => 'Répondu';
+
+  @override
+  String get autoSavedSmartExam =>
+      'Enregistrement automatique • Examen intelligent';
+
+  @override
+  String get descriptiveQuestion => 'Question rédactionnelle';
+
+  @override
+  String get multipleChoiceQuestion => 'Choix multiple';
+
+  @override
+  String get writeDescriptiveAnswer => 'Rédigez votre réponse ici...';
+
+  @override
+  String get submitExam => 'Soumettre l\'examen';
+
+  @override
+  String get confirmSubmitExam =>
+      'Êtes-vous sûr de vouloir soumettre vos réponses d\'examen ?';
+
+  @override
+  String get examSubmittedSuccess =>
+      'Examen soumis avec succès ! Les professeurs vont l\'examiner.';
+
+  @override
+  String get timeRemaining => 'Temps restant';
+
+  @override
+  String get liveSupport => 'Assistance en direct';
+
+  @override
+  String get createTicket => 'Créer un ticket';
+
+  @override
+  String get activeTickets => 'Tickets actifs';
+
+  @override
+  String get pendingTickets => 'En attente';
+
+  @override
+  String get closedTickets => 'Tickets fermés';
+
+  @override
+  String get noTicketsFound => 'Aucun ticket d\'assistance trouvé.';
+
+  @override
+  String get back => 'Retour';
+
+  @override
+  String get weeks => 'Semaines';
+
+  @override
+  String get aboutCourse => 'À propos du cours';
+
+  @override
+  String get meetInstructors => 'Vos instructeurs';
+
+  @override
+  String get reserveSeatAndClass => 'Réserver votre place et classe';
+
+  @override
+  String get closeRegistrationForm => 'Fermer le formulaire';
+
+  @override
+  String get secureRegistrationTitle => 'Inscription sécurisée et calendrier';
+
+  @override
+  String get secureRegistrationSubtitle =>
+      'Remplissez vos coordonnées pour finaliser l\'inscription.';
+
+  @override
+  String get fullNameField => 'NOM COMPLET *';
+
+  @override
+  String get fatherNameField => 'NOM DU PÈRE *';
+
+  @override
+  String get emailAddressField => 'ADRESSE E-MAIL *';
+
+  @override
+  String get whatsappNumberField => 'NUMÉRO WHATSAPP *';
+
+  @override
+  String get preferredInstructor => 'INSTRUCTEUR PRÉFÉRÉ *';
+
+  @override
+  String get selectClassSchedule => 'CHOISIR CLASSE ET HORAIRE *';
+
+  @override
+  String get noActiveSchedule =>
+      'Aucune classe active listée. Veuillez vous inscrire et l\'équipe vous contactera.';
+
+  @override
+  String get additionalNotesOptional => 'NOTES SUPPLÉMENTAIRES (FACULTATIF)';
+
+  @override
+  String get finalizeRegistration => 'Finaliser l\'inscription';
+
+  @override
+  String get registrationSuccess => 'Inscription et réservation réussies ! 🎉';
+
+  @override
+  String get fillRequiredFields =>
+      'Veuillez remplir tous les champs obligatoires.';
+
+  @override
+  String get authRequired =>
+      'Connexion requise. Veuillez vous connecter d\'abord.';
+
+  @override
+  String get enrollmentError =>
+      'Vous êtes déjà inscrit ou une erreur est survenue.';
+
+  @override
+  String get courseLinkCopied =>
+      'Lien du cours copié dans le presse-papiers ! 🔗';
+
+  @override
+  String get courseNotFound => 'Cours introuvable.';
+
+  @override
+  String get loadingCourseDetails => 'CHARGEMENT DES DÉTAILS DU COURS...';
+
+  @override
+  String get classSpecifications => 'Spécifications de la classe';
+
+  @override
+  String get duration => 'Durée';
+
+  @override
+  String get classTime => 'Heure du cours';
+
+  @override
+  String get classDays => 'Jours de cours';
+
+  @override
+  String get accessChannels => 'Canaux d\'accès';
+
+  @override
+  String get joinTeamsLectureRoom => 'Rejoindre la salle Teams';
+
+  @override
+  String get joinTeamsLectureRoomSubtitle =>
+      'Connexion immédiate à la session en direct';
+
+  @override
+  String get openSignalEncryptedGroup => 'Groupe crypté Signal';
+
+  @override
+  String get signalEncryptedGroupSubtitle =>
+      'Messagerie sécurisée et actualités';
+
+  @override
+  String get classLockedTuitionPending =>
+      'Les salles de classe sont verrouillées jusqu\'à validation du paiement.';
+
+  @override
+  String get preparingExamPaper => 'PRÉPARATION DU SUJET D\'EXAMEN...';
+
+  @override
+  String get paperSubmittedSuccess => 'Examen soumis avec succès !';
+
+  @override
+  String get paperSubmittedDesc =>
+      'Vos réponses ont été enregistrées. Le professeur notera bientôt votre travail.';
+
+  @override
+  String get returnToExamCenter => 'Retour au centre d\'examen';
+
+  @override
+  String get unansweredQuestions => 'Questions sans réponse';
+
+  @override
+  String get unansweredWarning =>
+      'Vous avez ignoré des questions. Êtes-vous sûr de vouloir soumettre ?';
+
+  @override
+  String get review => 'Revoir';
+
+  @override
+  String get pts => 'Pts';
+
+  @override
+  String get submitExamPaper => 'SOUMETTRE L\'EXAMEN 🚀';
+
+  @override
+  String get recentConversations => 'Conversations récentes';
+
+  @override
+  String get noConversationsYet => 'Aucune conversation pour le moment';
+
+  @override
+  String get startLiveChatHint =>
+      'Cliquez sur la bannière ci-dessus pour lancer le chat en direct.';
+
+  @override
+  String get liveSupportAgent => 'Agent de support en direct';
+
+  @override
+  String get aiAndHumanOnline => 'Agents IA et humains en ligne';
+
+  @override
+  String get startConversation => 'Démarrer la conversation 💬';
+
+  @override
+  String get inConversation => 'En conversation';
+
+  @override
+  String get femaleVoice => 'Femme';
+
+  @override
+  String get maleVoice => 'Homme';
+
+  @override
+  String get femalePartner => 'Compagne vocale';
+
+  @override
+  String get malePartner => 'Compagnon vocal';
+
+  @override
+  String get selectVoiceCharacter => 'Choisir le compagnon vocal';
+
+  @override
+  String get selectVoiceCharacterDesc =>
+      'Choisissez un personnage avec un timbre de voix unique';
+
+  @override
+  String get change => 'Modifier';
+
+  @override
+  String get accessRestricted => 'Accès restreint';
+
+  @override
+  String get journalRestrictedDesc =>
+      'Le journal de trading professionnel est réservé exclusivement aux étudiants de la masterclass Marchés Financiers & Forex.';
+
+  @override
+  String get newChat => 'NOUVEAU CHAT';
+
+  @override
+  String get waitingForAdmin => 'En attente de l\'administrateur';
+
+  @override
+  String get aiSupportActive => 'Support IA actif';
+
+  @override
+  String get ticketClosed => 'Ticket fermé';
+
+  @override
+  String get messageAdmin => 'Message à l\'admin...';
+
+  @override
+  String get askSafiAi => 'Demander à Safi IA...';
+
+  @override
+  String get uploading => 'Téléchargement en cours...';
+
+  @override
+  String get aiTyping => 'Safi IA écrit...';
+
+  @override
+  String get documentAttached => 'Document joint';
+
+  @override
+  String get resetPassword => 'Réinitialiser le mot de passe';
+
+  @override
+  String get sendResetLink => 'ENVOYER LE LIEN DE RÉINITIALISATION';
+
+  @override
+  String get checkYourInbox => 'Vérifiez votre boîte de réception';
+
+  @override
+  String get checkSpamFolder =>
+      'Veuillez également vérifier votre dossier Spam ou Courrier indésirable.';
+
+  @override
+  String get securityVerification => 'Vérification de sécurité';
+
+  @override
+  String get enter4DigitPin =>
+      'Entrez votre code PIN à 4 chiffres pour continuer';
+
+  @override
+  String get incorrectPin => 'Code PIN incorrect ❌';
+
+  @override
+  String get nextStep => 'ÉTAPE SUIVANTE';
+
+  @override
+  String get completeRegistration => 'TERMINER 🚀';
+
+  @override
+  String get verifyYourIdentity => 'Vérifiez votre identité';
+
+  @override
+  String get verificationLinkSent =>
+      'Nous avons envoyé un lien de confirmation sécurisé à votre adresse e-mail :';
+
+  @override
+  String get proceedToLogin => 'PASSER À LA CONNEXION';
+
+  @override
+  String get clickLinkInEmail =>
+      'Veuillez ouvrir votre e-mail et cliquer sur le bouton de vérification.';
+
+  @override
+  String get friendRequirementNotice =>
+      'Vous devez d\'abord devenir ami avec cet utilisateur pour lui envoyer des messages directs.';
+
+  @override
+  String get sendFriendRequest => 'Envoyer une demande d\'ami';
+
+  @override
+  String get friendRequestSent => 'Demande d\'ami envoyée avec succès ! 🤝';
+
+  @override
+  String get friendRequestError =>
+      'Demande d\'ami déjà envoyée ou une erreur est survenue.';
+
+  @override
+  String get reply => 'Répondre';
+
+  @override
+  String get replyingTo => 'En réponse à';
+
+  @override
+  String get yourself => 'vous-même';
+
+  @override
+  String get onlineNow => 'En ligne maintenant';
+
+  @override
+  String get educationalReel => 'Reel éducatif 🎬';
+
+  @override
+  String get checkOutReel => 'Découvrez ce reel éducatif ! 🌟';
+
+  @override
+  String get watchReel => 'Regarder le Reel 🎥';
+
+  @override
+  String get sponsored => 'Sponsorisé';
+
+  @override
+  String get learnMore => 'En savoir plus';
+
+  @override
+  String get installNow => 'Installer maintenant';
+
+  @override
+  String get swipeUpForNextReel => 'Glissez vers le haut pour le Reel suivant';
+
+  @override
+  String get activityAndNotifications => 'Activité et notifications';
+
+  @override
+  String get allActivities => 'Tous 🔥';
+
+  @override
+  String get likesAndComments => 'J\'aime et commentaires ❤️';
+
+  @override
+  String get friendRequests => 'Demandes d\'amis 👥';
+
+  @override
+  String get noActivitiesYet => 'Aucune activité pour le moment';
+
+  @override
+  String get activitiesEmptyDesc =>
+      'Les nouveaux j\'aime, commentaires et demandes d\'amis apparaîtront ici.';
+
+  @override
+  String get postNotFound => 'Publication introuvable';
+
+  @override
+  String get postedOnFeed => 'Publié sur le fil';
+
+  @override
+  String get commentsTitle => 'Commentaires 💬';
+
+  @override
+  String get noCommentsYet =>
+      'Aucun commentaire pour le moment. Écrivez-en un ci-dessous !';
+
+  @override
+  String get addComment => 'Ajouter un commentaire...';
+
+  @override
+  String get studentNetwork => 'Réseau étudiant';
+
+  @override
+  String get studentNetworkDesc =>
+      'Connectez-vous, collaborez et développez votre réseau professionnel.';
+
+  @override
+  String get requests => 'Demandes';
+
+  @override
+  String get explore => 'Explorer';
+
+  @override
+  String get searchByNameOrEmail => 'Rechercher par nom ou e-mail...';
+
+  @override
+  String get removeFriend => 'Supprimer l\'ami';
+
+  @override
+  String get accept => 'Accepter';
+
+  @override
+  String get add => 'Ajouter';
+
+  @override
+  String get noStudentsFound => 'Aucun étudiant trouvé ici.';
+
+  @override
+  String get story24hNotice =>
+      'Votre story disparaîtra automatiquement après 24 heures.';
+
+  @override
+  String get storyPublishedSuccess =>
+      'Votre story de 24 heures a été publiée avec succès ! 🎉';
+
+  @override
+  String get publishReel => 'Publier le Reel';
+
+  @override
+  String get reelPublishedSuccess => 'Reel publié avec succès ! 🎉';
+
+  @override
+  String get postPublishedSuccess => 'Publication publiée avec succès ! 🎉';
+
+  @override
+  String get chooseMediaFromGallery =>
+      'Sélectionner un média dans la galerie 📸';
+
+  @override
+  String get mediaUploaded => 'Média téléversé ! ✅';
+
+  @override
+  String get reelTitle => 'Titre du Reel';
+
+  @override
+  String get publish => 'PUBLIER';
+
+  @override
+  String get descriptionOptional => 'Description (facultatif)';
+
+  @override
+  String get selectVideo => 'Appuyez pour sélectionner une vidéo Reel 📹';
+
+  @override
+  String get videoReadyToPublish => 'Vidéo prête à être publiée ! 🎬';
+
+  @override
+  String get chatInputHint => 'Écrivez un message...';
+
+  @override
+  String get certificateCode => 'Code de certificat';
+
+  @override
+  String get issueDate => 'Date d\'émission';
+
+  @override
+  String get type => 'Type';
+
+  @override
+  String get viewDetails => 'Voir les détails';
+
+  @override
+  String get teacherPortal => 'Portail des enseignants';
+
+  @override
+  String get teacherOverview => 'Aperçu de l\'enseignant';
+
+  @override
+  String get myStudents => 'Mes étudiants';
+
+  @override
+  String get allStudents => 'Tous les étudiants';
+
+  @override
+  String get curriculum => 'Programme d\'études';
+
+  @override
+  String get createCourse => 'Créer un cours';
+
+  @override
+  String get editCourse => 'Modifier le cours';
+
+  @override
+  String get courseDetails => 'Détails du cours';
+
+  @override
+  String get createClass => 'Créer une classe';
+
+  @override
+  String get editClass => 'Modifier la classe';
+
+  @override
+  String get classDetails => 'Détails de la classe';
+
+  @override
+  String get createAssignment => 'Créer un devoir';
+
+  @override
+  String get editAssignment => 'Modifier le devoir';
+
+  @override
+  String get assignmentDetails => 'Détails du devoir';
+
+  @override
+  String get submissions => 'Soumissions';
+
+  @override
+  String get gradeSubmission => 'Noter la soumission';
+
+  @override
+  String get createQuiz => 'Créer un quiz';
+
+  @override
+  String get editQuiz => 'Modifier le quiz';
+
+  @override
+  String get quizQuestions => 'Questions du quiz';
+
+  @override
+  String get quizResults => 'Résultats du quiz';
+
+  @override
+  String get addStudent => 'Ajouter un étudiant';
+
+  @override
+  String get removeStudent => 'Supprimer l\'étudiant';
+
+  @override
+  String get teacherReports => 'Rapports de l\'enseignant';
+
+  @override
+  String get adminPortal => 'Portail d\'administration';
+
+  @override
+  String get adminDashboard => 'Tableau de bord d\'administration';
+
+  @override
+  String get manageStudents => 'Gérer les étudiants';
+
+  @override
+  String get manageTeachers => 'Gérer les enseignants';
+
+  @override
+  String get manageCourses => 'Gérer les cours';
+
+  @override
+  String get manageClasses => 'Gérer les classes';
+
+  @override
+  String get finance => 'Finances & Factures';
+
+  @override
+  String get honorsAwards => 'Honneurs & Récompenses';
+
+  @override
+  String get supportRequests => 'Demandes d\'assistance';
+
+  @override
+  String get liveStudio => 'Studio en direct';
+
+  @override
+  String get revenue => 'Revenu';
+
+  @override
+  String get totalRevenue => 'Revenu total';
+
+  @override
+  String get totalStudents => 'Total des étudiants';
+
+  @override
+  String get totalTeachers => 'Total des enseignants';
+
+  @override
+  String get totalCourses => 'Total des cours';
+
+  @override
+  String get totalClasses => 'Total des classes';
+
+  @override
+  String get pendingApprovals => 'Approbations en attente';
+
+  @override
+  String get approve => 'Approuver';
+
+  @override
+  String get reject => 'Rejeter';
+
+  @override
+  String get status => 'Statut';
+
+  @override
+  String get role => 'Rôle';
+
+  @override
+  String get action => 'Action';
+
+  @override
+  String get actions => 'Actions';
+
+  @override
+  String get grade => 'Note';
+
+  @override
+  String get dueDate => 'Date d\'échéance';
+
+  @override
+  String get title => 'Titre';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get category => 'Catégorie';
+
+  @override
+  String get capacity => 'Capacité';
+
+  @override
+  String get startDate => 'Date de début';
+
+  @override
+  String get endDate => 'Date de fin';
+
+  @override
+  String get startTime => 'Heure de début';
+
+  @override
+  String get endTime => 'Heure de fin';
+
+  @override
+  String get meetingLink => 'Lien de réunion';
+
+  @override
+  String get joinClass => 'Rejoindre la classe';
+
+  @override
+  String get startClass => 'Démarrer la classe';
+
+  @override
+  String get endClass => 'Terminer la classe';
+
+  @override
+  String get noDataFound => 'Aucune donnée trouvée';
+
+  @override
+  String get confirmDelete => 'Voulez-vous vraiment supprimer ceci?';
+
+  @override
+  String get confirmAction => 'Êtes-vous sûr?';
+
+  @override
+  String get itemCreatedSuccessfully => 'Créé avec succès';
+
+  @override
+  String get itemUpdatedSuccessfully => 'Mis à jour avec succès';
+
+  @override
+  String get itemDeletedSuccessfully => 'Supprimé avec succès';
+
+  @override
+  String get teacherNotice => 'Avis de l\'enseignant';
+
+  @override
+  String get adminNotice => 'Avis d\'administration';
+
+  @override
+  String get sendAnnouncement => 'Envoyer l\'annonce';
+
+  @override
+  String get announcementTitle => 'Titre de l\'annonce';
+
+  @override
+  String get announcementBody => 'Corps de l\'annonce';
+
+  @override
+  String get targetAudience => 'Public cible';
+
+  @override
+  String get allUsers => 'Tous les utilisateurs';
+
+  @override
+  String get onlyStudents => 'Seulement les étudiants';
+
+  @override
+  String get onlyTeachers => 'Seulement les enseignants';
+
+  @override
+  String get supportChatWithAdmin => 'Chat d\'assistance avec l\'admin';
+
+  @override
+  String get ticketStatus => 'Statut du ticket';
+
+  @override
+  String get openTickets => 'Tickets ouverts';
+
+  @override
+  String get closeTicket => 'Fermer le ticket';
+
+  @override
+  String get sendReply => 'Envoyer la réponse';
+
+  @override
+  String get awardTitle => 'Titre du prix';
+
+  @override
+  String get giveAward => 'Décerner le prix';
+
+  @override
+  String get awardedTo => 'Attribué à';
+
+  @override
+  String get studentName => 'Nom de l\'étudiant';
+
+  @override
+  String get teacherName => 'Nom de l\'enseignant';
+
+  @override
+  String get courseName => 'Nom du cours';
+
+  @override
+  String get className => 'Nom de la classe';
+
+  @override
+  String get addStudentToClass => 'Ajouter l\'étudiant à la classe';
+
+  @override
+  String get facultyAndNetwork => 'Corps professoral & Réseau';
+
+  @override
+  String get educationalReels => 'Reels éducatifs';
+
+  @override
+  String get honors => 'Honneurs';
+
+  @override
+  String get academyFeed => 'Fil de l\'académie';
+
+  @override
+  String get facultyNetwork => 'Corps professoral & Réseau';
+
+  @override
+  String get supportChat => 'Chat d\'assistance';
+
+  @override
+  String get instructorProfile => 'Profil de l\'enseignant';
+
+  @override
+  String get adminProfile => 'Profil d\'administrateur';
+
+  @override
+  String get totalVolume => 'Volume total';
+
+  @override
+  String get published => 'Publié';
+
+  @override
+  String get draft => 'Brouillon';
+
+  @override
+  String get create => 'Créer';
+
+  @override
+  String get filter => 'Filtrer';
+
+  @override
+  String get courseTitle => 'Titre du cours';
+
+  @override
+  String get courseDescription => 'Description du cours';
+
+  @override
+  String get primaryInstructor => 'Instructeur principal';
+
+  @override
+  String get coInstructor => 'Co-instructeur';
+
+  @override
+  String get selectCoInstructor => 'Sélectionner le co-instructeur';
+
+  @override
+  String get runCourseSolo => 'Gérer le cours en solo';
+
+  @override
+  String get courseThumbnail => 'Miniature du cours';
+
+  @override
+  String get publishCourse => 'Publier le cours';
+
+  @override
+  String get makeVisibleToStudents =>
+      'Rendre visible aux étudiants de l\'académie';
+
+  @override
+  String get creatingCourse => 'Création du cours...';
+
+  @override
+  String get upload => 'Téléverser';
+
+  @override
+  String get saveChanges => 'Enregistrer les modifications';
+
+  @override
+  String get addLesson => 'Ajouter une leçon';
+
+  @override
+  String get lessonTitle => 'Titre de la leçon';
+
+  @override
+  String get lessonDuration => 'Durée';
+
+  @override
+  String get videoUrl => 'URL de la vidéo';
+
+  @override
+  String get liveClasses => 'Cours en direct';
+
+  @override
+  String get reports => 'Rapports';
+
+  @override
+  String get totalEarnings => 'Revenus totaux';
+
+  @override
+  String get activeStudents => 'Étudiants actifs';
+
+  @override
+  String get activeCourses => 'Cours actifs';
+
+  @override
+  String get activeClasses => 'Classes actives';
+
+  @override
+  String get question => 'Question';
+
+  @override
+  String get progress => 'Progrès';
+
+  @override
+  String get payout => 'Paiement';
+
+  @override
+  String get analytics => 'Analytique';
+
+  @override
+  String get classes => 'Classes';
+
+  @override
+  String get students => 'Étudiants';
+
+  @override
+  String get questionBank => 'Banque de questions';
+
+  @override
+  String get addNewQuestion => 'Ajouter une nouvelle question';
+
+  @override
+  String get multipleChoice => 'Choix multiple (4 options)';
+
+  @override
+  String get descriptive => 'Descriptif (Écrit)';
+
+  @override
+  String get enterQuestionText => 'Entrez le texte de la question...';
+
+  @override
+  String get optionA => 'Option A';
+
+  @override
+  String get optionB => 'Option B';
+
+  @override
+  String get optionC => 'Option C';
+
+  @override
+  String get optionD => 'Option D';
+
+  @override
+  String get correctOption => 'Option correcte';
+
+  @override
+  String get saveQuestion => 'Enregistrer la question';
+
+  @override
+  String get currentInventory => 'Inventaire actuel';
+
+  @override
+  String get noQuestionsAdded => 'Aucune question ajoutée pour l\'instant.';
+
+  @override
+  String get totalQuestions => 'Total des questions';
+
+  @override
+  String get totalPoints => 'Total des points';
+
+  @override
+  String get studentSubmissions => 'Soumissions des étudiants';
+
+  @override
+  String get pendingReview => 'En attente de révision';
+
+  @override
+  String get evaluate => 'Évaluer';
+
+  @override
+  String get submitGrade => 'Soumettre la note';
+
+  @override
+  String get studentAnswer => 'Réponse de l\'étudiant';
+
+  @override
+  String get teacherEvaluation => 'Évaluation de l\'enseignant';
+
+  @override
+  String get autoGraded => 'Correction automatique (QCM)';
+
+  @override
+  String get noSubmissionsFound => 'Aucune soumission trouvée.';
+
+  @override
+  String get gradesSubmittedSuccess =>
+      'Notes et commentaires envoyés avec succès !';
+
+  @override
+  String get tradeDate => 'Date de transaction';
+
+  @override
+  String get symbol => 'Symbole';
+
+  @override
+  String get positionType => 'Type de position';
+
+  @override
+  String get entryPrice => 'Prix d\'entrée';
+
+  @override
+  String get exitPrice => 'Prix de sortie';
+
+  @override
+  String get stopLoss => 'Stop-Loss';
+
+  @override
+  String get takeProfit => 'Take-Profit';
+
+  @override
+  String get lotSize => 'Taille du lot';
+
+  @override
+  String get profitLoss => 'Bénéfice / Perte';
+
+  @override
+  String get riskReward => 'Risque / Rendement';
+
+  @override
+  String get strategy => 'Stratégie';
+
+  @override
+  String get emotions => 'Émotions';
+
+  @override
+  String get chartImage => 'Image du graphique';
+
+  @override
+  String get teacherScore => 'Note de l\'enseignant';
+
+  @override
+  String get teacherFeedback => 'Commentaire de l\'enseignant';
+
+  @override
+  String get gradeTrade => 'Évaluer la transaction';
+
+  @override
+  String get forexAccessRequired => 'Accès au cours Forex requis';
+
+  @override
+  String get noTradesFound => 'Aucune entrée de journal trouvée.';
+
+  @override
+  String get grantAward => 'Décerner un prix';
+
+  @override
+  String get awardGrantedSuccess => 'Prix décerné avec succès !';
+
+  @override
+  String get selectStudent => 'Sélectionner un étudiant';
+
+  @override
+  String get selectAward => 'Sélectionner un prix';
+
+  @override
+  String get pointsRequired => 'Points requis';
+
+  @override
+  String get certificateDetails => 'Détails du certificat';
+
+  @override
+  String get verifyCertificate => 'Vérifier le certificat';
+
+  @override
+  String get certificateIssued => 'Certificat délivré';
+
+  @override
+  String get noCertificatesFound => 'Aucun certificat trouvé.';
+
+  @override
+  String get aboutUs => 'À propos de nous';
+
+  @override
+  String get faq => 'Questions fréquentes';
+
+  @override
+  String get personalInfo => 'Informations personnelles';
+
+  @override
+  String get profileUpdated => 'Profil mis à jour avec succès !';
+
+  @override
+  String get systemStats => 'Statistiques du système';
+
+  @override
+  String get quickActions => 'Actions rapides';
+
+  @override
+  String get recentActivity => 'Activité récente';
+
+  @override
+  String get addNewCourse => 'Ajouter un nouveau cours';
+
+  @override
+  String get addNewClass => 'Ajouter une nouvelle classe';
+
+  @override
+  String get addNewStudent => 'Ajouter un nouvel étudiant';
+
+  @override
+  String get addNewTeacher => 'Ajouter un nouvel enseignant';
+
+  @override
+  String get coursePricing => 'Tarification du cours';
+
+  @override
+  String get freeCourse => 'Cours gratuit';
+
+  @override
+  String get paidCourse => 'Cours payant';
+
+  @override
+  String get currency => 'Devise';
+
+  @override
+  String get assignTeacher => 'Assigner un enseignant';
+
+  @override
+  String get selectClass => 'Sélectionner une classe';
+
+  @override
+  String get totalAmount => 'Montant total';
+
+  @override
+  String get paymentStatus => 'Statut du paiement';
+
+  @override
+  String get paid => 'Payé';
+
+  @override
+  String get unpaid => 'Impayé';
+
+  @override
+  String get invoiceId => 'ID de facture';
+
+  @override
+  String get tickets => 'Tickets de support';
+
+  @override
+  String get ticketPriority => 'Priorité';
+
+  @override
+  String get high => 'Haute';
+
+  @override
+  String get medium => 'Moyenne';
+
+  @override
+  String get low => 'Basse';
+
+  @override
+  String get typeMessage => 'Écrivez votre message...';
+
+  @override
+  String get option => 'Option';
+
+  @override
+  String get saving => 'Enregistrement...';
+
+  @override
+  String get aboutFacultyHelp => 'À propos et aide aux enseignants';
+
+  @override
+  String get aboutFacultyHelpDesc =>
+      'Portail des instructeurs de la Safi Academy, directives et canaux officiels.';
+
+  @override
+  String get aboutSafiAcademy => 'À propos de la Safi Academy';
+
+  @override
+  String get teacherAboutWelcomeText =>
+      'Bienvenue sur le portail des instructeurs de Safi Academy. Votre dévouement façonne l\'avenir de l\'éducation et du trading professionnel.\n\nUtilisez ce portail pour gérer vos cours et évaluer les devoirs.';
+
+  @override
+  String get facultyEmail => 'E-mail du corps professoral';
+
+  @override
+  String get managePreferencesSubtitle =>
+      'Gérez vos préférences, sécurité et identifiants.';
+
+  @override
+  String get enterNewPassword =>
+      'Entrez un mot de passe fort (au moins 6 caractères)...';
+
+  @override
+  String get errorChangingPassword =>
+      'Erreur lors du changement de mot de passe';
+
+  @override
+  String get faceOrTouchId => 'Face ID ou Touch ID';
+
+  @override
+  String get appPinLock => 'Verrouillage par code PIN';
+
+  @override
+  String get setAppPinLock => 'Définir le code PIN';
+
+  @override
+  String get appPreferences => 'Préférences de l\'application';
+
+  @override
+  String get secureSignOut => 'DÉCONNEXION SÉCURISÉE';
+
+  @override
+  String get instructorProfileSubtitle =>
+      'Gérez votre identité, vos qualifications et votre biographie.';
+
+  @override
+  String get personalProfessionalIdentity =>
+      'Identité personnelle et professionnelle';
+
+  @override
+  String get avatarUpdatedSuccess =>
+      'Photo de profil mise à jour avec succès ! ✅';
+
+  @override
+  String get avatarUploadFailed => 'Échec du téléchargement de l\'avatar.';
+
+  @override
+  String get instructorProfileUpdated =>
+      'Profil de l\'instructeur mis à jour avec succès ! ✅';
+
+  @override
+  String get databaseSaveError =>
+      'Erreur de base de données. Impossible d\'enregistrer le profil.';
+
+  @override
+  String get countryRegion => 'Pays / Région';
+
+  @override
+  String get professionalBio => 'Biographie professionnelle / Titre';
+
+  @override
+  String get savingChanges => 'ENREGISTREMENT DES MODIFICATIONS...';
+
+  @override
+  String get saveProfileDetails => 'ENREGISTRER LE PROFIL 🚀';
+
+  @override
+  String get notProvided => 'Non fourni';
+
+  @override
+  String get taskDetailsAndAlert => 'Détails de la tâche et alerte';
+
+  @override
+  String get deleteTask => 'Supprimer la tâche';
+
+  @override
+  String get deleteTaskConfirm =>
+      'Êtes-vous sûr de vouloir supprimer cette tâche ?';
+
+  @override
+  String get taskDeleted => 'Tâche supprimée.';
+
+  @override
+  String get taskOverdueAlert =>
+      'ALERTE : Cette tâche approche de son échéance ou est en retard !';
+
+  @override
+  String get taskInformation => 'Informations sur la tâche';
+
+  @override
+  String get dueDateAndTime => 'Date et heure d\'échéance';
+
+  @override
+  String get noDueDateSet => 'Aucune date définie (Cliquez pour définir)';
+
+  @override
+  String get markAsCompleted => 'Marquer comme terminé';
+
+  @override
+  String get createdAtLabel => 'Créé le';
+
+  @override
+  String get updateTaskBtn => 'METTRE À JOUR LA TÂCHE 💾';
+
+  @override
+  String get enabled => 'Activé';
+
+  @override
+  String get disabled => 'Désactivé';
+
+  @override
+  String get allFieldsRequired =>
+      'Veuillez remplir tous les champs obligatoires.';
+
+  @override
+  String get savedSuccessfully => 'Enregistré avec succès ! ✅';
+
+  @override
+  String get failedToSave => 'Échec de l\'enregistrement.';
+
+  @override
+  String get adminCommandCenter => 'CENTRE DE CONTRÔLE';
+
+  @override
+  String get selectManagementModule => 'Sélectionnez un module de gestion';
+
+  @override
+  String get module => 'Module';
+
+  @override
+  String get administrator => 'ADMINISTRATEUR';
+
+  @override
+  String get signOutSession => 'DÉCONNEXION DE SESSION';
+
+  @override
+  String get adminInitializing => 'INITIALISATION DU CENTRE DE CONTRÔLE...';
+
+  @override
+  String get createNewContent => 'Créer un nouveau contenu 🚀';
+
+  @override
+  String get uploadEducationalReel => 'Téléverser un Reel éducatif 🎬';
+
+  @override
+  String get shareReelSubtitle =>
+      'Partagez de courtes vidéos de trading ou de programmation';
+
+  @override
+  String get createFeedPost => 'Créer une publication de fil 📝';
+
+  @override
+  String get sharePostSubtitle =>
+      'Partagez du texte, des questions ou des images dans le fil';
+
+  @override
+  String get systemCommandCenter => 'CENTRE DE CONTRÔLE DU SYSTÈME';
+
+  @override
+  String get adminDashboardSubtitle =>
+      'Aperçu des performances en direct et contrôle global.';
+
+  @override
+  String get totalFaculty => 'Total du corps professoral';
+
+  @override
+  String get systemMetrics => 'MÉTRIQUES DU SYSTÈME';
+
+  @override
+  String get grossRevenue => 'Revenu brut';
+
+  @override
+  String get pendingPayouts => 'Paiements en attente';
+
+  @override
+  String get recentTransactions => 'TRANSACTIONS RÉCENTES';
+
+  @override
+  String get noRecentTransactions =>
+      'Aucune activité financière récente enregistrée.';
+
+  @override
+  String get studentRegistry => 'REGISTRE DES ÉTUDIANTS';
+
+  @override
+  String get manageStudentsSubtitle =>
+      'Suivez les performances, les points, les soldes et les rôles.';
+
+  @override
+  String get totalFunds => 'Fonds totaux';
+
+  @override
+  String get manageProfile => 'Gérer le profil';
+
+  @override
+  String get studentProfileNotFound => 'Profil étudiant introuvable';
+
+  @override
+  String get backToStudents => 'Retour aux étudiants';
+
+  @override
+  String get personalDetailsLocked => 'DÉTAILS PERSONNELS (VERROUILLÉS)';
+
+  @override
+  String get adminControls => 'CONTRÔLES ADMIN ET SYNCHRONISATION';
+
+  @override
+  String get academicScore => 'SCORE ACADÉMIQUE (PTS)';
+
+  @override
+  String get systemRolePromotion => 'RÔLE SYSTÈME ET PROMOTION';
+
+  @override
+  String get roleStudent => 'Étudiant (Accès normal)';
+
+  @override
+  String get roleTeacher => 'Instructeur / Mentor';
+
+  @override
+  String get roleAdmin => 'Administrateur (Accès complet)';
+
+  @override
+  String get syncChangesToDatabase => 'SYNCHRONISER LES MODIFICATIONS 🚀';
+
+  @override
+  String get adminSyncSuccess => 'Modifications synchronisées avec succès ! ✅';
+
+  @override
+  String get failedToUpdateDatabase =>
+      'Échec de la mise à jour de la base de données';
+
+  @override
+  String get facultyRegistry => 'REGISTRE DES PROFESSEURS';
+
+  @override
+  String get manageFaculty => 'Gérer les enseignants';
+
+  @override
+  String get manageFacultySubtitle =>
+      'Suivez les performances des instructeurs et leurs cours.';
+
+  @override
+  String get searchInstructors => 'Rechercher des instructeurs...';
+
+  @override
+  String get noFacultyFound => 'Aucun instructeur trouvé.';
+
+  @override
+  String get teacherDetails => 'Détails de l\'instructeur';
+
+  @override
+  String get assignedClasses => 'Classes assignées';
+
+  @override
+  String get courseRepository => 'RÉPERTOIRE DES COURS';
+
+  @override
+  String get manageCoursesSubtitle =>
+      'Créez, modifiez et publiez des cours de l\'académie.';
+
+  @override
+  String get academicClasses => 'CLASSES ACADÉMIQUES';
+
+  @override
+  String get createNewClass => 'Créer une nouvelle classe';
+
+  @override
+  String get enrolledStudents => 'Étudiants inscrits';
+
+  @override
+  String get addStudents => 'Ajouter des étudiants';
+
+  @override
+  String get treasuryFinance => 'TRÉSORERIE ET FINANCES';
+
+  @override
+  String get financialOverview => 'Aperçu financier et paiements';
+
+  @override
+  String get approvePayout => 'Approuver le paiement';
+
+  @override
+  String get rejectPayout => 'Rejeter le paiement';
+
+  @override
+  String get honorsAndAwards => 'Honneurs et récompenses';
+
+  @override
+  String get helpDeskTickets => 'Tickets de support';
+
+  @override
+  String get replyToTicket => 'Répondre au ticket';
+
+  @override
+  String get systemSettings => 'Paramètres du système';
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class TeacherCertificatesDetailScreen extends StatefulWidget {
   const TeacherCertificatesDetailScreen({super.key});
@@ -104,7 +105,7 @@ class _TeacherCertificatesDetailScreenState
   void _generateAutoCode() {
     if (selectedCourseId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a course first.")),
+        SnackBar(content: Text(context.l10n.courses)),
       );
       return;
     }
@@ -130,8 +131,8 @@ class _TeacherCertificatesDetailScreenState
         selectedCourseId == null ||
         _certCodeController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please fill all required fields."),
+        SnackBar(
+          content: Text(context.l10n.allFieldsRequired),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -166,8 +167,8 @@ class _TeacherCertificatesDetailScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Certificate issued successfully! 🚀"),
+          SnackBar(
+            content: Text("${context.l10n.certificateIssued} 🚀"),
             backgroundColor: Colors.green,
           ),
         );
@@ -229,9 +230,9 @@ class _TeacherCertificatesDetailScreenState
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: textDark),
-        title: const Text(
-          "Issue New Certificate",
-          style: TextStyle(
+        title: Text(
+          context.l10n.certificateDetails,
+          style: const TextStyle(
             color: textDark,
             fontSize: 16,
             fontWeight: FontWeight.w900,
@@ -256,9 +257,9 @@ class _TeacherCertificatesDetailScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // --- Target Class & Course ---
-                      const Text(
-                        "TARGET CLASS & COURSE *",
-                        style: TextStyle(
+                      Text(
+                        "${context.l10n.classes} & ${context.l10n.courses} *",
+                        style: const TextStyle(
                           color: textGrey,
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
@@ -317,7 +318,7 @@ class _TeacherCertificatesDetailScreenState
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
-                                            "Course: $courseTitle",
+                                            "${context.l10n.courses}: $courseTitle",
                                             style: const TextStyle(
                                               color: textGrey,
                                               fontSize: 11,
@@ -357,7 +358,7 @@ class _TeacherCertificatesDetailScreenState
                             vertical: 14,
                           ),
                           decoration: BoxDecoration(
-                            color: cardBorder.withOpacity(0.6),
+                            color: cardBorder.withValues(alpha: 0.6),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: cardBorder, width: 1.5),
                           ),
@@ -390,7 +391,7 @@ class _TeacherCertificatesDetailScreenState
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      "Course: $currentCourseTitle",
+                                      "${context.l10n.courses}: $currentCourseTitle",
                                       style: const TextStyle(
                                         color: textGrey,
                                         fontSize: 10,
@@ -412,9 +413,9 @@ class _TeacherCertificatesDetailScreenState
                       const SizedBox(height: 20),
 
                       // --- Graduate Student ---
-                      const Text(
-                        "GRADUATE STUDENT *",
-                        style: TextStyle(
+                      Text(
+                        "${context.l10n.students} *",
+                        style: const TextStyle(
                           color: textGrey,
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
@@ -505,7 +506,7 @@ class _TeacherCertificatesDetailScreenState
                             vertical: 14,
                           ),
                           decoration: BoxDecoration(
-                            color: cardBorder.withOpacity(0.6),
+                            color: cardBorder.withValues(alpha: 0.6),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: cardBorder, width: 1.5),
                           ),
@@ -570,9 +571,9 @@ class _TeacherCertificatesDetailScreenState
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            "CERTIFICATE SERIAL CODE *",
-                            style: TextStyle(
+                          Text(
+                            "${context.l10n.certificateCode} *",
+                            style: const TextStyle(
                               color: textGrey,
                               fontSize: 10,
                               fontWeight: FontWeight.w900,
@@ -581,9 +582,9 @@ class _TeacherCertificatesDetailScreenState
                           ),
                           GestureDetector(
                             onTap: _generateAutoCode,
-                            child: const Text(
-                              "✨ Auto Generate Code",
-                              style: TextStyle(
+                            child: Text(
+                              "✨ ${context.l10n.create}",
+                              style: const TextStyle(
                                 color: primaryPink,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w900,
@@ -603,13 +604,13 @@ class _TeacherCertificatesDetailScreenState
                           fontFamily: 'monospace',
                         ),
                         decoration: InputDecoration(
-                          hintText: "e.g. SAFI-2026-CERT-94821",
+                          hintText: "SAFI-2026-CERT-000000",
                           hintStyle: const TextStyle(
                             color: textGrey,
                             fontSize: 13,
                           ),
                           filled: true,
-                          fillColor: cardBorder.withOpacity(0.6),
+                          fillColor: cardBorder.withValues(alpha: 0.6),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 16,
@@ -630,9 +631,9 @@ class _TeacherCertificatesDetailScreenState
                       const SizedBox(height: 20),
 
                       // --- Certificate Document Upload ---
-                      const Text(
-                        "CERTIFICATE DOCUMENT (IMAGE OR PDF) *",
-                        style: TextStyle(
+                      Text(
+                        "${context.l10n.upload} *",
+                        style: const TextStyle(
                           color: textGrey,
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
@@ -645,15 +646,15 @@ class _TeacherCertificatesDetailScreenState
                         child: Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: lightPinkBg.withOpacity(0.3),
+                            color: lightPinkBg.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: primaryPink.withOpacity(0.3),
+                              color: primaryPink.withValues(alpha: 0.3),
                               width: 1.5,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: primaryPink.withOpacity(0.04),
+                                color: primaryPink.withValues(alpha: 0.04),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -664,7 +665,7 @@ class _TeacherCertificatesDetailScreenState
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: primaryPink.withOpacity(0.15),
+                                  color: primaryPink.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: const Icon(
@@ -681,7 +682,7 @@ class _TeacherCertificatesDetailScreenState
                                     Text(
                                       selectedFile != null
                                           ? selectedFile!.name
-                                          : "Tap to browse certificate file...",
+                                          : context.l10n.chooseMediaFromGallery,
                                       style: TextStyle(
                                         color: selectedFile != null
                                             ? textDark
@@ -692,9 +693,9 @@ class _TeacherCertificatesDetailScreenState
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     const SizedBox(height: 4),
-                                    const Text(
-                                      "Supports high-res Image / PDF document",
-                                      style: TextStyle(
+                                    Text(
+                                      context.l10n.upload,
+                                      style: const TextStyle(
                                         color: textGrey,
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
@@ -730,8 +731,8 @@ class _TeacherCertificatesDetailScreenState
                           onPressed: isSubmitting ? null : _handleSubmit,
                           child: Text(
                             isSubmitting
-                                ? "Issuing Certificate..."
-                                : "Issue & Deploy Certificate 🎓",
+                                ? context.l10n.saving
+                                : "${context.l10n.certificateIssued} 🎓",
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w900,

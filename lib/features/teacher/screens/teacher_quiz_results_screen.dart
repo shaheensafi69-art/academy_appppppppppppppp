@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class QuizAttemptItem {
   final String id;
@@ -198,7 +199,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Grades and feedback submitted successfully!"), backgroundColor: Colors.green),
+          SnackBar(content: Text(context.l10n.gradesSubmittedSuccess), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
@@ -224,7 +225,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: textDark),
-        title: Text(quizInfo?['title'] ?? 'Results', style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+        title: Text(quizInfo?['title'] ?? context.l10n.quizResults, style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(color: cardBorder, height: 1),
@@ -242,7 +243,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Student Submissions", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                      Text(context.l10n.studentSubmissions, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
                       const SizedBox(height: 12),
 
                       attempts.isNotEmpty
@@ -261,10 +262,10 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                                     color: surfaceWhite,
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
-                                      color: isGraded ? Colors.green.withOpacity(0.3) : Colors.amber.withOpacity(0.4),
+                                      color: isGraded ? Colors.green.withValues(alpha: 0.3) : Colors.amber.withValues(alpha: 0.4),
                                       width: 1.5,
                                     ),
-                                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -286,7 +287,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                                                   Text("${att.firstName} ${att.lastName}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
                                                   const SizedBox(height: 3),
                                                   Text(
-                                                    isGraded ? "Score: ${att.score} | Grade: ${att.letterGrade}" : "Pending Review",
+                                                    isGraded ? "${context.l10n.score}: ${att.score} | ${context.l10n.grade}: ${att.letterGrade}" : context.l10n.pendingReview,
                                                     style: TextStyle(
                                                       color: isGraded ? Colors.green.shade700 : Colors.amber.shade800,
                                                       fontSize: 10,
@@ -309,7 +310,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                         ),
                                         onPressed: () => _openGradingModal(att),
-                                        child: Text(isGraded ? "Review" : "Evaluate", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                        child: Text(isGraded ? context.l10n.review : context.l10n.evaluate, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                       ),
                                     ],
                                   ),
@@ -324,7 +325,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                                 borderRadius: BorderRadius.circular(24),
                                 border: Border.all(color: cardBorder),
                               ),
-                              child: const Text("No submissions found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                              child: Text(context.l10n.noSubmissionsFound, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                             ),
                     ],
                   ),
@@ -345,8 +346,8 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                     decoration: BoxDecoration(
                       color: surfaceWhite,
                       borderRadius: BorderRadius.circular(26),
-                      border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
-                      boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 25, offset: const Offset(0, 10))],
+                      border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
+                      boxShadow: [BoxShadow(color: primaryPink.withValues(alpha: 0.1), blurRadius: 25, offset: const Offset(0, 10))],
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -356,7 +357,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
-                              child: Text("Evaluate: ${selectedAttempt!.firstName} ${selectedAttempt!.lastName}",
+                              child: Text("${context.l10n.evaluate}: ${selectedAttempt!.firstName} ${selectedAttempt!.lastName}",
                                   style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15), maxLines: 1, overflow: TextOverflow.ellipsis),
                             ),
                             IconButton(
@@ -385,7 +386,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                                       margin: const EdgeInsets.only(bottom: 12),
                                       padding: const EdgeInsets.all(14),
                                       decoration: BoxDecoration(
-                                        color: cardBorder.withOpacity(0.5),
+                                        color: cardBorder.withValues(alpha: 0.5),
                                         borderRadius: BorderRadius.circular(16),
                                         border: Border.all(color: cardBorder, width: 1.5),
                                       ),
@@ -396,18 +397,18 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: [
                                               Expanded(
-                                                child: Text("Q${idx + 1}: ${q['question_text']}",
+                                                child: Text("${context.l10n.question} ${idx + 1}: ${q['question_text']}",
                                                     style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900), maxLines: 2, overflow: TextOverflow.ellipsis),
                                               ),
                                               Container(
                                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                                 decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(6)),
-                                                child: Text("Max: $maxPts pts", style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.bold)),
+                                                child: Text("${context.l10n.points}: $maxPts", style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.bold)),
                                               ),
                                             ],
                                           ),
                                           const SizedBox(height: 6),
-                                          Text("Student Answer: ${ans['student_answer_text'] ?? 'No Answer'}",
+                                          Text("${context.l10n.studentAnswer}: ${ans['student_answer_text'] ?? '-'}",
                                               style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w600)),
                                           const SizedBox(height: 10),
 
@@ -416,7 +417,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                                               ? Row(
                                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                   children: [
-                                                    const Text("Teacher Evaluation:", style: TextStyle(color: textDark, fontSize: 10, fontWeight: FontWeight.bold)),
+                                                    Text(context.l10n.teacherEvaluation, style: const TextStyle(color: textDark, fontSize: 10, fontWeight: FontWeight.bold)),
                                                     Row(
                                                       children: [
                                                         // دکمه غلط / ضربدر ❌
@@ -425,7 +426,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                                                           child: Container(
                                                             padding: const EdgeInsets.all(8),
                                                             decoration: BoxDecoration(
-                                                              color: currentScore == 0 ? Colors.red.withOpacity(0.2) : surfaceWhite,
+                                                              color: currentScore == 0 ? Colors.red.withValues(alpha: 0.2) : surfaceWhite,
                                                               borderRadius: BorderRadius.circular(10),
                                                               border: Border.all(color: currentScore == 0 ? Colors.red : cardBorder, width: 1.5),
                                                             ),
@@ -439,7 +440,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                                                           child: Container(
                                                             padding: const EdgeInsets.all(8),
                                                             decoration: BoxDecoration(
-                                                              color: currentScore > 0 ? Colors.green.withOpacity(0.2) : surfaceWhite,
+                                                              color: currentScore > 0 ? Colors.green.withValues(alpha: 0.2) : surfaceWhite,
                                                               borderRadius: BorderRadius.circular(10),
                                                               border: Border.all(color: currentScore > 0 ? Colors.green : cardBorder, width: 1.5),
                                                             ),
@@ -453,8 +454,8 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                                               : Row(
                                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                   children: [
-                                                    const Text("Auto Graded (MCQ):", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                                                    Text("$currentScore / $maxPts Pts", style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900)),
+                                                    Text(context.l10n.autoGraded, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                                    Text("$currentScore / $maxPts ${context.l10n.points}", style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900)),
                                                   ],
                                                 ),
                                         ],
@@ -470,7 +471,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                               child: TextButton(
                                 style: TextButton.styleFrom(foregroundColor: textGrey),
                                 onPressed: () => setState(() => selectedAttempt = null),
-                                child: const Text("Cancel", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                child: Text(context.l10n.cancel, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -484,7 +485,7 @@ class _TeacherQuizResultsScreenState extends State<TeacherQuizResultsScreen> {
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                                 ),
                                 onPressed: isSubmittingGrade ? null : _saveGrades,
-                                child: Text(isSubmittingGrade ? "Saving..." : "Submit Grade", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                child: Text(isSubmittingGrade ? context.l10n.saving : context.l10n.submitGrade, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                               ),
                             ),
                           ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/services/language_service.dart';
 
 class AnnouncementItem {
   final String id;
@@ -232,22 +233,22 @@ class _StudentAnnouncementsScreenState
                               ),
                             ),
                             const SizedBox(width: 14),
-                            const Expanded(
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Academy Announcements",
-                                    style: TextStyle(
+                                    context.l10n.announcements,
+                                    style: const TextStyle(
                                       color: textDark,
                                       fontWeight: FontWeight.w900,
                                       fontSize: 18,
                                     ),
                                   ),
-                                  SizedBox(height: 4),
+                                  const SizedBox(height: 4),
                                   Text(
-                                    "Stay updated with latest announcements and upcoming live class groups.",
-                                    style: TextStyle(
+                                    context.l10n.notices,
+                                    style: const TextStyle(
                                       color: textGrey,
                                       fontSize: 10,
                                       fontWeight: FontWeight.w500,
@@ -266,10 +267,11 @@ class _StudentAnnouncementsScreenState
                       Row(
                         children: filters.map((f) {
                           final isSel = selectedFilter == f;
+                          final label = f.contains('Announcements') ? context.l10n.announcements : context.l10n.liveCampus;
                           return Padding(
                             padding: const EdgeInsets.only(right: 10),
                             child: ChoiceChip(
-                              label: Text(f),
+                              label: Text(label),
                               selected: isSel,
                               selectedColor: primaryPink,
                               backgroundColor: const Color(0xFFF3F4F6),
@@ -317,13 +319,13 @@ class _StudentAnnouncementsScreenState
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: cardBorder, width: 1.5),
         ),
-        child: const Column(
+        child: Column(
           children: [
-            Icon(Icons.notifications_off_outlined, color: textGrey, size: 36),
-            SizedBox(height: 10),
+            const Icon(Icons.notifications_off_outlined, color: textGrey, size: 36),
+            const SizedBox(height: 10),
             Text(
-              "No Announcements Yet",
-              style: TextStyle(
+              context.l10n.announcements,
+              style: const TextStyle(
                 color: textDark,
                 fontWeight: FontWeight.w900,
                 fontSize: 13,
@@ -443,13 +445,13 @@ class _StudentAnnouncementsScreenState
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: cardBorder, width: 1.5),
         ),
-        child: const Column(
+        child: Column(
           children: [
-            Icon(Icons.school_outlined, color: textGrey, size: 36),
-            SizedBox(height: 10),
+            const Icon(Icons.school_outlined, color: textGrey, size: 36),
+            const SizedBox(height: 10),
             Text(
-              "No Active Class Groups",
-              style: TextStyle(
+              context.l10n.noActiveClasses,
+              style: const TextStyle(
                 color: textDark,
                 fontWeight: FontWeight.w900,
                 fontSize: 13,
@@ -539,9 +541,9 @@ class _StudentAnnouncementsScreenState
                       Icons.video_call_rounded,
                       color: Colors.white,
                     ),
-                    label: const Text(
-                      "JOIN LIVE CLASS 📹",
-                      style: TextStyle(
+                    label: Text(
+                      context.l10n.joinLiveMeetingRoom,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),

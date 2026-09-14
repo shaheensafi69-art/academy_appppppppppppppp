@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/services/language_service.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
 
 class ClassGroupForAttendance {
@@ -285,22 +286,22 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
                   ),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Student Hub",
-                        style: TextStyle(
+                        context.l10n.assignmentsAttendance,
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w900,
                           color: textDark,
                         ),
                       ),
-                      SizedBox(height: 3),
+                      const SizedBox(height: 3),
                       Text(
-                        "Sign today's attendance, submit homework, and track academic progress.",
-                        style: TextStyle(
+                        context.l10n.assignmentsDesc,
+                        style: const TextStyle(
                           fontSize: 10,
                           color: textGrey,
                           fontWeight: FontWeight.w500,
@@ -316,9 +317,9 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
           const SizedBox(height: 20),
 
           // ================= ۱. بخش حاضری امروز =================
-          const Text(
-            "Today's Check-in",
-            style: TextStyle(
+          Text(
+            context.l10n.todaysCheckIn,
+            style: const TextStyle(
               color: textDark,
               fontWeight: FontWeight.w900,
               fontSize: 14,
@@ -381,9 +382,9 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
                                         color: Colors.green.withOpacity(0.12),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: const Text(
-                                        "Signed ✅",
-                                        style: TextStyle(
+                                      child: Text(
+                                        "${context.l10n.signed} ✅",
+                                        style: const TextStyle(
                                           color: Colors.green,
                                           fontSize: 9,
                                           fontWeight: FontWeight.w900,
@@ -410,8 +411,8 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
                                           : () => _handleSignAttendance(cls.id),
                                       child: Text(
                                         signingId == cls.id
-                                            ? "Signing..."
-                                            : "Sign Now",
+                                            ? context.l10n.signing
+                                            : context.l10n.signNow,
                                         style: const TextStyle(
                                           fontSize: 9,
                                           fontWeight: FontWeight.w900,
@@ -427,16 +428,16 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
                                 GestureDetector(
                                   onTap: () => _launchURL(cls.meetingLink!),
                                   child: Row(
-                                    children: const [
-                                      Icon(
+                                    children: [
+                                      const Icon(
                                         Icons.video_call_rounded,
                                         color: primaryPink,
                                         size: 14,
                                       ),
-                                      SizedBox(width: 4),
+                                      const SizedBox(width: 4),
                                       Text(
-                                        "Teams Room",
-                                        style: TextStyle(
+                                        context.l10n.teamsRoom,
+                                        style: const TextStyle(
                                           color: primaryPink,
                                           fontSize: 10,
                                           fontWeight: FontWeight.w900,
@@ -452,16 +453,16 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
                                 GestureDetector(
                                   onTap: () => _launchURL(cls.signalGroupLink!),
                                   child: Row(
-                                    children: const [
-                                      Icon(
+                                    children: [
+                                      const Icon(
                                         Icons.chat_bubble_rounded,
                                         color: Colors.indigo,
                                         size: 14,
                                       ),
-                                      SizedBox(width: 4),
+                                      const SizedBox(width: 4),
                                       Text(
-                                        "Signal Chat",
-                                        style: TextStyle(
+                                        context.l10n.signalGroup,
+                                        style: const TextStyle(
                                           color: Colors.indigo,
                                           fontSize: 10,
                                           fontWeight: FontWeight.w900,
@@ -485,9 +486,9 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: cardBorder, width: 1.5),
                   ),
-                  child: const Text(
-                    "No live classes scheduled for today.",
-                    style: TextStyle(
+                  child: Text(
+                    context.l10n.noActiveClasses,
+                    style: const TextStyle(
                       color: textGrey,
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
@@ -500,9 +501,9 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                "Homework",
-                style: TextStyle(
+              Text(
+                context.l10n.classAssignments,
+                style: const TextStyle(
                   color: textDark,
                   fontWeight: FontWeight.w900,
                   fontSize: 14,
@@ -521,9 +522,9 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        Flexible(child: _buildFilterTab("pending", "To Do")),
-                        Flexible(child: _buildFilterTab("submitted", "Review")),
-                        Flexible(child: _buildFilterTab("graded", "Graded")),
+                        Flexible(child: _buildFilterTab("pending", context.l10n.toDo)),
+                        Flexible(child: _buildFilterTab("submitted", context.l10n.submitted)),
+                        Flexible(child: _buildFilterTab("graded", context.l10n.graded)),
                       ],
                     ),
                   ),
@@ -643,16 +644,16 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  "Deadline: ${task.deadline.split('T')[0]}",
+                                  "${context.l10n.deadline}: ${task.deadline.split('T')[0]}",
                                   style: const TextStyle(
                                     color: textGrey,
                                     fontSize: 9,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                const Text(
-                                  "View Details ➔",
-                                  style: TextStyle(
+                                Text(
+                                  "${context.l10n.viewDetails} ➔",
+                                  style: const TextStyle(
                                     color: primaryPink,
                                     fontSize: 9,
                                     fontWeight: FontWeight.w900,
@@ -825,9 +826,9 @@ class _StudentAssignmentDetailScreenState
                     ),
                   ),
                   const SizedBox(width: 14),
-                  const Text(
-                    "Assignment Details",
-                    style: TextStyle(
+                  Text(
+                    context.l10n.assignmentsAttendance,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w900,
                       color: textDark,
@@ -904,9 +905,9 @@ class _StudentAssignmentDetailScreenState
                       ),
                     ),
                     const SizedBox(height: 10),
-                    const Text(
-                      "Description:",
-                      style: TextStyle(
+                    Text(
+                      "${context.l10n.overview}:",
+                      style: const TextStyle(
                         color: textGrey,
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -932,7 +933,7 @@ class _StudentAssignmentDetailScreenState
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          "Deadline: ${widget.assignment.deadline.split('T')[0]}",
+                          "${context.l10n.deadline}: ${widget.assignment.deadline.split('T')[0]}",
                           style: const TextStyle(
                             color: textGrey,
                             fontSize: 11,
@@ -947,9 +948,9 @@ class _StudentAssignmentDetailScreenState
               const SizedBox(height: 20),
               if (widget.assignment.status == "pending" ||
                   widget.assignment.status == "overdue") ...[
-                const Text(
-                  "Submit Your Work",
-                  style: TextStyle(
+                Text(
+                  context.l10n.submitAssignment,
+                  style: const TextStyle(
                     color: textDark,
                     fontWeight: FontWeight.w900,
                     fontSize: 14,
@@ -977,7 +978,7 @@ class _StudentAssignmentDetailScreenState
                           child: Text(
                             selectedFile != null
                                 ? selectedFile!.name
-                                : "Upload Document / Screenshot / PDF",
+                                : context.l10n.uploadSolution,
                             style: TextStyle(
                               color: selectedFile != null ? textDark : textGrey,
                               fontSize: 11,
@@ -1015,9 +1016,9 @@ class _StudentAssignmentDetailScreenState
                               strokeWidth: 2.5,
                             ),
                           )
-                        : const Text(
-                            "SUBMIT ASSIGNMENT 🚀",
-                            style: TextStyle(
+                        : Text(
+                            "${context.l10n.submitAssignment.toUpperCase()} 🚀",
+                            style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 1,
@@ -1033,9 +1034,9 @@ class _StudentAssignmentDetailScreenState
                     color: Colors.blue.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
-                    "Assignment submitted successfully. Waiting for instructor's review and grading.",
-                    style: TextStyle(
+                  child: Text(
+                    context.l10n.awaitingGrading,
+                    style: const TextStyle(
                       color: Colors.blueAccent,
                       fontSize: 12,
                       fontWeight: FontWeight.w900,
@@ -1062,7 +1063,7 @@ class _StudentAssignmentDetailScreenState
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            "Grade: ${widget.assignment.grade} / 100",
+                            "${context.l10n.graded}: ${widget.assignment.grade} / 100",
                             style: const TextStyle(
                               color: Colors.green,
                               fontWeight: FontWeight.w900,
@@ -1072,9 +1073,9 @@ class _StudentAssignmentDetailScreenState
                         ],
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        "Instructor Feedback:",
-                        style: TextStyle(
+                      Text(
+                        "${context.l10n.feedback}:",
+                        style: const TextStyle(
                           color: textDark,
                           fontWeight: FontWeight.bold,
                           fontSize: 11,

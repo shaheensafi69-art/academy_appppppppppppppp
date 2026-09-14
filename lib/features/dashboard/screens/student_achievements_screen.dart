@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/services/language_service.dart';
 
 class CertificateItem {
   final String id;
@@ -157,7 +158,7 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
             children: [
               const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
-              Text("LOADING ACHIEVEMENTS...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(context.l10n.loading, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
             ],
           ),
         ),
@@ -194,9 +195,9 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("My Achievements", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                        Text(context.l10n.myAchievements, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
                         const SizedBox(height: 4),
-                        const Text("A structured record of your academic milestones.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                        Text(context.l10n.myAchievementsDesc, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ),
@@ -213,7 +214,7 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
                       children: [
                         const Icon(Icons.bolt_rounded, color: primaryPink, size: 14),
                         const SizedBox(width: 4),
-                        Text("$totalScore Pts", style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900)),
+                        Text("$totalScore ${context.l10n.points}", style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900)),
                       ],
                     ),
                   )
@@ -226,7 +227,7 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Official Certificates", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                Text(context.l10n.officialCertificates, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(color: cardBorder, borderRadius: BorderRadius.circular(8)),
@@ -271,7 +272,7 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Text("VERIFIED CREDENTIAL", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1)),
+                                      Text(context.l10n.verifiedCredential.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1)),
                                       const SizedBox(height: 2),
                                       Text(
                                         cert.courseName,
@@ -288,7 +289,7 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text("Issued: ${_formatDate(cert.issueDate)}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                Text("${context.l10n.issued}: ${_formatDate(cert.issueDate)}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                                 Flexible(
                                   child: Text(
                                     "ID: ${cert.certificateCode}",
@@ -311,7 +312,7 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                                 ),
                                 icon: const Icon(Icons.download_rounded, size: 16),
-                                label: const Text("View PDF", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                label: Text(context.l10n.viewPdf, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                 onPressed: () => _launchURL(cert.certificateUrl),
                               ),
                             ),
@@ -328,7 +329,7 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(color: cardBorder, width: 1.5),
                     ),
-                    child: const Text("No Certificates Yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                    child: Text(context.l10n.noCertificatesYet, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                   ),
             const SizedBox(height: 28),
 
@@ -336,7 +337,7 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Badges & Honors", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                Text(context.l10n.badgesAndHonors, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(color: cardBorder, borderRadius: BorderRadius.circular(8)),
@@ -416,7 +417,7 @@ class _StudentAchievementsScreenState extends State<StudentAchievementsScreen> {
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(color: cardBorder, width: 1.5),
                     ),
-                    child: const Text("No Badges Yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                    child: Text(context.l10n.noBadgesYet, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                   ),
             const SizedBox(height: 40),
           ],

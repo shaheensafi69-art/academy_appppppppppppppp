@@ -4,6 +4,7 @@ import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/services/language_service.dart';
 import 'certificates_screen.dart';
 
 class CertificateDetailScreen extends StatefulWidget {
@@ -119,9 +120,9 @@ class _CertificateDetailScreenState extends State<CertificateDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text(
-              "File downloaded successfully to Downloads folder! 📁",
-              style: TextStyle(fontWeight: FontWeight.bold),
+            content: Text(
+              context.l10n.downloadSuccess,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             backgroundColor: Colors.green.shade700,
             behavior: SnackBarBehavior.floating,
@@ -151,7 +152,7 @@ class _CertificateDetailScreenState extends State<CertificateDetailScreen> {
     return AcademyLoadingOverlay(
       isLoading: isDownloading,
       message:
-          "DOWNLOADING FILE... ${(downloadProgress * 100).toStringAsFixed(0)}%",
+          "${context.l10n.downloadingFile} ${(downloadProgress * 100).toStringAsFixed(0)}%",
       child: Scaffold(
         backgroundColor: surfaceWhite,
         body: Container(
@@ -187,18 +188,18 @@ class _CertificateDetailScreenState extends State<CertificateDetailScreen> {
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: cardBorder, width: 1.5),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.arrow_back_rounded,
                                 color: textDark,
                                 size: 16,
                               ),
-                              SizedBox(width: 6),
+                              const SizedBox(width: 6),
                               Text(
-                                "Back",
-                                style: TextStyle(
+                                context.l10n.back,
+                                style: const TextStyle(
                                   color: textDark,
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
@@ -242,7 +243,7 @@ class _CertificateDetailScreenState extends State<CertificateDetailScreen> {
                               : () => _downloadInBackground(
                                   widget.certificate.certificateUrl!,
                                 ),
-                          tooltip: "Download File",
+                          tooltip: context.l10n.downloadFile,
                         ),
                     ],
                   ),
@@ -304,19 +305,19 @@ class _CertificateDetailScreenState extends State<CertificateDetailScreen> {
                                       ),
                                     )
                                   : (isLoadingPdf
-                                        ? const Center(
+                                        ? Center(
                                             child: Column(
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
                                               children: [
-                                                CircularProgressIndicator(
+                                                const CircularProgressIndicator(
                                                   color: primaryPink,
                                                   strokeWidth: 2.5,
                                                 ),
-                                                SizedBox(height: 12),
+                                                const SizedBox(height: 12),
                                                 Text(
-                                                  "Loading PDF Viewer...",
-                                                  style: TextStyle(
+                                                  context.l10n.loadingPdfViewer,
+                                                  style: const TextStyle(
                                                     color: textGrey,
                                                     fontSize: 11,
                                                     fontWeight: FontWeight.bold,
@@ -341,20 +342,20 @@ class _CertificateDetailScreenState extends State<CertificateDetailScreen> {
                                                         "PDF Page Error $page: $error",
                                                       ),
                                                 )
-                                              : const Center(
+                                              : Center(
                                                   child: Text(
-                                                    "Could not load PDF document.",
-                                                    style: TextStyle(
+                                                    context.l10n.couldNotLoadPdf,
+                                                    style: const TextStyle(
                                                       color: textGrey,
                                                       fontWeight:
                                                           FontWeight.bold,
                                                     ),
                                                   ),
                                                 ))))
-                            : const Center(
+                            : Center(
                                 child: Text(
-                                  "No document attached.",
-                                  style: TextStyle(
+                                  context.l10n.noDocumentAttached,
+                                  style: const TextStyle(
                                     color: textGrey,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -388,9 +389,9 @@ class _CertificateDetailScreenState extends State<CertificateDetailScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  "CERTIFICATE CODE",
-                                  style: TextStyle(
+                                Text(
+                                  context.l10n.certificateCode.toUpperCase(),
+                                  style: const TextStyle(
                                     fontSize: 8,
                                     color: primaryPink,
                                     fontWeight: FontWeight.w900,
@@ -412,9 +413,9 @@ class _CertificateDetailScreenState extends State<CertificateDetailScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                const Text(
-                                  "ISSUE DATE",
-                                  style: TextStyle(
+                                Text(
+                                  context.l10n.issueDate.toUpperCase(),
+                                  style: const TextStyle(
                                     fontSize: 8,
                                     color: textGrey,
                                     fontWeight: FontWeight.w900,
@@ -454,9 +455,9 @@ class _CertificateDetailScreenState extends State<CertificateDetailScreen> {
                                 Icons.download_rounded,
                                 size: 16,
                               ),
-                              label: const Text(
-                                "Download File to Device 📥",
-                                style: TextStyle(
+                              label: Text(
+                                context.l10n.downloadFileToDevice,
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w900,
                                   fontSize: 11,
                                 ),

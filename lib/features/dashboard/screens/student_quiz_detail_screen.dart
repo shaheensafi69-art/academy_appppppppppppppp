@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/language_service.dart';
 
 class QuestionItem {
   final String id;
@@ -158,11 +159,11 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
           builder: (context) => AlertDialog(
             backgroundColor: surfaceWhite,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: cardBorder, width: 1.5)),
-            title: const Text("Unanswered Questions", style: TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
-            content: Text("You have $unanswered skipped questions! Are you sure you want to submit?", style: const TextStyle(color: textGrey, fontSize: 11)),
+            title: Text(context.l10n.unansweredQuestions, style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+            content: Text("${context.l10n.unansweredWarning} ($unanswered)", style: const TextStyle(color: textGrey, fontSize: 11)),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Review", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold))),
-              TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Submit", style: TextStyle(color: primaryPink, fontWeight: FontWeight.w900))),
+              TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.review, style: const TextStyle(color: textGrey, fontWeight: FontWeight.bold))),
+              TextButton(onPressed: () => Navigator.pop(context, true), child: Text(context.l10n.submit, style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900))),
             ],
           ),
         );
@@ -220,7 +221,7 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
             children: [
               const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
-              Text("PREPARING EXAM PAPER...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(context.l10n.preparingExamPaper, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
             ],
           ),
         ),
@@ -239,13 +240,13 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
+                    decoration: const BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
                     child: const Icon(Icons.check_circle_rounded, size: 48, color: primaryPink),
                   ),
                   const SizedBox(height: 16),
-                  const Text("Paper Submitted Successfully!", style: TextStyle(color: textDark, fontSize: 18, fontWeight: FontWeight.w900)),
+                  Text(context.l10n.paperSubmittedSuccess, style: const TextStyle(color: textDark, fontSize: 18, fontWeight: FontWeight.w900)),
                   const SizedBox(height: 8),
-                  Text("Your answers for ${quizInfo?['title']} have been saved. Your instructor will grade your exam soon.", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+                  Text(context.l10n.paperSubmittedDesc, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
                   const SizedBox(height: 24),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -256,7 +257,7 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
                     onPressed: () => Navigator.pop(context),
-                    child: const Text("Return to Exam Center", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                    child: Text(context.l10n.returnToExamCenter, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
                   ),
                 ],
               ),
@@ -298,7 +299,7 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           child: Text(
-                            quizInfo?['title'] ?? 'Exam Paper',
+                            quizInfo?['title'] ?? context.l10n.examPaper,
                             style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.w900),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -323,8 +324,8 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("Answered: $answeredCount / ${questions.length}", style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.bold)),
-                      const Text("Auto Saved • Smart Exam", style: TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.bold)),
+                      Text("${context.l10n.answered}: $answeredCount / ${questions.length}", style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.bold)),
+                      Text(context.l10n.autoSavedSmartExam, style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.bold)),
                     ],
                   ),
                   const SizedBox(height: 6),
@@ -383,7 +384,7 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    isDescriptive ? "Descriptive" : "Multiple Choice",
+                                    isDescriptive ? context.l10n.descriptiveQuestion : context.l10n.multipleChoiceQuestion,
                                     style: TextStyle(
                                       color: isDescriptive ? Colors.orange[800] : Colors.indigo,
                                       fontSize: 8,
@@ -395,7 +396,7 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(color: cardBorder, borderRadius: BorderRadius.circular(8)),
-                                  child: Text("${q.points} Pts", style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.w900)),
+                                  child: Text("${q.points} ${context.l10n.pts}", style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.w900)),
                                 ),
                               ],
                             ),
@@ -412,7 +413,7 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
                             maxLines: 5,
                             style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w500),
                             decoration: InputDecoration(
-                              hintText: "Write your descriptive answer here...",
+                              hintText: context.l10n.writeDescriptiveAnswer,
                               hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                               filled: true,
                               fillColor: cardBorder.withOpacity(0.5),
@@ -490,7 +491,7 @@ class _StudentQuizDetailScreenState extends State<StudentQuizDetailScreen> {
                   onPressed: isSubmitting ? null : () => _handleSubmitExam(),
                   child: isSubmitting
                       ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                      : const Text("SUBMIT EXAM PAPER 🚀", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                      : Text(context.l10n.submitExamPaper, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1)),
                 ),
               ),
             ),

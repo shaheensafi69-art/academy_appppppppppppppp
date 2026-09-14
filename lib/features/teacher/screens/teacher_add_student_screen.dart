@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class GlobalStudentItem {
   final String id;
@@ -170,7 +171,7 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
         centerTitle: true,
         iconTheme: const IconThemeData(color: textDark),
         title: Text(
-          "Add to: $className",
+          "${context.l10n.addStudent}: $className",
           style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900),
         ),
         bottom: PreferredSize(
@@ -192,7 +193,7 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
                     onChanged: (val) => setState(() => searchQuery = val),
                     style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w600),
                     decoration: InputDecoration(
-                      hintText: "Search student by name or email...",
+                      hintText: context.l10n.searchByNameOrEmail,
                       hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                       prefixIcon: const Icon(Icons.search_rounded, color: textGrey, size: 20),
                       filled: true,
@@ -264,7 +265,7 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
                                             color: Colors.green.withValues(alpha: 0.1),
                                             borderRadius: BorderRadius.circular(10),
                                           ),
-                                          child: const Text("Enrolled", style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.w900)),
+                                          child: Text(context.l10n.enrolled, style: const TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.w900)),
                                         )
                                       : ElevatedButton(
                                           style: ElevatedButton.styleFrom(
@@ -276,7 +277,7 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
                                           ),
                                           onPressed: addingId == student.id ? null : () => _addStudent(student),
                                           child: Text(
-                                            addingId == student.id ? "..." : "Add",
+                                            addingId == student.id ? "..." : context.l10n.add,
                                             style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900),
                                           ),
                                         ),
@@ -285,9 +286,9 @@ class _TeacherAddStudentScreenState extends State<TeacherAddStudentScreen> {
                             );
                           },
                         )
-                      : const Padding(
-                          padding: EdgeInsets.all(40.0),
-                          child: Text("No students found.", style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w600)),
+                      : Padding(
+                          padding: const EdgeInsets.all(40.0),
+                          child: Text(context.l10n.noStudentsFound, style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w600)),
                         ),
                 ],
               ),

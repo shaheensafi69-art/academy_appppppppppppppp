@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class TeacherCreateQuizScreen extends StatefulWidget {
   const TeacherCreateQuizScreen({super.key});
@@ -143,7 +144,7 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: textDark),
-        title: const Text("Deploy Assessment", style: TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+        title: Text(context.l10n.createQuiz, style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(color: cardBorder, height: 1),
@@ -160,7 +161,7 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // انتخاب کلاس مرجع
-                  const Text("Target Cohort *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text("${context.l10n.classes} *", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
                     initialValue: selectedClassGroupId,
@@ -181,7 +182,7 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
                   const SizedBox(height: 16),
 
                   // نوع آزمون
-                  const Text("Exam Type *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text("${context.l10n.type} *", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 6),
                   Row(
                     children: [
@@ -225,13 +226,13 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
                   const SizedBox(height: 16),
 
                   // عنوان آزمون
-                  const Text("Paper Title *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text("${context.l10n.title} *", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _titleController,
                     style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                     decoration: InputDecoration(
-                      hintText: "e.g. Mid-Term Evaluation",
+                      hintText: context.l10n.title,
                       hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                       filled: true,
                       fillColor: cardBorder.withOpacity(0.5),
@@ -244,7 +245,7 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
                   const SizedBox(height: 16),
 
                   // نمره قبولی
-                  const Text("Passing Threshold Score (%) *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text("${context.l10n.score} (%) *", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _scoreController,
@@ -268,11 +269,11 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
                     spacing: 10,
                     runSpacing: 10,
                     children: [
-                      const Text("Assessment Questions", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                      Text(context.l10n.quizQuestions, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(color: Colors.amber.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
-                        child: Text("Total Points: $totalPoints", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w900, fontSize: 11)),
+                        child: Text("${context.l10n.score}: $totalPoints", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w900, fontSize: 11)),
                       ),
                     ],
                   ),
@@ -302,7 +303,7 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text("Question #${index + 1}", style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 13)),
+                                Text("${context.l10n.question} #${index + 1}", style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 13)),
                                 if (questions.length > 1)
                                   IconButton(
                                     icon: const Icon(Icons.delete_rounded, color: Colors.redAccent, size: 20),
@@ -313,7 +314,7 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
                             const SizedBox(height: 8),
 
                             // کشوی حرفه‌ای و فیکس‌شده انتخاب نوع سوال
-                            const Text("Question Format *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                            Text(context.l10n.type, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 6),
                             DropdownButtonFormField<String>(
                               initialValue: q['type'],
@@ -347,14 +348,14 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
                             const SizedBox(height: 14),
 
                             // متن سوال
-                            const Text("Question Content *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                            Text("${context.l10n.question} *", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 6),
                             TextField(
                               onChanged: (val) => q['text'] = val,
                               maxLines: 2,
                               style: const TextStyle(color: textDark, fontSize: 12),
                               decoration: InputDecoration(
-                                hintText: "Enter question statement...",
+                                hintText: context.l10n.question,
                                 hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                                 filled: true,
                                 fillColor: cardBorder.withOpacity(0.5),
@@ -414,7 +415,7 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
                               onChanged: (val) => q['points'] = int.tryParse(val) ?? 10,
                               style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                               decoration: InputDecoration(
-                                labelText: "Question Points",
+                                labelText: context.l10n.score,
                                 labelStyle: const TextStyle(color: textGrey, fontSize: 11),
                                 filled: true,
                                 fillColor: cardBorder.withOpacity(0.5),
@@ -442,7 +443,7 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       icon: const Icon(Icons.add_rounded, size: 18, color: primaryPink),
-                      label: const Text("Add Another Question", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                      label: Text(context.l10n.add, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                       onPressed: () => setState(() => questions.add({
                             'type': 'multiple_choice',
                             'text': '',
@@ -466,8 +467,8 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
                       border: Border.all(color: cardBorder, width: 1.5),
                     ),
                     child: SwitchListTile(
-                      title: const Text("Status: Online / Live", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900)),
-                      subtitle: const Text("Make this assessment active for students.", style: TextStyle(color: textGrey, fontSize: 10)),
+                      title: Text(context.l10n.status, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900)),
+                      subtitle: Text(context.l10n.makeVisibleToStudents, style: const TextStyle(color: textGrey, fontSize: 10)),
                       value: isActive,
                       activeThumbColor: primaryPink,
                       contentPadding: EdgeInsets.zero,
@@ -488,9 +489,10 @@ class _TeacherCreateQuizScreenState extends State<TeacherCreateQuizScreen> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
                       onPressed: isSubmitting ? null : _handleSubmit,
-                      child: Text(isSubmitting ? "Deploying..." : "Deploy Assessment Paper 🚀", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
+                      child: Text(isSubmitting ? "..." : context.l10n.createQuiz, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
                     ),
                   ),
+                  const SizedBox(height: 40),
                   const SizedBox(height: 40),
                 ],
               ),

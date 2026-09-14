@@ -97,7 +97,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _changePassword() async {
     if (_newPasswordController.text.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Password must be at least 6 characters."), backgroundColor: Colors.redAccent),
+        SnackBar(content: Text(context.l10n.passwordMinLength), backgroundColor: Colors.redAccent),
       );
       return;
     }
@@ -112,7 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Password changed successfully! 🔒"), backgroundColor: Colors.green),
+          SnackBar(content: Text(context.l10n.passwordChangedSuccess), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
@@ -142,12 +142,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             setState(() => _biometricEnabled = true);
             await _saveSecuritySettingsToDb(biometric: true);
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Biometric login enabled! 🔓"), backgroundColor: Colors.green));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.biometricLoginEnabled), backgroundColor: Colors.green));
             }
           }
         } else {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Biometrics not supported on this device."), backgroundColor: Colors.redAccent));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.biometricsNotSupported), backgroundColor: Colors.redAccent));
           }
         }
       } else {
@@ -168,11 +168,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: surfaceWhite,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Column(
+        title: Column(
           children: [
-            Icon(Icons.dialpad_rounded, color: primaryPink, size: 40),
-            SizedBox(height: 12),
-            Text("Set App PIN Lock", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: textDark)),
+            const Icon(Icons.dialpad_rounded, color: primaryPink, size: 40),
+            const SizedBox(height: 12),
+            Text(context.l10n.pinLock, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: textDark)),
           ],
         ),
         content: TextField(
@@ -200,7 +200,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.pop(context);
               setState(() => _pinLockEnabled = false); // برگشت به حالت خاموش در صورت انصراف
             },
-            child: const Text("Cancel", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold)),
+            child: Text(context.l10n.cancel, style: const TextStyle(color: textGrey, fontWeight: FontWeight.bold)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -219,13 +219,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 await _saveSecuritySettingsToDb(pin: _userPin);
                 Navigator.pop(context);
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PIN code successfully saved! 🔑"), backgroundColor: Colors.green));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.pinSavedSuccess), backgroundColor: Colors.green));
                 }
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("PIN must be 4 digits."), backgroundColor: Colors.redAccent));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.pinMustBe4Digits), backgroundColor: Colors.redAccent));
               }
             },
-            child: const Text("Save PIN", style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(context.l10n.savePin, style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -295,13 +295,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             child: const Icon(Icons.settings_rounded, color: primaryPink, size: 28),
                           ),
                           const SizedBox(width: 16),
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("App Settings", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: textDark, letterSpacing: -0.5)),
-                                SizedBox(height: 4),
-                                Text("Manage your app preferences, security, and credentials.", style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
+                                Text(context.l10n.appSettings, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: textDark, letterSpacing: -0.5)),
+                                const SizedBox(height: 4),
+                                Text(context.l10n.preferencesAndLanguage, style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
                               ],
                             ),
                           ),
@@ -311,7 +311,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 30),
 
                     // ================= ۱. بخش تغییر رمز عبور =================
-                    const Text("Account Security", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                    Text(context.l10n.accountSecurity, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
                     const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.all(20),
@@ -323,7 +323,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       child: Column(
                         children: [
-                          _buildTextField("New Password", "Enter a strong password...", _newPasswordController, obscureText: true, icon: Icons.lock_outline_rounded),
+                          _buildTextField(context.l10n.newPassword, context.l10n.enterStrongPassword, _newPasswordController, obscureText: true, icon: Icons.lock_outline_rounded),
                           const SizedBox(height: 16),
                           SizedBox(
                             width: double.infinity,
@@ -338,7 +338,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               onPressed: isSaving ? null : _changePassword,
                               child: isSaving 
                                 ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                : const Text("UPDATE PASSWORD 🔒", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                                : Text(context.l10n.updatePassword, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
                             ),
                           ),
                         ],
@@ -347,7 +347,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 24),
 
                     // ================= ۲. بخش قفل‌های بیومتریک و پین =================
-                    const Text("App Lock & Privacy", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                    Text(context.l10n.appLockAndPrivacy, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
                     const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.all(20),
@@ -371,11 +371,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     child: const Icon(Icons.fingerprint_rounded, color: primaryPink, size: 20),
                                   ),
                                   const SizedBox(width: 14),
-                                  const Column(
+                                  Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text("Biometric Login", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
-                                      Text("Face ID or Touch ID", style: TextStyle(color: textGrey, fontSize: 11)),
+                                      Text(context.l10n.biometricAuth, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                                      Text(context.l10n.biometricAuthDesc, style: const TextStyle(color: textGrey, fontSize: 11)),
                                     ],
                                   ),
                                 ],
@@ -407,8 +407,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Text("App PIN Lock", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
-                                      Text(_pinLockEnabled ? "Enabled" : "Disabled", style: TextStyle(color: _pinLockEnabled ? Colors.green : textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                                      Text(context.l10n.pinLock, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                                      Text(_pinLockEnabled ? context.l10n.active : context.l10n.pending, style: TextStyle(color: _pinLockEnabled ? Colors.green : textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                                     ],
                                   ),
                                 ],
@@ -437,7 +437,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 24),
 
                     // ================= ۳. بخش تنظیمات اپلیکیشن =================
-                    const Text("App Preferences", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                    Text(context.l10n.preferencesAndLanguage, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
                     const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.all(20),
@@ -511,7 +511,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     child: const Icon(Icons.notifications_active_rounded, color: textDark, size: 20),
                                   ),
                                   const SizedBox(width: 14),
-                                  const Text("Push Notifications", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                                  Text(context.l10n.pushNotifications, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                                 ],
                               ),
                               Switch.adaptive(
@@ -540,7 +540,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                         ),
                         icon: const Icon(Icons.logout_rounded, size: 20),
-                        label: const Text("SECURE SIGN OUT", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                        label: Text(context.l10n.logOut, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1)),
                         onPressed: _logout,
                       ),
                     ),

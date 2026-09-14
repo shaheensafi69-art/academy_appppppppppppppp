@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class TeacherAboutHelpCenterScreen extends StatefulWidget {
   const TeacherAboutHelpCenterScreen({super.key});
@@ -66,13 +67,13 @@ class _TeacherAboutHelpCenterScreenState extends State<TeacherAboutHelpCenterScr
                               child: const Icon(Icons.info_outline_rounded, color: primaryPink, size: 24),
                             ),
                             const SizedBox(width: 14),
-                            const Expanded(
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("About & Faculty Help", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                                  SizedBox(height: 3),
-                                  Text("Safi Academy instructor portal, guidelines, and official channels.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
+                                  Text(context.l10n.aboutFacultyHelp, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                                  const SizedBox(height: 3),
+                                  Text(context.l10n.aboutFacultyHelpDesc, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
                                 ],
                               ),
                             ),
@@ -110,15 +111,13 @@ class _TeacherAboutHelpCenterScreenState extends State<TeacherAboutHelpCenterScr
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                const Text("About Safi Academy", style: TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+                                Text(context.l10n.aboutSafiAcademy, style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
                               ],
                             ),
                             const SizedBox(height: 14),
-                            const Text(
-                              "Welcome to the Safi Academy Instructor Portal. As part of our elite faculty, your dedication shapes the future of global education, technical training, and professional trading expertise.\n\n"
-                              "Use this portal to manage your courses, grade student assignments, review assessments, and interact with students. "
-                              "For direct administration or technical assistance, you can reach out via our official communication channels below.",
-                              style: TextStyle(color: textGrey, fontSize: 11, height: 1.6, fontWeight: FontWeight.w500),
+                            Text(
+                              context.l10n.teacherAboutWelcomeText,
+                              style: const TextStyle(color: textGrey, fontSize: 11, height: 1.6, fontWeight: FontWeight.w500),
                             ),
                           ],
                         ),
@@ -126,7 +125,7 @@ class _TeacherAboutHelpCenterScreenState extends State<TeacherAboutHelpCenterScr
                       const SizedBox(height: 24),
 
                       // ================= راه‌های ارتباطی مستقیم (ایمیل و شماره تماس) =================
-                      const Text("Direct Communications", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                      Text(context.l10n.directCommunications, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                       const SizedBox(height: 12),
                       LayoutBuilder(
                         builder: (context, boxConstraints) {
@@ -138,7 +137,7 @@ class _TeacherAboutHelpCenterScreenState extends State<TeacherAboutHelpCenterScr
                                 flex: isWide ? 1 : 0,
                                 child: _buildContactCard(
                                   icon: Icons.email_rounded,
-                                  title: "Faculty Email",
+                                  title: context.l10n.facultyEmail,
                                   subtitle: "info@safiacademy.org",
                                   onTap: () => _launchURL("mailto:info@safiacademy.org"),
                                 ),
@@ -148,7 +147,7 @@ class _TeacherAboutHelpCenterScreenState extends State<TeacherAboutHelpCenterScr
                                 flex: isWide ? 1 : 0,
                                 child: _buildContactCard(
                                   icon: Icons.phone_rounded,
-                                  title: "Admin Hotline",
+                                  title: context.l10n.academyHotline,
                                   subtitle: "+447476620282",
                                   onTap: () => _launchURL("tel:+447476620282"),
                                 ),
@@ -160,7 +159,7 @@ class _TeacherAboutHelpCenterScreenState extends State<TeacherAboutHelpCenterScr
                       const SizedBox(height: 24),
 
                       // ================= شبکه‌های اجتماعی با لوگوهای کوچک و مرتب =================
-                      const Text("Official Channels & Socials", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                      Text(context.l10n.officialChannelsAndSocials, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                       const SizedBox(height: 12),
                       
                       // دکمه ویژه واتساپ
@@ -346,13 +345,13 @@ class _TeacherAboutHelpCenterScreenState extends State<TeacherAboutHelpCenterScr
               ),
             ),
             const SizedBox(width: 12),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("WhatsApp Community Channel", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12)),
-                  SizedBox(height: 2),
-                  Text("Join our official broadcast channel for instant updates", style: TextStyle(color: Colors.white70, fontSize: 9, fontWeight: FontWeight.w500)),
+                  Text(context.l10n.whatsappCommunity, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12)),
+                  const SizedBox(height: 2),
+                  Text(context.l10n.whatsappCommunityDesc, style: const TextStyle(color: Colors.white70, fontSize: 9, fontWeight: FontWeight.w500)),
                 ],
               ),
             ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/services/language_service.dart';
 
 class StudentClassDetailScreen extends StatelessWidget {
   final Map<String, dynamic> classData;
@@ -47,7 +48,7 @@ class StudentClassDetailScreen extends StatelessWidget {
         backgroundColor: surfaceWhite,
         elevation: 0,
         centerTitle: true,
-        title: const Text("Class Hub & Details", style: TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+        title: Text(context.l10n.classHubAndDetails, style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
         iconTheme: const IconThemeData(color: textDark),
       ),
       body: SingleChildScrollView(
@@ -88,7 +89,7 @@ class StudentClassDetailScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          isPaid ? "ENROLLED & ACTIVE ✓" : "PAYMENT PENDING",
+                          isPaid ? context.l10n.enrolledAndActive : context.l10n.paymentPending,
                           style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.8),
                         ),
                       ),
@@ -103,7 +104,7 @@ class StudentClassDetailScreen extends StatelessWidget {
                           const Icon(Icons.person_outline_rounded, color: Colors.white70, size: 14),
                           const SizedBox(width: 6),
                           Text(
-                            "Instructor: $teacherName",
+                            "${context.l10n.leadInstructor}: $teacherName",
                             style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
                           ),
                         ],
@@ -116,7 +117,7 @@ class StudentClassDetailScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // مشخصات کامل کلاس
-            const Text("Class Specifications", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+            Text(context.l10n.classSpecifications, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(18),
@@ -128,16 +129,16 @@ class StudentClassDetailScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _buildInfoRow(Icons.schedule_rounded, "Schedule Info", scheduleInfo),
+                  _buildInfoRow(Icons.schedule_rounded, context.l10n.scheduleInfo, scheduleInfo),
                   const Divider(height: 20, color: cardBorder),
-                  _buildInfoRow(Icons.date_range_rounded, "Duration", "$startDate to $endDate"),
+                  _buildInfoRow(Icons.date_range_rounded, context.l10n.duration, "$startDate to $endDate"),
                   if (classTime.isNotEmpty) ...[
                     const Divider(height: 20, color: cardBorder),
-                    _buildInfoRow(Icons.access_time_rounded, "Class Time", classTime),
+                    _buildInfoRow(Icons.access_time_rounded, context.l10n.classTime, classTime),
                   ],
                   if (classDays.isNotEmpty) ...[
                     const Divider(height: 20, color: cardBorder),
-                    _buildInfoRow(Icons.calendar_view_week_rounded, "Class Days", classDays),
+                    _buildInfoRow(Icons.calendar_view_week_rounded, context.l10n.classDays, classDays),
                   ],
                 ],
               ),
@@ -145,15 +146,15 @@ class StudentClassDetailScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // دکمه‌های دسترسی بی‌نظیر و مدرن
-            const Text("Access Channels", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+            Text(context.l10n.accessChannels, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
             const SizedBox(height: 12),
             isPaid
                 ? Column(
                     children: [
                       if (meetingLink != model && meetingLink != null)
                         _buildActionCard(
-                          title: "Join Teams Lecture Room",
-                          subtitle: "Connect instantly to live corporate session",
+                          title: context.l10n.joinTeamsLectureRoom,
+                          subtitle: context.l10n.joinTeamsLectureRoomSubtitle,
                           icon: Icons.video_call_rounded,
                           color: const Color(0xFFD32F2F),
                           isElevated: true,
@@ -162,8 +163,8 @@ class StudentClassDetailScreen extends StatelessWidget {
                       if (meetingLink != null && signalLink != null) const SizedBox(height: 12),
                       if (signalLink != null)
                         _buildActionCard(
-                          title: "Open Signal Encrypted Group",
-                          subtitle: "Secure messaging & operational updates",
+                          title: context.l10n.openSignalEncryptedGroup,
+                          subtitle: context.l10n.signalEncryptedGroupSubtitle,
                           icon: Icons.message_rounded,
                           color: primaryPink,
                           isElevated: false,
@@ -179,13 +180,13 @@ class StudentClassDetailScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
                     ),
-                    child: const Column(
+                    child: Column(
                       children: [
-                        Icon(Icons.lock_rounded, color: primaryPink, size: 24),
-                        SizedBox(height: 8),
+                        const Icon(Icons.lock_rounded, color: primaryPink, size: 24),
+                        const SizedBox(height: 8),
                         Text(
-                          "Class rooms and links are locked until tuition payment is verified by the administration.",
-                          style: TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900, height: 1.4),
+                          context.l10n.classLockedTuitionPending,
+                          style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900, height: 1.4),
                           textAlign: TextAlign.center,
                         ),
                       ],

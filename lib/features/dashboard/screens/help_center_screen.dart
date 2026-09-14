@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/services/language_service.dart';
 
 class HelpCenterScreen extends StatefulWidget {
   const HelpCenterScreen({super.key});
@@ -37,7 +38,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     
     if (subject.isEmpty || message.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill in both subject and message fields."), backgroundColor: Colors.redAccent),
+        SnackBar(content: Text(context.l10n.fillSubjectAndMessage), backgroundColor: Colors.redAccent),
       );
       return;
     }
@@ -68,7 +69,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
       FocusScope.of(context).unfocus();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Support ticket submitted successfully! We will get back to you soon. 🎫"), backgroundColor: Colors.green),
+        SnackBar(content: Text(context.l10n.ticketSuccess), backgroundColor: Colors.green),
       );
     } catch (e) {
       debugPrint("Error submitting ticket: $e");
@@ -92,14 +93,14 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
   Widget build(BuildContext context) {
     return AcademyLoadingOverlay(
       isLoading: isSubmitting,
-      message: "SUBMITTING TICKET...",
+      message: context.l10n.submittingTicket.toUpperCase(),
       child: Scaffold(
         backgroundColor: surfaceWhite,
         appBar: AppBar(
           backgroundColor: surfaceWhite,
           elevation: 0,
           iconTheme: const IconThemeData(color: textDark),
-          title: const Text("Help & Support", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+          title: Text(context.l10n.helpCenterTitle, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
           centerTitle: true,
         ),
         body: Container(
@@ -149,13 +150,19 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                   child: const Icon(Icons.support_agent_rounded, color: primaryPink, size: 28),
                                 ),
                                 const SizedBox(width: 16),
-                                const Expanded(
+                                Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text("How can we help?", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark, letterSpacing: -0.5)),
-                                      SizedBox(height: 4),
-                                      Text("Submit a ticket, explore FAQs, or reach out to us directly.", style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
+                                      Text(
+                                        context.l10n.howCanWeHelp,
+                                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark, letterSpacing: -0.5),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        context.l10n.howCanWeHelpDesc,
+                                        style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500, height: 1.3),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -165,7 +172,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                           const SizedBox(height: 24),
 
                           // ================= بخش ارسال تیکت جدید =================
-                          const Text("Submit a Support Ticket", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                          Text(context.l10n.submitSupportTicket, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
                           const SizedBox(height: 12),
                           Container(
                             padding: const EdgeInsets.all(20),
@@ -180,7 +187,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text("Department", style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.bold)),
+                                    Text(context.l10n.ticketDepartment, style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.bold)),
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                                       decoration: BoxDecoration(
@@ -194,9 +201,12 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                         icon: const Icon(Icons.keyboard_arrow_down_rounded, color: primaryPink, size: 18),
                                         dropdownColor: surfaceWhite,
                                         borderRadius: BorderRadius.circular(16),
-                                        items: ['General Support', 'Technical Issue', 'Billing & Payments', 'Course Content'].map((dept) {
-                                          return DropdownMenuItem(value: dept, child: Text(dept, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: textDark)));
-                                        }).toList(),
+                                        items: [
+                                          DropdownMenuItem(value: 'General Support', child: Text(context.l10n.generalSupport, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: textDark))),
+                                          DropdownMenuItem(value: 'Technical Issue', child: Text(context.l10n.technicalIssue, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: textDark))),
+                                          DropdownMenuItem(value: 'Billing & Payments', child: Text(context.l10n.billingAndPayments, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: textDark))),
+                                          DropdownMenuItem(value: 'Course Content', child: Text(context.l10n.courseContent, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: textDark))),
+                                        ],
                                         onChanged: (val) {
                                           if (val != null) setState(() => _selectedDepartment = val);
                                         },
@@ -210,7 +220,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                   cursorColor: primaryPink,
                                   style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900),
                                   decoration: InputDecoration(
-                                    hintText: "Subject / Issue summary...",
+                                    hintText: context.l10n.subjectHint,
                                     hintStyle: const TextStyle(color: textGrey, fontSize: 13, fontWeight: FontWeight.w600),
                                     filled: true,
                                     fillColor: cardBorder.withValues(alpha: 0.5),
@@ -226,7 +236,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                   maxLines: 4,
                                   style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.w500, height: 1.5),
                                   decoration: InputDecoration(
-                                    hintText: "Describe your problem or request in detail...",
+                                    hintText: context.l10n.messageHint,
                                     hintStyle: const TextStyle(color: textGrey, fontSize: 13),
                                     filled: true,
                                     fillColor: cardBorder.withValues(alpha: 0.5),
@@ -247,7 +257,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                       padding: const EdgeInsets.symmetric(vertical: 16),
                                     ),
                                     onPressed: isSubmitting ? null : _submitTicket,
-                                    child: const Text("SUBMIT TICKET 🎫", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                                    child: Text("${context.l10n.submitTicket.toUpperCase()} 🎫", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1)),
                                   ),
                                 ),
                               ],
@@ -256,7 +266,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                           const SizedBox(height: 30),
 
                           // ================= راه‌های ارتباطی مستقیم =================
-                          const Text("Direct Communications", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                          Text(context.l10n.directCommunications, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
                           const SizedBox(height: 12),
                           LayoutBuilder(
                             builder: (context, boxConstraints) {
@@ -268,7 +278,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                     flex: isWide ? 1 : 0,
                                     child: _buildContactCard(
                                       icon: Icons.email_rounded,
-                                      title: "Official Email",
+                                      title: context.l10n.officialEmail,
                                       subtitle: "info@safiacademy.org",
                                       onTap: () => _launchURL("mailto:info@safiacademy.org"),
                                     ),
@@ -278,7 +288,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                     flex: isWide ? 1 : 0,
                                     child: _buildContactCard(
                                       icon: Icons.phone_rounded,
-                                      title: "Academy Hotline",
+                                      title: context.l10n.academyHotline,
                                       subtitle: "+447476620282",
                                       onTap: () => _launchURL("tel:+447476620282"),
                                     ),
@@ -290,7 +300,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                           const SizedBox(height: 30),
 
                           // ================= شبکه‌های اجتماعی =================
-                          const Text("Official Channels & Socials", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                          Text(context.l10n.officialChannelsAndSocials, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
                           const SizedBox(height: 12),
                           
                           _buildFeaturedWhatsAppCard(
@@ -344,13 +354,13 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                           const SizedBox(height: 30),
 
                           // ================= سوالات متداول =================
-                          const Text("Frequently Asked Questions", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                          Text(context.l10n.faqTitle, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
                           const SizedBox(height: 12),
-                          _buildFaqItem("How do I join live classes?", "You can join live sessions directly from the 'Live Campus' section using the meeting room link provided for your batch. Ensure you have Zoom/Meet installed."),
+                          _buildFaqItem(context.l10n.faq1Q, context.l10n.faq1A),
                           const SizedBox(height: 10),
-                          _buildFaqItem("How are certificates issued?", "Once you successfully pass your final exams and complete the course requirements, your official verified certificate will automatically appear in the 'Certificates' section as a downloadable PDF."),
+                          _buildFaqItem(context.l10n.faq2Q, context.l10n.faq2A),
                           const SizedBox(height: 10),
-                          _buildFaqItem("Can I apply for international scholarships?", "Absolutely! Explore our 'Scholarships' portal to discover fully funded global grants, eligibility criteria, and direct application links curated by Safi Academy."),
+                          _buildFaqItem(context.l10n.faq3Q, context.l10n.faq3A),
                           const SizedBox(height: 80),
                         ],
                       ),
@@ -424,13 +434,13 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
               child: Image.asset('assets/whatsapp.com-logo.webp', width: 24, height: 24, fit: BoxFit.contain),
             ),
             const SizedBox(width: 14),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("WhatsApp Community Channel", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13)),
-                  SizedBox(height: 2),
-                  Text("Join our official broadcast channel for instant updates", style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w500)),
+                  Text(context.l10n.whatsappCommunity, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13)),
+                  const SizedBox(height: 2),
+                  Text(context.l10n.whatsappCommunityDesc, style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w500)),
                 ],
               ),
             ),

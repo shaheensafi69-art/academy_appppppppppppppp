@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/language_service.dart';
 
 class StudentOverviewScreen extends StatefulWidget {
   const StudentOverviewScreen({super.key});
@@ -167,7 +168,7 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                  child: const Text("LIVE CAMPUS SESSION", style: TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                  child: Text(context.l10n.liveCampusSession, style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
                 ),
                 IconButton(icon: const Icon(Icons.close_rounded, color: textGrey), onPressed: () => Navigator.pop(context)),
               ],
@@ -175,14 +176,14 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
             const SizedBox(height: 12),
             Text(liveClass['title'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
             const SizedBox(height: 6),
-            Text("Schedule: ${liveClass['time']}", style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.bold)),
+            Text("${context.l10n.schedule}: ${liveClass['time']}", style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.bold)),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(backgroundColor: primaryPink, foregroundColor: Colors.white, elevation: 0, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
                 icon: const Icon(Icons.video_call_rounded, size: 18),
-                label: const Text("Join Live Meeting Room 🚀", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                label: Text(context.l10n.joinLiveMeetingRoom, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
                 onPressed: () {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Opening meeting link..."), backgroundColor: Colors.green));
@@ -200,7 +201,7 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
   Widget build(BuildContext context) {
     return AcademyLoadingOverlay(
       isLoading: isLoading,
-      message: "LOADING DASHBOARD...",
+      message: context.l10n.loadingDashboard,
       child: Scaffold(
         backgroundColor: surfaceWhite,
         body: Container(
@@ -222,11 +223,15 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: surfaceWhite,
+                      gradient: LinearGradient(
+                        colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                      border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.5),
                       boxShadow: [
-                        BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                        BoxShadow(color: primaryPink.withOpacity(0.09), blurRadius: 28, offset: const Offset(0, 10)),
                       ],
                     ),
                     child: Column(
@@ -238,7 +243,7 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
                               height: 54,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(18),
-                                border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                                border: Border.all(color: primaryPink.withOpacity(0.35), width: 1.5),
                                 color: lightPinkBg,
                               ),
                               child: ClipRRect(
@@ -261,7 +266,7 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                     decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                                    child: const Text("ACADEMY STUDENT", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1)),
+                                    child: Text(context.l10n.academyStudent, style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1)),
                                   ),
                                   const SizedBox(height: 5),
                                   Text(
@@ -289,7 +294,7 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text("Wallet Balance", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey)),
+                              Text(context.l10n.walletBalance, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey)),
                               Text("\$${student['wallet'].toStringAsFixed(2)}", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Colors.green.shade700)),
                             ],
                           ),
@@ -302,9 +307,9 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
                   // ================= 2. DAILY STREAK =================
                   Row(
                     children: [
-                      Expanded(child: _buildMetricCard("DAILY STREAK", "${stats['dailyStreak']} Days", "🔥", Colors.amber)),
+                      Expanded(child: _buildMetricCard(context.l10n.dailyStreak, context.l10n.daysCount("${stats['dailyStreak']}"), "🔥", Colors.amber)),
                       const SizedBox(width: 10),
-                      Expanded(child: _buildMetricCard("LONGEST STREAK", "${stats['longestStreak']} Days", "⚡", primaryPink)),
+                      Expanded(child: _buildMetricCard(context.l10n.longestStreak, context.l10n.daysCount("${stats['longestStreak']}"), "⚡", primaryPink)),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -318,15 +323,15 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
                     mainAxisSpacing: 10,
                     childAspectRatio: 1.05,
                     children: [
-                      _buildStatCard("Enrolled", "${stats['enrolledCourses']}", Icons.menu_book_rounded, Colors.indigo),
-                      _buildStatCard("Score", "${student['total_score']}", Icons.bolt_rounded, primaryPink),
-                      _buildStatCard("Certs", "${stats['certificates']}", Icons.emoji_events_rounded, Colors.green.shade700),
+                      _buildStatCard(context.l10n.enrolled, "${stats['enrolledCourses']}", Icons.menu_book_rounded, Colors.indigo),
+                      _buildStatCard(context.l10n.score, "${student['total_score']}", Icons.bolt_rounded, primaryPink),
+                      _buildStatCard(context.l10n.certs, "${stats['certificates']}", Icons.emoji_events_rounded, Colors.green.shade700),
                     ],
                   ),
                   const SizedBox(height: 20),
 
                   // ================= 4. CONTINUE LEARNING =================
-                  const Text("Continue Learning", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                  Text(context.l10n.continueLearning, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
                   const SizedBox(height: 10),
                   activeCourse != null
                       ? Container(
@@ -368,7 +373,7 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                       decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(6)),
-                                      child: const Text("IN PROGRESS", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: primaryPink)),
+                                      child: Text(context.l10n.inProgress, style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: primaryPink)),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
@@ -387,12 +392,12 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
                           padding: const EdgeInsets.all(24),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(color: surfaceWhite, borderRadius: BorderRadius.circular(20), border: Border.all(color: cardBorder, width: 1.5)),
-                          child: const Text("You haven't enrolled in any courses yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                          child: Text(context.l10n.noCoursesEnrolledYet, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                         ),
                   const SizedBox(height: 20),
 
                   // ================= 5. LIVE CLASSES =================
-                  const Text("Active Live Campus Classes", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                  Text(context.l10n.activeLiveCampusClasses, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
                   const SizedBox(height: 10),
                   activeClasses.isNotEmpty
                       ? ListView.separated(
@@ -442,7 +447,7 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                       decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(10)),
-                                      child: const Text("Join 🚀", style: TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                      child: Text(context.l10n.join, style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
                                     ),
                                   ],
                                 ),
@@ -454,7 +459,7 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
                           padding: const EdgeInsets.all(24),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(color: surfaceWhite, borderRadius: BorderRadius.circular(20), border: Border.all(color: cardBorder, width: 1.5)),
-                          child: const Text("No active class groups found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                          child: Text(context.l10n.noActiveClasses, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                         ),
                   const SizedBox(height: 40),
                 ],
@@ -468,30 +473,60 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
 
   Widget _buildMetricCard(String title, String value, dynamic iconOrEmoji, Color color) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
-        color: surfaceWhite,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+        gradient: LinearGradient(
+          colors: [surfaceWhite, lightPinkBg.withOpacity(0.45)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.08),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
+            padding: const EdgeInsets.all(9),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: iconOrEmoji is String
-                ? Text(iconOrEmoji, style: const TextStyle(fontSize: 16))
-                : Icon(iconOrEmoji, color: color, size: 18),
+                ? Text(iconOrEmoji, style: const TextStyle(fontSize: 18))
+                : Icon(iconOrEmoji, color: color, size: 20),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-                const SizedBox(height: 2),
-                Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: textDark), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w900,
+                    color: textGrey.withOpacity(0.9),
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    color: textDark,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
@@ -502,31 +537,60 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: surfaceWhite,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+        gradient: LinearGradient(
+          colors: [surfaceWhite, lightPinkBg.withOpacity(0.35)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.18), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.07),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Container(
-            padding: const EdgeInsets.all(5),
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: color, size: 16),
+            child: Icon(icon, color: color, size: 18),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: color), maxLines: 1, overflow: TextOverflow.ellipsis),
-              const SizedBox(height: 1),
-              Text(title.toUpperCase(), style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8), maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  color: color,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                title.toUpperCase(),
+                style: const TextStyle(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w900,
+                  color: textGrey,
+                  letterSpacing: 0.8,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
         ],

@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
+import '../../../core/services/language_service.dart';
 
 // شناسه ثابت کورس فارکس
 const String forexCourseId = "d9fa8678-76b4-4705-b579-7860407d43e8";
@@ -333,8 +334,8 @@ class _StudentTradingJournalScreenState
               ),
               const SizedBox(height: 14),
               Text(
-                "LOADING TRADING JOURNAL...",
-                style: TextStyle(
+                "${context.l10n.loading.toUpperCase()}...",
+                style: const TextStyle(
                   color: textGrey,
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
@@ -372,18 +373,18 @@ class _StudentTradingJournalScreenState
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  "Access Restricted",
-                  style: TextStyle(
+                Text(
+                  context.l10n.accessRestricted,
+                  style: const TextStyle(
                     color: textDark,
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  "The Professional Trading Journal is an exclusive tool reserved strictly for students enrolled in the Financial Markets & Forex Trading masterclass.",
-                  style: TextStyle(color: textGrey, fontSize: 11, height: 1.4),
+                Text(
+                  context.l10n.journalRestrictedDesc,
+                  style: const TextStyle(color: textGrey, fontSize: 11, height: 1.4),
                   textAlign: TextAlign.center,
                 ),
               ],

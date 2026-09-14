@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 import 'teacher_create_quiz_screen.dart';
 import 'teacher_quiz_results_screen.dart';
 import 'teacher_quiz_questions_screen.dart';
@@ -193,13 +194,13 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
                               child: const Icon(Icons.track_changes_rounded, color: primaryPink, size: 26),
                             ),
                             const SizedBox(width: 14),
-                            const Expanded(
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Exam Hub", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                                  SizedBox(height: 3),
-                                  Text("Design exams, manage tests, and grade papers.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                                  Text(context.l10n.quizzes, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                                  const SizedBox(height: 3),
+                                  Text(context.l10n.quizQuestions, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                                 ],
                               ),
                             ),
@@ -215,7 +216,7 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           ),
                           icon: const Icon(Icons.add_rounded, size: 18),
-                          label: const Text("Deploy", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                          label: Text(context.l10n.createQuiz, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                           onPressed: () {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const TeacherCreateQuizScreen()))
                                 .then((_) => _fetchTeacherQuizzes());
@@ -245,7 +246,7 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
                           border: Border.all(color: isSel ? primaryPink : cardBorder, width: 1.5),
                         ),
                         child: Text(
-                          tab.toUpperCase(),
+                          tab == 'all' ? context.l10n.all : tab.toUpperCase(),
                           style: TextStyle(
                             color: isSel ? Colors.white : textDark,
                             fontSize: 10,
@@ -298,7 +299,7 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
                                             borderRadius: BorderRadius.circular(8),
                                           ),
                                           child: Text(
-                                            quiz.isActive ? "● Live" : "○ Draft",
+                                            quiz.isActive ? "● ${context.l10n.published}" : "○ ${context.l10n.draft}",
                                             style: TextStyle(
                                               color: quiz.isActive ? Colors.green.shade700 : textGrey,
                                               fontSize: 9,
@@ -312,10 +313,10 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
                                   const SizedBox(height: 12),
                                   Text(quiz.title, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
                                   const SizedBox(height: 4),
-                                  Text("Pass Mark: ${quiz.passingScore}% | Type: ${quiz.quizType.toUpperCase()}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                                  Text("${context.l10n.score}: ${quiz.passingScore}% | ${context.l10n.type}: ${quiz.quizType.toUpperCase()}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
                                   if (quiz.pendingReviews > 0) ...[
                                     const SizedBox(height: 8),
-                                    Text("⏳ ${quiz.pendingReviews} Papers to Grade", style: const TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.w900)),
+                                    Text("⏳ ${quiz.pendingReviews} ${context.l10n.pendingApprovals}", style: const TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.w900)),
                                   ],
                                   const SizedBox(height: 16),
                                   
@@ -340,7 +341,7 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
                                                 onPressed: () {
                                                   Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherQuizQuestionsScreen(quizId: quiz.id)));
                                                 },
-                                                child: const Text("Questions", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                                child: Text(context.l10n.quizQuestions, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                               ),
                                             ),
                                           ),
@@ -361,7 +362,7 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
                                                   Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherQuizResultsScreen(quizId: quiz.id)))
                                                       .then((_) => _fetchTeacherQuizzes());
                                                 },
-                                                child: Text(quiz.pendingReviews > 0 ? "Grade Papers" : "Results", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                                child: Text(quiz.pendingReviews > 0 ? context.l10n.gradeSubmission : context.l10n.quizResults, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                               ),
                                             ),
                                           ),
@@ -382,13 +383,13 @@ class _TeacherQuizzesOverviewScreenState extends State<TeacherQuizzesOverviewScr
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(color: cardBorder),
                           ),
-                          child: const Column(
+                          child: Column(
                             children: [
-                              Icon(Icons.assignment_late_rounded, size: 36, color: textGrey),
-                              SizedBox(height: 10),
-                              Text("No Exams Deployed", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
-                              SizedBox(height: 4),
-                              Text("No exams deployed yet.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                              const Icon(Icons.assignment_late_rounded, size: 36, color: textGrey),
+                              const SizedBox(height: 10),
+                              Text(context.l10n.quizzes, style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
+                              const SizedBox(height: 4),
+                              Text(context.l10n.noDataFound, style: const TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
                             ],
                           ),
                         ),

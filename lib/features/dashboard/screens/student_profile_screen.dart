@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
+import '../../../core/services/language_service.dart';
 
 class StudentSettingsScreen extends StatefulWidget {
   const StudentSettingsScreen({super.key});
@@ -238,22 +239,22 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                     ),
                   ),
                   const SizedBox(width: 14),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "My Profile",
-                          style: TextStyle(
+                          context.l10n.myProfile,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
                             color: textDark,
                           ),
                         ),
-                        SizedBox(height: 3),
+                        const SizedBox(height: 3),
                         Text(
-                          "Manage your personal identity and account credentials.",
-                          style: TextStyle(
+                          context.l10n.personalDetails,
+                          style: const TextStyle(
                             fontSize: 10,
                             color: textGrey,
                             fontWeight: FontWeight.w500,
@@ -296,9 +297,9 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          "Personal Identity",
-                          style: TextStyle(
+                        Text(
+                          context.l10n.personalDetails,
+                          style: const TextStyle(
                             color: textDark,
                             fontWeight: FontWeight.w900,
                             fontSize: 15,
@@ -358,26 +359,26 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                         ),
                         const SizedBox(height: 20),
 
-                        _buildTextField("First Name", _firstNameController),
+                        _buildTextField(context.l10n.firstName, _firstNameController),
                         const SizedBox(height: 14),
-                        _buildTextField("Last Name", _lastNameController),
+                        _buildTextField(context.l10n.lastName, _lastNameController),
                         const SizedBox(height: 14),
-                        _buildTextField("Father's Name", _fatherNameController),
+                        _buildTextField(context.l10n.fatherName, _fatherNameController),
                         const SizedBox(height: 14),
-                        _buildTextField("Date of Birth", _dobController),
+                        _buildTextField(context.l10n.dateOfBirth, _dobController),
                         const SizedBox(height: 14),
-                        _buildReadOnlyField("Email Address", _email),
+                        _buildReadOnlyField(context.l10n.emailAddress, _email),
                         const SizedBox(height: 14),
                         _buildTextField(
-                          "Phone Number",
+                          context.l10n.phoneNumber,
                           _phoneController,
                           keyboardType: TextInputType.phone,
                         ),
                         const SizedBox(height: 14),
-                        _buildTextField("Country / Region", _countryController),
+                        _buildTextField(context.l10n.country, _countryController),
                         const SizedBox(height: 14),
                         _buildTextField(
-                          "Bio / Headline",
+                          context.l10n.bio,
                           _bioController,
                           maxLines: 3,
                         ),
@@ -397,7 +398,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                             ),
                             onPressed: isSaving ? null : _handleSaveProfile,
                             child: Text(
-                              isSaving ? "Saving..." : "Save Profile Details",
+                              isSaving ? context.l10n.loading : context.l10n.save,
                               style: const TextStyle(
                                 fontWeight: FontWeight.w900,
                                 fontSize: 11,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'teacher_create_course_screen.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class CourseCurriculumItem {
   final String id;
@@ -145,8 +146,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text("Language: ${courseData?['language'] ?? 'English'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                                Text("Status: ${courseData?['is_published'] == true ? 'Published ✅' : 'Draft 📌'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                Text("${context.l10n.language}: ${courseData?['language'] ?? 'English'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                Text("${context.l10n.status}: ${courseData?['is_published'] == true ? context.l10n.published : context.l10n.draft}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ],
@@ -156,11 +157,11 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text("Enrolled Students", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                          Text(context.l10n.myStudents, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(10)),
-                            child: Text("${enrolledStudents.length} Students", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
+                            child: Text("${enrolledStudents.length} ${context.l10n.myStudents}", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
                           ),
                         ],
                       ),
@@ -174,8 +175,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                               itemBuilder: (context, index) {
                                 final enrollment = enrolledStudents[index];
                                 final profile = enrollment['profiles'] as Map<String, dynamic>?;
-                                final studentName = profile != null ? "${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}".trim() : "Student";
-                                final studentEmail = profile?['email'] ?? 'No email';
+                                final studentName = profile != null ? "${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}".trim() : context.l10n.studentName;
+                                final studentEmail = profile?['email'] ?? '';
                                 final avatarUrl = profile?['avatar_url'];
                                 final progress = enrollment['progress_percentage'] ?? 0;
 
@@ -200,7 +201,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text(studentName.isNotEmpty ? studentName : "Enrolled Student", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
+                                            Text(studentName.isNotEmpty ? studentName : context.l10n.studentName, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
                                             const SizedBox(height: 2),
                                             Text(studentEmail, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500)),
                                           ],
@@ -209,7 +210,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                         decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                                        child: Text("$progress% Done", style: const TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.w900)),
+                                        child: Text("$progress% ${context.l10n.completed}", style: const TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.w900)),
                                       ),
                                     ],
                                   ),
@@ -224,7 +225,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                 borderRadius: BorderRadius.circular(18),
                                 border: Border.all(color: cardBorder),
                               ),
-                              child: const Text("No students enrolled in this course yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                              child: Text(context.l10n.noDataFound, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                             ),
                       const SizedBox(height: 40),
                     ],
@@ -335,10 +336,10 @@ class _TeacherCoursesCurriculumScreenState extends State<TeacherCoursesCurriculu
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
-                                  Text("Course Curriculum", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                                  SizedBox(height: 3),
-                                  Text("Manage your published video courses and materials.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                                children: [
+                                  Text(context.l10n.curriculum, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                                  const SizedBox(height: 3),
+                                  Text(context.l10n.myCourses, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                                 ],
                               ),
                             ),
@@ -354,7 +355,7 @@ class _TeacherCoursesCurriculumScreenState extends State<TeacherCoursesCurriculu
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           ),
                           icon: const Icon(Icons.add_rounded, size: 18),
-                          label: const Text("Create Course", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                          label: Text(context.l10n.createCourse, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -369,7 +370,7 @@ class _TeacherCoursesCurriculumScreenState extends State<TeacherCoursesCurriculu
               ),
               const SizedBox(height: 24),
 
-              const Text("Published Courses", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+              Text(context.l10n.courses, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
               const SizedBox(height: 12),
 
               isLoading
@@ -462,7 +463,7 @@ class _TeacherCoursesCurriculumScreenState extends State<TeacherCoursesCurriculu
                                                   ),
                                                 ).then((_) => _fetchCourses());
                                               },
-                                              child: const Text("Manage", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                                              child: Text(context.l10n.details, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
                                             ),
                                           ),
                                         ],
@@ -482,13 +483,11 @@ class _TeacherCoursesCurriculumScreenState extends State<TeacherCoursesCurriculu
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(color: cardBorder),
                           ),
-                          child: const Column(
+                          child: Column(
                             children: [
-                              Icon(Icons.library_books_rounded, size: 36, color: textGrey),
-                              SizedBox(height: 10),
-                              Text("No Courses Published", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
-                              SizedBox(height: 4),
-                              Text("You haven't created any courses yet.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                              const Icon(Icons.library_books_rounded, size: 36, color: textGrey),
+                              const SizedBox(height: 10),
+                              Text(context.l10n.noDataFound, style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
                             ],
                           ),
                         ),

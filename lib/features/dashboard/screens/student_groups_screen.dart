@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/services/language_service.dart';
 
 class GroupCard {
   final String id;
@@ -197,7 +198,7 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
             children: [
               const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
-              Text("LOADING COMMUNITY...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(context.l10n.loadingCommunity, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
             ],
           ),
         ),
@@ -248,9 +249,9 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("Safi Community", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                            Text(context.l10n.safiCommunity, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
                             const SizedBox(height: 3),
-                            const Text("Experience real-time connection. Access your official classroom operations on Signal.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
+                            Text(context.l10n.safiCommunityDesc, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
                           ],
                         ),
                       ),
@@ -273,7 +274,7 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
                             onChanged: (val) => setState(() => searchQuery = val),
                             style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                             decoration: InputDecoration(
-                              hintText: "Search active channels...",
+                              hintText: context.l10n.searchActiveChannels,
                               hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                               border: InputBorder.none,
                               contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -345,12 +346,12 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
                                       children: [
                                         const Icon(Icons.person_rounded, color: primaryPink, size: 12),
                                         const SizedBox(width: 4),
-                                        Text(group.teacher?['first_name'] ?? 'Faculty', style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                        Text(group.teacher?['first_name'] ?? context.l10n.faculty, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                                       ],
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
-                                      group.latestMessage != null ? group.latestMessage!['message_text'] : (hasSignal ? "Enter protected Signal group channel..." : "Signal Workspace Sync Pending"),
+                                      group.latestMessage != null ? group.latestMessage!['message_text'] : (hasSignal ? context.l10n.enterSignalGroup : context.l10n.signalSyncPending),
                                       style: TextStyle(color: hasSignal ? textGrey : Colors.amber.shade800, fontSize: 11, fontStyle: hasSignal ? FontStyle.italic : FontStyle.normal, fontWeight: FontWeight.w500),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -362,7 +363,7 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
                                 const SizedBox(width: 10),
                                 Container(
                                   padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
+                                  decoration: const BoxDecoration(
                                     color: lightPinkBg,
                                     shape: BoxShape.circle,
                                   ),
@@ -387,9 +388,9 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
                       children: [
                         const Icon(Icons.chat_bubble_outline_rounded, color: textGrey, size: 36),
                         const SizedBox(height: 10),
-                        const Text("No Enrolled Channels", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                        Text(context.l10n.noEnrolledChannels, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
                         const SizedBox(height: 4),
-                        const Text("Join an active course curriculum to unlock your priority workspace.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+                        Text(context.l10n.joinCurriculumToUnlock, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
                       ],
                     ),
                   ),

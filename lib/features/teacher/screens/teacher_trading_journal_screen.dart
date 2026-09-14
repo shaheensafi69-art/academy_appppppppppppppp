@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 const String forexCourseId = "d9fa8678-76b4-4705-b579-7860407d43e8";
 
@@ -251,11 +252,11 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
             children: [
               const Icon(Icons.lock_outline_rounded, color: primaryPink, size: 44),
               const SizedBox(height: 14),
-              const Text("Access Restricted", style: TextStyle(color: textDark, fontSize: 16, fontWeight: FontWeight.w900)),
+              Text(context.l10n.forexAccessRequired, style: const TextStyle(color: textDark, fontSize: 16, fontWeight: FontWeight.w900)),
               const SizedBox(height: 8),
-              const Text(
-                "The Trading Journal Audit system is exclusively available for instructors actively teaching the Financial Markets & Forex Trading masterclass.",
-                style: TextStyle(color: textGrey, fontSize: 11),
+              Text(
+                context.l10n.forexAccessRequired,
+                style: const TextStyle(color: textGrey, fontSize: 11),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -314,13 +315,13 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                             child: const Icon(Icons.trending_up_rounded, color: primaryPink, size: 26),
                           ),
                           const SizedBox(width: 14),
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Trading Journals", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                                SizedBox(height: 3),
-                                Text("Audit student ledger submissions and verify risk compliance.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                                Text(context.l10n.tradingJournal, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                                const SizedBox(height: 3),
+                                Text(context.l10n.tradingJournal, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                               ],
                             ),
                           ),
@@ -331,7 +332,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                         onChanged: (val) => setState(() => searchQuery = val),
                         style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                         decoration: InputDecoration(
-                          hintText: "Search student, symbol, strategy...",
+                          hintText: context.l10n.searchByNameOrEmail,
                           hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                           prefixIcon: const Icon(Icons.search_rounded, color: primaryPink, size: 18),
                           filled: true,
@@ -348,7 +349,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                 const SizedBox(height: 24),
 
                 // ================= لیست ژورنال‌ها =================
-                const Text("Student Trade Submissions", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                Text(context.l10n.studentSubmissions, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
                 const SizedBox(height: 12),
 
                 filteredJournals.isNotEmpty
@@ -400,7 +401,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Text(
-                                        isGraded ? "Audited (${journal.teacherScore})" : "● Pending Audit",
+                                        isGraded ? "${context.l10n.grade}: ${journal.teacherScore}" : "● ${context.l10n.pendingReview}",
                                         style: TextStyle(
                                           color: isGraded ? Colors.green.shade700 : primaryPink,
                                           fontSize: 9,
@@ -449,7 +450,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text("Lots: ${journal.lotSize} | R&R: ${journal.rrMultiple}R", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                                    Text("${context.l10n.lotSize}: ${journal.lotSize} | ${context.l10n.riskReward}: ${journal.rrMultiple}R", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: primaryPink,
@@ -465,7 +466,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                                           _feedbackController.text = journal.teacherFeedback ?? "";
                                         });
                                       },
-                                      child: const Text("Audit Trade", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                      child: Text(context.l10n.gradeTrade, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                     ),
                                   ],
                                 ),
@@ -482,13 +483,13 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: cardBorder),
                         ),
-                        child: const Column(
+                        child: Column(
                           children: [
-                            Icon(Icons.query_stats_rounded, size: 36, color: textGrey),
-                            SizedBox(height: 10),
-                            Text("No Trading Journals", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
-                            SizedBox(height: 4),
-                            Text("No student trading ledgers found.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                            const Icon(Icons.query_stats_rounded, size: 36, color: textGrey),
+                            const SizedBox(height: 10),
+                            Text(context.l10n.tradingJournal, style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
+                            const SizedBox(height: 4),
+                            Text(context.l10n.noTradesFound, style: const TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
                           ],
                         ),
                       ),
@@ -516,33 +517,33 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Audit Sheet: ${selectedJournal!.firstName} ${selectedJournal!.lastName}",
+                    Text("${context.l10n.gradeTrade}: ${selectedJournal!.firstName} ${selectedJournal!.lastName}",
                         style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
                     const SizedBox(height: 10),
-                    Text("Symbol: ${selectedJournal!.symbol} (${selectedJournal!.positionType})", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w600)),
-                    Text("Entry: \$${selectedJournal!.entryPrice} | Exit: \$${selectedJournal!.exitPrice}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w600)),
+                    Text("${context.l10n.symbol}: ${selectedJournal!.symbol} (${selectedJournal!.positionType})", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w600)),
+                    Text("${context.l10n.entryPrice}: \$${selectedJournal!.entryPrice} | ${context.l10n.exitPrice}: \$${selectedJournal!.exitPrice}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 12),
                     if (selectedJournal!.chartImageUrl != null) ...[
                       GestureDetector(
                         onTap: () => _launchURL(selectedJournal!.chartImageUrl!),
-                        child: const Row(
+                        child: Row(
                           children: [
-                            Icon(Icons.bar_chart_rounded, size: 16, color: Colors.blueAccent),
-                            SizedBox(width: 6),
-                            Text("View Chart Screenshot", style: TextStyle(color: Colors.blueAccent, fontSize: 11, fontWeight: FontWeight.w900)),
+                            const Icon(Icons.bar_chart_rounded, size: 16, color: Colors.blueAccent),
+                            const SizedBox(width: 6),
+                            Text(context.l10n.chartImage, style: const TextStyle(color: Colors.blueAccent, fontSize: 11, fontWeight: FontWeight.w900)),
                           ],
                         ),
                       ),
                       const SizedBox(height: 14),
                     ],
-                    const Text("Execution Score (0-100) *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                    Text("${context.l10n.teacherScore} (0-100) *", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _scoreController,
                       keyboardType: TextInputType.number,
                       style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                       decoration: InputDecoration(
-                        hintText: "Score (e.g. 95)",
+                        hintText: "100",
                         hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                         filled: true,
                         fillColor: cardBorder.withValues(alpha: 0.5),
@@ -553,14 +554,14 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text("Academic Audit Feedback", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                    Text(context.l10n.teacherFeedback, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _feedbackController,
                       maxLines: 3,
                       style: const TextStyle(color: textDark, fontSize: 12),
                       decoration: InputDecoration(
-                        hintText: "Tactical feedback...",
+                        hintText: context.l10n.feedback,
                         hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                         filled: true,
                         fillColor: cardBorder.withValues(alpha: 0.5),
@@ -577,7 +578,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                           child: TextButton(
                             style: TextButton.styleFrom(foregroundColor: textGrey),
                             onPressed: () => setState(() => selectedJournal = null),
-                            child: const Text("Cancel", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                            child: Text(context.l10n.cancel, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -591,7 +592,7 @@ class _TeacherTradingJournalScreenState extends State<TeacherTradingJournalScree
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                             ),
                             onPressed: isSubmittingGrade ? null : _saveEvaluation,
-                            child: Text(isSubmittingGrade ? "Saving..." : "Save Audit", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                            child: Text(isSubmittingGrade ? context.l10n.saving : context.l10n.save, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                           ),
                         ),
                       ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class TeacherCreateAssignmentScreen extends StatefulWidget {
   const TeacherCreateAssignmentScreen({super.key});
@@ -196,7 +197,7 @@ class _TeacherCreateAssignmentScreenState extends State<TeacherCreateAssignmentS
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: textDark),
-        title: const Text("Create Assignment", style: TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+        title: Text(context.l10n.createAssignment, style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(color: cardBorder, height: 1),
@@ -213,7 +214,7 @@ class _TeacherCreateAssignmentScreenState extends State<TeacherCreateAssignmentS
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // انتخاب کلاس مرجع (با طراحی بسیار شیک و لیبل دوره)
-                  const Text("Target Classroom & Course *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text("${context.l10n.classes} *", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 6),
                   classes.isNotEmpty
                       ? InkWell(
@@ -246,18 +247,18 @@ class _TeacherCreateAssignmentScreenState extends State<TeacherCreateAssignmentS
                       : Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(16)),
-                          child: const Text("No classes found. Please create a class first.", style: TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold)),
+                          child: Text(context.l10n.noDataFound, style: const TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold)),
                         ),
                   const SizedBox(height: 16),
 
                   // عنوان تکلیف
-                  const Text("Assignment Title *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text("${context.l10n.title} *", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _titleController,
                     style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                     decoration: InputDecoration(
-                      hintText: "e.g. Chapter 4 Reflection",
+                      hintText: context.l10n.title,
                       hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                       filled: true,
                       fillColor: cardBorder.withOpacity(0.5),
@@ -270,14 +271,14 @@ class _TeacherCreateAssignmentScreenState extends State<TeacherCreateAssignmentS
                   const SizedBox(height: 16),
 
                   // توضیحات دستورالعمل
-                  const Text("Task Description / Instructions", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text(context.l10n.description, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _descController,
                     maxLines: 4,
                     style: const TextStyle(color: textDark, fontSize: 12),
                     decoration: InputDecoration(
-                      hintText: "Provide clear instructions for students...",
+                      hintText: context.l10n.description,
                       hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                       filled: true,
                       fillColor: cardBorder.withOpacity(0.5),
@@ -290,13 +291,13 @@ class _TeacherCreateAssignmentScreenState extends State<TeacherCreateAssignmentS
                   const SizedBox(height: 16),
 
                   // مهلت انجام (Deadline)
-                  const Text("Deadline Date & Time", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text(context.l10n.dueDate, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _deadlineController,
                     style: const TextStyle(color: textDark, fontSize: 12),
                     decoration: InputDecoration(
-                      hintText: "YYYY-MM-DDTHH:MM (e.g. 2026-12-31T23:59)",
+                      hintText: "YYYY-MM-DD (e.g. 2026-12-31)",
                       hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                       filled: true,
                       fillColor: cardBorder.withOpacity(0.5),
@@ -309,7 +310,7 @@ class _TeacherCreateAssignmentScreenState extends State<TeacherCreateAssignmentS
                   const SizedBox(height: 16),
 
                   // حداکثر نمره
-                  const Text("Maximum Score (Points)", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text(context.l10n.score, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _scoreController,
@@ -338,7 +339,7 @@ class _TeacherCreateAssignmentScreenState extends State<TeacherCreateAssignmentS
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
                       onPressed: isSubmitting || classes.isEmpty ? null : _handleSubmit,
-                      child: Text(isSubmitting ? "Deploying..." : "Deploy Assignment 🚀", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
+                      child: Text(isSubmitting ? "..." : context.l10n.createAssignment, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
                     ),
                   ),
                   const SizedBox(height: 40),

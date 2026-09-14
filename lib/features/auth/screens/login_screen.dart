@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/routing/auth_gate.dart';
+import '../../../core/services/language_service.dart';
+import '../../../core/widgets/language_selector_sheet.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
 
@@ -188,7 +190,36 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            // Header Logo
+                            // Language Switcher & Header Logo
+                            Align(
+                              alignment: Alignment.topRight,
+                              child: IconButton(
+                                icon: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: surfaceWhite,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: primaryPink.withOpacity(0.35),
+                                      width: 1.2,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: primaryPink.withOpacity(0.08),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.language_rounded,
+                                    color: primaryPink,
+                                    size: 18,
+                                  ),
+                                ),
+                                onPressed: () => LanguageSelectorSheet.show(context),
+                              ),
+                            ),
                             Container(
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
@@ -216,26 +247,26 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             const SizedBox(height: 16),
 
                             // Welcome Title
-                            const Row(
+                            Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  "Welcome Back",
-                                  style: TextStyle(
+                                  context.l10n.welcomeBack,
+                                  style: const TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.w900,
                                     color: textDark,
                                     letterSpacing: -0.5,
                                   ),
                                 ),
-                                SizedBox(width: 8),
-                                Icon(Icons.auto_awesome_rounded, color: primaryPink, size: 18),
+                                const SizedBox(width: 8),
+                                const Icon(Icons.auto_awesome_rounded, color: primaryPink, size: 18),
                               ],
                             ),
                             const SizedBox(height: 4),
-                            const Text(
-                              "Step into your digital campus.",
-                              style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w500),
+                            Text(
+                              context.l10n.stepIntoDigitalCampus,
+                              style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w500),
                             ),
                             const SizedBox(height: 24),
 
@@ -333,8 +364,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   // Email Field
                                   _buildTextField(
                                     controller: emailCtrl,
-                                    label: "EMAIL ADDRESS",
-                                    hint: "Enter your email",
+                                    label: context.l10n.emailAddress,
+                                    hint: context.l10n.enterYourEmail,
                                     onChanged: _onEmailChanged,
                                     suffixIcon: isSearching
                                         ? const Padding(
@@ -352,7 +383,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   // Password Field
                                   _buildTextField(
                                     controller: passwordCtrl,
-                                    label: "PASSWORD",
+                                    label: context.l10n.password,
                                     hint: "••••••••",
                                     isPassword: true,
                                     showPassword: showPassword,
@@ -364,7 +395,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                           MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
                                         );
                                       },
-                                      child: const Text("Forgot?", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryPink)),
+                                      child: Text(context.l10n.forgot, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryPink)),
                                     ),
                                   ),
                                   const SizedBox(height: 12),
@@ -400,9 +431,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      const Text(
-                                        'Remember me',
-                                        style: TextStyle(fontSize: 12, color: textGrey, fontWeight: FontWeight.w500),
+                                      Text(
+                                        context.l10n.rememberMe,
+                                        style: const TextStyle(fontSize: 12, color: textGrey, fontWeight: FontWeight.w500),
                                       ),
                                     ],
                                   ),
@@ -426,9 +457,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                               width: 20,
                                               child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
                                             )
-                                          : const Text(
-                                              "SIGN IN",
-                                              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1),
+                                          : Text(
+                                              context.l10n.signIn,
+                                              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1),
                                             ),
                                     ),
                                   ),
@@ -438,13 +469,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Text("New here? ", style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w500)),
+                                      Text("${context.l10n.newHere} ", style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w500)),
                                       GestureDetector(
                                         onTap: () => Navigator.push(
                                           context,
                                           MaterialPageRoute(builder: (_) => const RegisterScreen()),
                                         ),
-                                        child: const Text("Create account", style: TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 12)),
+                                        child: Text(context.l10n.createAccount, style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 12)),
                                       ),
                                     ],
                                   ),

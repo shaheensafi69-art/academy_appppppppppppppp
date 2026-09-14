@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/language_service.dart';
 
 class TransactionItem {
   final String id;
@@ -184,7 +185,7 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
   void _copyCode() {
     Clipboard.setData(ClipboardData(text: wallet['referralCode']));
     setState(() => isCodeCopied = true);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Referral code copied!"), backgroundColor: Colors.green));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.copiedToClipboard), backgroundColor: Colors.green));
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) setState(() => isCodeCopied = false);
     });
@@ -194,7 +195,7 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
     final inviteLink = "https://safiacademy.org/en/register?ref=${wallet['referralCode']}";
     Clipboard.setData(ClipboardData(text: inviteLink));
     setState(() => isLinkCopied = true);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Invite link copied to clipboard!"), backgroundColor: Colors.green));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.copiedToClipboard), backgroundColor: Colors.green));
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) setState(() => isLinkCopied = false);
     });
@@ -224,14 +225,14 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
   Widget build(BuildContext context) {
     return AcademyLoadingOverlay(
       isLoading: isLoading,
-      message: "SYNCING DIGITAL WALLET...",
+      message: context.l10n.loading,
       child: Scaffold(
         backgroundColor: surfaceWhite,
         appBar: AppBar(
           backgroundColor: surfaceWhite,
           elevation: 0,
           centerTitle: true,
-          title: const Text("Wallet & Referral", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+          title: Text(context.l10n.walletReferral, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
           iconTheme: const IconThemeData(color: textDark),
         ),
         body: Container(
@@ -281,7 +282,7 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
                               ],
                             ),
                             const SizedBox(height: 24),
-                            const Text("AVAILABLE BALANCE", style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                            Text(context.l10n.balance.toUpperCase(), style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1)),
                             const SizedBox(height: 4),
                             Text(
                               "\$${wallet['balance'].toStringAsFixed(2)}",
@@ -299,9 +300,9 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                       padding: const EdgeInsets.symmetric(vertical: 14),
                                     ),
-                                    onPressed: () => _showComingSoon("Add Funds"),
+                                    onPressed: () => _showComingSoon(context.l10n.walletDeposit),
                                     icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
-                                    label: const Text("Add Funds", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                    label: Text(context.l10n.walletDeposit, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -314,9 +315,9 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                       padding: const EdgeInsets.symmetric(vertical: 14),
                                     ),
-                                    onPressed: () => _showComingSoon("Withdraw"),
+                                    onPressed: () => _showComingSoon(context.l10n.walletWithdraw),
                                     icon: const Icon(Icons.arrow_upward_rounded, size: 18),
-                                    label: const Text("Withdraw", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
+                                    label: Text(context.l10n.walletWithdraw, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
                                   ),
                                 ),
                               ],
@@ -346,18 +347,18 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
                                   child: const Icon(Icons.card_giftcard_rounded, color: primaryPink, size: 20),
                                 ),
                                 const SizedBox(width: 12),
-                                const Expanded(child: Text("Invite Friends & Earn \$5", style: TextStyle(color: textDark, fontSize: 16, fontWeight: FontWeight.w900))),
+                                Expanded(child: Text(context.l10n.inviteFriends, style: const TextStyle(color: textDark, fontSize: 16, fontWeight: FontWeight.w900))),
                               ],
                             ),
                             const SizedBox(height: 12),
-                            const Text(
-                              "Share your unique link. When your friends register and enroll in their first course, you will instantly receive a \$5 cash bonus to your wallet!",
-                              style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w500, height: 1.5),
+                            Text(
+                              context.l10n.copyReferral,
+                              style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w500, height: 1.5),
                             ),
                             const SizedBox(height: 24),
 
                             // کد رفرال
-                            const Text("YOUR REFERRAL CODE", style: TextStyle(color: textDark, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+                            Text(context.l10n.referralCode.toUpperCase(), style: const TextStyle(color: textDark, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
                             const SizedBox(height: 8),
                             Row(
                               children: [
@@ -383,7 +384,7 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
                             const SizedBox(height: 16),
 
                             // لینک اصلی رفرال
-                            const Text("YOUR MASTER LINK", style: TextStyle(color: textDark, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+                            Text(context.l10n.copyReferral.toUpperCase(), style: const TextStyle(color: textDark, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
                             const SizedBox(height: 8),
                             Row(
                               children: [
@@ -417,7 +418,7 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text("Total Cash Earned:", style: TextStyle(color: textGrey, fontSize: 13, fontWeight: FontWeight.bold)),
+                                Text(context.l10n.balance, style: const TextStyle(color: textGrey, fontSize: 13, fontWeight: FontWeight.bold)),
                                 Text("\$${wallet['totalRewards'].toStringAsFixed(2)}", style: TextStyle(color: Colors.green.shade700, fontSize: 18, fontWeight: FontWeight.w900)),
                               ],
                             ),
@@ -427,7 +428,7 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
                                 children: [
                                   const Icon(Icons.person_add_rounded, color: textGrey, size: 14),
                                   const SizedBox(width: 6),
-                                  Text("You were invited by: ", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                                  Text("${context.l10n.friends}: ", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
                                   Text(wallet['invitedBy'], style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.w900)),
                                 ],
                               ),
@@ -458,7 +459,7 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
                                     borderRadius: BorderRadius.circular(16),
                                     boxShadow: activeTab == "referrals" ? [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))] : [],
                                   ),
-                                  child: Text("Referral Network", style: TextStyle(color: activeTab == "referrals" ? primaryPink : textGrey, fontSize: 12, fontWeight: FontWeight.w900)),
+                                  child: Text(context.l10n.friendsNetwork, style: TextStyle(color: activeTab == "referrals" ? primaryPink : textGrey, fontSize: 12, fontWeight: FontWeight.w900)),
                                 ),
                               ),
                             ),
@@ -475,7 +476,7 @@ class _StudentWalletScreenState extends State<StudentWalletScreen> {
                                     borderRadius: BorderRadius.circular(16),
                                     boxShadow: activeTab == "transactions" ? [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))] : [],
                                   ),
-                                  child: Text("Transactions", style: TextStyle(color: activeTab == "transactions" ? primaryPink : textGrey, fontSize: 12, fontWeight: FontWeight.w900)),
+                                  child: Text(context.l10n.transactions, style: TextStyle(color: activeTab == "transactions" ? primaryPink : textGrey, fontSize: 12, fontWeight: FontWeight.w900)),
                                 ),
                               ),
                             ),

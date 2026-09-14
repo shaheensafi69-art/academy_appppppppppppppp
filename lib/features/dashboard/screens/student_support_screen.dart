@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../../../core/services/language_service.dart';
 import 'student_support_chat_screen.dart';
 
 final String telegramBotToken =
@@ -328,10 +329,10 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
     return colorPending; // زرد برای open/pending
   }
 
-  String _getStatusLabel(String status) {
-    if (status == 'closed') return 'Closed';
-    if (status == 'escalated' || status == 'answered') return 'In Conversation';
-    return 'Pending';
+  String _getStatusLabel(BuildContext context, String status) {
+    if (status == 'closed') return context.l10n.ticketClosed;
+    if (status == 'escalated' || status == 'answered') return context.l10n.inConversation;
+    return context.l10n.pending;
   }
 
   IconData _getStatusIcon(String status) {
@@ -357,8 +358,8 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
               ),
               const SizedBox(height: 14),
               Text(
-                "CONNECTING TO LIVE SUPPORT...",
-                style: TextStyle(
+                "${context.l10n.loading.toUpperCase()}...",
+                style: const TextStyle(
                   color: textGrey,
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
@@ -377,9 +378,9 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
-          "Support Center",
-          style: TextStyle(
+        title: Text(
+          context.l10n.liveSupport,
+          style: const TextStyle(
             color: textDark,
             fontSize: 16,
             fontWeight: FontWeight.w900,
@@ -445,9 +446,9 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                "Live Support Agent",
-                                style: TextStyle(
+                              Text(
+                                context.l10n.liveSupportAgent,
+                                style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w900,
                                   color: Colors.white,
@@ -456,7 +457,7 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                "AI & Human Agents are online",
+                                context.l10n.aiAndHumanOnline,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.white.withOpacity(0.9),
@@ -483,20 +484,20 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                           ),
                         ],
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "START CONVERSATION",
-                            style: TextStyle(
+                            context.l10n.startConversation,
+                            style: const TextStyle(
                               color: Color(0xFFE91E63),
                               fontSize: 13,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 1.2,
                             ),
                           ),
-                          SizedBox(width: 8),
-                          Icon(
+                          const SizedBox(width: 8),
+                          const Icon(
                             Icons.arrow_forward_rounded,
                             color: Color(0xFFE91E63),
                             size: 18,
@@ -515,7 +516,7 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
               children: [
                 Expanded(
                   child: _buildStatCard(
-                    "PENDING",
+                    context.l10n.pending.toUpperCase(),
                     stats['pending'] ?? 0,
                     colorPending,
                     Icons.hourglass_top_rounded,
@@ -524,7 +525,7 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _buildStatCard(
-                    "ACTIVE",
+                    context.l10n.active.toUpperCase(),
                     stats['active'] ?? 0,
                     colorActive,
                     Icons.forum_rounded,
@@ -533,7 +534,7 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _buildStatCard(
-                    "CLOSED",
+                    context.l10n.ticketClosed.toUpperCase(),
                     stats['closed'] ?? 0,
                     colorClosed,
                     Icons.check_circle_rounded,
@@ -544,9 +545,9 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
             const SizedBox(height: 30),
 
             // ================= لیست گفتگوهای قبلی =================
-            const Text(
-              "Recent Conversations",
-              style: TextStyle(
+            Text(
+              context.l10n.recentConversations,
+              style: const TextStyle(
                 color: textDark,
                 fontWeight: FontWeight.w900,
                 fontSize: 16,
@@ -652,7 +653,7 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                                                   ),
                                                   const SizedBox(height: 4),
                                                   Text(
-                                                    "Started: ${_formatDate(t.createdAt)}",
+                                                    _formatDate(t.createdAt),
                                                     style: const TextStyle(
                                                       color: textGrey,
                                                       fontSize: 11,
@@ -679,7 +680,7 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                                           ),
                                         ),
                                         child: Text(
-                                          _getStatusLabel(t.status),
+                                          _getStatusLabel(context, t.status),
                                           style: TextStyle(
                                             color: statusColor,
                                             fontSize: 9,
@@ -713,18 +714,18 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                           size: 48,
                         ),
                         const SizedBox(height: 16),
-                        const Text(
-                          "No Conversations Yet",
-                          style: TextStyle(
+                        Text(
+                          context.l10n.noConversationsYet,
+                          style: const TextStyle(
                             color: textDark,
                             fontWeight: FontWeight.w900,
                             fontSize: 14,
                           ),
                         ),
                         const SizedBox(height: 6),
-                        const Text(
-                          "Click the banner above to start a live chat.",
-                          style: TextStyle(
+                        Text(
+                          context.l10n.startLiveChatHint,
+                          style: const TextStyle(
                             color: textGrey,
                             fontSize: 12,
                             fontWeight: FontWeight.w500,

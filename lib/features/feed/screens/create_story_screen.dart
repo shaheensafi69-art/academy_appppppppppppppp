@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
+import '../../../core/services/language_service.dart';
 
 class CreateStoryScreen extends StatefulWidget {
   const CreateStoryScreen({super.key});
@@ -73,7 +74,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
         setState(() => isUploadingFile = false);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("خطا در آپلود فایل استوری: $e")),
+            SnackBar(content: Text("${context.l10n.error}: $e")),
           );
         }
       }
@@ -84,8 +85,8 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
     final mediaUrl = _mediaUrlController.text.trim();
     if (mediaUrl.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("لطفاً آدرس تصویر یا ویدیوی استوری را وارد کنید 📸"),
+        SnackBar(
+          content: Text("${context.l10n.fillRequiredFields} 📸"),
         ),
       );
       return;
@@ -112,8 +113,8 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("استوری ۲۴ ساعته شما با موفقیت منتشر شد! 🎉"),
+          SnackBar(
+            content: Text(context.l10n.storyPublishedSuccess),
           ),
         );
         Navigator.pop(context, true);
@@ -123,7 +124,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("خطا در انتشار استوری: $e")));
+        ).showSnackBar(SnackBar(content: Text("${context.l10n.error}: $e")));
         setState(() => isUploading = false);
       }
     }
@@ -197,14 +198,14 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: primaryPink.withValues(alpha: 0.2)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.timer_outlined, color: primaryPink, size: 24),
-                  SizedBox(width: 12),
+                  const Icon(Icons.timer_outlined, color: primaryPink, size: 24),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      "استوری شما دقیقاً پس از ۲۴ ساعت به صورت خودکار از فید آکادمی حذف خواهد شد.",
-                      style: TextStyle(
+                      context.l10n.story24hNotice,
+                      style: const TextStyle(
                         color: textDark,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -291,10 +292,10 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                     Expanded(
                       child: Text(
                         isUploadingFile
-                            ? "آپلود فایل به استوری... ⏳"
+                            ? "${context.l10n.uploading} ⏳"
                             : (_mediaUrlController.text.isNotEmpty
-                                  ? "فایل آپلود شد! ✅"
-                                  : "انتخاب فایل ${mediaType == 'image' ? 'تصویر' : 'ویدیو'} از گالری 📸"),
+                                  ? context.l10n.mediaUploaded
+                                  : context.l10n.chooseMediaFromGallery),
                         style: const TextStyle(
                           color: primaryPink,
                           fontWeight: FontWeight.bold,
@@ -319,7 +320,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
 
             // ورودی URL
             const Text(
-              "Media URL (یا لینک آپلود شده)",
+              "Media URL",
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,

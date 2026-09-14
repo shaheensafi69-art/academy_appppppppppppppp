@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'teacher_certificates_detail_screen.dart';
+import '../../../core/localization/l10n_extensions.dart';
+
 
 class TeacherCertificatesScreen extends StatefulWidget {
   const TeacherCertificatesScreen({super.key});
@@ -64,15 +66,15 @@ class _TeacherCertificatesScreenState extends State<TeacherCertificatesScreen> {
                     padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                        colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.3)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(32),
-                      border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                      border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                       boxShadow: [
                         BoxShadow(
-                          color: primaryPink.withOpacity(0.08),
+                          color: primaryPink.withValues(alpha: 0.08),
                           blurRadius: 25,
                           offset: const Offset(0, 10),
                         ),
@@ -91,19 +93,19 @@ class _TeacherCertificatesScreenState extends State<TeacherCertificatesScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: primaryPink.withOpacity(0.12),
+                                    color: primaryPink.withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                   child: const Icon(Icons.workspace_premium_rounded, color: primaryPink, size: 26),
                                 ),
                                 const SizedBox(width: 14),
-                                const Expanded(
+                                Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text("Manage Certificates", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                                      SizedBox(height: 3),
-                                      Text("Issue and manage verified certificates for graduates.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                                      Text(context.l10n.certificates, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                                      const SizedBox(height: 3),
+                                      Text(context.l10n.certificateDetails, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                                     ],
                                   ),
                                 ),
@@ -119,7 +121,7 @@ class _TeacherCertificatesScreenState extends State<TeacherCertificatesScreen> {
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               ),
                               icon: const Icon(Icons.add_rounded, size: 18),
-                              label: const Text("Issue New", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                              label: Text(context.l10n.certificateIssued, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                               onPressed: () async {
                                 await Navigator.push(
                                   context,
@@ -135,7 +137,7 @@ class _TeacherCertificatesScreenState extends State<TeacherCertificatesScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  const Text("Issued Certificates", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                  Text(context.l10n.certificates, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
                   const SizedBox(height: 12),
 
                   isLoading
@@ -151,8 +153,8 @@ class _TeacherCertificatesScreenState extends State<TeacherCertificatesScreen> {
                                 final profile = cert['profiles'] as Map<String, dynamic>?;
                                 final course = cert['courses'] as Map<String, dynamic>?;
 
-                                final studentName = profile != null ? "${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}" : "Student";
-                                final courseTitle = course?['title'] ?? 'General Course';
+                                final studentName = profile != null ? "${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}" : context.l10n.students;
+                                final courseTitle = course?['title'] ?? 'Academy Course';
                                 final code = cert['certificate_code'] ?? 'N/A';
                                 final issueDate = cert['issue_date'] != null ? cert['issue_date'].toString().split('T')[0] : '';
 
@@ -162,7 +164,7 @@ class _TeacherCertificatesScreenState extends State<TeacherCertificatesScreen> {
                                     color: surfaceWhite,
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(color: cardBorder, width: 1.5),
-                                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -182,9 +184,9 @@ class _TeacherCertificatesScreenState extends State<TeacherCertificatesScreen> {
                                                 children: [
                                                   Text(studentName, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
                                                   const SizedBox(height: 2),
-                                                  Text("Course: $courseTitle", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                                  Text("${context.l10n.courses}: $courseTitle", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                                                   const SizedBox(height: 2),
-                                                  Text("Code: $code | Date: $issueDate", style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                                  Text("${context.l10n.certificateCode}: $code | ${context.l10n.issueDate}: $issueDate", style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
                                                 ],
                                               ),
                                             ),
@@ -194,8 +196,8 @@ class _TeacherCertificatesScreenState extends State<TeacherCertificatesScreen> {
                                       const SizedBox(width: 8),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                        decoration: BoxDecoration(color: Colors.green.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
-                                        child: const Text("VERIFIED", style: TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.w900)),
+                                        decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+                                        child: Text(context.l10n.verifyCertificate, style: const TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.w900)),
                                       ),
                                     ],
                                   ),
@@ -210,13 +212,13 @@ class _TeacherCertificatesScreenState extends State<TeacherCertificatesScreen> {
                                 borderRadius: BorderRadius.circular(24),
                                 border: Border.all(color: cardBorder),
                               ),
-                              child: const Column(
+                              child: Column(
                                 children: [
-                                  Icon(Icons.workspace_premium_outlined, size: 36, color: textGrey),
-                                  SizedBox(height: 10),
-                                  Text("No Certificates Issued", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
-                                  SizedBox(height: 4),
-                                  Text("No certificates have been issued yet.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                                  const Icon(Icons.workspace_premium_outlined, size: 36, color: textGrey),
+                                  const SizedBox(height: 10),
+                                  Text(context.l10n.certificates, style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
+                                  const SizedBox(height: 4),
+                                  Text(context.l10n.noCertificatesFound, style: const TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
                                 ],
                               ),
                             ),

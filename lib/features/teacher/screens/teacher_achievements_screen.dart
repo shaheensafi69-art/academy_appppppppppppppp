@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class StudentItem {
   final String id;
@@ -136,7 +137,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
 
   Future<void> _handleGrantAward() async {
     if (selectedAwardStudentId == null || selectedAwardId == null) {
-      _showMessage("Please select a student and an award.", false);
+      _showMessage(context.l10n.selectStudent, false);
       return;
     }
 
@@ -147,7 +148,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
         'award_id': selectedAwardId,
       });
 
-      _showMessage("Award & Badge granted successfully!", true);
+      _showMessage(context.l10n.awardGrantedSuccess, true);
     } catch (e) {
       _showMessage("Failed to grant award: $e", false);
     } finally {
@@ -221,13 +222,13 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                           child: const Icon(Icons.emoji_events_rounded, color: primaryPink, size: 26),
                         ),
                         const SizedBox(width: 14),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Honors & Awards Hub", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                              SizedBox(height: 3),
-                              Text("Grant special badges, titles, and merits to top-performing students.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                              Text(context.l10n.honorsAwards, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                              const SizedBox(height: 3),
+                              Text(context.l10n.achievements, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                             ],
                           ),
                         ),
@@ -269,23 +270,23 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                        Row(
                           children: [
-                            Icon(Icons.military_tech_rounded, color: Colors.amber, size: 22),
-                            SizedBox(width: 8),
-                            Text("Grant Merit / Award", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                            const Icon(Icons.military_tech_rounded, color: Colors.amber, size: 22),
+                            const SizedBox(width: 8),
+                            Text(context.l10n.grantAward, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
                           ],
                         ),
                         const SizedBox(height: 18),
 
                         // سرچ‌بار برای پیدا کردن سریع شاگرد
-                        const Text("Search & Select Student *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                        Text("${context.l10n.selectStudent} *", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 6),
                         TextField(
                           onChanged: (val) => setState(() => studentSearchQuery = val),
                           style: const TextStyle(color: textDark, fontSize: 12),
                           decoration: InputDecoration(
-                            hintText: "Filter student by name or email...",
+                            hintText: context.l10n.searchByNameOrEmail,
                             hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                             prefixIcon: const Icon(Icons.search_rounded, color: textGrey, size: 18),
                             filled: true,
@@ -315,7 +316,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                         ),
                         const SizedBox(height: 18),
 
-                        const Text("Select Badge / Award Merit *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                        Text("${context.l10n.selectAward} *", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 10),
 
                         awards.isNotEmpty
@@ -368,7 +369,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                                   );
                                 },
                               )
-                            : const Text("No awards configured in database.", style: TextStyle(color: textGrey, fontSize: 11)),
+                            : Text(context.l10n.noDataFound, style: const TextStyle(color: textGrey, fontSize: 11)),
                         const SizedBox(height: 24),
 
                         SizedBox(
@@ -382,7 +383,7 @@ class _TeacherAchievementsScreenState extends State<TeacherAchievementsScreen> {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             ),
                             onPressed: isSubmittingAward ? null : _handleGrantAward,
-                            child: Text(isSubmittingAward ? "Granting..." : "Grant Award & Merit 🏆", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
+                            child: Text(isSubmittingAward ? context.l10n.saving : "${context.l10n.grantAward} 🏆", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
                           ),
                         ),
                       ],

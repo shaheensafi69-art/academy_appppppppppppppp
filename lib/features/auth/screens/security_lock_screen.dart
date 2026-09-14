@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/language_service.dart';
 
 class SecurityLockScreen extends StatefulWidget {
   const SecurityLockScreen({super.key});
@@ -77,7 +78,7 @@ class _SecurityLockScreenState extends State<SecurityLockScreen> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Incorrect PIN Code ❌"), backgroundColor: Colors.red),
+            SnackBar(content: Text(context.l10n.incorrectPin), backgroundColor: Colors.red),
           );
           setState(() => _pinInput = "");
         }
@@ -108,9 +109,9 @@ class _SecurityLockScreenState extends State<SecurityLockScreen> {
                 child: const Icon(Icons.lock_rounded, size: 36, color: primaryPink),
               ),
               const SizedBox(height: 16),
-              const Text("Security Verification", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+              Text(context.l10n.securityVerification, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
               const SizedBox(height: 4),
-              const Text("Enter your 4-digit PIN to continue", style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500)),
+              Text(context.l10n.enter4DigitPin, style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500)),
               const SizedBox(height: 30),
 
               // پین‌کد دات‌ها

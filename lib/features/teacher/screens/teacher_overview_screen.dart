@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'teacher_todo_detail_screen.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class ClassGroupItem {
   final String id;
@@ -315,7 +316,7 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                           color: primaryPink.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text("INSTRUCTOR PORTAL", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2)),
+                        child: Text(context.l10n.teacherPortal.toUpperCase(), style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2)),
                       ),
                       const SizedBox(height: 6),
                       Text(
@@ -348,7 +349,7 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const Text("BALANCE", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w800, color: textGrey)),
+                      Text(context.l10n.balance.toUpperCase(), style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w800, color: textGrey)),
                       const SizedBox(height: 2),
                       Text("\$${instructor['wallet'].toStringAsFixed(2)}", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Colors.green)),
                     ],
@@ -363,7 +364,7 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("PERFORMANCE OVERVIEW", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2)),
+              Text(context.l10n.overview.toUpperCase(), style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2)),
               Container(
                 width: 20,
                 height: 3,
@@ -380,10 +381,10 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
             mainAxisSpacing: 12,
             childAspectRatio: 1.55,
             children: [
-              _buildGorgeousStatCard("Total Students", "${stats['totalStudents']}", Icons.group_rounded, primaryPink),
-              _buildGorgeousStatCard("Live Sessions", "${stats['totalClasses']}", Icons.live_tv_rounded, Colors.redAccent),
-              _buildGorgeousStatCard("Pending Grades", "${stats['pendingGrading']}", Icons.assignment_turned_in_rounded, Colors.orange),
-              _buildGorgeousStatCard("Today Attendance", "${stats['todayAttendance']}", Icons.how_to_reg_rounded, Colors.green),
+              _buildGorgeousStatCard(context.l10n.totalStudents, "${stats['totalStudents']}", Icons.group_rounded, primaryPink),
+              _buildGorgeousStatCard(context.l10n.liveCampus, "${stats['totalClasses']}", Icons.live_tv_rounded, Colors.redAccent),
+              _buildGorgeousStatCard(context.l10n.pendingApprovals, "${stats['pendingGrading']}", Icons.assignment_turned_in_rounded, Colors.orange),
+              _buildGorgeousStatCard(context.l10n.active, "${stats['todayAttendance']}", Icons.how_to_reg_rounded, Colors.green),
             ],
           ),
           const SizedBox(height: 32),
@@ -392,8 +393,8 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("FACULTY TO-DO LIST & ALERTS", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2)),
-              Text("${todoList.where((t) => t['is_completed'] == true).length}/${todoList.length} Done", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+              Text("${context.l10n.faculty.toUpperCase()} ${context.l10n.assignments.toUpperCase()}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2)),
+              Text("${todoList.where((t) => t['is_completed'] == true).length}/${todoList.length} ${context.l10n.completed}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 12),
@@ -414,7 +415,7 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                         controller: _todoController,
                         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textDark),
                         decoration: InputDecoration(
-                          hintText: "Add urgent task...",
+                          hintText: context.l10n.search,
                           hintStyle: const TextStyle(fontSize: 11, color: textGrey),
                           filled: true,
                           fillColor: cardBorder.withOpacity(0.5),
@@ -548,14 +549,14 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("COMMAND CENTER", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2)),
+              Text(context.l10n.manageClasses.toUpperCase(), style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2)),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: lightPinkBg,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text("${classes.length} Active Rooms", style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                child: Text("${classes.length} ${context.l10n.totalClasses}", style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
               ),
             ],
           ),
@@ -599,7 +600,7 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
-                                  room.isActive ? "● LIVE NOW" : "○ STANDBY",
+                                  room.isActive ? "● ${context.l10n.live.toUpperCase()}" : "○ ${context.l10n.pending.toUpperCase()}",
                                   style: TextStyle(
                                     color: room.isActive ? Colors.white : primaryPink,
                                     fontSize: 9,
@@ -612,7 +613,7 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                                 children: [
                                   const Icon(Icons.people_alt_rounded, size: 14, color: textGrey),
                                   const SizedBox(width: 5),
-                                  Text("${room.enrolledCount} Students", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w700)),
+                                  Text("${room.enrolledCount} ${context.l10n.myStudents}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w700)),
                                 ],
                               ),
                             ],
@@ -624,7 +625,7 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                             children: [
                               const Icon(Icons.access_time_rounded, size: 14, color: textGrey),
                               const SizedBox(width: 6),
-                              Text(room.scheduleInfo.isNotEmpty ? room.scheduleInfo : "Schedule not set", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                              Text(room.scheduleInfo.isNotEmpty ? room.scheduleInfo : context.l10n.schedule, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
                             ],
                           ),
                           const SizedBox(height: 18),
@@ -641,7 +642,7 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                                       padding: const EdgeInsets.symmetric(vertical: 14),
                                     ),
                                     icon: const Icon(Icons.video_call_rounded, size: 18),
-                                    label: const Text("Launch Teams", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                    label: Text(context.l10n.joinClass, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                                     onPressed: () => _launchURL(room.meetingLink!),
                                   ),
                                 ),
@@ -656,7 +657,7 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                                       padding: const EdgeInsets.symmetric(vertical: 14),
                                     ),
                                     icon: const Icon(Icons.chat_bubble_rounded, color: primaryPink, size: 16),
-                                    label: const Text("Open Signal", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                    label: Text(context.l10n.chat, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                                     onPressed: () => _launchURL(room.signalGroupLink!),
                                   ),
                                 ),
@@ -675,7 +676,7 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(color: cardBorder),
                   ),
-                  child: const Text("No active classrooms assigned yet.", style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w600)),
+                  child: Text(context.l10n.noDataFound, style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w600)),
                 ),
           const SizedBox(height: 40),
         ],

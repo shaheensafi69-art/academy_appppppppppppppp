@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 import 'teacher_live_class_details_screen.dart';
 import 'teacher_create_class_screen.dart';
 
@@ -137,13 +138,13 @@ class _TeacherLiveClassesScreenState extends State<TeacherLiveClassesScreen> {
                           child: const Icon(Icons.live_tv_rounded, color: primaryPink, size: 26),
                         ),
                         const SizedBox(width: 14),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Live Streaming", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                              SizedBox(height: 3),
-                              Text("Launch live lectures and channels.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                              Text(context.l10n.liveClasses, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                              const SizedBox(height: 3),
+                              Text(context.l10n.liveStudio, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                             ],
                           ),
                         ),
@@ -159,7 +160,7 @@ class _TeacherLiveClassesScreenState extends State<TeacherLiveClassesScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
                       icon: const Icon(Icons.add_rounded, size: 18),
-                      label: const Text("Create Class", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                      label: Text(context.l10n.createClass, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -174,7 +175,7 @@ class _TeacherLiveClassesScreenState extends State<TeacherLiveClassesScreen> {
           ),
           const SizedBox(height: 24),
 
-          const Text("Active Broadcasts", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+          Text(context.l10n.liveCampus, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
           const SizedBox(height: 12),
 
           isLoading
@@ -222,7 +223,7 @@ class _TeacherLiveClassesScreenState extends State<TeacherLiveClassesScreen> {
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
-                                      cls.isActive ? "● LIVE NOW" : "○ Standby",
+                                      cls.isActive ? "● ${context.l10n.active.toUpperCase()}" : "○ ${context.l10n.draft}",
                                       style: TextStyle(
                                         color: cls.isActive ? Colors.redAccent : textGrey,
                                         fontSize: 9,
@@ -266,7 +267,7 @@ class _TeacherLiveClassesScreenState extends State<TeacherLiveClassesScreen> {
                                         children: [
                                           const Icon(Icons.people_alt_rounded, size: 14, color: textGrey),
                                           const SizedBox(width: 5),
-                                          Text("${cls.studentCount} Students Enrolled", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w700)),
+                                          Text("${cls.studentCount} ${context.l10n.students}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w700)),
                                         ],
                                       ),
                                       SizedBox(height: isCardWide ? 0 : 10),
@@ -284,7 +285,7 @@ class _TeacherLiveClassesScreenState extends State<TeacherLiveClassesScreen> {
                                             MaterialPageRoute(builder: (_) => TeacherLiveClassDetailsScreen(classId: cls.id)),
                                           );
                                         },
-                                        child: const Text("Manage Class", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                        child: Text(context.l10n.classDetails, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                       ),
                                     ],
                                   );
@@ -303,13 +304,11 @@ class _TeacherLiveClassesScreenState extends State<TeacherLiveClassesScreen> {
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: cardBorder),
                       ),
-                      child: const Column(
+                      child: Column(
                         children: [
-                          Icon(Icons.tv_off_rounded, size: 36, color: textGrey),
-                          SizedBox(height: 10),
-                          Text("No Live Broadcasts", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
-                          SizedBox(height: 4),
-                          Text("No live streams or broadcasts available right now.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                          const Icon(Icons.tv_off_rounded, size: 36, color: textGrey),
+                          const SizedBox(height: 10),
+                          Text(context.l10n.noDataFound, style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
                         ],
                       ),
                     ),

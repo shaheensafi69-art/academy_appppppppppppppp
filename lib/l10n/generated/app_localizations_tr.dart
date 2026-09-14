@@ -63,7 +63,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get edit => 'Düzenle';
 
   @override
-  String get search => 'Ara...';
+  String get search => 'Ara';
 
   @override
   String get loading => 'Yükleniyor...';
@@ -196,4 +196,2230 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get soon => 'Yakında';
+
+  @override
+  String get overview => 'Genel Bakış';
+
+  @override
+  String get wishlist => 'İstek Listesi';
+
+  @override
+  String get liveCampus => 'Canlı Kampüs';
+
+  @override
+  String get live => 'Canlı';
+
+  @override
+  String get examsQuizzes => 'Sınavlar ve Testler';
+
+  @override
+  String get paymentsInvoices => 'Ödemeler ve Faturalar';
+
+  @override
+  String get tradingJournal => 'İşlem Günlüğü';
+
+  @override
+  String get createPost => 'Gönderi Oluştur';
+
+  @override
+  String get socialFeed => 'Sosyal Akış';
+
+  @override
+  String get feed => 'Akış';
+
+  @override
+  String get walletReferral => 'Cüzdan ve Referans';
+
+  @override
+  String get friendsNetwork => 'Arkadaşlar ve Ağ';
+
+  @override
+  String get friends => 'Arkadaşlar';
+
+  @override
+  String get achievements => 'Başarılar';
+
+  @override
+  String get safiAiAssistant => 'Safi Yapay Zeka Asistanı';
+
+  @override
+  String get helpCenter => 'Yardım Merkezi';
+
+  @override
+  String get supportTickets => 'Destek Talepleri';
+
+  @override
+  String get myProfile => 'Profilim';
+
+  @override
+  String get appSettings => 'Uygulama Ayarları';
+
+  @override
+  String get studentPortalMenu => 'ÖĞRENCİ PORTALI MENÜSÜ';
+
+  @override
+  String get logOut => 'ÇIKIŞ YAP';
+
+  @override
+  String get menu => 'MENÜ';
+
+  @override
+  String get loadingDashboard => 'GÖSTERGE PANELİ YÜKLENİYOR...';
+
+  @override
+  String get academyStudent => 'AKADEMİ ÖĞRENCİSİ';
+
+  @override
+  String get walletBalance => 'Cüzdan Bakiyesi';
+
+  @override
+  String get dailyStreak => 'GÜNLÜK SERİ';
+
+  @override
+  String get longestStreak => 'EN UZUN SERİ';
+
+  @override
+  String daysCount(String count) {
+    return '$count Gün';
+  }
+
+  @override
+  String get enrolled => 'Kayıtlı';
+
+  @override
+  String get score => 'Puan';
+
+  @override
+  String get certs => 'Sertifikalar';
+
+  @override
+  String get continueLearning => 'Öğrenmeye Devam Et';
+
+  @override
+  String get upcomingClasses => 'Yaklaşan Canlı Dersler';
+
+  @override
+  String get noClassesToday => 'Bugün planlanmış canlı ders yok';
+
+  @override
+  String get exploreAll => 'Tümünü Keşfet';
+
+  @override
+  String get myEnrolled => 'Kayıtlı Kurslarım';
+
+  @override
+  String get searchCourses => 'Kurs başlığı veya eğitmene göre ara...';
+
+  @override
+  String get allCategories => 'Tüm Kategoriler';
+
+  @override
+  String get filterByCategory => 'Kategoriye Göre Filtrele';
+
+  @override
+  String get getStarted => 'Hemen Başla';
+
+  @override
+  String get exploreAsGuest => 'Misafir Olarak Keşfet';
+
+  @override
+  String get alreadyHaveAccount => 'Zaten hesabınız var mı? Giriş Yapın';
+
+  @override
+  String get dontHaveAccount => 'Hesabınız yok mu? Kayıt Olun';
+
+  @override
+  String get stepIntoDigitalCampus => 'Dijital kampüsünüze adım atın.';
+
+  @override
+  String get emailAddress => 'E-POSTA ADRESİ';
+
+  @override
+  String get enterYourEmail => 'E-postanızı girin';
+
+  @override
+  String get newPassword => 'Yeni Şifre';
+
+  @override
+  String get enterStrongPassword => 'Güçlü bir şifre girin...';
+
+  @override
+  String get forgot => 'Unuttum?';
+
+  @override
+  String get rememberMe => 'Beni hatırla';
+
+  @override
+  String get signIn => 'GİRİŞ YAP';
+
+  @override
+  String get signUp => 'KAYIT OL';
+
+  @override
+  String get newHere => 'Yeni misiniz?';
+
+  @override
+  String get createAccount => 'Hesap oluştur';
+
+  @override
+  String get loginToAccount => 'Hesaba Giriş Yap 🚀';
+
+  @override
+  String get createNewAccount => 'Yeni Hesap Oluştur';
+
+  @override
+  String get skipToFeed => 'Akışa Geç';
+
+  @override
+  String get readyToBegin => 'Başlamaya Hazır mısınız?';
+
+  @override
+  String get readyToBeginDesc =>
+      'Ayrıcalıklı eğitimlere ve canlı kampüs araçlarına erişmek için giriş yapın veya yeni bir hesap oluşturun.';
+
+  @override
+  String get continueText => 'Devam Et';
+
+  @override
+  String get exploreFeedAsGuest =>
+      'Akışı ve Videoları Misafir Olarak Keşfet 🌟';
+
+  @override
+  String get personalDetails => 'Kişisel Bilgiler';
+
+  @override
+  String get contactAndCountry => 'İletişim ve Ülke';
+
+  @override
+  String get accountSecurity => 'Hesap Güvenliği';
+
+  @override
+  String get learningGoals => 'Öğrenme Hedefleri';
+
+  @override
+  String get fatherName => 'Baba Adı';
+
+  @override
+  String get dateOfBirth => 'Doğum Tarihi';
+
+  @override
+  String get country => 'Ülke';
+
+  @override
+  String get phoneNumber => 'Telefon Numarası';
+
+  @override
+  String get bio => 'Biyografi / Özet';
+
+  @override
+  String get referralCode => 'Referans Kodu (İsteğe bağlı)';
+
+  @override
+  String get profilePhotoRequired => 'Profil fotoğrafı gereklidir.';
+
+  @override
+  String get fillPersonalDetails => 'Lütfen tüm kişisel bilgileri doldurun.';
+
+  @override
+  String get countryPhoneRequired => 'Ülke ve telefon numarası gereklidir.';
+
+  @override
+  String get verifyEmailBeforeLogin =>
+      'Lütfen giriş yapmadan önce e-posta adresinizi doğrulayın.';
+
+  @override
+  String get networkConnectionFailed =>
+      'Ağ bağlantısı başarısız. Lütfen internet bağlantınızı kontrol edin.';
+
+  @override
+  String get passwordMinLength => 'Şifre en az 6 karakter olmalıdır.';
+
+  @override
+  String get passwordChangedSuccess => 'Şifre başarıyla değiştirildi! 🔒';
+
+  @override
+  String get updatePassword => 'ŞİFREYİ GÜNCELLE 🔒';
+
+  @override
+  String get appLockAndPrivacy => 'Uygulama Kilidi ve Gizlilik';
+
+  @override
+  String get biometricAuth => 'Biyometrik Kimlik Doğrulama';
+
+  @override
+  String get biometricAuthDesc =>
+      'Kilidi açmak için parmak izi veya yüz tanıma kullanın.';
+
+  @override
+  String get biometricLoginEnabled => 'Biyometrik giriş etkinleştirildi! 🔓';
+
+  @override
+  String get biometricsNotSupported => 'Biyometri bu cihazda desteklenmiyor.';
+
+  @override
+  String get pinLock => '4 Haneli PIN Kilidi';
+
+  @override
+  String get pinLockDesc => 'Hızlı erişim için gizli bir PIN ayarlayın.';
+
+  @override
+  String get setSecretPin => '4 Haneli PIN Ayarla';
+
+  @override
+  String get savePin => 'PINi Kaydet';
+
+  @override
+  String get pinSavedSuccess => 'PIN kodu başarıyla kaydedildi! 🔑';
+
+  @override
+  String get pinMustBe4Digits => 'PIN 4 basamaklı olmalıdır.';
+
+  @override
+  String get preferencesAndLanguage => 'Tercihler ve Dil';
+
+  @override
+  String get pushNotifications => 'Anlık Bildirimler';
+
+  @override
+  String get pushNotificationsDesc =>
+      'Kurs güncellemelerini, uyarıları ve mesajları alın.';
+
+  @override
+  String get liveCampusSession => 'CANLI KAMPÜS OTURUMU';
+
+  @override
+  String get joinLiveMeetingRoom => 'Canlı Toplantı Odasına Katıl 🚀';
+
+  @override
+  String get join => 'Katıl 🚀';
+
+  @override
+  String get schedule => 'Program';
+
+  @override
+  String get inProgress => 'DEVAM EDİYOR';
+
+  @override
+  String get noCoursesEnrolledYet => 'Henüz hiçbir kursa kaydolmadınız.';
+
+  @override
+  String get activeLiveCampusClasses => 'Aktif Canlı Kampüs Dersleri';
+
+  @override
+  String get noActiveClasses => 'Aktif sınıf grubu bulunamadı.';
+
+  @override
+  String get academyLearningHub => 'Akademi Öğrenme Merkezi';
+
+  @override
+  String get academyHubSubtitle =>
+      'Uzmanlık derslerini keşfedin, kayıtlarınızı görün ve becerilerinizi geliştirin.';
+
+  @override
+  String get noCoursesFound => 'Aramanızla eşleşen kurs bulunamadı.';
+
+  @override
+  String get all => 'Tümü';
+
+  @override
+  String get categories => 'Kategoriler';
+
+  @override
+  String get notices => 'Bildirimler';
+
+  @override
+  String get myProgress => 'İlerlemem';
+
+  @override
+  String get completedCourses => 'Tamamlanan Kurslar';
+
+  @override
+  String get totalLessons => 'Toplam Ders';
+
+  @override
+  String get downloadCertificate => 'Sertifikayı İndir';
+
+  @override
+  String get shareCertificate => 'Sertifikayı Paylaş';
+
+  @override
+  String get walletDeposit => 'Para Yatır';
+
+  @override
+  String get walletWithdraw => 'Para Çek';
+
+  @override
+  String get inviteFriends => 'Arkadaşlarını Davet Et';
+
+  @override
+  String get copyReferral => 'Referans Linkini Kopyala';
+
+  @override
+  String get copiedToClipboard => 'Panoya kopyalandı!';
+
+  @override
+  String get close => 'Kapat';
+
+  @override
+  String get welcomeOnboarding1Title => 'Safi Academyye Hoş Geldiniz';
+
+  @override
+  String get welcomeOnboarding1Desc =>
+      'Finansal piyasalar, yazılım mühendisliği ve dijital iş dünyasında uzmanlaşma yolunuz.';
+
+  @override
+  String get welcomeOnboarding2Title => 'Sosyal Akış ve Tartışmalar';
+
+  @override
+  String get welcomeOnboarding2Desc =>
+      'Topluluktan doğrudan piyasa analizlerini ve kodlama eğitimlerini keşfedin.';
+
+  @override
+  String get welcomeOnboarding3Title => 'Kısa Eğitici Videolar';
+
+  @override
+  String get welcomeOnboarding3Desc =>
+      'Pratik işlem ipuçlarını ve teknik analizleri kısa videolarla izleyin.';
+
+  @override
+  String get welcomeOnboarding4Title => 'Doğrudan Mesajlaşma ve Topluluk';
+
+  @override
+  String get welcomeOnboarding4Desc =>
+      'Sınıf arkadaşlarınızla iletişim kurun ve mentorlardan destek alın.';
+
+  @override
+  String get welcomeOnboarding5Title => 'Canlı Kampüs ve Dersler';
+
+  @override
+  String get welcomeOnboarding5Desc =>
+      'Canlı çevrimiçi derslere katılın ve eğitmenlerle etkileşim kurun.';
+
+  @override
+  String get welcomeOnboarding6Title => 'Profesyonel İşlem Günlüğü';
+
+  @override
+  String get welcomeOnboarding6Desc =>
+      'İşlemlerinizi kaydedin ve risk yönetiminizi profesyonelce geliştirin.';
+
+  @override
+  String get welcomeOnboarding7Title => 'Sınav Merkezi ve Testler';
+
+  @override
+  String get welcomeOnboarding7Desc =>
+      'Bilginizi akademik sınavlarla test edin ve başarılarınızı takip edin.';
+
+  @override
+  String get welcomeOnboarding8Title => 'Birlikte Kazanın ve Büyüyün';
+
+  @override
+  String get welcomeOnboarding8Desc =>
+      'Arkadaşlarınızı davet edin, bonuslar kazanın ve onaylı sertifikalar alın.';
+
+  @override
+  String get loadingExams => 'Sınavlar yükleniyor...';
+
+  @override
+  String get examinationCenter => 'Sınav Merkezi';
+
+  @override
+  String get examinationCenterDesc =>
+      'Akademik sınavlarınıza girin ve resmi notlarınızı takip edin.';
+
+  @override
+  String get totalExams => 'Toplam Sınav';
+
+  @override
+  String get passed => 'Geçti';
+
+  @override
+  String get toDo => 'Bekleyen';
+
+  @override
+  String get attempted => 'Tamamlanan';
+
+  @override
+  String get passMark => 'Geçme Notu';
+
+  @override
+  String get startExam => 'Sınavı Başlat';
+
+  @override
+  String get statusPassed => 'Geçti';
+
+  @override
+  String get statusFailed => 'Başarısız';
+
+  @override
+  String get awaitingGrading => 'Değerlendirme Bekliyor';
+
+  @override
+  String get noExamsAvailable => 'Şu anda mevcut sınav bulunmamaktadır.';
+
+  @override
+  String get assignmentsAttendance => 'Ödevler ve Yoklama';
+
+  @override
+  String get assignmentsDesc =>
+      'Bugünkü yoklamayı onaylayın, ödevleri teslim edin ve ilerlemenizi takip edin.';
+
+  @override
+  String get todaysCheckIn => 'Günün Yoklaması';
+
+  @override
+  String get signed => 'Onaylandı';
+
+  @override
+  String get signNow => 'Şimdi Onayla';
+
+  @override
+  String get signing => 'Onaylanıyor...';
+
+  @override
+  String get teamsRoom => 'Teams Odası';
+
+  @override
+  String get signalGroup => 'Signal Grubu';
+
+  @override
+  String get classAssignments => 'Ders Ödevleri';
+
+  @override
+  String get submitAssignment => 'Ödevi Teslim Et';
+
+  @override
+  String get uploadSolution => 'Çözümü Yükle';
+
+  @override
+  String get downloadAttachment => 'Eki İndir';
+
+  @override
+  String get noAssignmentsFound => 'Herhangi bir ödev bulunamadı.';
+
+  @override
+  String get due => 'Son Tarih';
+
+  @override
+  String get submitted => 'Teslim Edildi';
+
+  @override
+  String get graded => 'Notlandırıldı';
+
+  @override
+  String get feedback => 'Geri bildirim';
+
+  @override
+  String get globalScholarships => 'Küresel Burslar';
+
+  @override
+  String get globalScholarshipsDesc =>
+      'Doğrulanmış uluslararası akademik bursları keşfedin.';
+
+  @override
+  String get availableOpportunities => 'Mevcut Fırsatlar';
+
+  @override
+  String get scholarshipOverview => 'Burs Detayları';
+
+  @override
+  String get noScholarshipsFound => 'Bu bölge için burs bulunamadı.';
+
+  @override
+  String get applyNow => 'Hemen Başvur';
+
+  @override
+  String get deadline => 'Son Başvuru Tarihi';
+
+  @override
+  String get eligibilityCriteria => 'Uygunluk Kriterleri';
+
+  @override
+  String get requiredDocuments => 'Gerekli Belgeler';
+
+  @override
+  String get myAchievements => 'Başarılarım';
+
+  @override
+  String get myAchievementsDesc =>
+      'Akademik başarılarınızın düzenli ve onaylı kaydı.';
+
+  @override
+  String get officialCertificates => 'Resmi Sertifikalar';
+
+  @override
+  String get badgesAndHonors => 'Rozetler ve Onurlar';
+
+  @override
+  String get verifiedCredential => 'Onaylı Belge';
+
+  @override
+  String get issued => 'Veriliş Tarihi';
+
+  @override
+  String get viewPdf => 'PDF Görüntüle';
+
+  @override
+  String get noCertificatesYet => 'Henüz sertifika bulunmuyor.';
+
+  @override
+  String get noBadgesYet => 'Henüz rozet bulunmuyor.';
+
+  @override
+  String get points => 'Puan';
+
+  @override
+  String get helpCenterTitle => 'Yardım ve Destek Merkezi';
+
+  @override
+  String get helpCenterDesc =>
+      'Destek talebi oluşturun, SSS okuyun ve ekibimizle iletişime geçin.';
+
+  @override
+  String get submitTicket => 'Talep Gönder';
+
+  @override
+  String get submittingTicket => 'Talep gönderiliyor...';
+
+  @override
+  String get ticketSubject => 'Talep Konusu';
+
+  @override
+  String get ticketMessage => 'Mesaj';
+
+  @override
+  String get ticketDepartment => 'Departman';
+
+  @override
+  String get ticketSuccess => 'Destek talebi başarıyla gönderildi! 🎫';
+
+  @override
+  String get faqTitle => 'Sıkça Sorulan Sorular';
+
+  @override
+  String get contactSupport => 'Destekle İletişime Geç';
+
+  @override
+  String get howCanWeHelp => 'Nasıl yardımcı olabiliriz?';
+
+  @override
+  String get howCanWeHelpDesc =>
+      'Talep oluşturun, SSS\'leri inceleyin veya bize doğrudan ulaşın.';
+
+  @override
+  String get submitSupportTicket => 'Yeni Destek Talebi Gönder';
+
+  @override
+  String get fillSubjectAndMessage =>
+      'Lütfen hem konu hem de mesaj alanını doldurun.';
+
+  @override
+  String get subjectHint => 'Konu / Sorun özeti...';
+
+  @override
+  String get messageHint =>
+      'Sorununuzu veya talebinizi ayrıntılı olarak açıklayın...';
+
+  @override
+  String get generalSupport => 'Genel Destek';
+
+  @override
+  String get technicalIssue => 'Teknik Sorun';
+
+  @override
+  String get billingAndPayments => 'Faturalandırma ve Ödeme';
+
+  @override
+  String get courseContent => 'Ders İçeriği';
+
+  @override
+  String get directCommunications => 'Doğrudan İletişim';
+
+  @override
+  String get officialEmail => 'Resmi E-posta';
+
+  @override
+  String get academyHotline => 'Akademi Destek Hattı';
+
+  @override
+  String get officialChannelsAndSocials => 'Resmi Kanallar ve Sosyal Medya';
+
+  @override
+  String get whatsappCommunity => 'WhatsApp Topluluk Kanalı';
+
+  @override
+  String get whatsappCommunityDesc =>
+      'Anlık güncellemeler için resmi yayın kanalımıza katılın';
+
+  @override
+  String get faq1Q => 'Canlı derslere nasıl katılırım?';
+
+  @override
+  String get faq1A =>
+      'Canlı Kampüs bölümünden sınıfınız için sağlanan toplantı bağlantısını kullanarak doğrudan katılabilirsiniz. Zoom veya Meet yüklü olduğundan emin olun.';
+
+  @override
+  String get faq2Q => 'Resmi sertifikalar nasıl düzenlenir?';
+
+  @override
+  String get faq2A =>
+      'Final sınavlarını başarıyla geçtikten ve kurs gereksinimlerini tamamladıktan sonra, onaylı sertifikanız Sertifikalar bölümünde otomatik olarak PDF formatında görünür.';
+
+  @override
+  String get faq3Q => 'Uluslararası burslara başvurabilir miyim?';
+
+  @override
+  String get faq3A =>
+      'Kesinlikle! Safi Akademi tarafından derlenen tam burslu küresel imkanları keşfetmek için Burslar portalını ziyaret edin.';
+
+  @override
+  String get paymentsAndInvoices => 'Ödemeler ve Faturalar';
+
+  @override
+  String get paymentsAndInvoicesDesc =>
+      'İşlem geçmişini, makbuzları takip edin ve indirim kuponları uygulayın.';
+
+  @override
+  String get discountAndScholarships => 'İndirim ve Burslar';
+
+  @override
+  String get enterCouponCode => 'Kupon kodunu girin...';
+
+  @override
+  String get apply => 'Uygula';
+
+  @override
+  String get couponSuccess =>
+      'Kupon başarıyla uygulandı! İndirim etkinleştirildi. 🎉';
+
+  @override
+  String get couponInvalid => 'Geçersiz veya süresi dolmuş kupon kodu. ❌';
+
+  @override
+  String get transactionHistory => 'İşlem Geçmişi';
+
+  @override
+  String get transactionDetails => 'İşlem Detayları';
+
+  @override
+  String get transactionId => 'İşlem No';
+
+  @override
+  String get gateway => 'Ödeme Yöntemi';
+
+  @override
+  String get reference => 'Referans No';
+
+  @override
+  String get dateTime => 'Tarih ve Saat';
+
+  @override
+  String get noTransactionsYet => 'Ödeme geçmişi bulunamadı.';
+
+  @override
+  String get safiCommunity => 'Safi Topluluğu';
+
+  @override
+  String get safiCommunityDesc =>
+      'Signal resmi kanallarında sınıf arkadaşlarınız ve eğitmenlerinizle anlık iletişim kurun.';
+
+  @override
+  String get searchActiveChannels => 'Aktif kanalları ara...';
+
+  @override
+  String get faculty => 'Eğitmenler';
+
+  @override
+  String get enterSignalGroup => 'Korumalı Signal grup kanalına giriş yap...';
+
+  @override
+  String get signalSyncPending =>
+      'Signal Çalışma Alanı Senkronizasyonu Bekleniyor';
+
+  @override
+  String get noEnrolledChannels => 'Kayıtlı Kanal Bulunmuyor';
+
+  @override
+  String get joinCurriculumToUnlock =>
+      'Öncelikli çalışma alanınızı açmak için aktif bir derse kaydolun.';
+
+  @override
+  String get loadingCommunity => 'TOPLULUK YÜKLENİYOR...';
+
+  @override
+  String get downloadFile => 'Dosyayı İndir';
+
+  @override
+  String get downloadFileToDevice => 'Dosyayı Cihaza İndir 📥';
+
+  @override
+  String get downloadSuccess =>
+      'Dosya İndirilenler klasörüne başarıyla kaydedildi! 📁';
+
+  @override
+  String get downloadingFile => 'DOSYA İNDİRİLİYOR...';
+
+  @override
+  String get loadingPdfViewer => 'PDF Görüntüleyici Yükleniyor...';
+
+  @override
+  String get couldNotLoadPdf => 'PDF belgesi yüklenemedi.';
+
+  @override
+  String get noDocumentAttached => 'Ekli belge yok.';
+
+  @override
+  String get leadInstructor => 'Baş Eğitmen';
+
+  @override
+  String get includesCertificate => 'Sertifika Dahil';
+
+  @override
+  String get noCertificate => 'Sertifikasız';
+
+  @override
+  String get freeSession => 'ÜCRETSİZ OTURUM';
+
+  @override
+  String get freeTrialBannerTitle => '7 Günlük Ücretsiz Deneme Mevcut! 🎁';
+
+  @override
+  String get freeTrialBannerDesc =>
+      '7 günlük ücretsiz deneme rezervasyonu aktif. Sınıf bir hafta sonra otomatik olarak kilitlenir.';
+
+  @override
+  String get classHubAndDetails => 'Sınıf Merkezi ve Detaylar';
+
+  @override
+  String get enrolledAndActive => 'KAYITLI VE AKTİF ✓';
+
+  @override
+  String get paymentPending => 'ÖDEME BEKLİYOR';
+
+  @override
+  String get registerForCourse => 'Kursa Kaydol';
+
+  @override
+  String get alreadyEnrolled => 'Zaten Kayıtlısınız';
+
+  @override
+  String get courseSyllabus => 'Ders Müfredatı';
+
+  @override
+  String get selectClassBatch => 'Sınıf Grubu ve Zamanını Seçin';
+
+  @override
+  String get scheduleInfo => 'Program Bilgisi';
+
+  @override
+  String get classDaysTime => 'Ders Günleri ve Saati';
+
+  @override
+  String get joinMeeting => 'Toplantı Odasına Katıl';
+
+  @override
+  String get joinSignalGroup => 'Signal Grubuna Katıl';
+
+  @override
+  String get examPaper => 'Sınav Kağıdı';
+
+  @override
+  String get answered => 'Cevaplanan';
+
+  @override
+  String get autoSavedSmartExam => 'Otomatik Kaydedildi • Akıllı Sınav';
+
+  @override
+  String get descriptiveQuestion => 'Açık Uçlu';
+
+  @override
+  String get multipleChoiceQuestion => 'Çoktan Seçmeli';
+
+  @override
+  String get writeDescriptiveAnswer => 'Cevabınızı buraya yazın...';
+
+  @override
+  String get submitExam => 'Sınavı Tamamla';
+
+  @override
+  String get confirmSubmitExam =>
+      'Sınav yanıtlarınızı göndermek istediğinizden emin misiniz?';
+
+  @override
+  String get examSubmittedSuccess =>
+      'Sınav başarıyla teslim edildi ve eğitmenler tarafından değerlendirilecek.';
+
+  @override
+  String get timeRemaining => 'Kalan Süre';
+
+  @override
+  String get liveSupport => 'Canlı Destek';
+
+  @override
+  String get createTicket => 'Talep Oluştur';
+
+  @override
+  String get activeTickets => 'Aktif Talepler';
+
+  @override
+  String get pendingTickets => 'Beklemede';
+
+  @override
+  String get closedTickets => 'Kapanan Talepler';
+
+  @override
+  String get noTicketsFound => 'Destek talebi bulunamadı.';
+
+  @override
+  String get back => 'Geri';
+
+  @override
+  String get weeks => 'Hafta';
+
+  @override
+  String get aboutCourse => 'Kurs Hakkında';
+
+  @override
+  String get meetInstructors => 'Eğitmenleriniz';
+
+  @override
+  String get reserveSeatAndClass => 'Yerinizi ve Sınıfınızı Ayırın';
+
+  @override
+  String get closeRegistrationForm => 'Kayıt Formunu Kapat';
+
+  @override
+  String get secureRegistrationTitle => 'Güvenli Kayıt ve Program';
+
+  @override
+  String get secureRegistrationSubtitle =>
+      'Kaydı ve ders saatlerini tamamlamak için bilgilerinizi doldurun.';
+
+  @override
+  String get fullNameField => 'AD SOYAD *';
+
+  @override
+  String get fatherNameField => 'BABA ADI *';
+
+  @override
+  String get emailAddressField => 'E-POSTA ADRESİ *';
+
+  @override
+  String get whatsappNumberField => 'WHATSAPP NUMARASI *';
+
+  @override
+  String get preferredInstructor => 'TERCİH EDİLEN EĞİTMEN *';
+
+  @override
+  String get selectClassSchedule => 'SINIF VE PROGRAM SEÇİN *';
+
+  @override
+  String get noActiveSchedule =>
+      'Şu anda listelenmiş aktif sınıf programı yok. Lütfen kaydolun, ekip sizinle iletişime geçecektir.';
+
+  @override
+  String get additionalNotesOptional => 'EK NOTLAR (İSTEĞE BAĞLI)';
+
+  @override
+  String get finalizeRegistration => 'Kaydı Tamamla';
+
+  @override
+  String get registrationSuccess => 'Kayıt ve yer rezervasyonu başarılı! 🎉';
+
+  @override
+  String get fillRequiredFields => 'Lütfen tüm zorunlu alanları doldurun.';
+
+  @override
+  String get authRequired =>
+      'Kimlik doğrulaması gerekli. Lütfen önce giriş yapın.';
+
+  @override
+  String get enrollmentError => 'Zaten kayıtlısınız veya bir hata oluştu.';
+
+  @override
+  String get courseLinkCopied => 'Kurs bağlantısı panoya kopyalandı! 🔗';
+
+  @override
+  String get courseNotFound => 'Kurs bulunamadı.';
+
+  @override
+  String get loadingCourseDetails => 'KURS DETAYLARI YÜKLENİYOR...';
+
+  @override
+  String get classSpecifications => 'Sınıf Özellikleri';
+
+  @override
+  String get duration => 'Süre';
+
+  @override
+  String get classTime => 'Ders Saati';
+
+  @override
+  String get classDays => 'Ders Günleri';
+
+  @override
+  String get accessChannels => 'Erişim Kanalları';
+
+  @override
+  String get joinTeamsLectureRoom => 'Teams Toplantı Odasına Katıl';
+
+  @override
+  String get joinTeamsLectureRoomSubtitle =>
+      'Canlı kurumsal oturuma anında bağlanın';
+
+  @override
+  String get openSignalEncryptedGroup => 'Şifreli Signal Grubu';
+
+  @override
+  String get signalEncryptedGroupSubtitle =>
+      'Güvenli mesajlaşma ve güncellemeler';
+
+  @override
+  String get classLockedTuitionPending =>
+      'Harç ödemesi onaylanana kadar sınıflar ve bağlantılar kilitlidir.';
+
+  @override
+  String get preparingExamPaper => 'SINAV KAĞIDI HAZIRLANIYOR...';
+
+  @override
+  String get paperSubmittedSuccess => 'Sınav Başarıyla Gönderildi!';
+
+  @override
+  String get paperSubmittedDesc =>
+      'Cevaplarınız kaydedildi. Eğitmeniniz sınavınızı yakında notlandıracaktır.';
+
+  @override
+  String get returnToExamCenter => 'Sınav Merkezine Dön';
+
+  @override
+  String get unansweredQuestions => 'Cevaplanmamış Sorular';
+
+  @override
+  String get unansweredWarning =>
+      'Atladığınız sorular var. Göndermek istediğinizden emin misiniz?';
+
+  @override
+  String get review => 'İncele';
+
+  @override
+  String get pts => 'Puan';
+
+  @override
+  String get submitExamPaper => 'SINAVI GÖNDER 🚀';
+
+  @override
+  String get recentConversations => 'Son Görüşmeler';
+
+  @override
+  String get noConversationsYet => 'Henüz Görüşme Yok';
+
+  @override
+  String get startLiveChatHint =>
+      'Canlı sohbet başlatmak için yukarıdaki başlığa dokunun.';
+
+  @override
+  String get liveSupportAgent => 'Canlı Destek Temsilcisi';
+
+  @override
+  String get aiAndHumanOnline => 'Yapay Zeka ve İnsan Temsilciler çevrimiçi';
+
+  @override
+  String get startConversation => 'Sohbeti başlat 💬';
+
+  @override
+  String get inConversation => 'Görüşmede';
+
+  @override
+  String get femaleVoice => 'Kadın';
+
+  @override
+  String get maleVoice => 'Erkek';
+
+  @override
+  String get femalePartner => 'Kadın Ses Arkadaşı';
+
+  @override
+  String get malePartner => 'Erkek Ses Arkadaşı';
+
+  @override
+  String get selectVoiceCharacter => 'Sesli Arkadaş Seçin';
+
+  @override
+  String get selectVoiceCharacterDesc =>
+      'Özgün ses tonuna sahip bir kadın veya erkek karakter seçin';
+
+  @override
+  String get change => 'Değiştir';
+
+  @override
+  String get accessRestricted => 'Erişim Kısıtlandı';
+
+  @override
+  String get journalRestrictedDesc =>
+      'Profesyonel İşlem Günlüğü yalnızca Finansal Piyasalar & Forex eğitimine kayıtlı öğrencilere özeldir.';
+
+  @override
+  String get newChat => 'YENİ SOHBET';
+
+  @override
+  String get waitingForAdmin => 'Yönetici Bekleniyor';
+
+  @override
+  String get aiSupportActive => 'Yapay Zeka Desteği Aktif';
+
+  @override
+  String get ticketClosed => 'Destek Talebi Kapatıldı';
+
+  @override
+  String get messageAdmin => 'Yöneticiye mesaj...';
+
+  @override
+  String get askSafiAi => 'Safi AI\'ya sorun...';
+
+  @override
+  String get uploading => 'Yükleniyor...';
+
+  @override
+  String get aiTyping => 'Safi AI yazıyor...';
+
+  @override
+  String get documentAttached => 'Belge eklendi';
+
+  @override
+  String get resetPassword => 'Şifreyi Sıfırla';
+
+  @override
+  String get sendResetLink => 'SIFIRLAMA BAĞLANTISINI GÖNDER';
+
+  @override
+  String get checkYourInbox => 'Gelen Kutunuzu Kontrol Edin';
+
+  @override
+  String get checkSpamFolder =>
+      'Lütfen Spam veya Gereksiz klasörünüzü de kontrol edin.';
+
+  @override
+  String get securityVerification => 'Güvenlik Doğrulaması';
+
+  @override
+  String get enter4DigitPin => 'Devam etmek için 4 haneli PIN kodunuzu girin';
+
+  @override
+  String get incorrectPin => 'Hatalı PIN Kodu ❌';
+
+  @override
+  String get nextStep => 'SONRAKİ ADIM';
+
+  @override
+  String get completeRegistration => 'TAMAMLA 🚀';
+
+  @override
+  String get verifyYourIdentity => 'Kimliğinizi Doğrulayın';
+
+  @override
+  String get verificationLinkSent =>
+      'E-posta adresinize güvenli bir doğrulama bağlantısı gönderdik:';
+
+  @override
+  String get proceedToLogin => 'GİRİŞE GEÇ';
+
+  @override
+  String get clickLinkInEmail =>
+      'Lütfen e-postanızı açın ve doğrulama düğmesine tıklayın.';
+
+  @override
+  String get friendRequirementNotice =>
+      'Doğrudan mesaj gönderebilmek için önce bu kullanıcıyla arkadaş olmalısınız.';
+
+  @override
+  String get sendFriendRequest => 'Arkadaşlık İsteği Gönder';
+
+  @override
+  String get friendRequestSent => 'Arkadaşlık isteği başarıyla gönderildi! 🤝';
+
+  @override
+  String get friendRequestError =>
+      'Arkadaşlık isteği zaten gönderildi veya bir hata oluştu.';
+
+  @override
+  String get reply => 'Cevapla';
+
+  @override
+  String get replyingTo => 'Yanıtlanıyor:';
+
+  @override
+  String get yourself => 'kendiniz';
+
+  @override
+  String get onlineNow => 'Şimdi çevrimiçi';
+
+  @override
+  String get educationalReel => 'Eğitici Reel 🎬';
+
+  @override
+  String get checkOutReel => 'Bu eğitici Reel\'e göz atın! 🌟';
+
+  @override
+  String get watchReel => 'Reel\'i İzle 🎥';
+
+  @override
+  String get sponsored => 'Sponsorlu';
+
+  @override
+  String get learnMore => 'Daha Fazla Bilgi';
+
+  @override
+  String get installNow => 'Şimdi Yükle';
+
+  @override
+  String get swipeUpForNextReel => 'Sonraki Reel için yukarı kaydırın';
+
+  @override
+  String get activityAndNotifications => 'Aktivite ve Bildirimler';
+
+  @override
+  String get allActivities => 'Tümü 🔥';
+
+  @override
+  String get likesAndComments => 'Beğeniler ve Yorumlar ❤️';
+
+  @override
+  String get friendRequests => 'Arkadaşlık İstekleri 👥';
+
+  @override
+  String get noActivitiesYet => 'Henüz etkinlik yok';
+
+  @override
+  String get activitiesEmptyDesc =>
+      'Yeni beğeniler, yorumlar ve arkadaşlık istekleri burada görünecektir.';
+
+  @override
+  String get postNotFound => 'Gönderi bulunamadı';
+
+  @override
+  String get postedOnFeed => 'Akışta paylaşıldı';
+
+  @override
+  String get commentsTitle => 'Yorumlar 💬';
+
+  @override
+  String get noCommentsYet => 'Henüz yorum yok. Aşağıya bir tane yazın!';
+
+  @override
+  String get addComment => 'Bir yorum ekle...';
+
+  @override
+  String get studentNetwork => 'Öğrenci Ağı';
+
+  @override
+  String get studentNetworkDesc =>
+      'Bağlantı kurun, işbirliği yapın ve profesyonel ağınızı büyütün.';
+
+  @override
+  String get requests => 'İstekler';
+
+  @override
+  String get explore => 'Keşfet';
+
+  @override
+  String get searchByNameOrEmail => 'İsim veya e-posta ile ara...';
+
+  @override
+  String get removeFriend => 'Arkadaşı Çıkar';
+
+  @override
+  String get accept => 'Kabul Et';
+
+  @override
+  String get add => 'Ekle';
+
+  @override
+  String get noStudentsFound => 'Burada öğrenci bulunamadı.';
+
+  @override
+  String get story24hNotice =>
+      'Hikayeniz 24 saat sonra otomatik olarak kaybolacaktır.';
+
+  @override
+  String get storyPublishedSuccess =>
+      '24 saatlik hikayeniz başarıyla yayınlandı! 🎉';
+
+  @override
+  String get publishReel => 'Reel\'i Yayınla';
+
+  @override
+  String get reelPublishedSuccess => 'Reel başarıyla yayınlandı! 🎉';
+
+  @override
+  String get postPublishedSuccess => 'Gönderi başarıyla paylaşıldı! 🎉';
+
+  @override
+  String get chooseMediaFromGallery => 'Galeriden medya seçin 📸';
+
+  @override
+  String get mediaUploaded => 'Medya yüklendi! ✅';
+
+  @override
+  String get reelTitle => 'Reel Başlığı';
+
+  @override
+  String get publish => 'YAYINLA';
+
+  @override
+  String get descriptionOptional => 'Açıklama (İsteğe Bağlı)';
+
+  @override
+  String get selectVideo => 'Reel videosu seçmek için dokunun 📹';
+
+  @override
+  String get videoReadyToPublish => 'Video yayınlanmaya hazır! 🎬';
+
+  @override
+  String get chatInputHint => 'Bir mesaj yazın...';
+
+  @override
+  String get certificateCode => 'Sertifika Kodu';
+
+  @override
+  String get issueDate => 'Veriliş Tarihi';
+
+  @override
+  String get type => 'Tür';
+
+  @override
+  String get viewDetails => 'Detayları Görüntüle';
+
+  @override
+  String get teacherPortal => 'Öğretmen Portalı';
+
+  @override
+  String get teacherOverview => 'Öğretmen Genel Bakış';
+
+  @override
+  String get myStudents => 'Öğrencilerim';
+
+  @override
+  String get allStudents => 'Tüm Öğrenciler';
+
+  @override
+  String get curriculum => 'Müfredat';
+
+  @override
+  String get createCourse => 'Kurs Oluştur';
+
+  @override
+  String get editCourse => 'Kursu Düzenle';
+
+  @override
+  String get courseDetails => 'Kurs Detayları';
+
+  @override
+  String get createClass => 'Sınıf Oluştur';
+
+  @override
+  String get editClass => 'Sınıfı Düzenle';
+
+  @override
+  String get classDetails => 'Sınıf Detayları';
+
+  @override
+  String get createAssignment => 'Ödev Oluştur';
+
+  @override
+  String get editAssignment => 'Ödevi Düzenle';
+
+  @override
+  String get assignmentDetails => 'Ödev Detayları';
+
+  @override
+  String get submissions => 'Teslimler';
+
+  @override
+  String get gradeSubmission => 'Teslimi Notlandır';
+
+  @override
+  String get createQuiz => 'Sınav Oluştur';
+
+  @override
+  String get editQuiz => 'Sınavı Düzenle';
+
+  @override
+  String get quizQuestions => 'Sınav Soruları';
+
+  @override
+  String get quizResults => 'Sınav Sonuçları';
+
+  @override
+  String get addStudent => 'Öğrenci Ekle';
+
+  @override
+  String get removeStudent => 'Öğrenciyi Çıkar';
+
+  @override
+  String get teacherReports => 'Öğretmen Raporları';
+
+  @override
+  String get adminPortal => 'Yönetici Portalı';
+
+  @override
+  String get adminDashboard => 'Yönetici Kontrol Paneli';
+
+  @override
+  String get manageStudents => 'Öğrencileri Yönet';
+
+  @override
+  String get manageTeachers => 'Öğretmenleri Yönet';
+
+  @override
+  String get manageCourses => 'Kursları Yönet';
+
+  @override
+  String get manageClasses => 'Sınıfları Yönet';
+
+  @override
+  String get finance => 'Finans ve Faturalar';
+
+  @override
+  String get honorsAwards => 'Onur ve Ödüller';
+
+  @override
+  String get supportRequests => 'Destek Talepleri';
+
+  @override
+  String get liveStudio => 'Canlı Stüdyo';
+
+  @override
+  String get revenue => 'Gelir';
+
+  @override
+  String get totalRevenue => 'Toplam Gelir';
+
+  @override
+  String get totalStudents => 'Toplam Öğrenci';
+
+  @override
+  String get totalTeachers => 'Toplam Öğretmen';
+
+  @override
+  String get totalCourses => 'Toplam Kurs';
+
+  @override
+  String get totalClasses => 'Toplam Sınıf';
+
+  @override
+  String get pendingApprovals => 'Bekleyen Onaylar';
+
+  @override
+  String get approve => 'Onayla';
+
+  @override
+  String get reject => 'Reddet';
+
+  @override
+  String get status => 'Durum';
+
+  @override
+  String get role => 'Rol';
+
+  @override
+  String get action => 'İşlem';
+
+  @override
+  String get actions => 'İşlemler';
+
+  @override
+  String get grade => 'Not';
+
+  @override
+  String get dueDate => 'Son Teslim Tarihi';
+
+  @override
+  String get title => 'Başlık';
+
+  @override
+  String get description => 'Açıklama';
+
+  @override
+  String get category => 'Kategori';
+
+  @override
+  String get capacity => 'Kapasite';
+
+  @override
+  String get startDate => 'Başlangıç Tarihi';
+
+  @override
+  String get endDate => 'Bitiş Tarihi';
+
+  @override
+  String get startTime => 'Başlangıç Saati';
+
+  @override
+  String get endTime => 'Bitiş Saati';
+
+  @override
+  String get meetingLink => 'Toplantı Bağlantısı';
+
+  @override
+  String get joinClass => 'Sınıfa Katıl';
+
+  @override
+  String get startClass => 'Sınıfı Başlat';
+
+  @override
+  String get endClass => 'Sınıfı Bitir';
+
+  @override
+  String get noDataFound => 'Veri bulunamadı';
+
+  @override
+  String get confirmDelete => 'Bunu silmek istediğinizden emin misiniz?';
+
+  @override
+  String get confirmAction => 'Emin misiniz?';
+
+  @override
+  String get itemCreatedSuccessfully => 'Başarıyla oluşturuldu';
+
+  @override
+  String get itemUpdatedSuccessfully => 'Başarıyla güncellendi';
+
+  @override
+  String get itemDeletedSuccessfully => 'Başarıyla silindi';
+
+  @override
+  String get teacherNotice => 'Öğretmen Duyurusu';
+
+  @override
+  String get adminNotice => 'Yönetici Duyurusu';
+
+  @override
+  String get sendAnnouncement => 'Duyuru Gönder';
+
+  @override
+  String get announcementTitle => 'Duyuru Başlığı';
+
+  @override
+  String get announcementBody => 'Duyuru Metni';
+
+  @override
+  String get targetAudience => 'Hedef Kitle';
+
+  @override
+  String get allUsers => 'Tüm Kullanıcılar';
+
+  @override
+  String get onlyStudents => 'Sadece Öğrenciler';
+
+  @override
+  String get onlyTeachers => 'Sadece Öğretmenler';
+
+  @override
+  String get supportChatWithAdmin => 'Yönetici ile Destek Sohbeti';
+
+  @override
+  String get ticketStatus => 'Talep Durumu';
+
+  @override
+  String get openTickets => 'Açık Talepler';
+
+  @override
+  String get closeTicket => 'Talebi Kapat';
+
+  @override
+  String get sendReply => 'Cevap Gönder';
+
+  @override
+  String get awardTitle => 'Ödül Başlığı';
+
+  @override
+  String get giveAward => 'Ödül Ver';
+
+  @override
+  String get awardedTo => 'Verilen Kişi';
+
+  @override
+  String get studentName => 'Öğrenci Adı';
+
+  @override
+  String get teacherName => 'Öğretmen Adı';
+
+  @override
+  String get courseName => 'Kurs Adı';
+
+  @override
+  String get className => 'Sınıf Adı';
+
+  @override
+  String get addStudentToClass => 'Öğrenciyi Sınıfa Ekle';
+
+  @override
+  String get facultyAndNetwork => 'Öğretim Üyeleri ve Ağ';
+
+  @override
+  String get educationalReels => 'Eğitici Reels';
+
+  @override
+  String get honors => 'Onurlar';
+
+  @override
+  String get academyFeed => 'Akademi Akışı';
+
+  @override
+  String get facultyNetwork => 'Öğretim Üyeleri ve Ağ';
+
+  @override
+  String get supportChat => 'Destek Sohbeti';
+
+  @override
+  String get instructorProfile => 'Eğitmen Profili';
+
+  @override
+  String get adminProfile => 'Yönetici Profili';
+
+  @override
+  String get totalVolume => 'Toplam Hacim';
+
+  @override
+  String get published => 'Yayınlandı';
+
+  @override
+  String get draft => 'Taslak';
+
+  @override
+  String get create => 'Oluştur';
+
+  @override
+  String get filter => 'Filtrele';
+
+  @override
+  String get courseTitle => 'Kurs Başlığı';
+
+  @override
+  String get courseDescription => 'Kurs Açıklaması';
+
+  @override
+  String get primaryInstructor => 'Ana Eğitmen';
+
+  @override
+  String get coInstructor => 'Yardımcı Eğitmen';
+
+  @override
+  String get selectCoInstructor => 'Yardımcı Eğitmen Seçin';
+
+  @override
+  String get runCourseSolo => 'Kursu tek başına yürüt';
+
+  @override
+  String get courseThumbnail => 'Kurs Küçük Resmi';
+
+  @override
+  String get publishCourse => 'Kursu Yayınla';
+
+  @override
+  String get makeVisibleToStudents => 'Akademi öğrencilerine görünür yap';
+
+  @override
+  String get creatingCourse => 'Kurs oluşturuluyor...';
+
+  @override
+  String get upload => 'Yükle';
+
+  @override
+  String get saveChanges => 'Değişiklikleri Kaydet';
+
+  @override
+  String get addLesson => 'Ders Ekle';
+
+  @override
+  String get lessonTitle => 'Ders Başlığı';
+
+  @override
+  String get lessonDuration => 'Süre';
+
+  @override
+  String get videoUrl => 'Video URL\'si';
+
+  @override
+  String get liveClasses => 'Canlı Dersler';
+
+  @override
+  String get reports => 'Raporlar';
+
+  @override
+  String get totalEarnings => 'Toplam Kazanç';
+
+  @override
+  String get activeStudents => 'Aktif Öğrenciler';
+
+  @override
+  String get activeCourses => 'Aktif Kurslar';
+
+  @override
+  String get activeClasses => 'Aktif Sınıflar';
+
+  @override
+  String get question => 'Soru';
+
+  @override
+  String get progress => 'İlerleme';
+
+  @override
+  String get payout => 'Ödeme';
+
+  @override
+  String get analytics => 'Analizler';
+
+  @override
+  String get classes => 'Sınıflar';
+
+  @override
+  String get students => 'Öğrenciler';
+
+  @override
+  String get questionBank => 'Soru Bankası';
+
+  @override
+  String get addNewQuestion => 'Yeni Soru Ekle';
+
+  @override
+  String get multipleChoice => 'Çoktan Seçmeli (4 Seçenek)';
+
+  @override
+  String get descriptive => 'Açıklamalı (Yazılı)';
+
+  @override
+  String get enterQuestionText => 'Soru metnini girin...';
+
+  @override
+  String get optionA => 'Seçenek A';
+
+  @override
+  String get optionB => 'Seçenek B';
+
+  @override
+  String get optionC => 'Seçenek C';
+
+  @override
+  String get optionD => 'Seçenek D';
+
+  @override
+  String get correctOption => 'Doğru Seçenek';
+
+  @override
+  String get saveQuestion => 'Soruyu Kaydet';
+
+  @override
+  String get currentInventory => 'Mevcut Sorular';
+
+  @override
+  String get noQuestionsAdded => 'Henüz soru eklenmedi.';
+
+  @override
+  String get totalQuestions => 'Toplam Soru';
+
+  @override
+  String get totalPoints => 'Toplam Puan';
+
+  @override
+  String get studentSubmissions => 'Öğrenci Gönderimleri';
+
+  @override
+  String get pendingReview => 'İnceleme Bekliyor';
+
+  @override
+  String get evaluate => 'Değerlendir';
+
+  @override
+  String get submitGrade => 'Notu Gönder';
+
+  @override
+  String get studentAnswer => 'Öğrenci Cevabı';
+
+  @override
+  String get teacherEvaluation => 'Öğretmen Değerlendirmesi';
+
+  @override
+  String get autoGraded => 'Otomatik Notlandırıldı (MCQ)';
+
+  @override
+  String get noSubmissionsFound => 'Gönderim bulunamadı.';
+
+  @override
+  String get gradesSubmittedSuccess =>
+      'Notlar ve geri bildirim başarıyla gönderildi!';
+
+  @override
+  String get tradeDate => 'İşlem Tarihi';
+
+  @override
+  String get symbol => 'Sembol';
+
+  @override
+  String get positionType => 'Pozisyon Türü';
+
+  @override
+  String get entryPrice => 'Giriş Fiyatı';
+
+  @override
+  String get exitPrice => 'Çıkış Fiyatı';
+
+  @override
+  String get stopLoss => 'Zarar Durdur';
+
+  @override
+  String get takeProfit => 'Kâr Al';
+
+  @override
+  String get lotSize => 'Lot Büyüklüğü';
+
+  @override
+  String get profitLoss => 'Kâr / Zarar';
+
+  @override
+  String get riskReward => 'Risk / Kazanç';
+
+  @override
+  String get strategy => 'Strateji';
+
+  @override
+  String get emotions => 'Duygular';
+
+  @override
+  String get chartImage => 'Grafik Görseli';
+
+  @override
+  String get teacherScore => 'Öğretmen Puanı';
+
+  @override
+  String get teacherFeedback => 'Öğretmen Geri Bildirimi';
+
+  @override
+  String get gradeTrade => 'İşlemi Değerlendir';
+
+  @override
+  String get forexAccessRequired => 'Forex Kursu Erişimi Gerekli';
+
+  @override
+  String get noTradesFound => 'Günlük kaydı bulunamadı.';
+
+  @override
+  String get grantAward => 'Ödül Ver';
+
+  @override
+  String get awardGrantedSuccess => 'Ödül başarıyla verildi!';
+
+  @override
+  String get selectStudent => 'Öğrenci Seç';
+
+  @override
+  String get selectAward => 'Ödül Seç';
+
+  @override
+  String get pointsRequired => 'Gerekli Puan';
+
+  @override
+  String get certificateDetails => 'Sertifika Detayları';
+
+  @override
+  String get verifyCertificate => 'Sertifikayı Doğrula';
+
+  @override
+  String get certificateIssued => 'Sertifika Verildi';
+
+  @override
+  String get noCertificatesFound => 'Sertifika bulunamadı.';
+
+  @override
+  String get aboutUs => 'Hakkımızda';
+
+  @override
+  String get faq => 'Sıkça Sorulan Sorular';
+
+  @override
+  String get personalInfo => 'Kişisel Bilgiler';
+
+  @override
+  String get profileUpdated => 'Profil başarıyla güncellendi!';
+
+  @override
+  String get systemStats => 'Sistem İstatistikleri';
+
+  @override
+  String get quickActions => 'Hızlı İşlemler';
+
+  @override
+  String get recentActivity => 'Son Etkinlik';
+
+  @override
+  String get addNewCourse => 'Yeni Kurs Ekle';
+
+  @override
+  String get addNewClass => 'Yeni Sınıf Ekle';
+
+  @override
+  String get addNewStudent => 'Yeni Öğrenci Ekle';
+
+  @override
+  String get addNewTeacher => 'Yeni Öğretmen Ekle';
+
+  @override
+  String get coursePricing => 'Kurs Fiyatlandırması';
+
+  @override
+  String get freeCourse => 'Ücretsiz Kurs';
+
+  @override
+  String get paidCourse => 'Ücretli Kurs';
+
+  @override
+  String get currency => 'Para Birimi';
+
+  @override
+  String get assignTeacher => 'Öğretmen Ata';
+
+  @override
+  String get selectClass => 'Sınıf Seç';
+
+  @override
+  String get totalAmount => 'Toplam Tutar';
+
+  @override
+  String get paymentStatus => 'Ödeme Durumu';
+
+  @override
+  String get paid => 'Ödendi';
+
+  @override
+  String get unpaid => 'Ödenmedi';
+
+  @override
+  String get invoiceId => 'Fatura No';
+
+  @override
+  String get tickets => 'Destek Biletleri';
+
+  @override
+  String get ticketPriority => 'Öncelik';
+
+  @override
+  String get high => 'Yüksek';
+
+  @override
+  String get medium => 'Orta';
+
+  @override
+  String get low => 'Düşük';
+
+  @override
+  String get typeMessage => 'Mesajınızı yazın...';
+
+  @override
+  String get option => 'Seçenek';
+
+  @override
+  String get saving => 'Kaydediliyor...';
+
+  @override
+  String get aboutFacultyHelp => 'Hakkında ve Eğitmen Yardımı';
+
+  @override
+  String get aboutFacultyHelpDesc =>
+      'Safi Academy eğitmen portalı, kurallar ve resmi kanallar.';
+
+  @override
+  String get aboutSafiAcademy => 'Safi Academy Hakkında';
+
+  @override
+  String get teacherAboutWelcomeText =>
+      'Safi Academy Eğitmen Portalı\'na hoş geldiniz. Özveriniz, küresel eğitimin ve profesyonel ticaret uzmanlığının geleceğini şekillendiriyor.';
+
+  @override
+  String get facultyEmail => 'Eğitmen E-postası';
+
+  @override
+  String get managePreferencesSubtitle =>
+      'Uygulama tercihlerinizi, güvenliğinizi ve kimlik bilgilerinizi yönetin.';
+
+  @override
+  String get enterNewPassword => 'Güçlü bir şifre girin (en az 6 karakter)...';
+
+  @override
+  String get errorChangingPassword => 'Şifre değiştirme hatası';
+
+  @override
+  String get faceOrTouchId => 'Face ID veya Touch ID';
+
+  @override
+  String get appPinLock => 'Uygulama PIN Kilidi';
+
+  @override
+  String get setAppPinLock => 'Uygulama PIN Kilidi Ayarla';
+
+  @override
+  String get appPreferences => 'Uygulama Tercihleri';
+
+  @override
+  String get secureSignOut => 'GÜVENLİ ÇIKIŞ';
+
+  @override
+  String get instructorProfileSubtitle =>
+      'Eğitmen kimliğinizi ve profesyonel biyografinizi yönetin.';
+
+  @override
+  String get personalProfessionalIdentity => 'Kişisel ve Mesleki Kimlik';
+
+  @override
+  String get avatarUpdatedSuccess => 'Profil resmi başarıyla güncellendi! ✅';
+
+  @override
+  String get avatarUploadFailed => 'Profil resmi yüklenemedi.';
+
+  @override
+  String get instructorProfileUpdated =>
+      'Eğitmen profili başarıyla güncellendi! ✅';
+
+  @override
+  String get databaseSaveError => 'Veritabanı hatası. Profil kaydedilemedi.';
+
+  @override
+  String get countryRegion => 'Ülke / Bölge';
+
+  @override
+  String get professionalBio => 'Profesyonel Biyografi / Başlık';
+
+  @override
+  String get savingChanges => 'DEĞİŞİKLİKLER KAYDEDİLİYOR...';
+
+  @override
+  String get saveProfileDetails => 'PROFİL BİLGİLERİNİ KAYDET 🚀';
+
+  @override
+  String get notProvided => 'Belirtilmedi';
+
+  @override
+  String get taskDetailsAndAlert => 'Görev Detayları ve Uyarı';
+
+  @override
+  String get deleteTask => 'Görevi Sil';
+
+  @override
+  String get deleteTaskConfirm =>
+      'Bu görevi silmek istediğinizden emin misiniz?';
+
+  @override
+  String get taskDeleted => 'Görev silindi.';
+
+  @override
+  String get taskOverdueAlert =>
+      'UYARI: Bu görevin süresi yaklaşıyor veya geçti!';
+
+  @override
+  String get taskInformation => 'Görev Bilgisi';
+
+  @override
+  String get dueDateAndTime => 'Bitiş Tarihi ve Saati';
+
+  @override
+  String get noDueDateSet =>
+      'Bitiş tarihi belirlenmedi (Belirlemek için tıklayın)';
+
+  @override
+  String get markAsCompleted => 'Tamamlandı olarak işaretle';
+
+  @override
+  String get createdAtLabel => 'Oluşturulma Tarihi';
+
+  @override
+  String get updateTaskBtn => 'GÖREVİ GÜNCELLE 💾';
+
+  @override
+  String get enabled => 'Etkin';
+
+  @override
+  String get disabled => 'Devre Dışı';
+
+  @override
+  String get allFieldsRequired => 'Lütfen gerekli tüm alanları doldurun.';
+
+  @override
+  String get savedSuccessfully => 'Başarıyla kaydedildi! ✅';
+
+  @override
+  String get failedToSave => 'Kaydedilemedi.';
+
+  @override
+  String get adminCommandCenter => 'KOMUTA MERKEZİ';
+
+  @override
+  String get selectManagementModule => 'Bir yönetim modülü seçin';
+
+  @override
+  String get module => 'Modül';
+
+  @override
+  String get administrator => 'YÖNETİCİ';
+
+  @override
+  String get signOutSession => 'OTURUMU KAPAT';
+
+  @override
+  String get adminInitializing => 'KOMUTA MERKEZİ BAŞLATILIYOR...';
+
+  @override
+  String get createNewContent => 'Yeni İçerik Oluştur 🚀';
+
+  @override
+  String get uploadEducationalReel => 'Eğitici Reel Yükle 🎬';
+
+  @override
+  String get shareReelSubtitle =>
+      'Kısa ticaret veya kodlama videoları paylaşın';
+
+  @override
+  String get createFeedPost => 'Akış Gönderisi Oluştur 📝';
+
+  @override
+  String get sharePostSubtitle =>
+      'Akademi akışında metin, soru veya görsel paylaşın';
+
+  @override
+  String get systemCommandCenter => 'SİSTEM KOMUTA MERKEZİ';
+
+  @override
+  String get adminDashboardSubtitle =>
+      'Canlı performans genel bakışı ve küresel akademi kontrolü.';
+
+  @override
+  String get totalFaculty => 'Toplam Eğitmen';
+
+  @override
+  String get systemMetrics => 'SİSTEM METRİKLERİ';
+
+  @override
+  String get grossRevenue => 'Brüt Gelir';
+
+  @override
+  String get pendingPayouts => 'Bekleyen Ödemeler';
+
+  @override
+  String get recentTransactions => 'SON İŞLEMLER';
+
+  @override
+  String get noRecentTransactions => 'Kayıtlı son finansal işlem bulunamadı.';
+
+  @override
+  String get studentRegistry => 'ÖĞRENCİ KAYITLARI';
+
+  @override
+  String get manageStudentsSubtitle =>
+      'Akademik performansı, puanları, cüzdan bakiyelerini ve rolleri izleyin.';
+
+  @override
+  String get totalFunds => 'Toplam Bakiye';
+
+  @override
+  String get manageProfile => 'Profili Yönet';
+
+  @override
+  String get studentProfileNotFound => 'Öğrenci Profili Bulunamadı';
+
+  @override
+  String get backToStudents => 'Öğrencilere Dön';
+
+  @override
+  String get personalDetailsLocked => 'KİŞİSEL BİLGİLER (KİLİTLİ)';
+
+  @override
+  String get adminControls =>
+      'YÖNETİCİ KONTROLLERİ VE VERİTABANI SENKRONİZASYONU';
+
+  @override
+  String get academicScore => 'AKADEMİK PUAN (PTS)';
+
+  @override
+  String get systemRolePromotion => 'SİSTEM ROLÜ VE TERFİ';
+
+  @override
+  String get roleStudent => 'Öğrenci (Normal Erişim)';
+
+  @override
+  String get roleTeacher => 'Eğitmen / Mentor';
+
+  @override
+  String get roleAdmin => 'Yönetici (Tam Erişim)';
+
+  @override
+  String get syncChangesToDatabase => 'DEĞİŞİKLİKLERİ VERİTABANINA KAYDET 🚀';
+
+  @override
+  String get adminSyncSuccess =>
+      'Yönetici değişiklikleri başarıyla senkronize edildi! ✅';
+
+  @override
+  String get failedToUpdateDatabase => 'Veritabanı güncellenemedi';
+
+  @override
+  String get facultyRegistry => 'EĞİTMEN KAYITLARI';
+
+  @override
+  String get manageFaculty => 'Eğitmenleri Yönet';
+
+  @override
+  String get manageFacultySubtitle =>
+      'Eğitmen performansını, atanan sınıfları ve nitelikleri izleyin.';
+
+  @override
+  String get searchInstructors => 'Eğitmen ara...';
+
+  @override
+  String get noFacultyFound => 'Eğitmen bulunamadı.';
+
+  @override
+  String get teacherDetails => 'Eğitmen Detayları';
+
+  @override
+  String get assignedClasses => 'Atanan Sınıflar';
+
+  @override
+  String get courseRepository => 'KURS DEPOSU';
+
+  @override
+  String get manageCoursesSubtitle =>
+      'Akademi kurslarını oluşturun, düzenleyin ve yayınlayın.';
+
+  @override
+  String get academicClasses => 'AKADEMİK SINIFLAR';
+
+  @override
+  String get createNewClass => 'Yeni Sınıf Oluştur';
+
+  @override
+  String get enrolledStudents => 'Kayıtlı Öğrenciler';
+
+  @override
+  String get addStudents => 'Öğrenci Ekle';
+
+  @override
+  String get treasuryFinance => 'HAZİNE VE FİNANS';
+
+  @override
+  String get financialOverview => 'Finansal Genel Bakış ve Ödemeler';
+
+  @override
+  String get approvePayout => 'Ödemeyi Onayla';
+
+  @override
+  String get rejectPayout => 'Ödemeyi Reddet';
+
+  @override
+  String get honorsAndAwards => 'Ödüller ve Başarılar';
+
+  @override
+  String get helpDeskTickets => 'Destek Talepleri';
+
+  @override
+  String get replyToTicket => 'Talebi Yanıtla';
+
+  @override
+  String get systemSettings => 'Sistem Ayarları';
 }

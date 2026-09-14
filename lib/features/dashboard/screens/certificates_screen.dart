@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/language_service.dart';
 import 'certificates_detail_screen.dart';
 
 class CertificateItem {
@@ -89,7 +90,7 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
   Widget build(BuildContext context) {
     return AcademyLoadingOverlay(
       isLoading: isLoading,
-      message: "LOADING CERTIFICATES...",
+      message: context.l10n.loading,
       child: Scaffold(
         backgroundColor: surfaceWhite,
         body: Container(
@@ -134,13 +135,13 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
                           child: const Icon(Icons.workspace_premium_rounded, color: primaryPink, size: 24),
                         ),
                         const SizedBox(width: 14),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("My Certificates", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                              SizedBox(height: 3),
-                              Text("View, download, and share your official academy achievements.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
+                              Text(context.l10n.certificates, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                              const SizedBox(height: 3),
+                              Text(context.l10n.achievements, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
                             ],
                           ),
                         ),
@@ -149,7 +150,7 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  const Text("Earned Credentials", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                  Text(context.l10n.certificates, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                   const SizedBox(height: 12),
 
                   certificates.isNotEmpty
@@ -200,7 +201,7 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                               decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                                              child: const Text("Verified Certificate ✅", style: TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                              child: Text("${context.l10n.certificates} ✓", style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
                                             ),
                                             Text("ID: ${cert.certificateCode}", style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
                                           ],
@@ -208,7 +209,7 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
                                         const SizedBox(height: 12),
                                         Text(cert.courseTitle, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
                                         const SizedBox(height: 4),
-                                        Text("Issued on: ${cert.issueDate.split('T')[0]}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                        Text("${context.l10n.schedule}: ${cert.issueDate.split('T')[0]}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                                         const SizedBox(height: 16),
                                         Row(
                                           children: [
@@ -222,7 +223,7 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
                                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                                 ),
                                                 icon: const Icon(Icons.visibility_rounded, size: 16),
-                                                label: const Text("View In-App 👁️", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                                                label: Text(context.l10n.details, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
                                                 onPressed: hasUrl
                                                     ? () {
                                                         Navigator.push(
@@ -246,10 +247,10 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
                                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                                 ),
                                                 icon: const Icon(Icons.share_rounded, size: 16),
-                                                label: const Text("Share ID 🔗", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                                                label: Text(context.l10n.shareCertificate, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
                                                 onPressed: () {
                                                   ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(content: Text("Certificate ID ${cert.certificateCode} copied to clipboard!")),
+                                                    SnackBar(content: Text(context.l10n.copiedToClipboard)),
                                                   );
                                                 },
                                               ),
@@ -272,7 +273,7 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: cardBorder, width: 1.5),
                           ),
-                          child: const Text("No certificates earned yet. Complete courses to get certified!", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                          child: Text(context.l10n.noCoursesFound, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
                         ),
                   const SizedBox(height: 40),
                 ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 import 'teacher_add_student_screen.dart';
 
 class EnrolledStudentItem {
@@ -167,16 +168,16 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
       builder: (context) => AlertDialog(
         backgroundColor: surfaceWhite,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text("Remove Student", style: TextStyle(color: textDark, fontSize: 15, fontWeight: FontWeight.w900)),
-        content: Text("Remove ${student.firstName} from this classroom?", style: const TextStyle(color: textGrey, fontSize: 12)),
+        title: Text(context.l10n.removeStudent, style: const TextStyle(color: textDark, fontSize: 15, fontWeight: FontWeight.w900)),
+        content: Text("${context.l10n.confirmAction} (${student.firstName})", style: const TextStyle(color: textGrey, fontSize: 12)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold)),
+            child: Text(context.l10n.cancel, style: const TextStyle(color: textGrey, fontWeight: FontWeight.bold)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text("Remove", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+            child: Text(context.l10n.removeStudent, style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -257,7 +258,7 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
         centerTitle: true,
         iconTheme: const IconThemeData(color: textDark),
         title: Text(
-          "Roster: $className",
+          "${context.l10n.classes}: $className",
           style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900),
         ),
         bottom: PreferredSize(
@@ -313,9 +314,9 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Text("Class Roster", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
+                                      Text(context.l10n.allStudents, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
                                       const SizedBox(height: 3),
-                                      Text("${enrolledStudents.length} Students Enrolled", style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w600)),
+                                      Text("${enrolledStudents.length} ${context.l10n.students}", style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w600)),
                                     ],
                                   ),
                                 ],
@@ -330,7 +331,7 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 ),
                                 icon: const Icon(Icons.person_add_rounded, size: 18),
-                                label: const Text("Add Student", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                label: Text(context.l10n.addStudent, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                 onPressed: () {
                                   Navigator.push(
                                     context,
@@ -345,7 +346,7 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                     ),
                     const SizedBox(height: 24),
 
-                    const Text("Enrolled Students Directory", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                    Text(context.l10n.students, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                     const SizedBox(height: 12),
 
                     enrolledStudents.isNotEmpty
@@ -406,7 +407,7 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                       ),
                                       onPressed: () => setState(() => selectedStudent = student),
-                                      child: const Text("Manage", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                      child: Text(context.l10n.viewDetails, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                     ),
                                   ],
                                 ),
@@ -421,13 +422,13 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                               borderRadius: BorderRadius.circular(24),
                               border: Border.all(color: cardBorder),
                             ),
-                            child: const Column(
+                            child: Column(
                               children: [
-                                Icon(Icons.group_off_rounded, size: 36, color: textGrey),
-                                SizedBox(height: 10),
-                                Text("No Students Enrolled", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
-                                SizedBox(height: 4),
-                                Text("No students are currently enrolled in this classroom.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                                const Icon(Icons.group_off_rounded, size: 36, color: textGrey),
+                                const SizedBox(height: 10),
+                                Text(context.l10n.noStudentsFound, style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
+                                const SizedBox(height: 4),
+                                Text(context.l10n.noDataFound, style: const TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
                               ],
                             ),
                           ),
@@ -476,18 +477,18 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                           ],
                         ),
                         const SizedBox(height: 10),
-                        Text("Email: ${selectedStudent!.email}", style: const TextStyle(color: textGrey, fontSize: 11)),
-                        Text("Phone: ${selectedStudent!.phoneNumber}", style: const TextStyle(color: textGrey, fontSize: 11)),
-                        Text("Country: ${selectedStudent!.country}", style: const TextStyle(color: textGrey, fontSize: 11)),
+                        Text("${context.l10n.email}: ${selectedStudent!.email}", style: const TextStyle(color: textGrey, fontSize: 11)),
+                        Text("${context.l10n.phone}: ${selectedStudent!.phoneNumber}", style: const TextStyle(color: textGrey, fontSize: 11)),
+                        Text("${context.l10n.country}: ${selectedStudent!.country}", style: const TextStyle(color: textGrey, fontSize: 11)),
                         const SizedBox(height: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(color: Colors.amber.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
-                          child: Text("Total Score: ${selectedStudent!.totalScore} Pts",
+                          child: Text("${context.l10n.score}: ${selectedStudent!.totalScore}",
                               style: const TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.w900)),
                         ),
                         const SizedBox(height: 16),
-                        const Text("Add Points", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
+                        Text(context.l10n.score, style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 6),
                         Row(
                           children: [
@@ -497,7 +498,7 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                                 keyboardType: TextInputType.number,
                                 style: const TextStyle(color: textDark, fontSize: 12),
                                 decoration: InputDecoration(
-                                  hintText: "Enter points...",
+                                  hintText: context.l10n.score,
                                   hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                                   filled: true,
                                   fillColor: cardBorder.withOpacity(0.5),
@@ -518,7 +519,7 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               ),
                               onPressed: isScoring ? null : _addScore,
-                              child: const Text("Add", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                              child: Text(context.l10n.add, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                             ),
                           ],
                         ),
@@ -533,7 +534,7 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                             icon: const Icon(Icons.person_remove_rounded, size: 16),
-                            label: const Text("Remove from Class", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                            label: Text(context.l10n.removeStudent, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                             onPressed: () => _removeStudent(selectedStudent!),
                           ),
                         ),

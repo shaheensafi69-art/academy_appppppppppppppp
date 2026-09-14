@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class AnnouncementItem {
   final String id;
@@ -150,13 +151,13 @@ class _TeacherAnnouncementsScreenState extends State<TeacherAnnouncementsScreen>
                   child: const Icon(Icons.campaign_rounded, color: primaryPink, size: 26),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Official Announcements", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                      SizedBox(height: 3),
-                      Text("Stay updated with faculty notices, system upgrades, and academy news.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                      Text(context.l10n.announcements, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                      const SizedBox(height: 3),
+                      Text(context.l10n.notices, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                     ],
                   ),
                 ),
@@ -216,7 +217,7 @@ class _TeacherAnnouncementsScreenState extends State<TeacherAnnouncementsScreen>
                                         color: lightPinkBg,
                                         borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: const Text("NEW UPDATE", style: TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900)),
+                                      child: Text(context.l10n.active.toUpperCase(), style: const TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900)),
                                     ),
                                 ],
                               ),
@@ -232,7 +233,7 @@ class _TeacherAnnouncementsScreenState extends State<TeacherAnnouncementsScreen>
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  "Target: ${item.targetRole == 'all' ? 'Entire Academy' : item.targetRole}",
+                                  "${context.l10n.targetAudience}: ${item.targetRole == 'all' ? context.l10n.allUsers : item.targetRole}",
                                   style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.bold),
                                 ),
                               ),
@@ -249,13 +250,11 @@ class _TeacherAnnouncementsScreenState extends State<TeacherAnnouncementsScreen>
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: cardBorder),
                       ),
-                      child: const Column(
+                      child: Column(
                         children: [
-                          Icon(Icons.notifications_off_rounded, size: 36, color: textGrey),
-                          SizedBox(height: 10),
-                          Text("No Announcements Yet", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
-                          SizedBox(height: 4),
-                          Text("You're all caught up! Future faculty updates will appear here.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                          const Icon(Icons.notifications_off_rounded, size: 36, color: textGrey),
+                          const SizedBox(height: 10),
+                          Text(context.l10n.noDataFound, style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
                         ],
                       ),
                     ),

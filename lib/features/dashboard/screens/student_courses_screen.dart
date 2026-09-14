@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/language_service.dart';
 import 'student_course_detail_screen.dart';
 
 class CourseModel {
@@ -210,7 +211,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
 
     return AcademyLoadingOverlay(
       isLoading: isLoading,
-      message: "LOADING ACADEMY HUB...",
+      message: context.l10n.loading,
       child: Scaffold(
         backgroundColor: surfaceWhite,
         body: SafeArea(
@@ -247,13 +248,13 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                         child: const Icon(Icons.menu_book_rounded, color: primaryPink, size: 24),
                       ),
                       const SizedBox(width: 14),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Academy Learning Hub", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                            SizedBox(height: 3),
-                            Text("Explore masterclasses, view your enrollments & upgrade skills.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                            Text(context.l10n.academyLearningHub, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                            const SizedBox(height: 3),
+                            Text(context.l10n.academyHubSubtitle, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                           ],
                         ),
                       ),
@@ -283,7 +284,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                               borderRadius: BorderRadius.circular(14),
                               boxShadow: activeTab == "explore" ? [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))] : [],
                             ),
-                            child: Text("Explore All (${allCourses.length})", style: TextStyle(color: activeTab == "explore" ? primaryPink : textGrey, fontSize: 11, fontWeight: FontWeight.w900)),
+                            child: Text("${context.l10n.exploreAll} (${allCourses.length})", style: TextStyle(color: activeTab == "explore" ? primaryPink : textGrey, fontSize: 11, fontWeight: FontWeight.w900)),
                           ),
                         ),
                       ),
@@ -299,7 +300,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                               borderRadius: BorderRadius.circular(14),
                               boxShadow: activeTab == "my_courses" ? [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))] : [],
                             ),
-                            child: Text("My Enrolled (${enrolledCourses.length})", style: TextStyle(color: activeTab == "my_courses" ? primaryPink : textGrey, fontSize: 11, fontWeight: FontWeight.w900)),
+                            child: Text("${context.l10n.myEnrolled} (${enrolledCourses.length})", style: TextStyle(color: activeTab == "my_courses" ? primaryPink : textGrey, fontSize: 11, fontWeight: FontWeight.w900)),
                           ),
                         ),
                       ),
@@ -314,7 +315,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                   onChanged: (val) => setState(() => searchQuery = val),
                   style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                   decoration: InputDecoration(
-                    hintText: "Search masterclasses by title, category, instructor...",
+                    hintText: context.l10n.searchCourses,
                     hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                     prefixIcon: const Icon(Icons.search_rounded, color: primaryPink, size: 20),
                     suffixIcon: searchQuery.isNotEmpty
@@ -407,7 +408,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                                         child: Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                           decoration: BoxDecoration(color: Colors.green.shade700, borderRadius: BorderRadius.circular(8)),
-                                          child: Text("PROGRESS: ${course.progressPercentage}% ✓", style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.white)),
+                                          child: Text("${context.l10n.inProgress}: ${course.progressPercentage}% ✓", style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.white)),
                                         ),
                                       ),
                                   ],
@@ -419,13 +420,13 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                                     children: [
                                       Text(course.title, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15), maxLines: 2, overflow: TextOverflow.ellipsis),
                                       const SizedBox(height: 4),
-                                      Text("Instructor: ${course.instructor} • ${course.language}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                                      Text("${context.l10n.instructor}: ${course.instructor} • ${course.language}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                                       const SizedBox(height: 14),
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            course.price > 0 ? "\$${course.price.toStringAsFixed(2)}" : "FREE",
+                                            course.price > 0 ? "\$${course.price.toStringAsFixed(2)}" : context.l10n.free,
                                             style: TextStyle(color: course.price > 0 ? primaryPink : Colors.green.shade700, fontWeight: FontWeight.w900, fontSize: 14),
                                           ),
                                           ElevatedButton(
@@ -445,7 +446,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                                                 _fetchCoursesAndData();
                                               }
                                             },
-                                            child: Text(isAlreadyEnrolled ? "View Hub" : "View Details", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                                            child: Text(isAlreadyEnrolled ? context.l10n.viewAll : context.l10n.details, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
                                           ),
                                         ],
                                       ),
@@ -465,7 +466,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: cardBorder, width: 1.5),
                         ),
-                        child: const Text("No masterclasses found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                        child: Text(context.l10n.noCoursesFound, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
                       ),
                 const SizedBox(height: 40),
               ],

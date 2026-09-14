@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
+import '../../../core/services/language_service.dart';
 import 'reels_viewer_screen.dart';
 
 class UploadReelScreen extends StatefulWidget {
@@ -92,15 +93,15 @@ class _UploadReelScreenState extends State<UploadReelScreen> {
 
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter a title for your Reel! 🎬")),
+        SnackBar(content: Text("${context.l10n.fillRequiredFields} 🎬")),
       );
       return;
     }
 
     if (videoUrl.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please select a video file or enter a valid URL! 📹"),
+        SnackBar(
+          content: Text("${context.l10n.selectVideo} 📹"),
         ),
       );
       return;
@@ -124,8 +125,8 @@ class _UploadReelScreenState extends State<UploadReelScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Reel published successfully! 🎉"),
+          SnackBar(
+            content: Text(context.l10n.reelPublishedSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -141,7 +142,7 @@ class _UploadReelScreenState extends State<UploadReelScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Error publishing reel: $e"),
+            content: Text("${context.l10n.error}: $e"),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -196,9 +197,9 @@ class _UploadReelScreenState extends State<UploadReelScreen> {
                         strokeWidth: 2,
                       ),
                     )
-                  : const Text(
-                      "PUBLISH",
-                      style: TextStyle(
+                  : Text(
+                      context.l10n.publish,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
@@ -228,17 +229,17 @@ class _UploadReelScreenState extends State<UploadReelScreen> {
                   ),
                 ),
                 child: isUploadingFile
-                    ? const Column(
+                    ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          CircularProgressIndicator(
+                          const CircularProgressIndicator(
                             color: primaryPink,
                             strokeWidth: 3,
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           Text(
-                            "Uploading Video to Supabase Storage... ⏳",
-                            style: TextStyle(
+                            "${context.l10n.uploading}... ⏳",
+                            style: const TextStyle(
                               color: primaryPink,
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
@@ -263,9 +264,9 @@ class _UploadReelScreenState extends State<UploadReelScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          const Text(
-                            "Video Uploaded Successfully! 🎉",
-                            style: TextStyle(
+                          Text(
+                            context.l10n.videoReadyToPublish,
+                            style: const TextStyle(
                               color: textDark,
                               fontWeight: FontWeight.w900,
                               fontSize: 14,
@@ -294,9 +295,9 @@ class _UploadReelScreenState extends State<UploadReelScreen> {
                             ),
                           ),
                           const SizedBox(height: 14),
-                          const Text(
-                            "Select Reel Video File 🎥",
-                            style: TextStyle(
+                          Text(
+                            context.l10n.selectVideo,
+                            style: const TextStyle(
                               color: primaryPink,
                               fontWeight: FontWeight.w900,
                               fontSize: 15,
@@ -314,9 +315,9 @@ class _UploadReelScreenState extends State<UploadReelScreen> {
             const SizedBox(height: 24),
 
             // عنوان ریلز
-            const Text(
-              "Reel Title *",
-              style: TextStyle(
+            Text(
+              "${context.l10n.reelTitle} *",
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: textDark,
@@ -353,9 +354,9 @@ class _UploadReelScreenState extends State<UploadReelScreen> {
             const SizedBox(height: 20),
 
             // دسته‌بندی
-            const Text(
-              "Category",
-              style: TextStyle(
+            Text(
+              context.l10n.categories,
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: textDark,
@@ -389,9 +390,9 @@ class _UploadReelScreenState extends State<UploadReelScreen> {
             const SizedBox(height: 20),
 
             // توضیحات (اختیاری)
-            const Text(
-              "Description (Optional)",
-              style: TextStyle(
+            Text(
+              context.l10n.descriptionOptional,
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: textDark,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class SubmissionItem {
   final String submissionId;
@@ -247,9 +248,9 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
-                                  child: Text("Max Score: ${assignmentInfo?['max_score'] ?? 100} Pts", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w900, fontSize: 10)),
+                                  child: Text("${context.l10n.score}: ${assignmentInfo?['max_score'] ?? 100}", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w900, fontSize: 10)),
                                 ),
-                                Text("Due: ${assignmentInfo?['deadline']?.toString().split('T')[0] ?? 'No Deadline'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                Text("${context.l10n.dueDate}: ${assignmentInfo?['deadline']?.toString().split('T')[0] ?? ''}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ],
@@ -257,7 +258,7 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      const Text("Received Submissions", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                      Text(context.l10n.submissions, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
                       const SizedBox(height: 12),
 
                       submissions.isNotEmpty
@@ -317,7 +318,7 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                                               borderRadius: BorderRadius.circular(8),
                                             ),
                                             child: Text(
-                                              isGraded ? "Graded (${sub.grade})" : "● Pending",
+                                              isGraded ? "${context.l10n.grade} (${sub.grade})" : "● ${context.l10n.pendingApprovals}",
                                               style: TextStyle(
                                                 color: isGraded ? Colors.green.shade700 : primaryPink,
                                                 fontSize: 9,
@@ -336,15 +337,15 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                                           sub.fileUrl != null
                                               ? GestureDetector(
                                                   onTap: () => _launchURL(sub.fileUrl!),
-                                                  child: const Row(
+                                                  child: Row(
                                                     children: [
-                                                      Icon(Icons.folder_open_rounded, size: 14, color: Colors.blueAccent),
-                                                      SizedBox(width: 5),
-                                                      Text("View Attached File", style: TextStyle(color: Colors.blueAccent, fontSize: 11, fontWeight: FontWeight.w900)),
+                                                      const Icon(Icons.folder_open_rounded, size: 14, color: Colors.blueAccent),
+                                                      const SizedBox(width: 5),
+                                                      Text(context.l10n.viewDetails, style: const TextStyle(color: Colors.blueAccent, fontSize: 11, fontWeight: FontWeight.w900)),
                                                     ],
                                                   ),
                                                 )
-                                              : const Text("No file attached", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                              : Text(context.l10n.noDataFound, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                                           ElevatedButton(
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: primaryPink,
@@ -354,7 +355,7 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                             ),
                                             onPressed: () => _openGradeModal(sub),
-                                            child: const Text("Evaluate", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                            child: Text(context.l10n.gradeSubmission, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                           ),
                                         ],
                                       ),
@@ -371,13 +372,13 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                                 borderRadius: BorderRadius.circular(24),
                                 border: Border.all(color: cardBorder),
                               ),
-                              child: const Column(
+                              child: Column(
                                 children: [
-                                  Icon(Icons.folder_off_rounded, size: 36, color: textGrey),
-                                  SizedBox(height: 10),
-                                  Text("No Submissions", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
-                                  SizedBox(height: 4),
-                                  Text("No student submissions received yet.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                                  const Icon(Icons.folder_off_rounded, size: 36, color: textGrey),
+                                  const SizedBox(height: 10),
+                                  Text(context.l10n.submissions, style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
+                                  const SizedBox(height: 4),
+                                  Text(context.l10n.noDataFound, style: const TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
                                 ],
                               ),
                             ),
@@ -415,7 +416,7 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
-                              child: Text("Evaluate Work: ${selectedSubmission!.firstName}",
+                              child: Text("${context.l10n.gradeSubmission}: ${selectedSubmission!.firstName}",
                                   style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis),
@@ -427,14 +428,14 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        const Text("Award Points *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                        Text("${context.l10n.score} *", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 6),
                         TextField(
                           controller: _gradeController,
                           keyboardType: TextInputType.number,
                           style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                           decoration: InputDecoration(
-                            hintText: "Score (e.g. 95)",
+                            hintText: context.l10n.score,
                             hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                             filled: true,
                             fillColor: cardBorder.withValues(alpha: 0.5),
@@ -445,14 +446,14 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        const Text("Teacher Feedback", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                        Text(context.l10n.feedback, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 6),
                         TextField(
                           controller: _feedbackController,
                           maxLines: 3,
                           style: const TextStyle(color: textDark, fontSize: 12),
                           decoration: InputDecoration(
-                            hintText: "Constructive comments...",
+                            hintText: context.l10n.feedback,
                             hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                             filled: true,
                             fillColor: cardBorder.withValues(alpha: 0.5),
@@ -469,7 +470,7 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                               child: TextButton(
                                 style: TextButton.styleFrom(foregroundColor: textGrey),
                                 onPressed: () => setState(() => selectedSubmission = null),
-                                child: const Text("Cancel", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                child: Text(context.l10n.cancel, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -483,7 +484,7 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                                 ),
                                 onPressed: isSavingGrade ? null : _saveGrade,
-                                child: Text(isSavingGrade ? "Saving..." : "Save Grade", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                child: Text(isSavingGrade ? "..." : context.l10n.saveChanges, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                               ),
                             ),
                           ],

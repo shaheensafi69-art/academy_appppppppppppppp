@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class TeacherCreateCourseScreen extends StatefulWidget {
   const TeacherCreateCourseScreen({super.key});
@@ -143,9 +144,9 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    "Select Co-Instructor",
-                    style: TextStyle(
+                  Text(
+                    context.l10n.selectCoInstructor,
+                    style: const TextStyle(
                       color: textDark,
                       fontWeight: FontWeight.w900,
                       fontSize: 16,
@@ -156,10 +157,6 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
-              ),
-              const Text(
-                "Choose a faculty member to co-teach this course.",
-                style: TextStyle(color: textGrey, fontSize: 11),
               ),
               const SizedBox(height: 16),
               ListTile(
@@ -172,17 +169,17 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                     size: 20,
                   ),
                 ),
-                title: const Text(
-                  "None (No Co-Instructor)",
-                  style: TextStyle(
+                title: Text(
+                  context.l10n.runCourseSolo,
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
                     color: textDark,
                   ),
                 ),
-                subtitle: const Text(
-                  "Run course solo",
-                  style: TextStyle(fontSize: 10, color: textGrey),
+                subtitle: Text(
+                  context.l10n.primaryInstructor,
+                  style: const TextStyle(fontSize: 10, color: textGrey),
                 ),
                 onTap: () {
                   setState(() => selectedCoInstructor = null);
@@ -340,9 +337,9 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: textDark),
-        title: const Text(
-          "Create New Course",
-          style: TextStyle(
+        title: Text(
+          context.l10n.createCourse,
+          style: const TextStyle(
             color: textDark,
             fontSize: 14,
             fontWeight: FontWeight.w900,
@@ -363,9 +360,9 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Course Title *",
-                    style: TextStyle(
+                  Text(
+                    "${context.l10n.courseTitle} *",
+                    style: const TextStyle(
                       color: textGrey,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -380,7 +377,7 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                     decoration: InputDecoration(
-                      hintText: "e.g. Advanced AI Trading Masterclass",
+                      hintText: context.l10n.courseTitle,
                       hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                       filled: true,
                       fillColor: cardBorder.withOpacity(0.5),
@@ -407,9 +404,9 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  const Text(
-                    "Detailed Description",
-                    style: TextStyle(
+                  Text(
+                    context.l10n.courseDescription,
+                    style: const TextStyle(
                       color: textGrey,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -421,7 +418,7 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                     maxLines: 4,
                     style: const TextStyle(color: textDark, fontSize: 12),
                     decoration: InputDecoration(
-                      hintText: "What will students learn in this course...",
+                      hintText: context.l10n.courseDescription,
                       hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                       filled: true,
                       fillColor: cardBorder.withOpacity(0.5),
@@ -456,9 +453,9 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  "Category",
-                                  style: TextStyle(
+                                Text(
+                                  context.l10n.category,
+                                  style: const TextStyle(
                                     color: textGrey,
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -512,9 +509,9 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  "Price (USD)",
-                                  style: TextStyle(
+                                Text(
+                                  "${context.l10n.price} (USD)",
+                                  style: const TextStyle(
                                     color: textGrey,
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -571,9 +568,9 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  const Text(
-                    "Language",
-                    style: TextStyle(
+                  Text(
+                    context.l10n.language,
+                    style: const TextStyle(
                       color: textGrey,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -622,9 +619,9 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  const Text(
-                    "Course Thumbnail Image",
-                    style: TextStyle(
+                  Text(
+                    context.l10n.courseThumbnail,
+                    style: const TextStyle(
                       color: textGrey,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -708,7 +705,7 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                                         setState(() => isUploadingThumb = val),
                                   ),
                             child: Text(
-                              isUploadingThumb ? "..." : "Upload",
+                              isUploadingThumb ? "..." : context.l10n.upload,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 11,
@@ -749,9 +746,9 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                "PRIMARY INSTRUCTOR (YOU)",
-                                style: TextStyle(
+                              Text(
+                                context.l10n.primaryInstructor.toUpperCase(),
+                                style: const TextStyle(
                                   color: primaryPink,
                                   fontSize: 8,
                                   fontWeight: FontWeight.w900,
@@ -786,10 +783,9 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // منوی کشویی فوق‌العاده زیبا و گرافیکی برای انتخاب استاد دوم
-                  const Text(
-                    "Co-Instructor Selection (Optional)",
-                    style: TextStyle(
+                  Text(
+                    context.l10n.coInstructor,
+                    style: const TextStyle(
                       color: textDark,
                       fontWeight: FontWeight.w900,
                       fontSize: 13,
@@ -837,7 +833,7 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                                   selectedCoInstructor != null
                                       ? "${selectedCoInstructor!['first_name'] ?? ''} ${selectedCoInstructor!['last_name'] ?? ''}"
                                             .trim()
-                                      : "Select Co-Instructor (Optional)",
+                                      : context.l10n.selectCoInstructor,
                                   style: TextStyle(
                                     color: selectedCoInstructor != null
                                         ? textDark
@@ -851,7 +847,7 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                                   selectedCoInstructor != null
                                       ? (selectedCoInstructor!['bio'] ??
                                             'Faculty Member')
-                                      : "Tap to choose from faculty list",
+                                      : context.l10n.faculty,
                                   style: const TextStyle(
                                     color: textGrey,
                                     fontSize: 10,
@@ -883,17 +879,17 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                       border: Border.all(color: cardBorder, width: 1.5),
                     ),
                     child: SwitchListTile(
-                      title: const Text(
-                        "Publish Course",
-                        style: TextStyle(
+                      title: Text(
+                        context.l10n.publishCourse,
+                        style: const TextStyle(
                           color: textDark,
                           fontSize: 12,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      subtitle: const Text(
-                        "Make it visible to academy students.",
-                        style: TextStyle(color: textGrey, fontSize: 10),
+                      subtitle: Text(
+                        context.l10n.makeVisibleToStudents,
+                        style: const TextStyle(color: textGrey, fontSize: 10),
                       ),
                       value: isPublished,
                       activeThumbColor: primaryPink,
@@ -918,8 +914,8 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
                       onPressed: isSubmitting ? null : _handleSubmit,
                       child: Text(
                         isSubmitting
-                            ? "Compiling Course..."
-                            : "Create Course 🚀",
+                            ? context.l10n.creatingCourse
+                            : "${context.l10n.createCourse} 🚀",
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w900,

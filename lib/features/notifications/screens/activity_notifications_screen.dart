@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/language_service.dart';
 import '../../feed/screens/reels_viewer_screen.dart';
 
 class ActivityNotificationItem {
@@ -39,11 +40,11 @@ class _ActivityNotificationsScreenState
   List<ActivityNotificationItem> allNotifications = [];
   List<ActivityNotificationItem> filteredNotifications = [];
 
-  String selectedFilter = 'All 🔥';
-  final List<String> filters = [
-    'All 🔥',
-    'Likes & Comments ❤️',
-    'Friend Requests 👥',
+  String selectedFilterKey = 'all';
+  final List<String> filterKeys = [
+    'all',
+    'likes_comments',
+    'friend_requests',
   ];
 
   static const Color primaryPink = Color(0xFFF494AC);
@@ -222,13 +223,13 @@ class _ActivityNotificationsScreenState
   }
 
   void _applyFilter() {
-    if (selectedFilter == 'All 🔥') {
+    if (selectedFilterKey == 'all') {
       filteredNotifications = List.from(allNotifications);
-    } else if (selectedFilter == 'Likes & Comments ❤️') {
+    } else if (selectedFilterKey == 'likes_comments') {
       filteredNotifications = allNotifications
           .where((n) => n.type == 'like' || n.type == 'comment')
           .toList();
-    } else if (selectedFilter == 'Friend Requests 👥') {
+    } else if (selectedFilterKey == 'friend_requests') {
       filteredNotifications = allNotifications
           .where((n) => n.type == 'friend_request')
           .toList();
@@ -251,13 +252,13 @@ class _ActivityNotificationsScreenState
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.favorite_rounded, color: primaryPink, size: 22),
-            SizedBox(width: 8),
+            const Icon(Icons.favorite_rounded, color: primaryPink, size: 22),
+            const SizedBox(width: 8),
             Text(
-              "Activity & Notifications",
-              style: TextStyle(
+              context.l10n.activityAndNotifications,
+              style: const TextStyle(
                 color: textDark,
                 fontSize: 16,
                 fontWeight: FontWeight.w900,
@@ -273,12 +274,17 @@ class _ActivityNotificationsScreenState
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
-              children: filters.map((f) {
-                final isSel = selectedFilter == f;
+              children: filterKeys.map((fKey) {
+                final isSel = selectedFilterKey == fKey;
+                final label = fKey == 'likes_comments'
+                    ? context.l10n.likesAndComments
+                    : fKey == 'friend_requests'
+                        ? context.l10n.friendRequests
+                        : context.l10n.allActivities;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(
-                    label: Text(f),
+                    label: Text(label),
                     selected: isSel,
                     selectedColor: primaryPink,
                     backgroundColor: const Color(0xFFF3F4F6),
@@ -293,7 +299,7 @@ class _ActivityNotificationsScreenState
                     onSelected: (val) {
                       if (val) {
                         setState(() {
-                          selectedFilter = f;
+                          selectedFilterKey = fKey;
                           _applyFilter();
                         });
                       }
@@ -320,29 +326,30 @@ class _ActivityNotificationsScreenState
                   : filteredNotifications.isEmpty
                   ? ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      children: const [
-                        SizedBox(height: 120),
+                      children: [
+                        const SizedBox(height: 120),
                         Center(
                           child: Column(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.notifications_off_outlined,
                                 size: 60,
                                 color: textGrey,
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               Text(
-                                "No activities yet",
-                                style: TextStyle(
+                                context.l10n.noActivitiesYet,
+                                style: const TextStyle(
                                   color: textDark,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
                                 ),
                               ),
-                              SizedBox(height: 6),
+                              const SizedBox(height: 6),
                               Text(
-                                "New likes, comments, and friend requests will appear here.",
-                                style: TextStyle(color: textGrey, fontSize: 11),
+                                context.l10n.activitiesEmptyDesc,
+                                style: const TextStyle(color: textGrey, fontSize: 11),
+                                textAlign: TextAlign.center,
                               ),
                             ],
                           ),
@@ -628,10 +635,10 @@ class _PostDetailBottomSheetState extends State<_PostDetailBottomSheet> {
               child: CircularProgressIndicator(color: Color(0xFFF494AC)),
             )
           : postData == null
-          ? const Center(
+          ? Center(
               child: Text(
-                "Post not found",
-                style: TextStyle(color: Colors.grey),
+                context.l10n.postNotFound,
+                style: const TextStyle(color: Colors.grey),
               ),
             )
           : Column(
@@ -696,7 +703,7 @@ class _PostDetailBottomSheetState extends State<_PostDetailBottomSheet> {
                                 ),
                               ),
                               Text(
-                                "Posted on Feed",
+                                context.l10n.postedOnFeed,
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: Colors.grey[500],
@@ -740,11 +747,11 @@ class _PostDetailBottomSheetState extends State<_PostDetailBottomSheet> {
                       const SizedBox(height: 16),
                       const Divider(),
                       // Comments section title
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Text(
-                          "Comments 💬",
-                          style: TextStyle(
+                          context.l10n.commentsTitle,
+                          style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF111827),
@@ -758,12 +765,12 @@ class _PostDetailBottomSheetState extends State<_PostDetailBottomSheet> {
                               ),
                             )
                           : comments.isEmpty
-                          ? const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 24),
+                          ? Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 24),
                               child: Center(
                                 child: Text(
-                                  "No comments yet. Write one below!",
-                                  style: TextStyle(
+                                  context.l10n.noCommentsYet,
+                                  style: const TextStyle(
                                     color: Colors.grey,
                                     fontSize: 12,
                                   ),
@@ -838,7 +845,7 @@ class _PostDetailBottomSheetState extends State<_PostDetailBottomSheet> {
                             fontSize: 13,
                           ),
                           decoration: InputDecoration(
-                            hintText: "Add a comment...",
+                            hintText: context.l10n.addComment,
                             hintStyle: const TextStyle(
                               color: Color(0xFF9CA3AF),
                               fontSize: 13,

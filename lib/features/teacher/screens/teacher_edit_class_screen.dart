@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 const List<String> weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -137,7 +138,7 @@ class _TeacherEditClassScreenState extends State<TeacherEditClassScreen> {
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: textDark),
-        title: const Text("Class Settings", style: TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+        title: Text(context.l10n.settings, style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(color: cardBorder, height: 1),
@@ -150,7 +151,7 @@ class _TeacherEditClassScreenState extends State<TeacherEditClassScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // نام کلاس
-            const Text("Classroom Name *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+            Text("${context.l10n.className} *", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             TextField(
               controller: _classNameController,
@@ -167,13 +168,13 @@ class _TeacherEditClassScreenState extends State<TeacherEditClassScreen> {
             const SizedBox(height: 16),
 
             // اطلاعات برنامه (Schedule Info)
-            const Text("Schedule Information", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+            Text(context.l10n.schedule, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             TextField(
               controller: _scheduleController,
               style: const TextStyle(color: textDark, fontSize: 12),
               decoration: InputDecoration(
-                hintText: "e.g. Evening Shift / Weekend Cohort",
+                hintText: context.l10n.schedule,
                 hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                 filled: true,
                 fillColor: cardBorder.withValues(alpha: 0.5),
@@ -186,7 +187,7 @@ class _TeacherEditClassScreenState extends State<TeacherEditClassScreen> {
             const SizedBox(height: 16),
 
             // روزهای هفته
-            const Text("Class Days *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+            Text("${context.l10n.schedule} *", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -213,13 +214,13 @@ class _TeacherEditClassScreenState extends State<TeacherEditClassScreen> {
             const SizedBox(height: 16),
 
             // ساعت کلاس
-            const Text("Time *", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+            Text("${context.l10n.startTime} *", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             TextField(
               controller: _timeController,
               style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
-                hintText: "e.g. 18:00 - 20:00",
+                hintText: "18:00 - 20:00",
                 hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                 filled: true,
                 fillColor: cardBorder.withValues(alpha: 0.5),
@@ -238,7 +239,7 @@ class _TeacherEditClassScreenState extends State<TeacherEditClassScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Start Date", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                      Text(context.l10n.startDate, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 6),
                       TextField(
                         controller: _startDateController,
@@ -262,7 +263,7 @@ class _TeacherEditClassScreenState extends State<TeacherEditClassScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("End Date", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                      Text(context.l10n.endDate, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 6),
                       TextField(
                         controller: _endDateController,
@@ -286,13 +287,13 @@ class _TeacherEditClassScreenState extends State<TeacherEditClassScreen> {
             const SizedBox(height: 16),
 
             // لینک جلسه آنلاین
-            const Text("Live Meeting Link", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+            Text(context.l10n.meetingLink, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             TextField(
               controller: _meetingLinkController,
               style: const TextStyle(color: textDark, fontSize: 12),
               decoration: InputDecoration(
-                hintText: "Zoom / Teams URL",
+                hintText: "https://...",
                 hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                 filled: true,
                 fillColor: cardBorder.withValues(alpha: 0.5),
@@ -305,13 +306,13 @@ class _TeacherEditClassScreenState extends State<TeacherEditClassScreen> {
             const SizedBox(height: 16),
 
             // لینک گروه پشتیبانی
-            const Text("Support Group Link", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+            Text(context.l10n.supportChat, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             TextField(
               controller: _signalLinkController,
               style: const TextStyle(color: textDark, fontSize: 12),
               decoration: InputDecoration(
-                hintText: "Signal / WhatsApp URL",
+                hintText: "https://...",
                 hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                 filled: true,
                 fillColor: cardBorder.withValues(alpha: 0.5),
@@ -332,8 +333,8 @@ class _TeacherEditClassScreenState extends State<TeacherEditClassScreen> {
                 border: Border.all(color: cardBorder, width: 1.5),
               ),
               child: SwitchListTile(
-                title: const Text("Cohort Broadcast Status", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900)),
-                subtitle: const Text("Toggle whether students can see this stream active.", style: TextStyle(color: textGrey, fontSize: 10)),
+                title: Text(context.l10n.status, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w900)),
+                subtitle: Text(context.l10n.makeVisibleToStudents, style: const TextStyle(color: textGrey, fontSize: 10)),
                 value: isActive,
                 activeThumbColor: primaryPink,
                 contentPadding: EdgeInsets.zero,
@@ -354,7 +355,7 @@ class _TeacherEditClassScreenState extends State<TeacherEditClassScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
                 onPressed: isSubmitting ? null : _handleSubmit,
-                child: Text(isSubmitting ? "Saving..." : "Save Configuration 🚀", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
+                child: Text(isSubmitting ? "..." : "${context.l10n.saveChanges} 🚀", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
               ),
             ),
             const SizedBox(height: 40),

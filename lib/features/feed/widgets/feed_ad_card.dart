@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../../core/services/ad_service.dart';
+import '../../../core/services/language_service.dart';
 
 /// A non-intrusive in-feed Native Ad Card that matches Safi Academy post styling
 class FeedAdCard extends StatefulWidget {
@@ -155,16 +156,16 @@ class _FeedAdCardState extends State<FeedAdCard> {
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Icon(
+                    children: [
+                      const Icon(
                         Icons.campaign_rounded,
                         size: 14,
                         color: primaryPink,
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
-                        "Sponsored / آگهی",
-                        style: TextStyle(
+                        context.l10n.sponsored,
+                        style: const TextStyle(
                           color: primaryPink,
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -240,12 +241,12 @@ class _FeedAdCardState extends State<FeedAdCard> {
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.campaign_rounded, size: 14, color: primaryPink),
-                    SizedBox(width: 4),
+                  children: [
+                    const Icon(Icons.campaign_rounded, size: 14, color: primaryPink),
+                    const SizedBox(width: 4),
                     Text(
-                      "Sponsored / آگهی حامی",
-                      style: TextStyle(
+                      context.l10n.sponsored,
+                      style: const TextStyle(
                         color: primaryPink,
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -324,9 +325,9 @@ class _FeedAdCardState extends State<FeedAdCard> {
                 elevation: 0,
               ),
               onPressed: () {},
-              child: const Text(
-                "Learn More / مشاهده جزئیات",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              child: Text(
+                context.l10n.learnMore,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               ),
             ),
           ),

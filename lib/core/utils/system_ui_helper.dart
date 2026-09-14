@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 class SystemUiHelper {
   static int _androidSdkVersion = 0;
 
-  /// Initialize the Android SDK version checks.
+  /// Initialize the Android SDK version checks and activate full screen immersive mode immediately.
   static Future<void> init() async {
     if (Platform.isAndroid) {
       try {
@@ -18,52 +18,41 @@ class SystemUiHelper {
         debugPrint('SystemUiHelper initialization error: $e');
       }
     }
+
+    // پنهان کردن نوگیشن بار گوشی و حالت فول اسکرین در بدو باز شدن اپ
+    await enableFullScreen();
+  }
+
+  /// Enables true fullscreen immersive sticky mode across the app.
+  static Future<void> enableFullScreen() async {
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   }
 
   /// Appends appropriate system bar styles depending on device capabilities and views.
   static void setSystemStyle({required bool isReels}) {
-    if (isReels) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    // در کل اپ، نوگیشن بار گوشی مخفی (immersiveSticky) باقی می‌ماند
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-      // On Android 15+, setting status/navigation bar colors directly is deprecated.
-      // We only apply icon brightness to avoid triggering warnings on SDK 35+.
-      if (Platform.isAndroid && _androidSdkVersion >= 35) {
-        SystemChrome.setSystemUIOverlayStyle(
-          const SystemUiOverlayStyle(
-            systemNavigationBarIconBrightness: Brightness.light,
-            statusBarIconBrightness: Brightness.light,
-          ),
-        );
-      } else {
-        SystemChrome.setSystemUIOverlayStyle(
-          const SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            statusBarIconBrightness: Brightness.light,
-            systemNavigationBarColor: Colors.black,
-            systemNavigationBarIconBrightness: Brightness.light,
-          ),
-        );
-      }
+    // On Android 15+, setting status/navigation bar colors directly is deprecated.
+    if (Platform.isAndroid && _androidSdkVersion >= 35) {
+      SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(
+          systemNavigationBarIconBrightness: isReels ? Brightness.light : Brightness.dark,
+          statusBarIconBrightness: isReels ? Brightness.light : Brightness.dark,
+          systemNavigationBarColor: Colors.transparent,
+          statusBarColor: Colors.transparent,
+        ),
+      );
     } else {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-
-      if (Platform.isAndroid && _androidSdkVersion >= 35) {
-        SystemChrome.setSystemUIOverlayStyle(
-          const SystemUiOverlayStyle(
-            statusBarIconBrightness: Brightness.dark,
-            systemNavigationBarIconBrightness: Brightness.dark,
-          ),
-        );
-      } else {
-        SystemChrome.setSystemUIOverlayStyle(
-          const SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            statusBarIconBrightness: Brightness.dark,
-            systemNavigationBarColor: Colors.white,
-            systemNavigationBarIconBrightness: Brightness.dark,
-          ),
-        );
-      }
+      SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: isReels ? Brightness.light : Brightness.dark,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarDividerColor: Colors.transparent,
+          systemNavigationBarIconBrightness: isReels ? Brightness.light : Brightness.dark,
+        ),
+      );
     }
   }
 }

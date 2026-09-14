@@ -11,6 +11,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import '../../../core/services/gemini_ai_service.dart';
+import '../../../core/services/language_service.dart';
 
 class Message {
   final String id;
@@ -47,7 +48,13 @@ class AiCharacter {
     required this.avatarGradient,
   });
 
-  String get displayName => nameFa.isNotEmpty ? nameFa : nameEn;
+  String get displayName {
+    final code = LanguageService.instance.currentLocale.languageCode;
+    if (code == 'fa' || code == 'ps') {
+      return nameFa.isNotEmpty ? nameFa : nameEn;
+    }
+    return nameEn.isNotEmpty ? nameEn : nameFa;
+  }
   bool get isFemale => gender == 'female';
   Color get accentColor => avatarGradient.first;
 }
@@ -1040,7 +1047,7 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              c.isFemale ? "زن" : "مرد",
+                              c.isFemale ? context.l10n.femaleVoice : context.l10n.maleVoice,
                               style: TextStyle(
                                 color: c.isFemale ? primaryPink : Colors.lightBlue,
                                 fontSize: 9,
@@ -1073,13 +1080,13 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: c.accentColor.withOpacity(0.5)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.swap_horiz_rounded, color: Colors.white, size: 14),
-                  SizedBox(width: 4),
+                  const Icon(Icons.swap_horiz_rounded, color: Colors.white, size: 14),
+                  const SizedBox(width: 4),
                   Text(
-                    "تغییر",
-                    style: TextStyle(
+                    context.l10n.change,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,
                       fontWeight: FontWeight.w900,
@@ -1126,27 +1133,27 @@ class _StudentAiAssistantScreenState extends State<StudentAiAssistantScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    "انتخاب هم‌صحبت صوتی",
-                    style: TextStyle(
+                  Text(
+                    context.l10n.selectVoiceCharacter,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    "یک شخصیت زن یا مرد با صدای اختصاصی انتخاب کنید",
-                    style: TextStyle(color: Colors.white54, fontSize: 10),
+                  Text(
+                    context.l10n.selectVoiceCharacterDesc,
+                    style: const TextStyle(color: Colors.white54, fontSize: 10),
                   ),
                   const SizedBox(height: 14),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _genderTab("female", "هم‌صحبت زن", Icons.female_rounded,
+                      _genderTab("female", context.l10n.femalePartner, Icons.female_rounded,
                           primaryPink, activeGender, setModal),
                       const SizedBox(width: 12),
-                      _genderTab("male", "هم‌صحبت مرد", Icons.male_rounded,
+                      _genderTab("male", context.l10n.malePartner, Icons.male_rounded,
                           Colors.lightBlue, activeGender, setModal),
                     ],
                   ),

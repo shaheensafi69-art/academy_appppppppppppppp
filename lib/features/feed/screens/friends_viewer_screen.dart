@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/language_service.dart';
 import 'user_profile_screen.dart';
 
 typedef StudentFriendsScreen = FriendsViewerScreen;
@@ -332,23 +333,23 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
                             ),
                           ),
                           const SizedBox(width: 16),
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Student Network",
-                                  style: TextStyle(
+                                  context.l10n.studentNetwork,
+                                  style: const TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w900,
                                     color: textDark,
                                     letterSpacing: -0.5,
                                   ),
                                 ),
-                                SizedBox(height: 4),
+                                const SizedBox(height: 4),
                                 Text(
-                                  "Connect, collaborate, and grow your professional network.",
-                                  style: TextStyle(
+                                  context.l10n.studentNetworkDesc,
+                                  style: const TextStyle(
                                     fontSize: 12,
                                     color: textGrey,
                                     fontWeight: FontWeight.w500,
@@ -374,20 +375,20 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
                         children: [
                           Expanded(
                             child: _buildTabButton(
-                              "Friends (${myFriends.length})",
+                              "${context.l10n.friends} (${myFriends.length})",
                               "friends",
                             ),
                           ),
                           const SizedBox(width: 6),
                           Expanded(
                             child: _buildTabButton(
-                              "Requests (${pendingRequests.length})",
+                              "${context.l10n.requests} (${pendingRequests.length})",
                               "requests",
                             ),
                           ),
                           const SizedBox(width: 6),
                           Expanded(
-                            child: _buildTabButton("Explore", "explore"),
+                            child: _buildTabButton(context.l10n.explore, "explore"),
                           ),
                         ],
                       ),
@@ -405,7 +406,7 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
                         fontWeight: FontWeight.w600,
                       ), // رنگ تیره برای جلوگیری از محو شدن
                       decoration: InputDecoration(
-                        hintText: "Search by name or email...",
+                        hintText: context.l10n.searchByNameOrEmail,
                         hintStyle: const TextStyle(
                           color: textGrey,
                           fontSize: 13,
@@ -560,7 +561,7 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
                                         onPressed: () => _removeFriendOrDecline(
                                           userItem['rel_id'],
                                         ),
-                                        tooltip: "Remove Friend",
+                                        tooltip: context.l10n.removeFriend,
                                       )
                                     else if (activeTab == "requests")
                                       Row(
@@ -585,9 +586,9 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
                                               onPressed: () => _acceptRequest(
                                                 userItem['rel_id'],
                                               ),
-                                              child: const Text(
-                                                "Accept",
-                                                style: TextStyle(
+                                              child: Text(
+                                                context.l10n.accept,
+                                                style: const TextStyle(
                                                   fontSize: 12,
                                                   fontWeight: FontWeight.w900,
                                                 ),
@@ -640,9 +641,9 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
                                             Icons.person_add_rounded,
                                             size: 16,
                                           ),
-                                          label: const Text(
-                                            "Add",
-                                            style: TextStyle(
+                                          label: Text(
+                                            context.l10n.add,
+                                            style: const TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w900,
                                             ),
@@ -667,9 +668,9 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
                                     color: textGrey.withOpacity(0.4),
                                   ),
                                   const SizedBox(height: 16),
-                                  const Text(
-                                    "No students found here.",
-                                    style: TextStyle(
+                                  Text(
+                                    context.l10n.noStudentsFound,
+                                    style: const TextStyle(
                                       color: textGrey,
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,

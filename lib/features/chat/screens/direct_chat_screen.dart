@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/language_service.dart';
 import '../../feed/screens/reels_viewer_screen.dart';
 
 enum MessageStatus { sending, sent, delivered, read }
@@ -231,13 +232,13 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Friend request sent successfully! 🤝")),
+          SnackBar(content: Text(context.l10n.friendRequestSent)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Friend request already sent or an error occurred: $e")),
+          SnackBar(content: Text("${context.l10n.friendRequestError}: $e")),
         );
       }
     }
@@ -249,11 +250,11 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
 
     String textToSend = rawText;
     if (replyingToMessage != null) {
-      final replyAuthor = replyingToMessage!.isMe ? 'You' : widget.peerName;
+      final replyAuthor = replyingToMessage!.isMe ? context.l10n.yourself : widget.peerName;
       final preview = replyingToMessage!.text.replaceAll('\n', ' ');
       final shortPreview =
           preview.length > 35 ? '${preview.substring(0, 35)}...' : preview;
-      textToSend = "↩️ Replying to $replyAuthor: \"$shortPreview\"\n$rawText";
+      textToSend = "↩️ ${context.l10n.replyingTo} $replyAuthor: \"$shortPreview\"\n$rawText";
     }
 
     _messageController.clear();
@@ -390,7 +391,7 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(widget.peerName, style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
-                const Text("Online now", style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold)),
+                Text(context.l10n.onlineNow, style: const TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold)),
               ],
             ),
           ],
@@ -463,7 +464,7 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Replying to ${replyingToMessage!.isMe ? 'yourself' : widget.peerName}",
+                          "${context.l10n.replyingTo} ${replyingToMessage!.isMe ? context.l10n.yourself : widget.peerName}",
                           style: const TextStyle(
                             color: primaryPink,
                             fontSize: 11,
@@ -506,10 +507,10 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
                           children: [
                             Icon(Icons.lock_outline_rounded, color: Colors.grey.shade500, size: 20),
                             const SizedBox(width: 10),
-                            const Expanded(
+                            Expanded(
                               child: Text(
-                                "You must first become friends with this user to send them direct messages.",
-                                style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold, height: 1.3),
+                                context.l10n.friendRequirementNotice,
+                                style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold, height: 1.3),
                               ),
                             ),
                           ],
@@ -525,7 +526,7 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
                             ),
                             onPressed: _sendFriendRequest,
                             icon: const Icon(Icons.person_add_rounded, color: Colors.white, size: 16),
-                            label: const Text("Send Friend Request", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                            label: Text(context.l10n.sendFriendRequest, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
                           ),
                         ),
                       ],
@@ -548,7 +549,7 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
                             controller: _messageController,
                             style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.w600),
                             decoration: InputDecoration(
-                              hintText: "Write a message...",
+                              hintText: context.l10n.chatInputHint,
                               hintStyle: const TextStyle(color: textGrey, fontSize: 12),
                               filled: true,
                               fillColor: cardBorder.withValues(alpha: 0.5),
@@ -665,13 +666,13 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
                   color: primaryPink.withValues(alpha: 0.15),
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.video_collection_rounded, color: primaryPink, size: 16),
-                    SizedBox(width: 6),
+                    const Icon(Icons.video_collection_rounded, color: primaryPink, size: 16),
+                    const SizedBox(width: 6),
                     Text(
-                      "Educational Reel 🎬",
-                      style: TextStyle(
+                      context.l10n.educationalReel,
+                      style: const TextStyle(
                         color: primaryPink,
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -688,7 +689,7 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
                     Text(
                       msg.text.replaceAll(RegExp(r'https?://\S+'), '').trim().isNotEmpty
                           ? msg.text.replaceAll(RegExp(r'https?://\S+'), '').trim()
-                          : "Check out this educational reel! 🌟",
+                          : context.l10n.checkOutReel,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 13,
@@ -718,9 +719,9 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
                           );
                         },
                         icon: const Icon(Icons.play_circle_fill_rounded, size: 18),
-                        label: const Text(
-                          "Watch Reel 🎥",
-                          style: TextStyle(
+                        label: Text(
+                          context.l10n.watchReel,
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
                           ),
@@ -737,13 +738,13 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
                               replyingToMessage = msg;
                             });
                           },
-                          child: const Row(
+                          child: Row(
                             children: [
-                              Icon(Icons.reply_rounded, color: Colors.white60, size: 14),
-                              SizedBox(width: 4),
+                              const Icon(Icons.reply_rounded, color: Colors.white60, size: 14),
+                              const SizedBox(width: 4),
                               Text(
-                                "Reply",
-                                style: TextStyle(
+                                context.l10n.reply,
+                                style: const TextStyle(
                                   color: Colors.white70,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
@@ -840,7 +841,7 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
                         ),
                         const SizedBox(width: 2),
                         Text(
-                          "Reply",
+                          context.l10n.reply,
                           style: TextStyle(
                             color: isMe ? Colors.white70 : textGrey,
                             fontSize: 9,

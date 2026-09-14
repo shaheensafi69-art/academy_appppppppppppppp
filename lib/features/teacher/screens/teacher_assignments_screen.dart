@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 import 'teacher_create_assignment_screen.dart';
 import 'teacher_submissions_screen.dart';
 
@@ -105,16 +106,16 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: surfaceWhite,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text("Delete Assignment", style: TextStyle(color: textDark, fontSize: 15, fontWeight: FontWeight.w900)),
-        content: Text("Are you sure you want to permanently delete: \"$title\"?", style: const TextStyle(color: textGrey, fontSize: 12)),
+        title: Text(context.l10n.confirmDelete, style: const TextStyle(color: textDark, fontSize: 15, fontWeight: FontWeight.w900)),
+        content: Text("${context.l10n.confirmAction} \"$title\"", style: const TextStyle(color: textGrey, fontSize: 12)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold)),
+            child: Text(context.l10n.cancel, style: const TextStyle(color: textGrey, fontWeight: FontWeight.bold)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text("Delete", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+            child: Text(context.l10n.reject, style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -198,13 +199,13 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                               child: const Icon(Icons.assignment_rounded, color: primaryPink, size: 26),
                             ),
                             const SizedBox(width: 14),
-                            const Expanded(
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Assignments Terminal", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                                  SizedBox(height: 3),
-                                  Text("Issue tasks and evaluate student submittals.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+                                  Text(context.l10n.assignments, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                                  const SizedBox(height: 3),
+                                  Text(context.l10n.assignmentsDesc, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                                 ],
                               ),
                             ),
@@ -220,7 +221,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           ),
                           icon: const Icon(Icons.add_rounded, size: 18),
-                          label: const Text("Create Task", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                          label: Text(context.l10n.createAssignment, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -250,9 +251,9 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("TOTAL ISSUED", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1)),
+                          Text(context.l10n.assignments.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1)),
                           const SizedBox(height: 4),
-                          Text("$totalTasks Tasks", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
+                          Text("$totalTasks ${context.l10n.assignments}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
                         ],
                       ),
                     ),
@@ -270,9 +271,9 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("ACTIVE DEADLINES", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.purple, letterSpacing: 1)),
+                          Text(context.l10n.dueDate.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.purple, letterSpacing: 1)),
                           const SizedBox(height: 4),
-                          Text("$dueSoonCount Pending", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
+                          Text("$dueSoonCount ${context.l10n.pendingApprovals}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textDark)),
                         ],
                       ),
                     ),
@@ -296,7 +297,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                 ),
                 items: [
-                  const DropdownMenuItem(value: "all", child: Text("All Classroom Roster")),
+                  DropdownMenuItem(value: "all", child: Text(context.l10n.all)),
                   ...classes.map((c) => DropdownMenuItem(value: c['id'].toString(), child: Text(c['class_name']))),
                 ],
                 onChanged: (val) => setState(() => selectedClassFilter = val ?? "all"),
@@ -345,7 +346,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                         decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
-                                        child: Text("Max: ${task.maxScore} Pts", style: const TextStyle(color: Colors.amber, fontSize: 9, fontWeight: FontWeight.bold)),
+                                        child: Text("${context.l10n.score}: ${task.maxScore}", style: const TextStyle(color: Colors.amber, fontSize: 9, fontWeight: FontWeight.bold)),
                                       ),
                                     ],
                                   ),
@@ -362,7 +363,7 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                                           const Icon(Icons.calendar_today_rounded, size: 14, color: textGrey),
                                           const SizedBox(width: 6),
                                           Text(
-                                            task.deadline != null ? "Due: ${task.deadline!.split('T')[0]}" : "No Deadline",
+                                            task.deadline != null ? "${context.l10n.dueDate}: ${task.deadline!.split('T')[0]}" : context.l10n.dueDate,
                                             style: TextStyle(color: isExpired ? Colors.redAccent : textGrey, fontSize: 10, fontWeight: FontWeight.bold),
                                           ),
                                         ],
@@ -401,13 +402,13 @@ class _TeacherAssignmentsScreenState extends State<TeacherAssignmentsScreen> {
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(color: cardBorder),
                           ),
-                          child: const Column(
+                          child: Column(
                             children: [
-                              Icon(Icons.assignment_outlined, size: 36, color: textGrey),
-                              SizedBox(height: 10),
-                              Text("No Assignments Found", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
-                              SizedBox(height: 4),
-                              Text("No assignments have been created yet.", style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                              const Icon(Icons.assignment_outlined, size: 36, color: textGrey),
+                              const SizedBox(height: 10),
+                              Text(context.l10n.noAssignmentsFound, style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
+                              const SizedBox(height: 4),
+                              Text(context.l10n.noDataFound, style: const TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
                             ],
                           ),
                         ),

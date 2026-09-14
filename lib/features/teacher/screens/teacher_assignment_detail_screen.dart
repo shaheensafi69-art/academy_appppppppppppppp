@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class TeacherAssignmentDetailScreen extends StatefulWidget {
   final Map<String, dynamic> submission;
@@ -99,7 +100,7 @@ class _TeacherAssignmentDetailScreenState extends State<TeacherAssignmentDetailS
       appBar: AppBar(
         backgroundColor: surfaceWhite,
         elevation: 0,
-        title: const Text("Review Assignment", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+        title: Text(context.l10n.gradeSubmission, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
         iconTheme: const IconThemeData(color: primaryPink),
       ),
       body: SafeArea(
@@ -134,7 +135,7 @@ class _TeacherAssignmentDetailScreenState extends State<TeacherAssignmentDetailS
                             children: [
                               Text(assignmentTitle, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
                               const SizedBox(height: 2),
-                              Text("Submitted by: $studentName", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                              Text("${context.l10n.studentName}: $studentName", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),
@@ -142,7 +143,7 @@ class _TeacherAssignmentDetailScreenState extends State<TeacherAssignmentDetailS
                     ),
                     const Divider(height: 30, color: cardBorder),
 
-                    Text("Submission Date: $submittedAt", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500)),
+                    Text("${context.l10n.dueDate}: $submittedAt", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500)),
                     const SizedBox(height: 16),
 
                     // دکمه باز کردن فایل ارسالی دانشجو
@@ -155,23 +156,23 @@ class _TeacherAssignmentDetailScreenState extends State<TeacherAssignmentDetailS
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         ),
                         icon: const Icon(Icons.download_rounded, size: 18),
-                        label: const Text("Download / View Student File 📎", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                        label: Text(context.l10n.viewDetails, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                         onPressed: () => _launchURL(fileUrl),
                       )
                     else
-                      const Text("No attached file provided by student.", style: TextStyle(color: textGrey, fontSize: 11, fontStyle: FontStyle.italic)),
+                      Text(context.l10n.noDataFound, style: const TextStyle(color: textGrey, fontSize: 11, fontStyle: FontStyle.italic)),
 
                     const SizedBox(height: 24),
 
                     // فیلد ثبت نمره
-                    const Text("Assign Grade (e.g. 95.0)", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                    Text(context.l10n.score, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _gradeController,
                       keyboardType: TextInputType.number,
                       style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                       decoration: InputDecoration(
-                        hintText: "Enter score...",
+                        hintText: context.l10n.score,
                         filled: true,
                         fillColor: cardBorder.withOpacity(0.5),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
@@ -182,14 +183,14 @@ class _TeacherAssignmentDetailScreenState extends State<TeacherAssignmentDetailS
                     const SizedBox(height: 16),
 
                     // فیلد بازخورد و فیدبک
-                    const Text("Teacher Feedback", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                    Text(context.l10n.feedback, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _feedbackController,
                       maxLines: 4,
                       style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w500),
                       decoration: InputDecoration(
-                        hintText: "Write your constructive feedback for the student...",
+                        hintText: context.l10n.feedback,
                         filled: true,
                         fillColor: cardBorder.withOpacity(0.5),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
@@ -212,7 +213,7 @@ class _TeacherAssignmentDetailScreenState extends State<TeacherAssignmentDetailS
                         onPressed: isSaving ? null : _saveGrading,
                         child: isSaving
                             ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                            : const Text("SUBMIT GRADE & FEEDBACK 📝", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                            : Text(context.l10n.saveChanges, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
                       ),
                     ),
                   ],

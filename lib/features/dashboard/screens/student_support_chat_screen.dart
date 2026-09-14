@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../../../core/services/language_service.dart';
 import '../../../core/services/gemini_ai_service.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
 import 'package:file_picker/file_picker.dart' as fp;
@@ -553,7 +554,7 @@ Answer in the exact language the user prompts. Strictly answer queries related t
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                "Document Attached",
+                context.l10n.documentAttached,
                 style: TextStyle(
                   color: isMe ? textDark : aiTextDark,
                   fontSize: 11,
@@ -650,10 +651,10 @@ Answer in the exact language the user prompts. Strictly answer queries related t
                                   const SizedBox(width: 6),
                                   Text(
                                     currentStatus == 'escalated'
-                                        ? "Waiting for Admin"
+                                        ? context.l10n.waitingForAdmin
                                         : currentStatus == 'closed'
-                                        ? "Ticket Closed"
-                                        : "AI Support Active",
+                                        ? context.l10n.ticketClosed
+                                        : context.l10n.aiSupportActive,
                                     style: TextStyle(
                                       color: currentStatus == 'escalated'
                                           ? Colors.orange.shade700
@@ -694,16 +695,16 @@ Answer in the exact language the user prompts. Strictly answer queries related t
                               ],
                             ),
                             child: Row(
-                              children: const [
-                                Icon(
+                              children: [
+                                const Icon(
                                   Icons.flash_on_rounded,
                                   color: Colors.white,
                                   size: 14,
                                 ),
-                                SizedBox(width: 4),
+                                const SizedBox(width: 4),
                                 Text(
-                                  "NEW CHAT",
-                                  style: TextStyle(
+                                  context.l10n.newChat,
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 10,
                                     fontWeight: FontWeight.w900,
@@ -998,10 +999,10 @@ Answer in the exact language the user prompts. Strictly answer queries related t
                           const SizedBox(width: 10),
                           Text(
                             isUploading
-                                ? "Uploading..."
+                                ? context.l10n.uploading
                                 : currentStatus == 'escalated'
-                                ? "Waiting for admin..."
-                                : "Safi AI is typing...",
+                                ? context.l10n.waitingForAdmin
+                                : context.l10n.aiTyping,
                             style: const TextStyle(
                               color: textGrey,
                               fontSize: 11,
@@ -1069,8 +1070,8 @@ Answer in the exact language the user prompts. Strictly answer queries related t
                             textDirection: TextDirection.ltr,
                             decoration: InputDecoration(
                               hintText: currentStatus == 'escalated'
-                                  ? "Message Admin..."
-                                  : "Ask Safi AI...",
+                                  ? context.l10n.messageAdmin
+                                  : context.l10n.askSafiAi,
                               hintStyle: const TextStyle(
                                 color: Colors.black38,
                                 fontSize: 12,

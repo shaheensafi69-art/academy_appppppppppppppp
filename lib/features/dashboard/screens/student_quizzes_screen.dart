@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/language_service.dart';
 import 'student_quiz_detail_screen.dart';
 
 class QuizItem {
@@ -210,7 +211,7 @@ class _StudentQuizzesScreenState extends State<StudentQuizzesScreen> {
             children: [
               const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
-              Text("LOADING EXAMS...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(context.l10n.loadingExams, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
             ],
           ),
         ),
@@ -252,13 +253,13 @@ class _StudentQuizzesScreenState extends State<StudentQuizzesScreen> {
                       child: const Icon(Icons.quiz_rounded, color: primaryPink, size: 24),
                     ),
                     const SizedBox(width: 14),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Examination Center", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
-                          SizedBox(height: 3),
-                          Text("Take your academic exams and track official grades.", style: TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
+                          Text(context.l10n.examinationCenter, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                          const SizedBox(height: 3),
+                          Text(context.l10n.examinationCenterDesc, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
                         ],
                       ),
                     ),
@@ -291,7 +292,7 @@ class _StudentQuizzesScreenState extends State<StudentQuizzesScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text("TOTAL EXAMS", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                                Text(context.l10n.totalExams.toUpperCase(), style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                                 const SizedBox(height: 2),
                                 Text("${stats['total']}", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: textDark), maxLines: 1, overflow: TextOverflow.ellipsis),
                               ],
@@ -323,7 +324,7 @@ class _StudentQuizzesScreenState extends State<StudentQuizzesScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text("PASSED", style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                                Text(context.l10n.passed.toUpperCase(), style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                                 const SizedBox(height: 2),
                                 Text("${stats['passed']}", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: textDark), maxLines: 1, overflow: TextOverflow.ellipsis),
                               ],
@@ -339,11 +340,11 @@ class _StudentQuizzesScreenState extends State<StudentQuizzesScreen> {
 
               Row(
                 children: [
-                  Expanded(child: _buildFilterTab("all", "All", Icons.list_alt_rounded)),
+                  Expanded(child: _buildFilterTab("all", context.l10n.exploreAll, Icons.list_alt_rounded)),
                   const SizedBox(width: 6),
-                  Expanded(child: _buildFilterTab("pending", "To Do", Icons.hourglass_top_rounded)),
+                  Expanded(child: _buildFilterTab("pending", context.l10n.toDo, Icons.hourglass_top_rounded)),
                   const SizedBox(width: 6),
-                  Expanded(child: _buildFilterTab("completed", "Attempted", Icons.done_all_rounded)),
+                  Expanded(child: _buildFilterTab("completed", context.l10n.attempted, Icons.done_all_rounded)),
                 ],
               ),
               const SizedBox(height: 16),
@@ -407,7 +408,7 @@ class _StudentQuizzesScreenState extends State<StudentQuizzesScreen> {
                                         ? Row(
                                             children: [
                                               Text(
-                                                (quiz.isPassed ?? false) ? "Status: Passed ✅" : "Status: Chance (Failed) ❌",
+                                                (quiz.isPassed ?? false) ? "${context.l10n.statusPassed} ✅" : "${context.l10n.statusFailed} ❌",
                                                 style: TextStyle(
                                                   color: (quiz.isPassed ?? false) ? Colors.green.shade700 : Colors.redAccent,
                                                   fontWeight: FontWeight.w900,
@@ -424,8 +425,8 @@ class _StudentQuizzesScreenState extends State<StudentQuizzesScreen> {
                                             ],
                                           )
                                         : quiz.status == "pending_review"
-                                            ? const Text("Awaiting Grading", style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900), maxLines: 1, overflow: TextOverflow.ellipsis)
-                                            : Text("Pass Mark: ${quiz.passingScore} / 100", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                            ? Text(context.l10n.awaitingGrading, style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900), maxLines: 1, overflow: TextOverflow.ellipsis)
+                                            : Text("${context.l10n.passMark}: ${quiz.passingScore} / 100", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                                   ),
                                   const SizedBox(width: 8),
                                   quiz.status == "pending"
@@ -443,7 +444,7 @@ class _StudentQuizzesScreenState extends State<StudentQuizzesScreen> {
                                               MaterialPageRoute(builder: (_) => StudentQuizDetailScreen(quizId: quiz.id)),
                                             ).then((_) => _fetchQuizzes());
                                           },
-                                          child: const Text("Start Exam", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900)),
+                                          child: Text(context.l10n.startExam, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900)),
                                         )
                                       : Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -451,7 +452,7 @@ class _StudentQuizzesScreenState extends State<StudentQuizzesScreen> {
                                             color: cardBorder,
                                             borderRadius: BorderRadius.circular(8),
                                           ),
-                                          child: const Text("Completed", style: TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.bold)),
+                                          child: Text(context.l10n.attempted, style: const TextStyle(color: textGrey, fontSize: 9, fontWeight: FontWeight.bold)),
                                         ),
                                 ],
                               ),
@@ -468,7 +469,7 @@ class _StudentQuizzesScreenState extends State<StudentQuizzesScreen> {
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: cardBorder, width: 1.5),
                       ),
-                      child: const Text("No exams available right now.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                      child: Text(context.l10n.noExamsAvailable, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
                     ),
               const SizedBox(height: 40),
             ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/services.dart';
+import '../../../core/services/language_service.dart';
 
 class StudentCourseDetailScreen extends StatefulWidget {
   final String courseId;
@@ -116,8 +117,8 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
   Future<void> _handleRegistrationSubmit() async {
     if (_fullNameController.text.isEmpty || _phoneController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please fill in all required fields."),
+        SnackBar(
+          content: Text(context.l10n.fillRequiredFields),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -129,8 +130,8 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
       final user = supabase.auth.currentUser;
       if (user == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Authentication required. Please login first."),
+          SnackBar(
+            content: Text(context.l10n.authRequired),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -155,8 +156,8 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Registration & Seat Reservation Successful! 🎉"),
+          SnackBar(
+            content: Text(context.l10n.registrationSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -166,8 +167,8 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
       debugPrint("Registration error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("You are already enrolled or an error occurred."),
+          SnackBar(
+            content: Text(context.l10n.enrollmentError),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -181,8 +182,8 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
     final link = "https://safiacademy.org/courses/${widget.courseId}";
     Clipboard.setData(ClipboardData(text: link));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Course master link copied to clipboard! 🔗"),
+      SnackBar(
+        content: Text(context.l10n.courseLinkCopied),
         backgroundColor: Colors.green,
       ),
     );
@@ -193,7 +194,7 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
     if (courseData == null) {
       return AcademyLoadingOverlay(
         isLoading: isLoading,
-        message: "LOADING COURSE DETAILS...",
+        message: context.l10n.loadingCourseDetails,
         child: Scaffold(
           backgroundColor: surfaceWhite,
           appBar: AppBar(
@@ -201,10 +202,10 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
             elevation: 0,
             iconTheme: const IconThemeData(color: textDark),
           ),
-          body: const Center(
+          body: Center(
             child: Text(
-              "Course not found.",
-              style: TextStyle(color: textDark, fontWeight: FontWeight.bold),
+              context.l10n.courseNotFound,
+              style: const TextStyle(color: textDark, fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -268,18 +269,18 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: cardBorder, width: 1.5),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.arrow_back_rounded,
                                 color: textDark,
                                 size: 16,
                               ),
-                              SizedBox(width: 6),
+                              const SizedBox(width: 6),
                               Text(
-                                "Back",
-                                style: TextStyle(
+                                context.l10n.back,
+                                style: const TextStyle(
                                   color: textDark,
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
@@ -351,7 +352,7 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "Lead Instructor: ${courseData!['instructor_name'] ?? 'Safi Academy'}",
+                    "${context.l10n.leadInstructor}: ${courseData!['instructor_name'] ?? 'Safi Academy'}",
                     style: const TextStyle(
                       fontSize: 12,
                       color: textGrey,
@@ -365,14 +366,14 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                     children: [
                       _buildDetailBadge(
                         Icons.timer_rounded,
-                        "${courseData!['duration_weeks'] ?? 4} Weeks",
+                        "${courseData!['duration_weeks'] ?? 4} ${context.l10n.weeks}",
                       ),
                       const SizedBox(width: 10),
                       _buildDetailBadge(
                         Icons.emoji_events_rounded,
                         (courseData!['includes_certificate'] ?? true)
-                            ? "Includes Certificate"
-                            : "No Certificate",
+                            ? context.l10n.includesCertificate
+                            : context.l10n.noCertificate,
                       ),
                     ],
                   ),
@@ -384,7 +385,7 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                         Icons.attach_money_rounded,
                         (courseData!['price'] ?? 0) > 0
                             ? "\$${(courseData!['price'] as num).toStringAsFixed(2)}"
-                            : "FREE SESSION",
+                            : context.l10n.freeSession,
                       ),
                       const SizedBox(width: 10),
                       _buildDetailBadge(
@@ -432,22 +433,22 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                           ),
                         ),
                         const SizedBox(width: 14),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "7-Day Free Trial Available! 🎁",
-                                style: TextStyle(
+                                context.l10n.freeTrialBannerTitle,
+                                style: const TextStyle(
                                   color: Colors.purple,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w900,
                                 ),
                               ),
-                              SizedBox(height: 2),
+                              const SizedBox(height: 2),
                               Text(
-                                "رزرو صنف آزمایشی ۷ روزه رایگان فعال است. صنف پس از یک هفته خودکار قفل می‌گردد.",
-                                style: TextStyle(
+                                context.l10n.freeTrialBannerDesc,
+                                style: const TextStyle(
                                   color: Colors.purple,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
@@ -463,9 +464,9 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                   const SizedBox(height: 24),
 
                   // ================= درباره دوره =================
-                  const Text(
-                    "About Masterclass",
-                    style: TextStyle(
+                  Text(
+                    context.l10n.aboutCourse,
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w900,
                       color: textDark,
@@ -484,9 +485,9 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                   const SizedBox(height: 24),
 
                   // ================= لیست مدرسین =================
-                  const Text(
-                    "Meet Your Instructors",
-                    style: TextStyle(
+                  Text(
+                    context.l10n.meetInstructors,
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w900,
                       color: textDark,
@@ -529,18 +530,18 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                         ),
                       ),
                       alignment: Alignment.center,
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.check_circle_rounded,
                             color: Colors.green,
                             size: 16,
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text(
-                            "ENROLLED ✓",
-                            style: TextStyle(
+                            context.l10n.enrolledAndActive,
+                            style: const TextStyle(
                               fontWeight: FontWeight.w900,
                               fontSize: 11,
                               color: Colors.green,
@@ -572,8 +573,8 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                         ),
                         child: Text(
                           showRegistrationForm
-                              ? "Close Registration Form"
-                              : "Reserve Your Seat & Class",
+                              ? context.l10n.closeRegistrationForm
+                              : context.l10n.reserveSeatAndClass,
                           style: const TextStyle(
                             fontWeight: FontWeight.w900,
                             fontSize: 11,
@@ -606,18 +607,18 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            "Secure Registration & Schedule",
-                            style: TextStyle(
+                          Text(
+                            context.l10n.secureRegistrationTitle,
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w900,
                               color: textDark,
                             ),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
-                            "Fill out your details to finalize enrollment and class timing.",
-                            style: TextStyle(
+                          Text(
+                            context.l10n.secureRegistrationSubtitle,
+                            style: const TextStyle(
                               fontSize: 10,
                               color: textGrey,
                               fontWeight: FontWeight.bold,
@@ -626,9 +627,9 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                           const SizedBox(height: 20),
 
                           // Full Name
-                          const Text(
-                            "FULL NAME *",
-                            style: TextStyle(
+                          Text(
+                            context.l10n.fullNameField,
+                            style: const TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w900,
                               color: textGrey,
@@ -647,9 +648,9 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                           const SizedBox(height: 14),
 
                           // Father's Name
-                          const Text(
-                            "FATHER'S NAME *",
-                            style: TextStyle(
+                          Text(
+                            context.l10n.fatherNameField,
+                            style: const TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w900,
                               color: textGrey,
@@ -668,9 +669,9 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                           const SizedBox(height: 14),
 
                           // Email
-                          const Text(
-                            "EMAIL ADDRESS *",
-                            style: TextStyle(
+                          Text(
+                            context.l10n.emailAddressField,
+                            style: const TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w900,
                               color: textGrey,
@@ -689,9 +690,9 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                           const SizedBox(height: 14),
 
                           // WhatsApp Number
-                          const Text(
-                            "WHATSAPP NUMBER *",
-                            style: TextStyle(
+                          Text(
+                            context.l10n.whatsappNumberField,
+                            style: const TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w900,
                               color: primaryPink,
@@ -711,9 +712,9 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                           const SizedBox(height: 14),
 
                           // Preferred Instructor
-                          const Text(
-                            "PREFERRED INSTRUCTOR *",
-                            style: TextStyle(
+                          Text(
+                            context.l10n.preferredInstructor,
+                            style: const TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w900,
                               color: textGrey,
@@ -764,9 +765,9 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                           const SizedBox(height: 14),
 
                           // Class Group Selection
-                          const Text(
-                            "SELECT CLASS & SCHEDULE *",
-                            style: TextStyle(
+                          Text(
+                            context.l10n.selectClassSchedule,
+                            style: const TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w900,
                               color: primaryPink,
@@ -832,9 +833,9 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                                       width: 1.5,
                                     ),
                                   ),
-                                  child: const Text(
-                                    "No active class schedule listed. Please register and support will contact you to set up a new cohort.\n\nدر حال حاضر صنفی برای این دوره وجود ندارد. ثبت‌نام کنید؛ برای تشکیل کلاس جدید با شما تماس می‌گیریم.",
-                                    style: TextStyle(
+                                  child: Text(
+                                    context.l10n.noActiveSchedule,
+                                    style: const TextStyle(
                                       color: primaryPink,
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold,
@@ -845,9 +846,9 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                           const SizedBox(height: 14),
 
                           // Notes
-                          const Text(
-                            "ADDITIONAL NOTES (OPTIONAL)",
-                            style: TextStyle(
+                          Text(
+                            context.l10n.additionalNotesOptional,
+                            style: const TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w900,
                               color: textGrey,
@@ -897,9 +898,9 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                                         strokeWidth: 2.5,
                                       ),
                                     )
-                                  : const Text(
-                                      "Finalize Registration",
-                                      style: TextStyle(
+                                  : Text(
+                                      context.l10n.finalizeRegistration,
+                                      style: const TextStyle(
                                         fontWeight: FontWeight.w900,
                                         fontSize: 12,
                                         letterSpacing: 0.8,

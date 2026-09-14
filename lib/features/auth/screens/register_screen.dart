@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
+import '../../../core/services/language_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -290,9 +291,9 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              const Text(
-                                "Create Account",
-                                style: TextStyle(
+                              Text(
+                                context.l10n.createAccount,
+                                style: const TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w900,
                                   color: textDark,
@@ -343,10 +344,12 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text("Already have an account? ", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
                                   GestureDetector(
                                     onTap: () => Navigator.pop(context),
-                                    child: const Text("Sign In", style: TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 11)),
+                                    child: Text(
+                                      context.l10n.alreadyHaveAccount,
+                                      style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 11),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -437,14 +440,14 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           child: const Icon(Icons.mark_email_unread_rounded, color: primaryPink, size: 40),
         ),
         const SizedBox(height: 16),
-        const Text(
-          "Verify Your Identity",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark),
+        Text(
+          context.l10n.verifyYourIdentity,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark),
         ),
         const SizedBox(height: 6),
-        const Text(
-          "We've sent a secure verification link to your email address:",
-          style: TextStyle(color: textGrey, fontSize: 11),
+        Text(
+          context.l10n.verificationLinkSent,
+          style: const TextStyle(color: textGrey, fontSize: 11),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 10),
@@ -460,7 +463,6 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           ),
         ),
         const SizedBox(height: 14),
-        // بخش فارسی (توضیحات تکمیلی)
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -468,20 +470,18 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: primaryPink.withOpacity(0.2)),
           ),
-          child: const Column(
+          child: Column(
             children: [
               Text(
-                "لطفاً وارد ایمیل خود شده و روی دکمه تایید کلیک کنید.",
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textDark),
-                textAlign: TextAlign.right,
-                textDirection: TextDirection.rtl,
+                context.l10n.clickLinkInEmail,
+                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textDark),
+                textAlign: TextAlign.center,
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
-                "(در صورت عدم مشاهده، حتماً پوشه Spam یا Junk را بررسی نمایید)",
-                style: TextStyle(fontSize: 9, color: textGrey),
-                textAlign: TextAlign.right,
-                textDirection: TextDirection.rtl,
+                context.l10n.checkSpamFolder,
+                style: const TextStyle(fontSize: 9, color: textGrey),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -498,7 +498,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
             onPressed: () => Navigator.pop(context),
-            child: const Text("PROCEED TO LOGIN", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1)),
+            child: Text(context.l10n.proceedToLogin, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1)),
           ),
         ),
       ],
@@ -664,7 +664,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                       side: const BorderSide(color: cardBorder, width: 1.5),
                     ),
                     onPressed: _prevStep,
-                    child: const Text("BACK", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                    child: Text(context.l10n.back.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
                   ),
                 ),
               ),
@@ -683,7 +683,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                   onPressed: isLoading ? null : (step < 3 ? _nextStep : _handleRegister),
                   child: isLoading
                       ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                      : Text(step < 3 ? "NEXT STEP" : "COMPLETE 🚀", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1)),
+                      : Text(step < 3 ? context.l10n.nextStep : context.l10n.completeRegistration, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1)),
                 ),
               ),
             ),

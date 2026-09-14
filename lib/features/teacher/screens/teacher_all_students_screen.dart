@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class TeacherStudentProfileItem {
   final String id;
@@ -242,7 +243,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
               _buildProfileDetailRow("Total Score", "${student.totalScore} Points"),
               _buildProfileDetailRow("Wallet Balance", "\$${student.walletBalance.toStringAsFixed(2)}"),
               const SizedBox(height: 12),
-              const Text("Biography", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
+              Text(context.l10n.bio, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
               const SizedBox(height: 6),
               Container(
                 width: double.infinity,
@@ -262,7 +263,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Close Profile", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
+                  child: Text(context.l10n.cancel, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
                 ),
               ),
               const SizedBox(height: 10),
@@ -305,18 +306,17 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Filter Directory", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
+                      Text(context.l10n.filter, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 16)),
                       IconButton(
                         icon: const Icon(Icons.close_rounded, color: textGrey),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
                   ),
-                  const Text("Filter students by specific course and class group.", style: TextStyle(color: textGrey, fontSize: 11)),
                   const SizedBox(height: 20),
 
                   // انتخاب کورس (Course)
-                  const Text("Course Filter", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 12)),
+                  Text(context.l10n.courses, style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 12)),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String?>(
                     initialValue: selectedCourseId,
@@ -332,7 +332,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                     ),
                     items: [
-                      const DropdownMenuItem<String?>(value: null, child: Text("All Courses (Clear)")),
+                      DropdownMenuItem<String?>(value: null, child: Text("${context.l10n.courses} (${context.l10n.all})")),
                       ...teacherCourses.map((crs) => DropdownMenuItem<String?>(
                             value: crs['id'].toString(),
                             child: Text(crs['title'] ?? 'Course Title'),
@@ -350,7 +350,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                   const SizedBox(height: 16),
 
                   // انتخاب کلاس (Class Group)
-                  const Text("Class Group Filter", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 12)),
+                  Text(context.l10n.classes, style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 12)),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String?>(
                     initialValue: selectedClassId,
@@ -366,7 +366,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
                     ),
                     items: [
-                      const DropdownMenuItem<String?>(value: null, child: Text("All Classes (Clear)")),
+                      DropdownMenuItem<String?>(value: null, child: Text("${context.l10n.classes} (${context.l10n.all})")),
                       ...teacherClasses
                           .where((cls) => selectedCourseId == null || cls['course_id'].toString() == selectedCourseId.toString())
                           .map((cls) => DropdownMenuItem<String?>(
@@ -398,7 +398,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                             });
                             Navigator.pop(context);
                           },
-                          child: const Text("Reset Filters", style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 11)),
+                          child: Text(context.l10n.cancel, style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 11)),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -412,7 +412,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           ),
                           onPressed: () => Navigator.pop(context),
-                          child: const Text("Apply Filter", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                          child: Text(context.l10n.filter, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
                         ),
                       ),
                     ],
@@ -494,9 +494,9 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("My Students", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
+                      Text(context.l10n.myStudents, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
                       const SizedBox(height: 3),
-                      Text("Global directory of all students enrolled across your courses & classes (${filteredStudents.length} Visible).",
+                      Text("${context.l10n.allStudents} (${filteredStudents.length})",
                           style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
                     ],
                   ),
@@ -514,7 +514,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                   onChanged: (val) => setState(() => searchQuery = val),
                   style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w600),
                   decoration: InputDecoration(
-                    hintText: "Search by name, email, phone...",
+                    hintText: context.l10n.search,
                     hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                     prefixIcon: const Icon(Icons.search_rounded, color: textGrey, size: 20),
                     filled: true,
@@ -619,7 +619,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                                           color: primaryPink.withOpacity(0.1),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
-                                        child: Text("Course: $crs",
+                                        child: Text("${context.l10n.courseName}: $crs",
                                             style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.bold)),
                                       )),
                                   ...student.enrolledClasses.map((cls) => Container(
@@ -628,7 +628,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                                           color: lightPinkBg,
                                           borderRadius: BorderRadius.circular(8),
                                         ),
-                                        child: Text("Class: $cls",
+                                        child: Text("${context.l10n.className}: $cls",
                                             style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.bold)),
                                       )),
                                 ],
@@ -644,7 +644,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
                                   icon: const Icon(Icons.visibility_rounded, size: 16, color: primaryPink),
-                                  label: const Text("View Profile", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                  label: Text(context.l10n.viewDetails, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                   onPressed: () => _showStudentProfileModal(student),
                                 ),
                               ),
@@ -661,15 +661,12 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: cardBorder),
                       ),
-                      child: const Column(
+                      child: Column(
                         children: [
-                          Icon(Icons.search_off_rounded, size: 36, color: textGrey),
-                          SizedBox(height: 10),
-                          Text("No Students Found",
-                              style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
-                          SizedBox(height: 4),
-                          Text("We couldn't find any students matching your criteria.",
-                              style: TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                          const Icon(Icons.search_off_rounded, size: 36, color: textGrey),
+                          const SizedBox(height: 10),
+                          Text(context.l10n.noDataFound,
+                              style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
                         ],
                       ),
                     ),

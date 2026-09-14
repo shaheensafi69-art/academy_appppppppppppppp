@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/language_service.dart';
 import 'direct_chat_screen.dart';
 
 class ChatThreadItem {
@@ -226,7 +227,7 @@ class _DirectChatListScreenState extends State<DirectChatListScreen> {
             peerName: fullName,
             peerAvatar: p['avatar_url'] ?? '',
             role: (p['role'] ?? 'STUDENT').toString().toUpperCase(),
-            lastMessage: "گفتگو را شروع کنید 💬",
+            lastMessage: "start_conversation_placeholder",
             time: "",
             unreadCount: 0,
             isOnline: true,
@@ -262,9 +263,9 @@ class _DirectChatListScreenState extends State<DirectChatListScreen> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          "Direct Messages 💬",
-          style: TextStyle(
+        title: Text(
+          "${context.l10n.directMessages} 💬",
+          style: const TextStyle(
             color: textDark,
             fontSize: 18,
             fontWeight: FontWeight.w900,
@@ -286,7 +287,7 @@ class _DirectChatListScreenState extends State<DirectChatListScreen> {
                 color: textDark,
               ),
               decoration: InputDecoration(
-                hintText: "Search friends or teachers to message...",
+                hintText: "${context.l10n.search}...",
                 hintStyle: const TextStyle(color: textGrey, fontSize: 13),
                 prefixIcon: const Icon(
                   Icons.search_rounded,
@@ -353,8 +354,8 @@ class _DirectChatListScreenState extends State<DirectChatListScreen> {
                         const SizedBox(height: 16),
                         Text(
                           _searchController.text.trim().isNotEmpty
-                              ? "No contacts found for '${_searchController.text}'"
-                              : "هیچ گفتگو فعالی وجود ندارد",
+                              ? "${context.l10n.search}: '${_searchController.text}'"
+                              : context.l10n.noConversationsYet,
                           style: const TextStyle(
                             color: textDark,
                             fontSize: 16,
@@ -362,9 +363,9 @@ class _DirectChatListScreenState extends State<DirectChatListScreen> {
                           ),
                         ),
                         const SizedBox(height: 6),
-                        const Text(
-                          "نام دوست یا استاد خود را جستجو کنید و اولین پیام را بفرستید!",
-                          style: TextStyle(
+                        Text(
+                          context.l10n.startLiveChatHint,
+                          style: const TextStyle(
                             color: textGrey,
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -476,7 +477,9 @@ class _DirectChatListScreenState extends State<DirectChatListScreen> {
         ],
       ),
       subtitle: Text(
-        item.lastMessage,
+        (item.lastMessage == 'start_conversation_placeholder' || item.lastMessage == 'گفتگو را شروع کنید 💬')
+            ? context.l10n.startConversation
+            : item.lastMessage,
         style: TextStyle(
           color: item.unreadCount > 0 ? textDark : textGrey,
           fontSize: 12,

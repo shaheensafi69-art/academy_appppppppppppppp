@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class CourseDetailScreen extends StatefulWidget {
   final String courseId;
@@ -135,8 +136,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text("Language: ${courseData?['language'] ?? 'English'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                                Text("Status: ${courseData?['is_published'] == true ? 'Published ✅' : 'Draft 📌'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                Text("${context.l10n.language}: ${courseData?['language'] ?? 'English'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                Text("${context.l10n.status}: ${courseData?['is_published'] == true ? '${context.l10n.published} ✅' : '${context.l10n.draft} 📌'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ],
@@ -148,11 +149,11 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text("Associated Class Groups & Students", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                          Text("${context.l10n.classes} & ${context.l10n.students}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(10)),
-                            child: Text("${classGroups.length} Groups", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
+                            child: Text("${classGroups.length} ${context.l10n.classes}", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
                           ),
                         ],
                       ),
@@ -184,21 +185,21 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Expanded(
-                                            child: Text(group['class_name'] ?? 'Class Group', style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                            child: Text(group['class_name'] ?? context.l10n.classes, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
                                           ),
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                             decoration: BoxDecoration(color: isActive ? Colors.green.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-                                            child: Text(isActive ? "● Active" : "○ Standby", style: TextStyle(color: isActive ? Colors.green.shade700 : textGrey, fontSize: 9, fontWeight: FontWeight.w900)),
+                                            child: Text(isActive ? "● ${context.l10n.active}" : "○ ${context.l10n.draft}", style: TextStyle(color: isActive ? Colors.green.shade700 : textGrey, fontSize: 9, fontWeight: FontWeight.w900)),
                                           ),
                                         ],
                                       ),
                                       const SizedBox(height: 4),
-                                      Text("Schedule: ${group['schedule_info'] ?? 'Not set'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500)),
+                                      Text("${context.l10n.schedule}: ${group['schedule_info'] ?? '---'}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500)),
                                       const SizedBox(height: 12),
                                       const Divider(color: cardBorder),
                                       const SizedBox(height: 8),
-                                      Text("Students in this group (${studentsList.length}):", style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 11)),
+                                      Text("${context.l10n.students} (${studentsList.length}):", style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 11)),
                                       const SizedBox(height: 8),
                                       studentsList.isNotEmpty
                                           ? ListView.separated(
@@ -230,7 +231,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                                 );
                                               },
                                             )
-                                          : const Text("No students in this group yet.", style: TextStyle(color: textGrey, fontSize: 10)),
+                                          : Text(context.l10n.noDataFound, style: const TextStyle(color: textGrey, fontSize: 10)),
                                     ],
                                   ),
                                 );
@@ -240,7 +241,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                               padding: const EdgeInsets.all(20),
                               alignment: Alignment.center,
                               decoration: BoxDecoration(color: surfaceWhite, borderRadius: BorderRadius.circular(18), border: Border.all(color: cardBorder)),
-                              child: const Text("No class groups assigned to this course yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                              child: Text(context.l10n.noDataFound, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                             ),
                       const SizedBox(height: 24),
 
@@ -248,11 +249,11 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text("All Enrolled Students (Enrollments)", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                          Text(context.l10n.allStudents, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(10)),
-                            child: Text("${enrolledStudents.length} Students", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
+                            child: Text("${enrolledStudents.length} ${context.l10n.students}", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
                           ),
                         ],
                       ),
@@ -317,7 +318,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                 borderRadius: BorderRadius.circular(18),
                                 border: Border.all(color: cardBorder),
                               ),
-                              child: const Text("No students enrolled in this course yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                              child: Text(context.l10n.noDataFound, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                             ),
                       const SizedBox(height: 40),
                     ],
