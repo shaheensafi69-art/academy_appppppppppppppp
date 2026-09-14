@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 import 'admin_support_chat_screen.dart';
 
 class SupportRequest {
@@ -43,11 +44,11 @@ class SupportRequest {
   }
 
   String get fullName {
-    if (student == null) return 'Unknown User';
+    if (student == null) return 'User';
     final f = (student!['first_name'] ?? '').toString();
     final l = (student!['last_name'] ?? '').toString();
     final name = "$f $l".trim();
-    return name.isEmpty ? 'Unknown User' : name;
+    return name.isEmpty ? 'User' : name;
   }
 
   String get role => (student?['role'] ?? '').toString();
@@ -98,11 +99,13 @@ class _AdminSupportRequestsScreenState
   String searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
 
+  // Luxury Light-Pink Theme Palette
   static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
-  static const Color backgroundGrey = Color(0xFFF4F7FA);
-  static const Color textDark = Color(0xFF1F2937);
+  static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
+  static const Color cardBorder = Color(0xFFF3F4F6);
 
   static const Color colorPending = Color(0xFFFFB300);
   static const Color colorActive = Color(0xFF10B981);
@@ -168,7 +171,7 @@ class _AdminSupportRequestsScreenState
         debugPrint('DB Error: $e2');
         if (mounted) {
           setState(() {
-            errorMessage = "دسترسی دیتابیس مسدود است (RLS Error):\n$e2";
+            errorMessage = e2.toString();
           });
         }
       }
@@ -240,20 +243,6 @@ class _AdminSupportRequestsScreenState
     return colorPending;
   }
 
-  String _getStatusLabel(String status) {
-    final s = status.toLowerCase();
-    if (s == 'closed') return 'Closed';
-    if (s == 'escalated' || s == 'answered') return 'Active';
-    return 'Pending';
-  }
-
-  IconData _getStatusIcon(String status) {
-    final s = status.toLowerCase();
-    if (s == 'closed') return Icons.lock_rounded;
-    if (s == 'escalated' || s == 'answered') return Icons.support_agent_rounded;
-    return Icons.hourglass_top_rounded;
-  }
-
   @override
   Widget build(BuildContext context) {
     final list = filtered;
@@ -273,31 +262,30 @@ class _AdminSupportRequestsScreenState
         .length;
 
     return Scaffold(
-      backgroundColor: backgroundGrey,
-      // حذف AppBar معمولی و استفاده از SafeArea و Column فشرده برای حذف فاصله زیاد بالا
+      backgroundColor: surfaceWhite,
       body: SafeArea(
         child: Column(
           children: [
-            // هدر فشرده و متناسب با بقیه صفحات
+            // Header
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const SizedBox(width: 40), // برای بالانس شدن دکمه ریفرش
+                  const SizedBox(width: 40),
                   Column(
-                    children: const [
+                    children: [
                       Text(
-                        "Support Command Center",
-                        style: TextStyle(
+                        context.l10n.supportHelpDesk,
+                        style: const TextStyle(
                           color: textDark,
                           fontWeight: FontWeight.w900,
-                          fontSize: 15,
+                          fontSize: 16,
                         ),
                       ),
                       Text(
-                        "Manage Live Chat Escalations",
-                        style: TextStyle(
+                        context.l10n.liveSupportSubtitle,
+                        style: const TextStyle(
                           color: textGrey,
                           fontWeight: FontWeight.w600,
                           fontSize: 10,
@@ -308,8 +296,8 @@ class _AdminSupportRequestsScreenState
                   IconButton(
                     icon: const Icon(
                       Icons.refresh_rounded,
-                      color: textDark,
-                      size: 20,
+                      color: primaryPink,
+                      size: 22,
                     ),
                     onPressed: _fetchRequests,
                     padding: EdgeInsets.zero,
@@ -319,14 +307,14 @@ class _AdminSupportRequestsScreenState
               ),
             ),
 
-            // باکس‌های آمار با پدینگ استاندارد و فشرده
+            // Stat Cards
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
                   Expanded(
                     child: _buildStatCard(
-                      "PENDING",
+                      context.l10n.pending.toUpperCase(),
                       pendingCount,
                       colorPending,
                       Icons.hourglass_top_rounded,
@@ -346,7 +334,7 @@ class _AdminSupportRequestsScreenState
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildStatCard(
-                      "CLOSED",
+                      context.l10n.ticketStatusClosed.toUpperCase(),
                       closedCount,
                       colorClosed,
                       Icons.check_circle_rounded,
@@ -357,20 +345,14 @@ class _AdminSupportRequestsScreenState
               ),
             ),
 
-            // نوار جستجو
+            // Search Bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Container(
                 decoration: BoxDecoration(
-                  color: surfaceWhite,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+                  color: cardBorder.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: cardBorder, width: 1.5),
                 ),
                 child: TextField(
                   controller: _searchController,
@@ -381,11 +363,8 @@ class _AdminSupportRequestsScreenState
                     color: textDark,
                   ),
                   decoration: InputDecoration(
-                    hintText: "Search name, subject or message...",
-                    hintStyle: TextStyle(
-                      color: textGrey.withOpacity(0.6),
-                      fontSize: 11,
-                    ),
+                    hintText: context.l10n.searchSupportHint,
+                    hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                     prefixIcon: const Icon(
                       Icons.search_rounded,
                       color: primaryPink,
@@ -401,14 +380,14 @@ class _AdminSupportRequestsScreenState
               ),
             ),
 
-            // فیلتر نقش‌ها
+            // Filter Role Chips
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
                   Expanded(
                     child: _filterChip(
-                      "All",
+                      context.l10n.allUsers,
                       "ALL",
                       filterRole,
                       (v) => setState(() => filterRole = v),
@@ -417,7 +396,7 @@ class _AdminSupportRequestsScreenState
                   const SizedBox(width: 8),
                   Expanded(
                     child: _filterChip(
-                      "Students",
+                      context.l10n.studentsOnly,
                       "STUDENT",
                       filterRole,
                       (v) => setState(() => filterRole = v),
@@ -426,7 +405,7 @@ class _AdminSupportRequestsScreenState
                   const SizedBox(width: 8),
                   Expanded(
                     child: _filterChip(
-                      "Teachers",
+                      context.l10n.teachersOnly,
                       "TEACHER",
                       filterRole,
                       (v) => setState(() => filterRole = v),
@@ -436,7 +415,7 @@ class _AdminSupportRequestsScreenState
               ),
             ),
 
-            // لیست درخواست‌ها
+            // Requests List
             Expanded(
               child: isLoading
                   ? const Center(
@@ -444,45 +423,16 @@ class _AdminSupportRequestsScreenState
                     )
                   : errorMessage != null
                   ? Center(
-                      child: Container(
-                        margin: const EdgeInsets.all(20),
+                      child: Padding(
                         padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: Colors.red.withOpacity(0.3),
-                            width: 1.5,
+                        child: Text(
+                          errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.redAccent,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
                           ),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.error_outline_rounded,
-                              color: Colors.red,
-                              size: 40,
-                            ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              "دسترسی مسدود است",
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              errorMessage!,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.red,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
                         ),
                       ),
                     )
@@ -494,37 +444,22 @@ class _AdminSupportRequestsScreenState
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: lightPinkBg,
                               shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 15,
-                                ),
-                              ],
                             ),
                             child: const Icon(
                               Icons.mark_chat_read_rounded,
                               size: 36,
-                              color: Colors.grey,
+                              color: primaryPink,
                             ),
                           ),
                           const SizedBox(height: 12),
-                          const Text(
-                            "Inbox is Empty",
-                            style: TextStyle(
+                          Text(
+                            context.l10n.noSupportRequests,
+                            style: const TextStyle(
                               color: textDark,
-                              fontSize: 15,
+                              fontSize: 14,
                               fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            "No support requests match your current filters.",
-                            style: TextStyle(
-                              color: textGrey,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
@@ -568,19 +503,17 @@ class _AdminSupportRequestsScreenState
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(
-                  colors: [color.withOpacity(0.8), color],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : const LinearGradient(colors: [Colors.white, Colors.white]),
+          color: isSelected ? lightPinkBg : surfaceWhite,
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? primaryPink : cardBorder,
+            width: isSelected ? 1.5 : 1,
+          ),
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? color.withOpacity(0.3)
-                  : Colors.black.withOpacity(0.03),
+                  ? primaryPink.withValues(alpha: 0.1)
+                  : Colors.black.withValues(alpha: 0.02),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -592,13 +525,13 @@ class _AdminSupportRequestsScreenState
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(icon, color: isSelected ? Colors.white : color, size: 18),
+                Icon(icon, color: isSelected ? primaryPink : color, size: 18),
                 Text(
                   "$count",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
-                    color: isSelected ? Colors.white : textDark,
+                    color: isSelected ? primaryPink : textDark,
                   ),
                 ),
               ],
@@ -609,7 +542,7 @@ class _AdminSupportRequestsScreenState
               style: TextStyle(
                 fontSize: 9,
                 fontWeight: FontWeight.w900,
-                color: isSelected ? Colors.white.withOpacity(0.9) : textGrey,
+                color: isSelected ? primaryPink : textGrey,
                 letterSpacing: 0.8,
               ),
             ),
@@ -627,9 +560,10 @@ class _AdminSupportRequestsScreenState
       decoration: BoxDecoration(
         color: surfaceWhite,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: cardBorder, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -678,11 +612,11 @@ class _AdminSupportRequestsScreenState
                           shape: BoxShape.circle,
                           color: r.isTeacher
                               ? Colors.indigo.shade50
-                              : primaryPink.withOpacity(0.1),
+                              : lightPinkBg,
                           border: Border.all(
                             color: r.isTeacher
                                 ? Colors.indigo.shade100
-                                : primaryPink.withOpacity(0.3),
+                                : primaryPink.withValues(alpha: 0.3),
                             width: 1.5,
                           ),
                         ),
@@ -741,7 +675,7 @@ class _AdminSupportRequestsScreenState
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              r.lastMessage ?? "No messages yet",
+                              r.lastMessage ?? context.l10n.noMessages,
                               style: const TextStyle(
                                 color: textGrey,
                                 fontSize: 10,
@@ -759,25 +693,25 @@ class _AdminSupportRequestsScreenState
                                   vertical: 3,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.blue.shade50,
+                                  color: lightPinkBg,
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
-                                    color: Colors.blue.shade100,
+                                    color: primaryPink.withValues(alpha: 0.3),
                                   ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.how_to_reg_rounded,
                                       size: 10,
-                                      color: Colors.blue.shade700,
+                                      color: primaryPink,
                                     ),
                                     const SizedBox(width: 3),
                                     Text(
-                                      "Handled by Team",
-                                      style: TextStyle(
-                                        color: Colors.blue.shade700,
+                                      context.l10n.supportHelpDesk,
+                                      style: const TextStyle(
+                                        color: primaryPink,
                                         fontSize: 8,
                                         fontWeight: FontWeight.w900,
                                       ),
@@ -812,22 +746,12 @@ class _AdminSupportRequestsScreenState
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? textDark : Colors.white,
+          color: isActive ? primaryPink : cardBorder.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            if (isActive)
-              BoxShadow(
-                color: Colors.black.withOpacity(0.15),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              )
-            else
-              BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-          ],
+          border: Border.all(
+            color: isActive ? primaryPink : cardBorder,
+            width: 1.5,
+          ),
         ),
         alignment: Alignment.center,
         child: Text(

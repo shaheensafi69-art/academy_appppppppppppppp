@@ -965,7 +965,7 @@ class AppLocalizationsFa extends AppLocalizations {
   String get noDocumentAttached => 'فایلی ضمیمه نشده است.';
 
   @override
-  String get leadInstructor => 'استاد راهنما';
+  String get leadInstructor => 'استاد اصلی دوره';
 
   @override
   String get includesCertificate => 'شامل گواهینامه معتبر';
@@ -2411,4 +2411,464 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get systemSettings => 'تنظیمات سامانه';
+
+  @override
+  String get backToClassRoster => 'بازگشت به لیست کلاس';
+
+  @override
+  String get enrollStudents => 'ثبت‌نام دانشجویان';
+
+  @override
+  String get enrollStudentsSubtitle =>
+      'دانشجویان مورد نظر را جهت عضویت در این گروه انتخاب کنید.';
+
+  @override
+  String get confirmEnrollment => 'تأیید ثبت‌نام';
+
+  @override
+  String get paidAll => 'پرداخت شده (همه)';
+
+  @override
+  String get facultyManagement => 'مدیریت اساتید';
+
+  @override
+  String get facultyDirectory => 'فهرست اساتید';
+
+  @override
+  String get facultyManagementSubtitle =>
+      'بررسی مشخصات اساتید، رزومه و دوره‌های فعال آنها.';
+
+  @override
+  String get activeCohorts => 'گروه‌های فعال';
+
+  @override
+  String get searchInstructorsHint => 'جستجوی استاد بر اساس نام یا ایمیل...';
+
+  @override
+  String get noInstructorsFound => 'هیچ استادی یافت نشد.';
+
+  @override
+  String get noBiographyProvided => 'هیچ بیوگرافی برای این استاد ثبت نشده است.';
+
+  @override
+  String get viewProfile => 'مشاهده پروفایل';
+
+  @override
+  String get backToFaculty => 'بازگشت به اساتید';
+
+  @override
+  String get instructorNotFound => 'استاد یافت نشد';
+
+  @override
+  String get walletBalanceAndPayouts => 'موجودی کیف پول و تسویه حساب‌ها';
+
+  @override
+  String get processPayout => 'تسویه حساب';
+
+  @override
+  String get instructorProfileSyncSuccess =>
+      'پروفایل استاد و کنترل‌های مدیریتی با موفقیت همگام شدند! 🚀';
+
+  @override
+  String get invalidPayoutAmount => 'مبلغ وارد شده برای تسویه نامعتبر است.';
+
+  @override
+  String get payoutSuccess => 'تسویه حساب با موفقیت انجام شد!';
+
+  @override
+  String get failedToProcessPayout => 'خطا در انجام تسویه حساب';
+
+  @override
+  String get specializedCourses => 'دوره‌های تخصصی';
+
+  @override
+  String get noSpecializedCourses =>
+      'هیچ دوره‌ای به این استاد اختصاص داده نشده است.';
+
+  @override
+  String get assignedCohorts => 'کلاس‌ها و دوره‌های واگذار شده';
+
+  @override
+  String get noAssignedClasses => 'هیچ کلاسی واگذار نشده است.';
+
+  @override
+  String get confirmAndSettlePayout => 'تأیید نهایی و پرداخت وجه 🚀';
+
+  @override
+  String get payoutAmountUsd => 'مبلغ پرداختی (دلار)';
+
+  @override
+  String get biographyTeacherInfo => 'بیوگرافی و رزومه استاد';
+
+  @override
+  String get courseLibrary => 'کتابخانه دوره‌ها';
+
+  @override
+  String get searchCourseHint => 'جستجوی دوره بر اساس عنوان یا توضیحات...';
+
+  @override
+  String get coursePrice => 'قیمت دوره (\$)';
+
+  @override
+  String get courseCategory => 'دسته‌بندی';
+
+  @override
+  String get courseLevel => 'سطح';
+
+  @override
+  String get thumbnailUrl => 'آدرس تصویر کاور';
+
+  @override
+  String get saveCourseChanges => 'ذخیره تغییرات دوره 🚀';
+
+  @override
+  String get createCourseAction => 'ایجاد دوره آموزشی 🚀';
+
+  @override
+  String get deleteCourse => 'حذف دوره';
+
+  @override
+  String get confirmDeleteCourse => 'آیا از حذف این دوره اطمینان دارید؟';
+
+  @override
+  String get classesAndCohorts => 'کلاس‌ها و دوره‌ها';
+
+  @override
+  String get cohortDirectory => 'فهرست گروه‌های آموزشی';
+
+  @override
+  String get searchClassesHint => 'جستجوی کلاس بر اساس نام یا استاد...';
+
+  @override
+  String get noClassesFound => 'هیچ کلاسی یافت نشد.';
+
+  @override
+  String get activeCohort => 'دوره فعال';
+
+  @override
+  String get inactiveCohort => 'بایگانی شده / غیرفعال';
+
+  @override
+  String get selectTeacher => 'انتخاب استاد';
+
+  @override
+  String get selectCourse => 'انتخاب دوره';
+
+  @override
+  String get createClassAction => 'ایجاد کلاس جدید 🚀';
+
+  @override
+  String get saveClassChanges => 'ذخیره تغییرات کلاس 🚀';
+
+  @override
+  String get liveStreamingStudio => 'استودیوی پخش زنده';
+
+  @override
+  String get broadcastRoomUrl => 'لینک جلسه یا پخش زنده';
+
+  @override
+  String get financialLedger => 'دفتر کل امور مالی';
+
+  @override
+  String get allTransactions => 'همه تراکنش‌ها';
+
+  @override
+  String get deposits => 'واریزی‌ها';
+
+  @override
+  String get withdrawals => 'برداشت‌ها';
+
+  @override
+  String get awardsAndRecognition => 'افتخارات و نشان‌های آکادمی';
+
+  @override
+  String get announcementBroadcast => 'ارسال اطلاعیه همگانی';
+
+  @override
+  String get publishAnnouncement => 'انتشار اطلاعیه رسمی 📢';
+
+  @override
+  String get supportHelpDesk => 'سامانه تیکتینگ و پشتیبانی';
+
+  @override
+  String get ticketStatusOpen => 'باز';
+
+  @override
+  String get ticketStatusClosed => 'پاسخ داده شده / بسته';
+
+  @override
+  String get liveSupportChat => 'گفتگوی زنده با پشتیبانی';
+
+  @override
+  String get adminSettings => 'تنظیمات مدیریت';
+
+  @override
+  String get saveSettings => 'ذخیره تنظیمات 🚀';
+
+  @override
+  String get systemConfiguration => 'پیکربندی سیستم';
+
+  @override
+  String get loadingDirectory => 'در حال بارگذاری فهرست...';
+
+  @override
+  String get teacher => 'استاد';
+
+  @override
+  String get course => 'دوره';
+
+  @override
+  String get backToCourses => 'بازگشت به دوره‌ها';
+
+  @override
+  String get noDescription => 'توضیحاتی ثبت نشده است.';
+
+  @override
+  String get optional => 'اختیاری';
+
+  @override
+  String get required => 'اجباری';
+
+  @override
+  String get backToCohorts => 'بازگشت به صنف‌ها';
+
+  @override
+  String get cohortManagement => 'مدیریت صنف‌ها';
+
+  @override
+  String get createClassCohortSubtitle =>
+      'تعیین کورس، استاد، جدول زمانی و لینک‌های آنلاین برای دانشجویان.';
+
+  @override
+  String get classTimeSlot => 'زمان برگزاری صنف';
+
+  @override
+  String get classDaysHint => 'مثلاً شنبه، دوشنبه، چهارشنبه';
+
+  @override
+  String get classTimeHint => 'مثلاً ۱۸:۰۰ - ۲۰:۰۰';
+
+  @override
+  String get scheduleNotes => 'یادداشت‌ها و جزییات تقسیم‌اوقات';
+
+  @override
+  String get meetingLinkHint => 'https://zoom.us/j/...';
+
+  @override
+  String get signalLinkHint => 'https://t.me/+...';
+
+  @override
+  String get activeLiveCohort => 'فعال (صنف در حال برگزاری)';
+
+  @override
+  String get archivedCompleted => 'آرشیف‌شده / تکمیل‌شده';
+
+  @override
+  String get noLiveSessions => 'هیچ جلسه زنده‌ای یافت نشد.';
+
+  @override
+  String get noLink => 'بدون لینک';
+
+  @override
+  String get manageAction => 'مدیریت';
+
+  @override
+  String get manageClassModal => 'مدیریت صنف';
+
+  @override
+  String get saveAndUpdateAll => 'ذخیره و به‌روزرسانی تمام مشخصات 🚀';
+
+  @override
+  String get liveSessionsAndCohorts => 'جلسات زنده و صنف‌ها';
+
+  @override
+  String get liveSessionsSubtitle =>
+      'نظارت بر اتاق‌های فعال، تقسیم‌اوقات و مدیریت امن مشخصات صنف.';
+
+  @override
+  String get searchCohortsHint => 'جستجوی صنف‌ها...';
+
+  @override
+  String get establishingConnection => 'برقراری ارتباط زنده...';
+
+  @override
+  String get auditingRecords => 'در حال بررسی اسناد مالی...';
+
+  @override
+  String get financialLedgerSubtitle =>
+      'بررسی درآمد کلی پلتفرم و مدیریت پرداخت‌های اساتید.';
+
+  @override
+  String get facultyLiability => 'بدهی به اساتید';
+
+  @override
+  String get distributedPayouts => 'پرداخت‌های توزیع‌شده';
+
+  @override
+  String get netProfit => 'سود خالص';
+
+  @override
+  String get facultyTab => 'اساتید';
+
+  @override
+  String get inflowsTab => 'دریافتی‌ها';
+
+  @override
+  String get outflowsTab => 'پرداختی‌ها';
+
+  @override
+  String get findInstructorHint => 'جستجوی استاد...';
+
+  @override
+  String get payoutAmount => 'مبلغ پرداختی (\\\$)';
+
+  @override
+  String get confirmPayout => 'تأیید پرداخت 💸';
+
+  @override
+  String get studentPayments => 'واریزی‌های دانشجویان';
+
+  @override
+  String get payoutRecords => 'سوابق پرداخت به اساتید';
+
+  @override
+  String get noTransactions => 'هیچ تراکنشی یافت نشد.';
+
+  @override
+  String get awardsSubtitle =>
+      'ایجاد، مدیریت و اعطای مدال‌ها و جوایز موفقیت دانشجویان.';
+
+  @override
+  String get createAwardTitle => 'ایجاد جایزه جدید';
+
+  @override
+  String get awardDescription => 'توضیحات جایزه';
+
+  @override
+  String get awardIcon => 'آیکون یا ایموجی';
+
+  @override
+  String get publishAwardAction => 'ایجاد جایزه جدید 🏆';
+
+  @override
+  String get availableAwards => 'مدال‌ها و جوایز موجود';
+
+  @override
+  String get noAwardsFound => 'هیچ مدال یا جایزه‌ای یافت نشد.';
+
+  @override
+  String get deleteAward => 'حذف جایزه';
+
+  @override
+  String get announcementsSubtitle =>
+      'ارسال اطلاعیه‌های سراسری سیستم، آپدیت‌ها و هشدارهای مهم به کاربران.';
+
+  @override
+  String get announcementContent => 'متن و محتوای اطلاعیه';
+
+  @override
+  String get studentsOnly => 'فقط دانشجویان';
+
+  @override
+  String get teachersOnly => 'فقط اساتید';
+
+  @override
+  String get broadcastNow => 'ارسال همگانی اطلاعیه 📢';
+
+  @override
+  String get recentAnnouncements => 'تاریخچه اطلاعیه‌ها';
+
+  @override
+  String get noAnnouncements => 'هنوز هیچ اطلاعیه‌ای منتشر نشده است.';
+
+  @override
+  String get ticketsSubtitle =>
+      'مدیریت پیام‌های پشتیبانی، موارد حل‌نشده و تیکت‌های دپارتمان‌ها.';
+
+  @override
+  String get searchTicketsHint => 'جستجو بر اساس موضوع، دانشجو یا دپارتمان...';
+
+  @override
+  String get filterStatusAll => 'همه تیکت‌ها';
+
+  @override
+  String get filterDepartment => 'دپارتمان';
+
+  @override
+  String get ticketDetails => 'جزییات تیکت';
+
+  @override
+  String get typeYourReply => 'پاسخ خود را بنویسید...';
+
+  @override
+  String get reopenTicket => 'بازگشایی مجدد تیکت';
+
+  @override
+  String get liveSupportSubtitle =>
+      'پاسخگویی به درخواست‌های زنده دانشجویان و اساتید به صورت لحظه‌ای.';
+
+  @override
+  String get searchSupportHint => 'جستجوی درخواست‌های پشتیبانی...';
+
+  @override
+  String get openChat => 'گفتگوی آنلاین';
+
+  @override
+  String get noSupportRequests => 'هیچ درخواست پشتیبانی یافت نشد.';
+
+  @override
+  String get supportChatTitle => 'چت پشتیبانی';
+
+  @override
+  String get markResolved => 'علامت‌گذاری به عنوان حل‌شده';
+
+  @override
+  String get adminSettingsSubtitle =>
+      'مدیریت پروفایل مدیر، تنظیمات سیستم و پیکربندی‌های امنیتی.';
+
+  @override
+  String get systemAdmin => 'مدیر سیستم';
+
+  @override
+  String get adminRole => 'نقش مدیریتی';
+
+  @override
+  String get logOutAccount => 'خروج از حساب کاربری';
+
+  @override
+  String get confirmLogout => 'آیا مطمئن هستید که می‌خواهید خارج شوید؟';
+
+  @override
+  String get avatarUrl => 'آدرس تصویر پروفایل';
+
+  @override
+  String get superAdminRole => 'مدیر سیستم (سوپر ادمین)';
+
+  @override
+  String get teacherRole => 'استاد / مدرس';
+
+  @override
+  String get studentRole => 'دانشجو (عادی)';
+
+  @override
+  String get teacherInfoAndCredentials => 'اطلاعات استاد و مدارک';
+
+  @override
+  String get facultyIdentityAndRole => 'هویت و نقش آموزشی';
+
+  @override
+  String get synchronizingEngine => 'در حال همگام‌سازی سامانه...';
+
+  @override
+  String get settingsUpdatedSuccess =>
+      'تنظیمات و پیکربندی با موفقیت همگام شد! 🚀';
+
+  @override
+  String get failedToUpdateSettings => 'خطا در به‌روزرسانی تنظیمات';
+
+  @override
+  String get noMessages => 'هنوز پیامی ارسال نشده است.';
+
+  @override
+  String get teachers => 'اساتید';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 import 'class_detail_screen.dart';
 import 'create_class_screen.dart';
 
@@ -40,7 +41,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
   List<ClassItemModel> classes = [];
   String searchQuery = "";
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  // Luxury Light-Pink Palette
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
@@ -65,9 +66,9 @@ class _ClassesScreenState extends State<ClassesScreen> {
       List<ClassItemModel> loadedClasses = [];
       for (var cls in (response as List)) {
         final courseObj = cls['course'];
-        String courseTitle = "Uncategorized Cohorts";
+        String courseTitle = "General Cohorts";
         if (courseObj != null) {
-          courseTitle = courseObj is List ? (courseObj.isNotEmpty ? courseObj[0]['title'] ?? "Uncategorized Cohorts" : "Uncategorized Cohorts") : courseObj['title'] ?? "Uncategorized Cohorts";
+          courseTitle = courseObj is List ? (courseObj.isNotEmpty ? courseObj[0]['title'] ?? "General Cohorts" : "General Cohorts") : courseObj['title'] ?? "General Cohorts";
         }
 
         final teacherObj = cls['teacher'];
@@ -146,7 +147,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
             children: [
               const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
-              Text("ORGANIZING CLASS COHORTS...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(
+                context.l10n.loadingDirectory.toUpperCase(),
+                style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2),
+              ),
             ],
           ),
         ),
@@ -166,19 +170,19 @@ class _ClassesScreenState extends State<ClassesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ================= HEADER & CREATE CLASS BUTTON =================
+                // Header Banner
                 Container(
                   padding: const EdgeInsets.all(22),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                      colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                    border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                     boxShadow: [
-                      BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                      BoxShadow(color: primaryPink.withValues(alpha: 0.08), blurRadius: 25, offset: const Offset(0, 10)),
                     ],
                   ),
                   child: Column(
@@ -196,9 +200,9 @@ class _ClassesScreenState extends State<ClassesScreen> {
                               color: lightPinkBg,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Text(
-                              "COHORTS DIRECTORY",
-                              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
+                            child: Text(
+                              context.l10n.cohortDirectory,
+                              style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
                             ),
                           ),
                           ElevatedButton.icon(
@@ -210,7 +214,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
                             icon: const Icon(Icons.add_rounded, size: 16),
-                            label: const Text("Create Class", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                            label: Text(context.l10n.createNewClass, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                             onPressed: () {
                               Navigator.push(
                                 context,
@@ -221,20 +225,20 @@ class _ClassesScreenState extends State<ClassesScreen> {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        "Class Cohorts",
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
+                      Text(
+                        context.l10n.classesAndCohorts,
+                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        "Monitor active groups, create new cohorts and track student progress.",
-                        style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
+                      Text(
+                        context.l10n.manageClasses,
+                        style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(height: 16),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         decoration: BoxDecoration(
-                          color: cardBorder.withOpacity(0.5),
+                          color: cardBorder.withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: cardBorder, width: 1.5),
                         ),
@@ -247,7 +251,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 onChanged: (val) => setState(() => searchQuery = val),
                                 style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                                 decoration: InputDecoration(
-                                  hintText: "Search classes, courses...",
+                                  hintText: context.l10n.searchClassesHint,
                                   hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                                   border: InputBorder.none,
                                   contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -262,7 +266,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // ================= GROUPED CLASSES =================
+                // Grouped Classes
                 groups.isEmpty
                     ? Container(
                         padding: const EdgeInsets.all(40),
@@ -272,7 +276,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: cardBorder, width: 1.5),
                         ),
-                        child: const Text("No classes found.", style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.bold)),
+                        child: Text(context.l10n.noClassesFound, style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.bold)),
                       )
                     : ListView.builder(
                         shrinkWrap: true,
@@ -297,7 +301,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                       decoration: BoxDecoration(color: cardBorder, borderRadius: BorderRadius.circular(8)),
-                                      child: Text("${courseClasses.length} Classes", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                      child: Text("${courseClasses.length} ${context.l10n.classes}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
                                     ),
                                   ],
                                 ),
@@ -324,7 +328,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                         color: surfaceWhite,
                                         borderRadius: BorderRadius.circular(24),
                                         border: Border.all(color: cardBorder, width: 1.5),
-                                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6))],
                                       ),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -335,11 +339,11 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                               Container(
                                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                                 decoration: BoxDecoration(
-                                                  color: cls.isActive ? Colors.green.withOpacity(0.12) : cardBorder,
+                                                  color: cls.isActive ? Colors.green.withValues(alpha: 0.12) : cardBorder,
                                                   borderRadius: BorderRadius.circular(8),
                                                 ),
                                                 child: Text(
-                                                  cls.isActive ? "● IN PROGRESS" : "○ COMPLETED",
+                                                  cls.isActive ? "● ${context.l10n.activeCohort.toUpperCase()}" : "○ ${context.l10n.inactiveCohort.toUpperCase()}",
                                                   style: TextStyle(color: cls.isActive ? Colors.green.shade700 : textGrey, fontSize: 9, fontWeight: FontWeight.w900),
                                                 ),
                                               ),
@@ -369,7 +373,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                                     const SizedBox(width: 8),
                                                     Expanded(
                                                       child: Text(
-                                                        "${cls.teacherFirstName ?? ''} ${cls.teacherLastName ?? ''}",
+                                                        "${cls.teacherFirstName ?? ''} ${cls.teacherLastName ?? ''}".trim(),
                                                         style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w600),
                                                         maxLines: 1,
                                                         overflow: TextOverflow.ellipsis,
@@ -382,7 +386,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                               Container(
                                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                                 decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                                                child: Text("${cls.studentsCount} Students", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
+                                                child: Text("${cls.studentsCount} ${context.l10n.students}", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
                                               ),
                                             ],
                                           )

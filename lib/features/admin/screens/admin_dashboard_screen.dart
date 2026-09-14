@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'manage_students_screen.dart';
 import 'finance_screen.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class AdminStats {
   final int totalStudents;
@@ -116,9 +117,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 strokeWidth: 3,
               ),
               const SizedBox(height: 16),
-              const Text(
-                "INITIALIZING COMMAND CENTER...",
-                style: TextStyle(
+              Text(
+                context.l10n.adminInitializing,
+                style: const TextStyle(
                   color: textGrey,
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
@@ -145,17 +146,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
         ),
         child: SafeArea(
-          // حذف تنظیمات اضافی و بهینه‌سازی مارجین بالا
           child: RefreshIndicator(
             color: primaryPink,
             onRefresh: _fetchDashboardData,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(
-                16,
-                8,
-                16,
-                16,
-              ), // پدینگ بالای صفحه کاهش یافت
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               physics: const AlwaysScrollableScrollPhysics(
                 parent: BouncingScrollPhysics(),
               ),
@@ -208,9 +203,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                       color: primaryPink.withValues(alpha: 0.3),
                                     ),
                                   ),
-                                  child: const Text(
-                                    "SYSTEM COMMAND CENTER",
-                                    style: TextStyle(
+                                  child: Text(
+                                    context.l10n.systemCommandCenter,
+                                    style: const TextStyle(
                                       fontSize: 9,
                                       fontWeight: FontWeight.w900,
                                       color: primaryPink,
@@ -235,14 +230,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             const SizedBox(height: 16),
                             Row(
                               children: [
-                                const Text(
-                                  "Welcome back, ",
-                                  style: TextStyle(
+                                Text(
+                                  context.l10n.welcomeBack,
+                                  style: const TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w900,
                                     color: textDark,
                                   ),
                                 ),
+                                const SizedBox(width: 6),
                                 Text(
                                   adminName,
                                   style: const TextStyle(
@@ -254,9 +250,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               ],
                             ),
                             const SizedBox(height: 4),
-                            const Text(
-                              "Live performance overview and global academy control.",
-                              style: TextStyle(
+                            Text(
+                              context.l10n.adminDashboardSubtitle,
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: textGrey,
                                 fontWeight: FontWeight.w500,
@@ -274,7 +270,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                     Expanded(
                                       flex: isWide ? 1 : 0,
                                       child: _buildMiniStatItem(
-                                        "Active Courses",
+                                        context.l10n.activeCourses,
                                         stats.activeCourses.toString(),
                                         Icons.menu_book_rounded,
                                       ),
@@ -286,7 +282,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                     Expanded(
                                       flex: isWide ? 1 : 0,
                                       child: _buildMiniStatItem(
-                                        "Total Faculty",
+                                        context.l10n.totalFaculty,
                                         stats.totalTeachers.toString(),
                                         Icons.psychology_rounded,
                                       ),
@@ -301,9 +297,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       const SizedBox(height: 24),
 
                       // ================= ۲. متریک‌های سیستم (کاملاً ریسپانسیو) =================
-                      const Text(
-                        "SYSTEM METRICS",
-                        style: TextStyle(
+                      Text(
+                        context.l10n.systemMetrics,
+                        style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w900,
                           color: textGrey,
@@ -320,7 +316,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               children: [
                                 Expanded(
                                   child: _buildMetricCard(
-                                    "Total Students",
+                                    context.l10n.totalStudents,
                                     stats.totalStudents.toString(),
                                     Icons.people_alt_rounded,
                                     const Color(0xFF00897B),
@@ -336,7 +332,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: _buildMetricCard(
-                                    "Gross Revenue",
+                                    context.l10n.grossRevenue,
                                     "\$${stats.totalRevenue.toInt()}",
                                     Icons.account_balance_wallet_rounded,
                                     const Color(0xFF2E7D32),
@@ -351,7 +347,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: _buildMetricCard(
-                                    "Open Tickets",
+                                    context.l10n.openTickets,
                                     stats.activeTickets.toString(),
                                     Icons.support_agent_rounded,
                                     const Color(0xFFF57C00),
@@ -361,7 +357,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: _buildMetricCard(
-                                    "Pending Payouts",
+                                    context.l10n.pendingPayouts,
                                     stats.pendingWithdrawals.toString(),
                                     Icons.pending_actions_rounded,
                                     primaryPink,
@@ -382,7 +378,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                   children: [
                                     Expanded(
                                       child: _buildMetricCard(
-                                        "Total Students",
+                                        context.l10n.totalStudents,
                                         stats.totalStudents.toString(),
                                         Icons.people_alt_rounded,
                                         const Color(0xFF00897B),
@@ -398,7 +394,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: _buildMetricCard(
-                                        "Gross Revenue",
+                                        context.l10n.grossRevenue,
                                         "\$${stats.totalRevenue.toInt()}",
                                         Icons.account_balance_wallet_rounded,
                                         const Color(0xFF2E7D32),
@@ -418,7 +414,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                   children: [
                                     Expanded(
                                       child: _buildMetricCard(
-                                        "Open Tickets",
+                                        context.l10n.openTickets,
                                         stats.activeTickets.toString(),
                                         Icons.support_agent_rounded,
                                         const Color(0xFFF57C00),
@@ -428,7 +424,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: _buildMetricCard(
-                                        "Pending Payouts",
+                                        context.l10n.pendingPayouts,
                                         stats.pendingWithdrawals.toString(),
                                         Icons.pending_actions_rounded,
                                         primaryPink,
@@ -454,9 +450,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            "RECENT TRANSACTIONS",
-                            style: TextStyle(
+                          Text(
+                            context.l10n.recentTransactions,
+                            style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w900,
                               color: textGrey,
@@ -470,9 +466,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 builder: (_) => const FinanceScreen(),
                               ),
                             ),
-                            child: const Text(
-                              "View All",
-                              style: TextStyle(
+                            child: Text(
+                              context.l10n.viewAll,
+                              style: const TextStyle(
                                 color: primaryPink,
                                 fontWeight: FontWeight.w900,
                                 fontSize: 11,
@@ -647,17 +643,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                   width: 1.5,
                                 ),
                               ),
-                              child: const Column(
+                              child: Column(
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.receipt_long_outlined,
                                     size: 48,
                                     color: textGrey,
                                   ),
-                                  SizedBox(height: 12),
+                                  const SizedBox(height: 12),
                                   Text(
-                                    "No recent financial activity recorded.",
-                                    style: TextStyle(
+                                    context.l10n.noRecentTransactions,
+                                    style: const TextStyle(
                                       color: textGrey,
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,

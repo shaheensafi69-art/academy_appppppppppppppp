@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class CreateClassScreen extends StatefulWidget {
   const CreateClassScreen({super.key});
@@ -18,11 +19,13 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
   List<Map<String, dynamic>> coursesList = [];
   List<Map<String, dynamic>> teachersList = [];
 
-  // Controllers مطابق با ستون‌های جدول class_groups
+  // Controllers matching class_groups table columns
   final classNameCtrl = TextEditingController();
   final scheduleInfoCtrl = TextEditingController();
   final classTimeCtrl = TextEditingController(text: "18:00 - 20:00");
-  final classDaysCtrl = TextEditingController(text: "Saturday, Monday, Wednesday");
+  final classDaysCtrl = TextEditingController(
+    text: "Saturday, Monday, Wednesday",
+  );
   final meetingLinkCtrl = TextEditingController();
   final signalGroupLinkCtrl = TextEditingController();
 
@@ -32,7 +35,7 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
   DateTime? endDate;
   bool isActive = true;
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  // Luxury Light-Pink Theme Palette
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
@@ -57,7 +60,6 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
     super.dispose();
   }
 
-  /// واکشی دوره‌ها از جدول courses و اساتید از جدول profiles
   Future<void> _fetchCoursesAndTeachers() async {
     try {
       final coursesRes = await supabase
@@ -73,8 +75,10 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
 
       if (mounted) {
         setState(() {
-          coursesList = (coursesRes as List?)?.cast<Map<String, dynamic>>() ?? [];
-          teachersList = (teachersRes as List?)?.cast<Map<String, dynamic>>() ?? [];
+          coursesList =
+              (coursesRes as List?)?.cast<Map<String, dynamic>>() ?? [];
+          teachersList =
+              (teachersRes as List?)?.cast<Map<String, dynamic>>() ?? [];
           isLoading = false;
         });
       }
@@ -117,9 +121,11 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
   }
 
   Future<void> handleCreateClass() async {
-    if (classNameCtrl.text.trim().isEmpty || selectedCourseId == null || selectedTeacherId == null) {
+    if (classNameCtrl.text.trim().isEmpty ||
+        selectedCourseId == null ||
+        selectedTeacherId == null) {
       setState(() {
-        message = {'type': 'error', 'text': 'Class Name, Course, and Teacher are required fields.'};
+        message = {'type': 'error', 'text': context.l10n.fillRequiredFields};
       });
       return;
     }
@@ -134,26 +140,36 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
         'course_id': selectedCourseId,
         'teacher_id': selectedTeacherId,
         'class_name': classNameCtrl.text.trim(),
-        'schedule_info': scheduleInfoCtrl.text.trim().isNotEmpty ? scheduleInfoCtrl.text.trim() : null,
+        'schedule_info': scheduleInfoCtrl.text.trim().isNotEmpty
+            ? scheduleInfoCtrl.text.trim()
+            : null,
         'start_date': startDate?.toIso8601String(),
         'end_date': endDate?.toIso8601String(),
-        'meeting_link': meetingLinkCtrl.text.trim().isNotEmpty ? meetingLinkCtrl.text.trim() : null,
-        'signal_group_link': signalGroupLinkCtrl.text.trim().isNotEmpty ? signalGroupLinkCtrl.text.trim() : null,
-        'class_time': classTimeCtrl.text.trim().isNotEmpty ? classTimeCtrl.text.trim() : null,
-        'class_days': classDaysCtrl.text.trim().isNotEmpty ? classDaysCtrl.text.trim() : null,
+        'meeting_link': meetingLinkCtrl.text.trim().isNotEmpty
+            ? meetingLinkCtrl.text.trim()
+            : null,
+        'signal_group_link': signalGroupLinkCtrl.text.trim().isNotEmpty
+            ? signalGroupLinkCtrl.text.trim()
+            : null,
+        'class_time': classTimeCtrl.text.trim().isNotEmpty
+            ? classTimeCtrl.text.trim()
+            : null,
+        'class_days': classDaysCtrl.text.trim().isNotEmpty
+            ? classDaysCtrl.text.trim()
+            : null,
         'is_active': isActive,
       });
 
       setState(() {
-        message = {'type': 'success', 'text': 'Class cohort successfully created and deployed! 🚀'};
+        message = {'type': 'success', 'text': context.l10n.classDetails};
       });
 
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(seconds: 1), () {
         if (mounted) Navigator.pop(context, true);
       });
     } catch (e) {
       setState(() {
-        message = {'type': 'error', 'text': 'Failed to create class: ${e.toString()}'};
+        message = {'type': 'error', 'text': e.toString()};
         isSubmitting = false;
       });
     }
@@ -168,9 +184,20 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
+              const CircularProgressIndicator(
+                color: primaryPink,
+                strokeWidth: 2.5,
+              ),
               const SizedBox(height: 14),
-              Text("LOADING SYSTEM DIRECTORIES...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(
+                context.l10n.loadingDirectory,
+                style: const TextStyle(
+                  color: textGrey,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                ),
+              ),
             ],
           ),
         ),
@@ -192,18 +219,32 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: cardBorder,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: cardBorder, width: 1.5),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.arrow_back_rounded, color: textDark, size: 14),
-                        SizedBox(width: 6),
-                        Text("Back to Cohorts", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
+                        const Icon(
+                          Icons.arrow_back_rounded,
+                          color: textDark,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          context.l10n.backToCohorts,
+                          style: const TextStyle(
+                            color: textDark,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -215,14 +256,24 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                   padding: const EdgeInsets.all(22),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                      colors: [
+                        surfaceWhite,
+                        lightPinkBg.withValues(alpha: 0.4),
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                    border: Border.all(
+                      color: primaryPink.withValues(alpha: 0.15),
+                      width: 1.5,
+                    ),
                     boxShadow: [
-                      BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                      BoxShadow(
+                        color: primaryPink.withValues(alpha: 0.08),
+                        blurRadius: 25,
+                        offset: const Offset(0, 10),
+                      ),
                     ],
                   ),
                   child: Column(
@@ -235,23 +286,49 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: lightPinkBg,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Text(
-                              "COHORT MANAGEMENT",
-                              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
+                            child: Text(
+                              context.l10n.cohortManagement,
+                              style: const TextStyle(
+                                fontSize: 8,
+                                fontWeight: FontWeight.w900,
+                                color: primaryPink,
+                                letterSpacing: 1.2,
+                              ),
                             ),
                           ),
-                          const Icon(Icons.class_rounded, color: primaryPink, size: 22),
+                          const Icon(
+                            Icons.class_rounded,
+                            color: primaryPink,
+                            size: 22,
+                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
-                      const Text("Create New Class Cohort", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark)),
+                      Text(
+                        context.l10n.createNewClass,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          color: textDark,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      const Text("Assign course, instructor, schedule and online links for students.", style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500)),
+                      Text(
+                        context.l10n.createClassCohortSubtitle,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: textGrey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -261,22 +338,39 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: message!['type'] == 'success' ? Colors.green.withOpacity(0.12) : Colors.redAccent.withOpacity(0.12),
+                      color: message!['type'] == 'success'
+                          ? Colors.green.withValues(alpha: 0.12)
+                          : Colors.redAccent.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: message!['type'] == 'success' ? Colors.green.withOpacity(0.3) : Colors.redAccent.withOpacity(0.3), width: 1.5),
+                      border: Border.all(
+                        color: message!['type'] == 'success'
+                            ? Colors.green.withValues(alpha: 0.3)
+                            : Colors.redAccent.withValues(alpha: 0.3),
+                        width: 1.5,
+                      ),
                     ),
                     child: Row(
                       children: [
                         Icon(
-                          message!['type'] == 'success' ? Icons.check_circle_rounded : Icons.error_rounded,
-                          color: message!['type'] == 'success' ? Colors.green.shade700 : Colors.redAccent,
+                          message!['type'] == 'success'
+                              ? Icons.check_circle_rounded
+                              : Icons.error_rounded,
+                          color: message!['type'] == 'success'
+                              ? Colors.green.shade700
+                              : Colors.redAccent,
                           size: 18,
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             message!['text']!,
-                            style: TextStyle(color: message!['type'] == 'success' ? Colors.green.shade700 : Colors.redAccent, fontSize: 11, fontWeight: FontWeight.w900),
+                            style: TextStyle(
+                              color: message!['type'] == 'success'
+                                  ? Colors.green.shade700
+                                  : Colors.redAccent,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                            ),
                           ),
                         ),
                       ],
@@ -287,15 +381,31 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
 
                 // 1. Course & Teacher Assignment Section
                 _buildSection(
-                  title: "1. Course & Instructor Assignment",
-                  subtitle: "Link cohort to an active academic course and assign faculty lead",
+                  title: "1. ${context.l10n.course} & ${context.l10n.teacher}",
+                  subtitle: context.l10n.createClassCohortSubtitle,
                   children: [
-                    const Text("SELECT COURSE *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                    Text(
+                      "${context.l10n.selectCourse.toUpperCase()} *",
+                      style: const TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        color: textGrey,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
                     const SizedBox(height: 6),
                     _buildCourseCustomDropdown(),
                     const SizedBox(height: 16),
 
-                    const Text("ASSIGN INSTRUCTOR *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                    Text(
+                      "${context.l10n.selectTeacher.toUpperCase()} *",
+                      style: const TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        color: textGrey,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
                     const SizedBox(height: 6),
                     _buildTeacherCustomDropdown(),
                   ],
@@ -304,10 +414,14 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
 
                 // 2. Class Details & Schedule
                 _buildSection(
-                  title: "2. Cohort Details & Schedule",
-                  subtitle: "Define cohort title, meeting days and daily time slot",
+                  title: "2. ${context.l10n.classDetails}",
+                  subtitle: context.l10n.classDaysTime,
                   children: [
-                    _buildTextField("CLASS NAME *", classNameCtrl, "e.g. Batch 04 - Shopify Mastery"),
+                    _buildTextField(
+                      "${context.l10n.className.toUpperCase()} *",
+                      classNameCtrl,
+                      "e.g. Batch 04 - Flutter & AI",
+                    ),
                     const SizedBox(height: 16),
 
                     LayoutBuilder(
@@ -316,9 +430,26 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                         return Flex(
                           direction: isWide ? Axis.horizontal : Axis.vertical,
                           children: [
-                            Expanded(flex: isWide ? 1 : 0, child: _buildTextField("CLASS TIME SLOT", classTimeCtrl, "e.g. 18:00 - 20:00")),
-                            SizedBox(width: isWide ? 12 : 0, height: isWide ? 0 : 12),
-                            Expanded(flex: isWide ? 1 : 0, child: _buildTextField("CLASS DAYS", classDaysCtrl, "e.g. Sat, Mon, Wed")),
+                            Expanded(
+                              flex: isWide ? 1 : 0,
+                              child: _buildTextField(
+                                context.l10n.classTimeSlot,
+                                classTimeCtrl,
+                                context.l10n.classTimeHint,
+                              ),
+                            ),
+                            SizedBox(
+                              width: isWide ? 12 : 0,
+                              height: isWide ? 0 : 12,
+                            ),
+                            Expanded(
+                              flex: isWide ? 1 : 0,
+                              child: _buildTextField(
+                                context.l10n.classDays.toUpperCase(),
+                                classDaysCtrl,
+                                context.l10n.classDaysHint,
+                              ),
+                            ),
                           ],
                         );
                       },
@@ -336,25 +467,54 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text("START DATE", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                                  Text(
+                                    context.l10n.startDate.toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w900,
+                                      color: textGrey,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
                                   const SizedBox(height: 6),
                                   InkWell(
                                     onTap: () => _selectDate(context, true),
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 14,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: cardBorder.withOpacity(0.5),
+                                        color: cardBorder.withValues(
+                                          alpha: 0.5,
+                                        ),
                                         borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(color: cardBorder, width: 1.5),
+                                        border: Border.all(
+                                          color: cardBorder,
+                                          width: 1.5,
+                                        ),
                                       ),
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            startDate == null ? "Select start date" : "${startDate!.year}-${startDate!.month}-${startDate!.day}",
-                                            style: TextStyle(color: startDate == null ? textGrey : textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                                            startDate == null
+                                                ? context.l10n.startDate
+                                                : "${startDate!.year}-${startDate!.month}-${startDate!.day}",
+                                            style: TextStyle(
+                                              color: startDate == null
+                                                  ? textGrey
+                                                  : textDark,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                          const Icon(Icons.calendar_today_rounded, size: 16, color: primaryPink),
+                                          const Icon(
+                                            Icons.calendar_today_rounded,
+                                            size: 16,
+                                            color: primaryPink,
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -362,31 +522,63 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                                 ],
                               ),
                             ),
-                            SizedBox(width: isWide ? 12 : 0, height: isWide ? 0 : 12),
+                            SizedBox(
+                              width: isWide ? 12 : 0,
+                              height: isWide ? 0 : 12,
+                            ),
                             Expanded(
                               flex: isWide ? 1 : 0,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text("END DATE", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                                  Text(
+                                    context.l10n.endDate.toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w900,
+                                      color: textGrey,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
                                   const SizedBox(height: 6),
                                   InkWell(
                                     onTap: () => _selectDate(context, false),
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 14,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: cardBorder.withOpacity(0.5),
+                                        color: cardBorder.withValues(
+                                          alpha: 0.5,
+                                        ),
                                         borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(color: cardBorder, width: 1.5),
+                                        border: Border.all(
+                                          color: cardBorder,
+                                          width: 1.5,
+                                        ),
                                       ),
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            endDate == null ? "Select end date" : "${endDate!.year}-${endDate!.month}-${endDate!.day}",
-                                            style: TextStyle(color: endDate == null ? textGrey : textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                                            endDate == null
+                                                ? context.l10n.endDate
+                                                : "${endDate!.year}-${endDate!.month}-${endDate!.day}",
+                                            style: TextStyle(
+                                              color: endDate == null
+                                                  ? textGrey
+                                                  : textDark,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                          const Icon(Icons.calendar_today_rounded, size: 16, color: primaryPink),
+                                          const Icon(
+                                            Icons.calendar_today_rounded,
+                                            size: 16,
+                                            color: primaryPink,
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -399,22 +591,42 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    _buildTextField("SCHEDULE INFO (NOTES)", scheduleInfoCtrl, "Additional schedule details or room info..."),
+                    _buildTextField(
+                      context.l10n.scheduleNotes,
+                      scheduleInfoCtrl,
+                      "...",
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
 
                 // 3. Online Links & Status
                 _buildSection(
-                  title: "3. Virtual Links & Status",
-                  subtitle: "Zoom/Google Meet link and communication channel",
+                  title: "3. ${context.l10n.broadcastRoomUrl}",
+                  subtitle: context.l10n.liveStreamingStudio,
                   children: [
-                    _buildTextField("MEETING LINK (ZOOM / MEET)", meetingLinkCtrl, "https://zoom.us/j/..."),
+                    _buildTextField(
+                      context.l10n.broadcastRoomUrl.toUpperCase(),
+                      meetingLinkCtrl,
+                      context.l10n.meetingLinkHint,
+                    ),
                     const SizedBox(height: 16),
-                    _buildTextField("SIGNAL / TELEGRAM GROUP LINK", signalGroupLinkCtrl, "https://t.me/+..."),
+                    _buildTextField(
+                      "SIGNAL / TELEGRAM LINK",
+                      signalGroupLinkCtrl,
+                      context.l10n.signalLinkHint,
+                    ),
                     const SizedBox(height: 16),
 
-                    const Text("COHORT STATUS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                    Text(
+                      context.l10n.status.toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        color: textGrey,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
                     const SizedBox(height: 6),
                     _buildStatusCustomDropdown(),
                   ],
@@ -430,12 +642,28 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                       foregroundColor: Colors.white,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                     onPressed: isSubmitting ? null : handleCreateClass,
                     child: isSubmitting
-                        ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                        : const Text("CREATE CLASS COHORT 🚀", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
+                          )
+                        : Text(
+                            context.l10n.createClassAction,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 11,
+                              letterSpacing: 1,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -447,7 +675,6 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
     );
   }
 
-  // 1. کشویی کاستومایز شده و کاملاً امن برای انتخاب دوره (Course)
   Widget _buildCourseCustomDropdown() {
     bool isValidValue = coursesList.any((crs) => crs['id'] == selectedCourseId);
     String? safeValue = isValidValue ? selectedCourseId : null;
@@ -455,17 +682,23 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: cardBorder.withOpacity(0.5),
+        color: cardBorder.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: cardBorder, width: 1.5),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: safeValue,
-          hint: const Text("Choose academic course...", style: TextStyle(color: textGrey, fontSize: 11)),
+          hint: Text(
+            context.l10n.selectCourse,
+            style: const TextStyle(color: textGrey, fontSize: 11),
+          ),
           dropdownColor: surfaceWhite,
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: primaryPink),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: primaryPink,
+          ),
           items: coursesList.map((crs) {
             return DropdownMenuItem<String>(
               value: crs['id']?.toString(),
@@ -475,8 +708,15 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(10)),
-                      child: const Icon(Icons.menu_book_rounded, color: primaryPink, size: 16),
+                      decoration: BoxDecoration(
+                        color: lightPinkBg,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.menu_book_rounded,
+                        color: primaryPink,
+                        size: 16,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -484,8 +724,21 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(crs['title'] ?? '', style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
-                          Text(crs['category'] ?? 'General', style: const TextStyle(color: textGrey, fontSize: 9)),
+                          Text(
+                            crs['title'] ?? '',
+                            style: const TextStyle(
+                              color: textDark,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            crs['category'] ?? '',
+                            style: const TextStyle(
+                              color: textGrey,
+                              fontSize: 9,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -500,7 +753,6 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
     );
   }
 
-  // 2. کشویی کاستومایز شده و کاملاً امن برای انتخاب مدرس (Teacher)
   Widget _buildTeacherCustomDropdown() {
     bool isValidValue = teachersList.any((t) => t['id'] == selectedTeacherId);
     String? safeValue = isValidValue ? selectedTeacherId : null;
@@ -508,19 +760,26 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: cardBorder.withOpacity(0.5),
+        color: cardBorder.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: cardBorder, width: 1.5),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: safeValue,
-          hint: const Text("Choose instructor for this class...", style: TextStyle(color: textGrey, fontSize: 11)),
+          hint: Text(
+            context.l10n.selectTeacher,
+            style: const TextStyle(color: textGrey, fontSize: 11),
+          ),
           dropdownColor: surfaceWhite,
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: primaryPink),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: primaryPink,
+          ),
           items: teachersList.map((t) {
-            String name = "${t['first_name'] ?? ''} ${t['last_name'] ?? ''}";
+            String name = "${t['first_name'] ?? ''} ${t['last_name'] ?? ''}"
+                .trim();
             return DropdownMenuItem<String>(
               value: t['id']?.toString(),
               child: Padding(
@@ -530,11 +789,22 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                     CircleAvatar(
                       radius: 16,
                       backgroundColor: lightPinkBg,
-                      backgroundImage: t['avatar_url'] != null && t['avatar_url'].toString().isNotEmpty
+                      backgroundImage:
+                          t['avatar_url'] != null &&
+                              t['avatar_url'].toString().isNotEmpty
                           ? NetworkImage(t['avatar_url'])
                           : null,
-                      child: (t['avatar_url'] == null || t['avatar_url'].toString().isEmpty)
-                          ? Text(name.isNotEmpty ? name[0] : 'T', style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.bold))
+                      child:
+                          (t['avatar_url'] == null ||
+                              t['avatar_url'].toString().isEmpty)
+                          ? Text(
+                              name.isNotEmpty ? name[0] : 'T',
+                              style: const TextStyle(
+                                color: primaryPink,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
                           : null,
                     ),
                     const SizedBox(width: 12),
@@ -543,8 +813,23 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(name, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
-                          Text(t['email'] ?? '', style: const TextStyle(color: textGrey, fontSize: 9), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          Text(
+                            name,
+                            style: const TextStyle(
+                              color: textDark,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            t['email'] ?? '',
+                            style: const TextStyle(
+                              color: textGrey,
+                              fontSize: 9,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ],
                       ),
                     ),
@@ -559,12 +844,11 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
     );
   }
 
-  // 3. کشویی کاستومایز شده وضعیت کلاس (Active Status)
   Widget _buildStatusCustomDropdown() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: cardBorder.withOpacity(0.5),
+        color: cardBorder.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: cardBorder, width: 1.5),
       ),
@@ -573,7 +857,10 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
           value: isActive,
           dropdownColor: surfaceWhite,
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: primaryPink),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: primaryPink,
+          ),
           items: [
             DropdownMenuItem(
               value: true,
@@ -581,11 +868,25 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(color: Colors.green.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
-                    child: Icon(Icons.verified_rounded, color: Colors.green.shade700, size: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.verified_rounded,
+                      color: Colors.green.shade700,
+                      size: 14,
+                    ),
                   ),
                   const SizedBox(width: 10),
-                  const Text("Active (Live Cohort)", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
+                  Text(
+                    context.l10n.activeLiveCohort,
+                    style: const TextStyle(
+                      color: textDark,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -595,11 +896,25 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(color: textGrey.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
-                    child: const Icon(Icons.history_rounded, color: textGrey, size: 14),
+                    decoration: BoxDecoration(
+                      color: textGrey.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.history_rounded,
+                      color: textGrey,
+                      size: 14,
+                    ),
                   ),
                   const SizedBox(width: 10),
-                  const Text("Archived / Completed", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
+                  Text(
+                    context.l10n.archivedCompleted,
+                    style: const TextStyle(
+                      color: textDark,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -610,22 +925,46 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
     );
   }
 
-  Widget _buildSection({required String title, String? subtitle, required List<Widget> children}) {
+  Widget _buildSection({
+    required String title,
+    String? subtitle,
+    required List<Widget> children,
+  }) {
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: surfaceWhite,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: textDark)),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+              color: textDark,
+            ),
+          ),
           if (subtitle != null) ...[
             const SizedBox(height: 2),
-            Text(subtitle, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500)),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 10,
+                color: textGrey,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
           const SizedBox(height: 16),
           ...children,
@@ -634,16 +973,33 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, String hint, {int maxLines = 1}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    String hint, {
+    int maxLines = 1,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 9,
+            fontWeight: FontWeight.w900,
+            color: textGrey,
+            letterSpacing: 0.8,
+          ),
+        ),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
           maxLines: maxLines,
-          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: textDark,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
           cursorColor: primaryPink,
           decoration: _inputFieldDecoration(hint),
         ),
@@ -656,11 +1012,20 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
       hintText: hint,
       hintStyle: const TextStyle(color: textGrey, fontSize: 11),
       filled: true,
-      fillColor: cardBorder.withOpacity(0.5),
+      fillColor: cardBorder.withValues(alpha: 0.5),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: cardBorder),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: cardBorder),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: primaryPink, width: 1.5),
+      ),
     );
   }
 }

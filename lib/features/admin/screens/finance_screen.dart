@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class TeacherWallet {
   final String id;
@@ -51,7 +52,9 @@ class FinancialTransaction {
     final userObj = json['user'];
     Map<String, dynamic>? formattedUser;
     if (userObj != null) {
-      formattedUser = userObj is List ? (userObj.isNotEmpty ? userObj[0] : null) : userObj;
+      formattedUser = userObj is List
+          ? (userObj.isNotEmpty ? userObj[0] : null)
+          : userObj;
     }
 
     return FinancialTransaction(
@@ -89,7 +92,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
   bool isProcessingPayout = false;
   Map<String, String>? message;
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  // Luxury Light-Pink Theme Palette
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
@@ -108,22 +111,40 @@ class _FinanceScreenState extends State<FinanceScreen> {
     try {
       final facultyData = await supabase
           .from("profiles")
-          .select("id, first_name, last_name, email, avatar_url, wallet_balance")
+          .select(
+            "id, first_name, last_name, email, avatar_url, wallet_balance",
+          )
           .inFilter("role", ["teacher", "super_admin", "mentor"])
           .order("wallet_balance", ascending: false);
 
-      teachers = (facultyData as List).map((t) => TeacherWallet.fromJson(t)).toList();
-    
+      teachers = (facultyData as List)
+          .map((t) => TeacherWallet.fromJson(t))
+          .toList();
+
       final txData = await supabase
           .from("transactions")
-          .select("id, amount, transaction_type, status, created_at, user:profiles!student_id(first_name, last_name, email, avatar_url)")
+          .select(
+            "id, amount, transaction_type, status, created_at, user:profiles!student_id(first_name, last_name, email, avatar_url)",
+          )
           .order("created_at", ascending: false);
 
-      List<FinancialTransaction> formattedTxs = (txData as List).map((tx) => FinancialTransaction.fromJson(tx)).toList();
+      List<FinancialTransaction> formattedTxs = (txData as List)
+          .map((tx) => FinancialTransaction.fromJson(tx))
+          .toList();
 
-      studentPayments = formattedTxs.where((tx) => ["deposit", "payment", "course_fee"].contains(tx.transactionType)).toList();
-      payoutHistory = formattedTxs.where((tx) => tx.transactionType == "withdrawal").toList();
-    
+      studentPayments = formattedTxs
+          .where(
+            (tx) => [
+              "deposit",
+              "payment",
+              "course_fee",
+            ].contains(tx.transactionType),
+          )
+          .toList();
+      payoutHistory = formattedTxs
+          .where((tx) => tx.transactionType == "withdrawal")
+          .toList();
+
       if (mounted) setState(() => isLoading = false);
     } catch (e) {
       debugPrint("Error fetching finance data: $e");
@@ -153,38 +174,60 @@ class _FinanceScreenState extends State<FinanceScreen> {
           .update({'wallet_balance': newBalance})
           .eq("id", selectedTeacher!.id);
 
-      final newTxData = await supabase
-          .from("transactions")
-          .insert({
-            'student_id': selectedTeacher!.id,
-            'amount': -payoutAmount,
-            'transaction_type': 'withdrawal',
-            'status': 'COMPLETED',
-            'reference_id': 'PAYOUT-${DateTime.now().millisecondsSinceEpoch}'
-          })
-          .select("id, amount, transaction_type, status, created_at, user:profiles!student_id(first_name, last_name, email, avatar_url)")
-          .single();
-
-      final newTx = FinancialTransaction.fromJson(newTxData);
-
-      setState(() {
-        teachers = teachers.map((t) => t.id == selectedTeacher!.id ? TeacherWallet(id: t.id, firstName: t.firstName, lastName: t.lastName, email: t.email, avatarUrl: t.avatarUrl, walletBalance: newBalance) : t).toList();
-        payoutHistory.insert(0, newTx);
-        message = {'type': 'success', 'text': 'Successfully paid \$${payoutAmount.toStringAsFixed(2)} to ${selectedTeacher!.firstName}.'};
+      await supabase.from("transactions").insert({
+        'student_id': selectedTeacher!.id,
+        'amount': payoutAmount,
+        'transaction_type': 'withdrawal',
+        'status': 'completed',
+        'currency': 'USD',
       });
 
-      Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        teachers = teachers
+            .map(
+              (t) => t.id == selectedTeacher!.id
+                  ? TeacherWallet(
+                      id: t.id,
+                      firstName: t.firstName,
+                      lastName: t.lastName,
+                      email: t.email,
+                      avatarUrl: t.avatarUrl,
+                      walletBalance: newBalance,
+                    )
+                  : t,
+            )
+            .toList();
+
+        payoutHistory.insert(
+          0,
+          FinancialTransaction(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            amount: payoutAmount,
+            transactionType: 'withdrawal',
+            status: 'completed',
+            createdAt: DateTime.now().toIso8601String(),
+            user: {
+              'first_name': selectedTeacher!.firstName,
+              'last_name': selectedTeacher!.lastName,
+              'avatar_url': selectedTeacher!.avatarUrl,
+            },
+          ),
+        );
+
+        message = {'type': 'success', 'text': 'Payout successfully processed.'};
+      });
+
+      Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
           setState(() {
             selectedTeacher = null;
             message = null;
-            payoutAmount = 0;
           });
         }
       });
     } catch (e) {
       setState(() {
-        message = {'type': 'error', 'text': 'Failed to process payout: ${e.toString()}'};
+        message = {'type': 'error', 'text': e.toString()};
       });
     } finally {
       if (mounted) setState(() => isProcessingPayout = false);
@@ -192,10 +235,19 @@ class _FinanceScreenState extends State<FinanceScreen> {
   }
 
   Map<String, double> get stats {
-    double totalGrossRevenue = studentPayments.where((tx) => tx.status == 'COMPLETED').fold(0, (acc, tx) => acc + tx.amount);
-    double totalFacultyLiability = teachers.fold(0, (acc, t) => acc + t.walletBalance);
-    double totalPayoutsDistributed = payoutHistory.fold(0, (acc, tx) => acc + tx.amount.abs());
-    double platformNetProfit = totalGrossRevenue - totalPayoutsDistributed - totalFacultyLiability;
+    double totalGrossRevenue = studentPayments.fold(
+      0,
+      (acc, tx) => acc + tx.amount,
+    );
+    double totalFacultyLiability = teachers.fold(
+      0,
+      (acc, t) => acc + t.walletBalance,
+    );
+    double totalPayoutsDistributed = payoutHistory.fold(
+      0,
+      (acc, tx) => acc + tx.amount,
+    );
+    double platformNetProfit = totalGrossRevenue - totalFacultyLiability;
 
     return {
       'totalGrossRevenue': totalGrossRevenue,
@@ -208,7 +260,13 @@ class _FinanceScreenState extends State<FinanceScreen> {
   List<TeacherWallet> get filteredTeachers {
     if (searchQuery.isEmpty) return teachers;
     final query = searchQuery.toLowerCase();
-    return teachers.where((t) => t.firstName.toLowerCase().contains(query) || t.lastName.toLowerCase().contains(query)).toList();
+    return teachers
+        .where(
+          (t) =>
+              t.firstName.toLowerCase().contains(query) ||
+              t.lastName.toLowerCase().contains(query),
+        )
+        .toList();
   }
 
   @override
@@ -220,9 +278,20 @@ class _FinanceScreenState extends State<FinanceScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
+              const CircularProgressIndicator(
+                color: primaryPink,
+                strokeWidth: 2.5,
+              ),
               const SizedBox(height: 14),
-              Text("AUDITING FINANCIAL RECORDS...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(
+                context.l10n.auditingRecords,
+                style: const TextStyle(
+                  color: textGrey,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                ),
+              ),
             ],
           ),
         ),
@@ -243,19 +312,29 @@ class _FinanceScreenState extends State<FinanceScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ================= HEADER =================
+                // Header
                 Container(
                   padding: const EdgeInsets.all(22),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                      colors: [
+                        surfaceWhite,
+                        lightPinkBg.withValues(alpha: 0.4),
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                    border: Border.all(
+                      color: primaryPink.withValues(alpha: 0.15),
+                      width: 1.5,
+                    ),
                     boxShadow: [
-                      BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                      BoxShadow(
+                        color: primaryPink.withValues(alpha: 0.08),
+                        blurRadius: 25,
+                        offset: const Offset(0, 10),
+                      ),
                     ],
                   ),
                   child: Column(
@@ -265,35 +344,55 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: lightPinkBg,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Text(
-                              "FINANCIAL LEDGER",
-                              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
+                            child: Text(
+                              context.l10n.financialLedger,
+                              style: const TextStyle(
+                                fontSize: 8,
+                                fontWeight: FontWeight.w900,
+                                color: primaryPink,
+                                letterSpacing: 1.2,
+                              ),
                             ),
                           ),
-                          const Icon(Icons.account_balance_wallet_rounded, color: primaryPink, size: 22),
+                          const Icon(
+                            Icons.account_balance_wallet_rounded,
+                            color: primaryPink,
+                            size: 22,
+                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        "Financial Ledger",
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
+                      Text(
+                        context.l10n.financialLedger,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          color: textDark,
+                        ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        "Audit global platform revenue and manage faculty payouts securely.",
-                        style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
+                      Text(
+                        context.l10n.financialLedgerSubtitle,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: textGrey,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 24),
 
-                // ================= METRICS GRID (ریسپانسیو و فیکس برای هر سایز) =================
+                // Metrics Grid
                 LayoutBuilder(
                   builder: (context, constraints) {
                     bool isWide = constraints.maxWidth > 500;
@@ -305,50 +404,99 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       mainAxisSpacing: 12,
                       childAspectRatio: 1.2,
                       children: [
-                        _buildMetricCard("Gross Revenue", "\$${currentStats['totalGrossRevenue']!.toStringAsFixed(0)}", Icons.trending_up_rounded, Colors.green.shade700),
-                        _buildMetricCard("Faculty Liability", "\$${currentStats['totalFacultyLiability']!.toStringAsFixed(0)}", Icons.wallet_rounded, Colors.amber.shade800),
-                        _buildMetricCard("Distributed Payouts", "\$${currentStats['totalPayoutsDistributed']!.toStringAsFixed(0)}", Icons.credit_card_rounded, Colors.indigo),
-                        _buildMetricCard("Net Profit", "\$${currentStats['platformNetProfit']!.toStringAsFixed(0)}", Icons.business_center_rounded, primaryPink),
+                        _buildMetricCard(
+                          context.l10n.grossRevenue,
+                          "\$${currentStats['totalGrossRevenue']!.toStringAsFixed(0)}",
+                          Icons.trending_up_rounded,
+                          Colors.green.shade700,
+                        ),
+                        _buildMetricCard(
+                          context.l10n.facultyLiability,
+                          "\$${currentStats['totalFacultyLiability']!.toStringAsFixed(0)}",
+                          Icons.wallet_rounded,
+                          Colors.amber.shade800,
+                        ),
+                        _buildMetricCard(
+                          context.l10n.distributedPayouts,
+                          "\$${currentStats['totalPayoutsDistributed']!.toStringAsFixed(0)}",
+                          Icons.credit_card_rounded,
+                          Colors.indigo,
+                        ),
+                        _buildMetricCard(
+                          context.l10n.netProfit,
+                          "\$${currentStats['platformNetProfit']!.toStringAsFixed(0)}",
+                          Icons.business_center_rounded,
+                          primaryPink,
+                        ),
                       ],
                     );
                   },
                 ),
                 const SizedBox(height: 24),
 
-                // ================= TABS NAVIGATION =================
+                // Tabs Navigation
                 Row(
                   children: [
-                    Expanded(child: _buildTabButton("Faculty", "faculty")),
+                    Expanded(
+                      child: _buildTabButton(
+                        context.l10n.facultyTab,
+                        "faculty",
+                      ),
+                    ),
                     const SizedBox(width: 8),
-                    Expanded(child: _buildTabButton("Inflows", "inflows")),
+                    Expanded(
+                      child: _buildTabButton(
+                        context.l10n.inflowsTab,
+                        "inflows",
+                      ),
+                    ),
                     const SizedBox(width: 8),
-                    Expanded(child: _buildTabButton("Outflows", "outflows")),
+                    Expanded(
+                      child: _buildTabButton(
+                        context.l10n.outflowsTab,
+                        "outflows",
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
 
-                // ================= TAB CONTENTS =================
+                // Tab Contents
                 if (activeTab == "faculty") ...[
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: BoxDecoration(
-                      color: cardBorder.withOpacity(0.5),
+                      color: cardBorder.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: cardBorder, width: 1.5),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.search_rounded, color: primaryPink, size: 18),
+                        const Icon(
+                          Icons.search_rounded,
+                          color: primaryPink,
+                          size: 18,
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: TextField(
-                            onChanged: (val) => setState(() => searchQuery = val),
-                            style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                            onChanged: (val) =>
+                                setState(() => searchQuery = val),
+                            style: const TextStyle(
+                              color: textDark,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                             decoration: InputDecoration(
-                              hintText: "Find instructor...",
-                              hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                              hintText: context.l10n.findInstructorHint,
+                              hintStyle: const TextStyle(
+                                color: textGrey,
+                                fontSize: 11,
+                              ),
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 12,
+                              ),
                             ),
                           ),
                         ),
@@ -366,13 +514,21 @@ class _FinanceScreenState extends State<FinanceScreen> {
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: cardBorder, width: 1.5),
                           ),
-                          child: const Text("No instructors found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                          child: Text(
+                            context.l10n.noInstructorsFound,
+                            style: const TextStyle(
+                              color: textGrey,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         )
                       : ListView.separated(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: currentTeachers.length,
-                          separatorBuilder: (_, _) => const SizedBox(height: 10),
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: 10),
                           itemBuilder: (context, index) {
                             final teacher = currentTeachers[index];
                             return Container(
@@ -380,25 +536,63 @@ class _FinanceScreenState extends State<FinanceScreen> {
                               decoration: BoxDecoration(
                                 color: surfaceWhite,
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: cardBorder, width: 1.5),
-                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                                border: Border.all(
+                                  color: cardBorder,
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.03),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
                               child: Row(
                                 children: [
                                   CircleAvatar(
                                     radius: 20,
                                     backgroundColor: lightPinkBg,
-                                    backgroundImage: teacher.avatarUrl != null ? NetworkImage(teacher.avatarUrl!) : null,
-                                    child: teacher.avatarUrl == null ? Text(teacher.firstName[0], style: const TextStyle(color: primaryPink, fontSize: 12, fontWeight: FontWeight.bold)) : null,
+                                    backgroundImage: teacher.avatarUrl != null
+                                        ? NetworkImage(teacher.avatarUrl!)
+                                        : null,
+                                    child: teacher.avatarUrl == null
+                                        ? Text(
+                                            teacher.firstName.isNotEmpty
+                                                ? teacher.firstName[0]
+                                                : 'T',
+                                            style: const TextStyle(
+                                              color: primaryPink,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          )
+                                        : null,
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text("${teacher.firstName} ${teacher.lastName}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                        Text(
+                                          "${teacher.firstName} ${teacher.lastName}"
+                                              .trim(),
+                                          style: const TextStyle(
+                                            color: textDark,
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 13,
+                                          ),
+                                        ),
                                         const SizedBox(height: 2),
-                                        Text("\$${teacher.walletBalance.toStringAsFixed(2)} Unpaid", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.bold)),
+                                        Text(
+                                          "\$${teacher.walletBalance.toStringAsFixed(2)}",
+                                          style: const TextStyle(
+                                            color: primaryPink,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -407,17 +601,31 @@ class _FinanceScreenState extends State<FinanceScreen> {
                                       backgroundColor: lightPinkBg,
                                       foregroundColor: primaryPink,
                                       elevation: 0,
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 8,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
                                     ),
-                                    onPressed: teacher.walletBalance > 0 ? () {
-                                      setState(() {
-                                        selectedTeacher = teacher;
-                                        payoutAmount = teacher.walletBalance;
-                                        message = null;
-                                      });
-                                    } : null,
-                                    child: const Text("Settle", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                                    onPressed: teacher.walletBalance > 0
+                                        ? () {
+                                            setState(() {
+                                              selectedTeacher = teacher;
+                                              payoutAmount =
+                                                  teacher.walletBalance;
+                                              message = null;
+                                            });
+                                          }
+                                        : null,
+                                    child: Text(
+                                      context.l10n.processPayout,
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -434,13 +642,21 @@ class _FinanceScreenState extends State<FinanceScreen> {
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: cardBorder, width: 1.5),
                           ),
-                          child: const Text("No payment records found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                          child: Text(
+                            context.l10n.noTransactions,
+                            style: const TextStyle(
+                              color: textGrey,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         )
                       : ListView.separated(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: studentPayments.length,
-                          separatorBuilder: (_, _) => const SizedBox(height: 10),
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: 10),
                           itemBuilder: (context, index) {
                             final tx = studentPayments[index];
                             return Container(
@@ -448,28 +664,69 @@ class _FinanceScreenState extends State<FinanceScreen> {
                               decoration: BoxDecoration(
                                 color: surfaceWhite,
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: cardBorder, width: 1.5),
-                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                                border: Border.all(
+                                  color: cardBorder,
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.03),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
                               child: Row(
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(color: Colors.green.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
-                                    child: Icon(Icons.arrow_downward_rounded, color: Colors.green.shade700, size: 18),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withValues(
+                                        alpha: 0.12,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      Icons.arrow_downward_rounded,
+                                      color: Colors.green.shade700,
+                                      size: 18,
+                                    ),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text("${tx.user?['first_name'] ?? 'User'} ${tx.user?['last_name'] ?? ''}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                        Text(
+                                          "${tx.user?['first_name'] ?? 'User'} ${tx.user?['last_name'] ?? ''}"
+                                              .trim(),
+                                          style: const TextStyle(
+                                            color: textDark,
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 13,
+                                          ),
+                                        ),
                                         const SizedBox(height: 2),
-                                        Text(tx.transactionType.toUpperCase(), style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                        Text(
+                                          tx.transactionType.toUpperCase(),
+                                          style: const TextStyle(
+                                            color: textGrey,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
-                                  Text("+\$${tx.amount.toStringAsFixed(2)}", style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.w900, fontSize: 13)),
+                                  Text(
+                                    "+\$${tx.amount.toStringAsFixed(2)}",
+                                    style: TextStyle(
+                                      color: Colors.green.shade700,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 13,
+                                    ),
+                                  ),
                                 ],
                               ),
                             );
@@ -485,13 +742,21 @@ class _FinanceScreenState extends State<FinanceScreen> {
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: cardBorder, width: 1.5),
                           ),
-                          child: const Text("No payouts processed yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                          child: Text(
+                            context.l10n.noTransactions,
+                            style: const TextStyle(
+                              color: textGrey,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         )
                       : ListView.separated(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: payoutHistory.length,
-                          separatorBuilder: (_, _) => const SizedBox(height: 10),
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: 10),
                           itemBuilder: (context, index) {
                             final tx = payoutHistory[index];
                             return Container(
@@ -499,28 +764,68 @@ class _FinanceScreenState extends State<FinanceScreen> {
                               decoration: BoxDecoration(
                                 color: surfaceWhite,
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: cardBorder, width: 1.5),
-                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                                border: Border.all(
+                                  color: cardBorder,
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.03),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
                               child: Row(
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(color: primaryPink.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
-                                    child: const Icon(Icons.arrow_upward_rounded, color: primaryPink, size: 18),
+                                    decoration: BoxDecoration(
+                                      color: primaryPink.withValues(
+                                        alpha: 0.12,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.arrow_upward_rounded,
+                                      color: primaryPink,
+                                      size: 18,
+                                    ),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text("Paid to: ${tx.user?['first_name'] ?? 'Faculty'} ${tx.user?['last_name'] ?? ''}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                        Text(
+                                          "${tx.user?['first_name'] ?? 'Faculty'} ${tx.user?['last_name'] ?? ''}"
+                                              .trim(),
+                                          style: const TextStyle(
+                                            color: textDark,
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 13,
+                                          ),
+                                        ),
                                         const SizedBox(height: 2),
-                                        Text(DateFormatter(tx.createdAt).formatted, style: const TextStyle(color: textGrey, fontSize: 10)),
+                                        Text(
+                                          DateFormatter(tx.createdAt).formatted,
+                                          style: const TextStyle(
+                                            color: textGrey,
+                                            fontSize: 10,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
-                                  Text("-\$${tx.amount.abs().toStringAsFixed(2)}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                  Text(
+                                    "-\$${tx.amount.abs().toStringAsFixed(2)}",
+                                    style: const TextStyle(
+                                      color: textDark,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 13,
+                                    ),
+                                  ),
                                 ],
                               ),
                             );
@@ -540,9 +845,17 @@ class _FinanceScreenState extends State<FinanceScreen> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: surfaceWhite,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(28),
+                ),
                 border: Border.all(color: cardBorder, width: 1.5),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 30, offset: const Offset(0, -10))],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 30,
+                    offset: const Offset(0, -10),
+                  ),
+                ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -551,12 +864,24 @@ class _FinanceScreenState extends State<FinanceScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("Process Payout: ${selectedTeacher!.firstName}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                      Text(
+                        "${context.l10n.processPayout}: ${selectedTeacher!.firstName}",
+                        style: const TextStyle(
+                          color: textDark,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 15,
+                        ),
+                      ),
                       GestureDetector(
                         onTap: () {
-                          if (!isProcessingPayout) setState(() => selectedTeacher = null);
+                          if (!isProcessingPayout)
+                            setState(() => selectedTeacher = null);
                         },
-                        child: const Icon(Icons.close_rounded, color: textGrey, size: 20),
+                        child: const Icon(
+                          Icons.close_rounded,
+                          color: textGrey,
+                          size: 20,
+                        ),
                       ),
                     ],
                   ),
@@ -566,32 +891,83 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: message!['type'] == 'success' ? Colors.green.withOpacity(0.12) : Colors.redAccent.withOpacity(0.12),
+                        color: message!['type'] == 'success'
+                            ? Colors.green.withValues(alpha: 0.12)
+                            : Colors.redAccent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: message!['type'] == 'success' ? Colors.green.withOpacity(0.3) : Colors.redAccent.withOpacity(0.3), width: 1.5),
+                        border: Border.all(
+                          color: message!['type'] == 'success'
+                              ? Colors.green.withValues(alpha: 0.3)
+                              : Colors.redAccent.withValues(alpha: 0.3),
+                          width: 1.5,
+                        ),
                       ),
-                      child: Text(message!['text']!, style: TextStyle(color: message!['type'] == 'success' ? Colors.green.shade700 : Colors.redAccent, fontSize: 11, fontWeight: FontWeight.w900)),
+                      child: Text(
+                        message!['text']!,
+                        style: TextStyle(
+                          color: message!['type'] == 'success'
+                              ? Colors.green.shade700
+                              : Colors.redAccent,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 16),
                   ],
 
-                  const Text("TRANSFER AMOUNT (USD)", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                  Text(
+                    context.l10n.payoutAmount,
+                    style: const TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                      color: textGrey,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   TextField(
-                    controller: TextEditingController(text: payoutAmount.toString()) ..selection = TextSelection.fromPosition(TextPosition(offset: payoutAmount.toString().length)),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    controller:
+                        TextEditingController(text: payoutAmount.toString())
+                          ..selection = TextSelection.fromPosition(
+                            TextPosition(
+                              offset: payoutAmount.toString().length,
+                            ),
+                          ),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     onChanged: (val) {
                       payoutAmount = double.tryParse(val) ?? 0;
                     },
-                    style: const TextStyle(color: primaryPink, fontSize: 18, fontWeight: FontWeight.w900),
+                    style: const TextStyle(
+                      color: primaryPink,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: cardBorder.withOpacity(0.5),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                      fillColor: cardBorder.withValues(alpha: 0.5),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(color: cardBorder),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(
+                          color: primaryPink,
+                          width: 1.5,
+                        ),
+                      ),
                       prefixText: "\$ ",
-                      prefixStyle: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold),
+                      prefixStyle: const TextStyle(
+                        color: primaryPink,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -604,12 +980,30 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         foregroundColor: Colors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
-                      onPressed: isProcessingPayout ? null : handleProcessPayout,
+                      onPressed: isProcessingPayout
+                          ? null
+                          : handleProcessPayout,
                       child: isProcessingPayout
-                          ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                          : const Text("CONFIRM & SETTLE 🚀", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                          : Text(
+                              context.l10n.confirmPayout,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 11,
+                                letterSpacing: 1,
+                              ),
+                            ),
                     ),
                   ),
                 ],
@@ -627,24 +1021,45 @@ class _FinanceScreenState extends State<FinanceScreen> {
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isActive ? lightPinkBg : cardBorder.withOpacity(0.5),
+          color: isActive ? lightPinkBg : cardBorder.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: isActive ? primaryPink : cardBorder, width: isActive ? 1.5 : 1),
+          border: Border.all(
+            color: isActive ? primaryPink : cardBorder,
+            width: isActive ? 1.5 : 1,
+          ),
         ),
         alignment: Alignment.center,
-        child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: isActive ? primaryPink : textGrey)),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w900,
+            color: isActive ? primaryPink : textGrey,
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildMetricCard(String title, String value, IconData icon, Color color) {
+  Widget _buildMetricCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: surfaceWhite,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12, offset: const Offset(0, 5))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -653,7 +1068,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 18),
@@ -661,9 +1076,28 @@ class _FinanceScreenState extends State<FinanceScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: color), maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  color: color,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
               const SizedBox(height: 2),
-              Text(title.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8), maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text(
+                title.toUpperCase(),
+                style: const TextStyle(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w900,
+                  color: textGrey,
+                  letterSpacing: 0.8,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
         ],

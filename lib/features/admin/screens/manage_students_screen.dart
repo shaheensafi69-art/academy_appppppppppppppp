@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'student_detail_profile_screen.dart'; // فایل جدید مدیریت پروفایل
+import 'student_detail_profile_screen.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class StudentProfile {
   final String id;
@@ -60,7 +61,6 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
   List<StudentProfile> students = [];
   String searchQuery = "";
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
@@ -131,7 +131,7 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
             children: [
               const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
-              Text("LOADING STUDENT RECORDS...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(context.l10n.loading, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
             ],
           ),
         ),
@@ -154,14 +154,14 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                  colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                 boxShadow: [
-                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                  BoxShadow(color: primaryPink.withValues(alpha: 0.08), blurRadius: 25, offset: const Offset(0, 10)),
                 ],
               ),
               child: Column(
@@ -176,30 +176,30 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
                           color: lightPinkBg,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Text(
-                          "STUDENT REGISTRY",
-                          style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
+                        child: Text(
+                          context.l10n.studentRegistry,
+                          style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
                         ),
                       ),
                       const Icon(Icons.people_alt_rounded, color: primaryPink, size: 22),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    "Manage Students",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
+                  Text(
+                    context.l10n.manageStudents,
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    "Monitor academic performance, points, wallet balances & role promotions.",
-                    style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
+                  Text(
+                    context.l10n.manageStudentsSubtitle,
+                    style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 18),
                   Row(
                     children: [
-                      Expanded(child: _buildMiniStat("Total Students", currentStats['total'].toString(), Icons.group_rounded)),
+                      Expanded(child: _buildMiniStat(context.l10n.totalStudents, currentStats['total'].toString(), Icons.group_rounded)),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildMiniStat("Total Funds", "\$${(currentStats['totalWalletFunds'] as double).toInt()}", Icons.account_balance_wallet_rounded)),
+                      Expanded(child: _buildMiniStat(context.l10n.totalFunds, "\$${(currentStats['totalWalletFunds'] as double).toInt()}", Icons.account_balance_wallet_rounded)),
                     ],
                   )
                 ],
@@ -211,7 +211,7 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                color: cardBorder.withOpacity(0.5),
+                color: cardBorder.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: cardBorder, width: 1.5),
               ),
@@ -224,7 +224,7 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
                       onChanged: (val) => setState(() => searchQuery = val),
                       style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                       decoration: InputDecoration(
-                        hintText: "Search by name or email...",
+                        hintText: context.l10n.searchByNameOrEmail,
                         hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -250,7 +250,7 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
                       children: [
                         const Icon(Icons.search_off_rounded, color: textGrey, size: 36),
                         const SizedBox(height: 10),
-                        const Text("No students found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                        Text(context.l10n.noStudentsFound, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                       ],
                     ),
                   )
@@ -267,7 +267,7 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
                           color: surfaceWhite,
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: cardBorder, width: 1.5),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -311,7 +311,7 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text("WALLET BALANCE", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                                    Text(context.l10n.walletBalance.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                                     const SizedBox(height: 2),
                                     Text("\$${student.walletBalance.toStringAsFixed(2)}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                                   ],
@@ -325,9 +325,8 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
                                   icon: const Icon(Icons.manage_accounts_rounded, size: 14),
-                                  label: const Text("Manage Profile", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                                  label: Text(context.l10n.manageProfile, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
                                   onPressed: () {
-                                    // هدایت به صفحه اختصاصی مدیریت پروفایل
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -357,7 +356,7 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
         color: surfaceWhite,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 3))],
       ),
       child: Row(
         children: [

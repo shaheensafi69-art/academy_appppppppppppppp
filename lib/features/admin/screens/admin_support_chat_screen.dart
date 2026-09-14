@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart' hide TextDirection;
+import '../../../core/localization/l10n_extensions.dart';
 
 class AdminMessage {
   final String id;
@@ -63,8 +64,9 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
   String myAdminId = "";
   bool isTeacher = false;
 
-  // Premium Colors
+  // Luxury Light-Pink Palette
   static const Color primaryPink = Color(0xFFF494AC);
+  static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color deepPink = Color(0xFFD81B60);
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
@@ -228,8 +230,8 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
           SnackBar(
             content: Text(
               newStatus == 'closed'
-                  ? "Conversation successfully closed."
-                  : "Conversation reopened.",
+                  ? context.l10n.ticketStatusClosed
+                  : context.l10n.reopenTicket,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             ),
             backgroundColor: newStatus == 'closed'
@@ -267,8 +269,8 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
         lowerUrl.endsWith('.webp');
 
     Color boxBgColor = isMe
-        ? Colors.white.withOpacity(0.2)
-        : Colors.black.withOpacity(0.04);
+        ? Colors.white.withValues(alpha: 0.2)
+        : Colors.black.withValues(alpha: 0.04);
     Color contentColor = isMe ? Colors.white : textDark;
 
     if (isImage) {
@@ -278,7 +280,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isMe ? Colors.white.withOpacity(0.3) : cardBorder,
+            color: isMe ? Colors.white.withValues(alpha: 0.3) : cardBorder,
             width: 1,
           ),
         ),
@@ -318,7 +320,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
             const SizedBox(width: 8),
             Icon(
               Icons.download_rounded,
-              color: isMe ? Colors.white70 : textGrey.withOpacity(0.6),
+              color: isMe ? Colors.white70 : textGrey.withValues(alpha: 0.6),
               size: 18,
             ),
           ],
@@ -334,18 +336,12 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFF8FAFC), Color(0xFFF3F4F6)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+        decoration: const BoxDecoration(color: surfaceWhite),
         child: SafeArea(
           bottom: false,
           child: Column(
             children: [
-              // ================= شیشه‌ای هدر (Glassmorphism App Bar) =================
+              // Glassmorphism App Bar
               ClipRRect(
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
@@ -355,16 +351,13 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.75),
+                      color: Colors.white.withValues(alpha: 0.85),
                       border: Border(
-                        bottom: BorderSide(
-                          color: Colors.grey.withOpacity(0.1),
-                          width: 1,
-                        ),
+                        bottom: BorderSide(color: cardBorder, width: 1),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
+                          color: Colors.black.withValues(alpha: 0.03),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -396,8 +389,8 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                             boxShadow: [
                               BoxShadow(
                                 color: isTeacher
-                                    ? Colors.indigo.withOpacity(0.3)
-                                    : primaryPink.withOpacity(0.3),
+                                    ? Colors.indigo.withValues(alpha: 0.3)
+                                    : primaryPink.withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 3),
                               ),
@@ -406,7 +399,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                           child: Icon(
                             isTeacher
                                 ? Icons.psychology_rounded
-                                : Icons.school_rounded,
+                                : Icons.person_rounded,
                             color: Colors.white,
                             size: 20,
                           ),
@@ -418,7 +411,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                             children: [
                               Text(
                                 requesterName.isEmpty
-                                    ? "Support Chat"
+                                    ? context.l10n.supportChatTitle
                                     : requesterName,
                                 style: const TextStyle(
                                   color: textDark,
@@ -444,10 +437,10 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                                   const SizedBox(width: 4),
                                   Text(
                                     isClosed
-                                        ? "Ticket Closed"
+                                        ? context.l10n.ticketStatusClosed
                                         : (isTeacher
-                                              ? "Teacher Online"
-                                              : "Student Online"),
+                                              ? "${context.l10n.teacher} Online"
+                                              : "${context.l10n.studentsOnly} Online"),
                                     style: TextStyle(
                                       color: isClosed ? Colors.red : textGrey,
                                       fontSize: 10,
@@ -459,7 +452,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                             ],
                           ),
                         ),
-                        // دکمه تغییر وضعیت تیکت
+                        // Toggle Status Button
                         GestureDetector(
                           onTap: _toggleClose,
                           child: Container(
@@ -471,12 +464,12 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                             decoration: BoxDecoration(
                               color: isClosed
                                   ? Colors.green.shade50
-                                  : Colors.red.shade50,
+                                  : lightPinkBg,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: isClosed
                                     ? Colors.green.shade200
-                                    : Colors.red.shade200,
+                                    : primaryPink.withValues(alpha: 0.3),
                               ),
                             ),
                             child: Row(
@@ -488,17 +481,19 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                                   size: 14,
                                   color: isClosed
                                       ? Colors.green.shade700
-                                      : Colors.red.shade700,
+                                      : primaryPink,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  isClosed ? "Reopen" : "Close",
+                                  isClosed
+                                      ? context.l10n.reopenTicket
+                                      : context.l10n.closeTicket,
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w900,
                                     color: isClosed
                                         ? Colors.green.shade700
-                                        : Colors.red.shade700,
+                                        : primaryPink,
                                   ),
                                 ),
                               ],
@@ -511,7 +506,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                 ),
               ),
 
-              // ================= ناحیه چت =================
+              // Chat Messages Area
               Expanded(
                 child: Stack(
                   children: [
@@ -526,22 +521,22 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                             horizontal: 16,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
+                            color: Colors.grey.shade100,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: Colors.grey.shade300),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.info_outline_rounded,
                                 size: 16,
                                 color: textGrey,
                               ),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               Text(
-                                "This conversation is currently closed.",
-                                style: TextStyle(
+                                context.l10n.ticketStatusClosed,
+                                style: const TextStyle(
                                   color: textGrey,
                                   fontSize: 11,
                                   fontWeight: FontWeight.w900,
@@ -566,7 +561,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(20),
                                   decoration: BoxDecoration(
-                                    color: primaryPink.withOpacity(0.1),
+                                    color: lightPinkBg,
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -576,21 +571,12 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 16),
-                                const Text(
-                                  "No Messages Found",
-                                  style: TextStyle(
+                                Text(
+                                  context.l10n.noMessages,
+                                  style: const TextStyle(
                                     color: textDark,
                                     fontSize: 16,
                                     fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  "Send a message to start the conversation.",
-                                  style: TextStyle(
-                                    color: textGrey,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],
@@ -621,12 +607,12 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
 
                               if (isMe) {
                                 alignment = Alignment.centerRight;
-                                bgColor = primaryPink; // ادمین فعلی
+                                bgColor = primaryPink;
                                 textColor = Colors.white;
                                 timeColor = Colors.white70;
                               } else if (isRequester) {
                                 alignment = Alignment.centerLeft;
-                                bgColor = surfaceWhite; // کاربر
+                                bgColor = surfaceWhite;
                                 textColor = textDark;
                                 timeColor = textGrey;
                                 senderLabel = Row(
@@ -654,7 +640,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                                 );
                               } else if (isAi) {
                                 alignment = Alignment.centerLeft;
-                                bgColor = Colors.purple.shade50; // ربات
+                                bgColor = Colors.purple.shade50;
                                 textColor = Colors.purple.shade900;
                                 timeColor = Colors.purple.shade400;
                                 senderLabel = Row(
@@ -663,7 +649,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                                     Container(
                                       padding: const EdgeInsets.all(4),
                                       decoration: BoxDecoration(
-                                        color: aiColor.withOpacity(0.1),
+                                        color: aiColor.withValues(alpha: 0.1),
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Icon(
@@ -685,7 +671,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                                 );
                               } else {
                                 alignment = Alignment.centerLeft;
-                                bgColor = Colors.blue.shade50; // ادمین‌های دیگر
+                                bgColor = Colors.blue.shade50;
                                 textColor = Colors.blue.shade900;
                                 timeColor = Colors.blue.shade400;
                                 senderLabel = Row(
@@ -694,7 +680,9 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                                     Container(
                                       padding: const EdgeInsets.all(4),
                                       decoration: BoxDecoration(
-                                        color: otherAdminColor.withOpacity(0.1),
+                                        color: otherAdminColor.withValues(
+                                          alpha: 0.1,
+                                        ),
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Icon(
@@ -704,9 +692,9 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                                       ),
                                     ),
                                     const SizedBox(width: 4),
-                                    const Text(
-                                      "Other Agent",
-                                      style: TextStyle(
+                                    Text(
+                                      context.l10n.supportHelpDesk,
+                                      style: const TextStyle(
                                         color: otherAdminColor,
                                         fontSize: 10,
                                         fontWeight: FontWeight.w900,
@@ -755,8 +743,10 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                                     boxShadow: [
                                       BoxShadow(
                                         color: isMe
-                                            ? primaryPink.withOpacity(0.3)
-                                            : Colors.black.withOpacity(0.03),
+                                            ? primaryPink.withValues(alpha: 0.3)
+                                            : Colors.black.withValues(
+                                                alpha: 0.03,
+                                              ),
                                         blurRadius: 10,
                                         offset: const Offset(0, 4),
                                       ),
@@ -813,7 +803,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                 ),
               ),
 
-              // ================= کپسول شناور ارسال پیام =================
+              // Bottom Input Capsule
               if (!isClosed)
                 Container(
                   margin: EdgeInsets.only(
@@ -824,9 +814,10 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(30),
+                    border: Border.all(color: cardBorder, width: 1.5),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.06),
+                        color: Colors.black.withValues(alpha: 0.06),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -844,10 +835,9 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
                             fontWeight: FontWeight.w600,
                           ),
                           decoration: InputDecoration(
-                            hintText:
-                                "Reply to ${requesterName.split(' ').first}...",
+                            hintText: context.l10n.typeYourReply,
                             hintStyle: const TextStyle(
-                              color: Colors.black38,
+                              color: textGrey,
                               fontSize: 12,
                             ),
                             border: InputBorder.none,

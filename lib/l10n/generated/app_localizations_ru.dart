@@ -2422,4 +2422,464 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get systemSettings => 'Системные настройки';
+
+  @override
+  String get backToClassRoster => 'Назад к списку класса';
+
+  @override
+  String get enrollStudents => 'Записать студентов';
+
+  @override
+  String get enrollStudentsSubtitle =>
+      'Выберите студентов для зачисления в эту группу.';
+
+  @override
+  String get confirmEnrollment => 'Подтвердить зачисление';
+
+  @override
+  String get paidAll => 'Оплачено (Все)';
+
+  @override
+  String get facultyManagement => 'Управление преподавателями';
+
+  @override
+  String get facultyDirectory => 'СПРАВОЧНИК ПРЕПОДАВАТЕЛЕЙ';
+
+  @override
+  String get facultyManagementSubtitle =>
+      'Просматривайте профили преподавателей и активные группы.';
+
+  @override
+  String get activeCohorts => 'Активные группы';
+
+  @override
+  String get searchInstructorsHint =>
+      'Поиск преподавателя по имени или эл. почте...';
+
+  @override
+  String get noInstructorsFound => 'Преподаватели не найдены.';
+
+  @override
+  String get noBiographyProvided => 'Биография не указана.';
+
+  @override
+  String get viewProfile => 'Посмотреть профиль';
+
+  @override
+  String get backToFaculty => 'Назад к преподавателям';
+
+  @override
+  String get instructorNotFound => 'Преподаватель не найден';
+
+  @override
+  String get walletBalanceAndPayouts => 'БАЛАНС КОШЕЛЬКА И ВЫПЛАТЫ';
+
+  @override
+  String get processPayout => 'Оформить выплату';
+
+  @override
+  String get instructorProfileSyncSuccess =>
+      'Профиль преподавателя успешно синхронизирован! 🚀';
+
+  @override
+  String get invalidPayoutAmount => 'Недействительная сумма выплаты.';
+
+  @override
+  String get payoutSuccess => 'Выплата успешно обработана!';
+
+  @override
+  String get failedToProcessPayout => 'Не удалось обработать выплату';
+
+  @override
+  String get specializedCourses => 'СПЕЦИАЛИЗИРОВАННЫЕ КУРСЫ';
+
+  @override
+  String get noSpecializedCourses => 'Нет привязанных спецкурсов.';
+
+  @override
+  String get assignedCohorts => 'НАЗНАЧЕННЫЕ ГРУППЫ';
+
+  @override
+  String get noAssignedClasses => 'Нет назначенных классов.';
+
+  @override
+  String get confirmAndSettlePayout => 'ПОДТВЕРДИТЬ И ВЫПЛАТИТЬ 🚀';
+
+  @override
+  String get payoutAmountUsd => 'СУММА ВЫПЛАТЫ (USD)';
+
+  @override
+  String get biographyTeacherInfo => 'БИОГРАФИЯ (ИНФО О ПРЕПОДАВАТЕЛЕ)';
+
+  @override
+  String get courseLibrary => 'БИБЛИОТЕКА КУРСОВ';
+
+  @override
+  String get searchCourseHint => 'Поиск курсов по названию или описанию...';
+
+  @override
+  String get coursePrice => 'Цена курса (\$)';
+
+  @override
+  String get courseCategory => 'Категория';
+
+  @override
+  String get courseLevel => 'Уровень';
+
+  @override
+  String get thumbnailUrl => 'URL миниатюры';
+
+  @override
+  String get saveCourseChanges => 'СОХРАНИТЬ ИЗМЕНЕНИЯ КУРСА 🚀';
+
+  @override
+  String get createCourseAction => 'СОЗДАТЬ МАСТЕР-КЛАСС 🚀';
+
+  @override
+  String get deleteCourse => 'Удалить курс';
+
+  @override
+  String get confirmDeleteCourse => 'Вы уверены, что хотите удалить этот курс?';
+
+  @override
+  String get classesAndCohorts => 'Классы и когорты';
+
+  @override
+  String get cohortDirectory => 'СПРАВОЧНИК ГРУПП';
+
+  @override
+  String get searchClassesHint =>
+      'Поиск классов по названию или преподавателю...';
+
+  @override
+  String get noClassesFound => 'Классы не найдены.';
+
+  @override
+  String get activeCohort => 'Активная группа';
+
+  @override
+  String get inactiveCohort => 'В архиве / Неактивна';
+
+  @override
+  String get selectTeacher => 'Выбрать преподавателя';
+
+  @override
+  String get selectCourse => 'Выбрать курс';
+
+  @override
+  String get createClassAction => 'СОЗДАТЬ НОВУЮ ГРУППУ 🚀';
+
+  @override
+  String get saveClassChanges => 'СОХРАНИТЬ ИЗМЕНЕНИЯ КЛАССА 🚀';
+
+  @override
+  String get liveStreamingStudio => 'СТУДИЯ ПРЯМЫХ ТРАНСЛЯЦИЙ';
+
+  @override
+  String get broadcastRoomUrl => 'Ссылка на трансляцию';
+
+  @override
+  String get financialLedger => 'ФИНАНСОВЫЙ ЖУРНАЛ';
+
+  @override
+  String get allTransactions => 'Все транзакции';
+
+  @override
+  String get deposits => 'Пополнения';
+
+  @override
+  String get withdrawals => 'Выводы';
+
+  @override
+  String get awardsAndRecognition => 'НАГРАДЫ И ПРИЗНАНИЕ';
+
+  @override
+  String get announcementBroadcast => 'ТРАНСЛЯЦИЯ ОБЪЯВЛЕНИЙ';
+
+  @override
+  String get publishAnnouncement => 'ОПУБЛИКОВАТЬ ОБЪЯВЛЕНИЕ 📢';
+
+  @override
+  String get supportHelpDesk => 'СЛУЖБА ПОДДЕРЖКИ';
+
+  @override
+  String get ticketStatusOpen => 'Открыт';
+
+  @override
+  String get ticketStatusClosed => 'Решен / Закрыт';
+
+  @override
+  String get liveSupportChat => 'Чат с поддержкой онлайн';
+
+  @override
+  String get adminSettings => 'НАСТРОЙКИ АДМИНИСТРАТОРА';
+
+  @override
+  String get saveSettings => 'СОХРАНИТЬ НАСТРОЙКИ 🚀';
+
+  @override
+  String get systemConfiguration => 'Конфигурация системы';
+
+  @override
+  String get loadingDirectory => 'Загрузка справочника...';
+
+  @override
+  String get teacher => 'Преподаватель';
+
+  @override
+  String get course => 'Курс';
+
+  @override
+  String get backToCourses => 'Назад к курсам';
+
+  @override
+  String get noDescription => 'Описание не указано.';
+
+  @override
+  String get optional => 'Необязательно';
+
+  @override
+  String get required => 'Обязательно';
+
+  @override
+  String get backToCohorts => 'Назад к группам';
+
+  @override
+  String get cohortManagement => 'УПРАВЛЕНИЕ ГРУППАМИ';
+
+  @override
+  String get createClassCohortSubtitle =>
+      'Назначьте курс, преподавателя, расписание и ссылки для студентов.';
+
+  @override
+  String get classTimeSlot => 'ВРЕМЯ ЗАНЯТИЙ';
+
+  @override
+  String get classDaysHint => 'напр., Сб, Пн, Ср';
+
+  @override
+  String get classTimeHint => 'напр., 18:00 - 20:00';
+
+  @override
+  String get scheduleNotes => 'ИНФОРМАЦИЯ О РАСПИСАНИИ (ЗАМЕТКИ)';
+
+  @override
+  String get meetingLinkHint => 'https://zoom.us/j/...';
+
+  @override
+  String get signalLinkHint => 'https://t.me/+...';
+
+  @override
+  String get activeLiveCohort => 'Активная (Текущая группа)';
+
+  @override
+  String get archivedCompleted => 'В архиве / Завершено';
+
+  @override
+  String get noLiveSessions => 'Прямые эфиры не найдены.';
+
+  @override
+  String get noLink => 'Нет ссылки';
+
+  @override
+  String get manageAction => 'Управлять';
+
+  @override
+  String get manageClassModal => 'Управление классом';
+
+  @override
+  String get saveAndUpdateAll => 'СОХРАНИТЬ И ОБНОВИТЬ ВСЕ ДАННЫЕ 🚀';
+
+  @override
+  String get liveSessionsAndCohorts => 'Прямые эфиры и группы';
+
+  @override
+  String get liveSessionsSubtitle =>
+      'Контролируйте активные комнаты, расписание и управляйте параметрами классов.';
+
+  @override
+  String get searchCohortsHint => 'Поиск групп...';
+
+  @override
+  String get establishingConnection => 'УСТАНОВКА СОЕДИНЕНИЯ...';
+
+  @override
+  String get auditingRecords => 'ПРОВЕРКА ФИНАНСОВЫХ ЗАПИСЕЙ...';
+
+  @override
+  String get financialLedgerSubtitle =>
+      'Аудит выручки платформы и управление выплатами преподавателям.';
+
+  @override
+  String get facultyLiability => 'Обязательства перед преподавателями';
+
+  @override
+  String get distributedPayouts => 'Выплаченные средства';
+
+  @override
+  String get netProfit => 'Чистая прибыль';
+
+  @override
+  String get facultyTab => 'Преподаватели';
+
+  @override
+  String get inflowsTab => 'Поступления';
+
+  @override
+  String get outflowsTab => 'Выплаты';
+
+  @override
+  String get findInstructorHint => 'Найти преподавателя...';
+
+  @override
+  String get payoutAmount => 'Сумма выплаты (\$)';
+
+  @override
+  String get confirmPayout => 'ПОДТВЕРДИТЬ ВЫПЛАТУ 💸';
+
+  @override
+  String get studentPayments => 'Платежи студентов';
+
+  @override
+  String get payoutRecords => 'История выплат';
+
+  @override
+  String get noTransactions => 'Транзакции не найдены.';
+
+  @override
+  String get awardsSubtitle =>
+      'Создание, управление и выдача значков и наград студентам.';
+
+  @override
+  String get createAwardTitle => 'Создать новую награду';
+
+  @override
+  String get awardDescription => 'Описание награды';
+
+  @override
+  String get awardIcon => 'Значок / Эмодзи';
+
+  @override
+  String get publishAwardAction => 'СОЗДАТЬ НАГРАДУ 🏆';
+
+  @override
+  String get availableAwards => 'Доступные награды и значки';
+
+  @override
+  String get noAwardsFound => 'Награды не найдены.';
+
+  @override
+  String get deleteAward => 'Удалить награду';
+
+  @override
+  String get announcementsSubtitle =>
+      'Публикация системных объявлений, обновлений и оповещений.';
+
+  @override
+  String get announcementContent => 'Содержание объявления';
+
+  @override
+  String get studentsOnly => 'Только студенты';
+
+  @override
+  String get teachersOnly => 'Только преподаватели';
+
+  @override
+  String get broadcastNow => 'ОПУБЛИКОВАТЬ ОБЪЯВЛЕНИЕ 📢';
+
+  @override
+  String get recentAnnouncements => 'История объявлений';
+
+  @override
+  String get noAnnouncements => 'Объявлений пока нет.';
+
+  @override
+  String get ticketsSubtitle => 'Управление тикетами и запросами техподдержки.';
+
+  @override
+  String get searchTicketsHint => 'Поиск по теме, студенту или отделу...';
+
+  @override
+  String get filterStatusAll => 'Все тикеты';
+
+  @override
+  String get filterDepartment => 'Отдел';
+
+  @override
+  String get ticketDetails => 'Детали тикета';
+
+  @override
+  String get typeYourReply => 'Введите ваш ответ...';
+
+  @override
+  String get reopenTicket => 'Открыть тикет снова';
+
+  @override
+  String get liveSupportSubtitle =>
+      'Живая поддержка студентов и преподавателей в реальном времени.';
+
+  @override
+  String get searchSupportHint => 'Поиск запросов поддержки...';
+
+  @override
+  String get openChat => 'Открыть чат';
+
+  @override
+  String get noSupportRequests => 'Запросов поддержки не найдено.';
+
+  @override
+  String get supportChatTitle => 'Чат поддержки';
+
+  @override
+  String get markResolved => 'Отметить как решено';
+
+  @override
+  String get adminSettingsSubtitle =>
+      'Управление профилем администратора, настройками системы и безопасности.';
+
+  @override
+  String get systemAdmin => 'Системный администратор';
+
+  @override
+  String get adminRole => 'Административная роль';
+
+  @override
+  String get logOutAccount => 'Выйти из системы';
+
+  @override
+  String get confirmLogout => 'Вы уверены, что хотите выйти?';
+
+  @override
+  String get avatarUrl => 'URL аватара';
+
+  @override
+  String get superAdminRole => 'Администратор (Супер-админ)';
+
+  @override
+  String get teacherRole => 'Преподаватель / Ментор';
+
+  @override
+  String get studentRole => 'Студент (Обычный)';
+
+  @override
+  String get teacherInfoAndCredentials => 'ИНФОРМАЦИЯ О ПРЕПОДАВАТЕЛЕ';
+
+  @override
+  String get facultyIdentityAndRole => 'ПРОФИЛЬ И РОЛЬ';
+
+  @override
+  String get synchronizingEngine => 'СИНХРОНИЗАЦИЯ СИСТЕМЫ...';
+
+  @override
+  String get settingsUpdatedSuccess =>
+      'Настройки и конфигурация успешно синхронизированы! 🚀';
+
+  @override
+  String get failedToUpdateSettings => 'Не удалось обновить конфигурацию';
+
+  @override
+  String get noMessages => 'Пока нет сообщений.';
+
+  @override
+  String get teachers => 'Преподаватели';
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:collection/collection.dart';
+import '../../../core/localization/l10n_extensions.dart';
 import 'add_student_to_class_screen.dart';
 
 class ClassDetailScreen extends StatefulWidget {
@@ -18,7 +19,7 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
   Map<String, dynamic>? classData;
   List<Map<String, dynamic>> students = [];
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  // Luxury Light-Pink Palette
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
@@ -32,11 +33,9 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
     _fetchClassDetails();
   }
 
-  /// واکشی اطلاعات کامل کلاس، دوره، استاد، جدول class_students و جدول enrollments
   Future<void> _fetchClassDetails() async {
     setState(() => isLoading = true);
     try {
-      // 1. دریافت اطلاعات گروه کلاسی همراه با دوره و استاد
       final clsData = await supabase
           .from("class_groups")
           .select("*, course:courses(id, title, price, category), teacher:profiles!teacher_id(id, first_name, last_name, email, avatar_url)")
@@ -57,7 +56,6 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
         'schedule_days': clsData['schedule_days'] ?? 'Saturday, Monday, Wednesday',
       };
 
-      // 2. دریافت لیست دانشجویان این کلاس از جدول class_students
       final classStudents = await supabase
           .from("class_students")
           .select("student_id, joined_at, is_paid, is_trial, trial_ends_at")
@@ -67,13 +65,11 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
       if ((classStudents as List).isNotEmpty) {
         List studentIds = classStudents.map((cs) => cs['student_id']).toList();
         
-        // 3. دریافت اطلاعات پروفایل دانشجویان از جدول profiles
         final profiles = await supabase
             .from("profiles")
             .select("id, first_name, last_name, email, avatar_url, total_score, wallet_balance")
             .inFilter("id", studentIds);
 
-        // 4. دریافت وضعیت جدول enrollments برای این دانشجویان و این دوره
         List<Map<String, dynamic>> enrollmentsList = [];
         if (formattedCourse != null && formattedCourse['id'] != null) {
           final enRes = await supabase
@@ -99,7 +95,6 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
           });
         }
 
-        // مرتب‌سازی بر اساس وضعیت پرداخت
         formattedStudents.sort((a, b) => (a['is_paid'] == b['is_paid']) ? 0 : (a['is_paid'] ? 1 : -1));
         students = formattedStudents;
       } else {
@@ -113,7 +108,6 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
     }
   }
 
-  /// تغییر وضعیت پرداخت شهریه در جدول class_students
   Future<void> togglePayment(String studentId, bool currentStatus) async {
     try {
       bool newStatus = !currentStatus;
@@ -145,7 +139,10 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
             children: [
               const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
-              Text("LOADING COHORT DETAILS...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(
+                context.l10n.loadingDirectory.toUpperCase(),
+                style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2),
+              ),
             ],
           ),
         ),
@@ -159,12 +156,12 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Cohort Not Found", style: TextStyle(color: textDark, fontWeight: FontWeight.bold)),
+              Text(context.l10n.classDetails, style: const TextStyle(color: textDark, fontWeight: FontWeight.bold)),
               const SizedBox(height: 14),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: primaryPink, foregroundColor: Colors.white),
                 onPressed: () => Navigator.pop(context),
-                child: const Text("Go Back"),
+                child: Text(context.l10n.back),
               ),
             ],
           ),
@@ -196,31 +193,31 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: cardBorder, width: 1.5),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.arrow_back_rounded, color: textDark, size: 14),
-                        SizedBox(width: 6),
-                        Text("Back to Cohorts", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
+                        const Icon(Icons.arrow_back_rounded, color: textDark, size: 14),
+                        const SizedBox(width: 6),
+                        Text(context.l10n.classesAndCohorts, style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
 
-                // Header Info Card (ریسپانسیو و فیکس شده برای جلوگیری از اورفلو)
+                // Header Info Card
                 Container(
                   padding: const EdgeInsets.all(22),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                      colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                    border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                     boxShadow: [
-                      BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                      BoxShadow(color: primaryPink.withValues(alpha: 0.08), blurRadius: 25, offset: const Offset(0, 10)),
                     ],
                   ),
                   child: Column(
@@ -236,7 +233,7 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
-                              classData!['is_active'] == true ? "ACTIVE COHORT" : "ARCHIVED",
+                              classData!['is_active'] == true ? context.l10n.activeCohort.toUpperCase() : context.l10n.inactiveCohort.toUpperCase(),
                               style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
                             ),
                           ),
@@ -248,7 +245,7 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      Text(classData!['class_name'], style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 22)),
+                      Text(classData!['class_name'] ?? '', style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 22)),
                       const SizedBox(height: 4),
                       Text(course?['title'] ?? 'General Academic Program', style: const TextStyle(color: primaryPink, fontSize: 13, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 16),
@@ -260,12 +257,12 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                               radius: 16,
                               backgroundColor: lightPinkBg,
                               backgroundImage: teacher['avatar_url'] != null ? NetworkImage(teacher['avatar_url']) : null,
-                              child: teacher['avatar_url'] == null ? Text(teacher['first_name'][0], style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.bold)) : null,
+                              child: teacher['avatar_url'] == null ? Text(teacher['first_name'] != null && teacher['first_name'].isNotEmpty ? teacher['first_name'][0] : 'T', style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.bold)) : null,
                             ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                "Instructor: ${teacher['first_name']} ${teacher['last_name']}",
+                                "${context.l10n.teacher}: ${teacher['first_name'] ?? ''} ${teacher['last_name'] ?? ''}".trim(),
                                 style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -281,9 +278,9 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                           return Flex(
                             direction: isWide ? Axis.horizontal : Axis.vertical,
                             children: [
-                              Expanded(flex: isWide ? 1 : 0, child: _buildMiniStat("Enrolled Students", students.length.toString(), Icons.group_rounded)),
+                              Expanded(flex: isWide ? 1 : 0, child: _buildMiniStat(context.l10n.enrolledStudents, students.length.toString(), Icons.group_rounded)),
                               SizedBox(width: isWide ? 12 : 0, height: isWide ? 0 : 12),
-                              Expanded(flex: isWide ? 1 : 0, child: _buildMiniStat("Class Schedule", classData!['schedule_time'], Icons.access_time_rounded)),
+                              Expanded(flex: isWide ? 1 : 0, child: _buildMiniStat(context.l10n.schedule, classData!['schedule_time'] ?? '', Icons.access_time_rounded)),
                             ],
                           );
                         },
@@ -293,16 +290,16 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Roster Header & Enroll Button (حل مشکل اورفلو با استفاده از Wrap)
+                // Roster Header & Enroll Button
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
                   alignment: WrapAlignment.spaceBetween,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    const Text(
-                      "STUDENT ROSTER & ENROLLMENTS",
-                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.5),
+                    Text(
+                      context.l10n.studentRegistry,
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.5),
                     ),
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
@@ -313,7 +310,7 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       icon: const Icon(Icons.person_add_rounded, size: 16),
-                      label: const Text("Enroll Student", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                      label: Text(context.l10n.addStudents, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -335,7 +332,7 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: cardBorder, width: 1.5),
                         ),
-                        child: const Text("No students enrolled in this cohort yet.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                        child: Text(context.l10n.noStudentsFound, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                       )
                     : ListView.separated(
                         shrinkWrap: true,
@@ -360,7 +357,7 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                               color: surfaceWhite,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(color: cardBorder, width: 1.5),
-                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                             ),
                             child: Row(
                               children: [
@@ -368,17 +365,17 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                                   radius: 20,
                                   backgroundColor: lightPinkBg,
                                   backgroundImage: s['avatar_url'] != null ? NetworkImage(s['avatar_url']) : null,
-                                  child: s['avatar_url'] == null ? Text(s['first_name'] != null ? s['first_name'][0] : 'S', style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 12)) : null,
+                                  child: s['avatar_url'] == null ? Text(s['first_name'] != null && s['first_name'].isNotEmpty ? s['first_name'][0] : 'S', style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 12)) : null,
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text("${s['first_name'] ?? ''} ${s['last_name'] ?? ''}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                      Text("${s['first_name'] ?? ''} ${s['last_name'] ?? ''}".trim(), style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
                                       const SizedBox(height: 2),
                                       Text(
-                                        "${s['email'] ?? ''} • Progress: $progress%${isTrial ? ' • Trial: ${isStillActiveTrial ? "Active ⏳" : "Expired 🔒"}' : ''}",
+                                        "${s['email'] ?? ''} • ${context.l10n.progress}: $progress%${isTrial ? ' • Trial: ${isStillActiveTrial ? "Active ⏳" : "Expired 🔒"}' : ''}",
                                         style: TextStyle(
                                           color: isTrial 
                                             ? (isStillActiveTrial ? Colors.purple : Colors.red) 
@@ -395,15 +392,15 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                     decoration: BoxDecoration(
-                                      color: isPaid ? Colors.green.withOpacity(0.12) : lightPinkBg,
+                                      color: isPaid ? Colors.green.withValues(alpha: 0.12) : lightPinkBg,
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: isPaid ? Colors.green.withOpacity(0.3) : primaryPink.withOpacity(0.3),
+                                        color: isPaid ? Colors.green.withValues(alpha: 0.3) : primaryPink.withValues(alpha: 0.3),
                                         width: 1.5,
                                       ),
                                     ),
                                     child: Text(
-                                      isPaid ? "PAID" : "PENDING",
+                                      isPaid ? context.l10n.paidAll : "PENDING",
                                       style: TextStyle(
                                         color: isPaid ? Colors.green.shade700 : primaryPink,
                                         fontSize: 10,
@@ -433,7 +430,7 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
         color: surfaceWhite,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 3))],
       ),
       child: Row(
         children: [

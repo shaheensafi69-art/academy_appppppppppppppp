@@ -2437,4 +2437,469 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get systemSettings => 'Paramètres du système';
+
+  @override
+  String get backToClassRoster => 'Retour à la liste de classe';
+
+  @override
+  String get enrollStudents => 'Inscrire des étudiants';
+
+  @override
+  String get enrollStudentsSubtitle =>
+      'Sélectionnez plusieurs étudiants à inscrire dans cette cohorte.';
+
+  @override
+  String get confirmEnrollment => 'Confirmer l\'inscription';
+
+  @override
+  String get paidAll => 'Payé (Tous)';
+
+  @override
+  String get facultyManagement => 'Gestion du corps professoral';
+
+  @override
+  String get facultyDirectory => 'RÉPERTOIRE DES PROFESSEURS';
+
+  @override
+  String get facultyManagementSubtitle =>
+      'Consultez les profils des enseignants et leurs cohortes actives.';
+
+  @override
+  String get activeCohorts => 'Cohortes actives';
+
+  @override
+  String get searchInstructorsHint =>
+      'Rechercher un instructeur par nom ou e-mail...';
+
+  @override
+  String get noInstructorsFound => 'Aucun instructeur trouvé.';
+
+  @override
+  String get noBiographyProvided => 'Aucune biographie fournie.';
+
+  @override
+  String get viewProfile => 'Voir le profil';
+
+  @override
+  String get backToFaculty => 'Retour aux professeurs';
+
+  @override
+  String get instructorNotFound => 'Instructeur introuvable';
+
+  @override
+  String get walletBalanceAndPayouts => 'SOLDE ET PAIEMENTS';
+
+  @override
+  String get processPayout => 'Traiter le paiement';
+
+  @override
+  String get instructorProfileSyncSuccess =>
+      'Profil de l\'instructeur synchronisé avec succès ! 🚀';
+
+  @override
+  String get invalidPayoutAmount => 'Montant de paiement invalide.';
+
+  @override
+  String get payoutSuccess => 'Paiement traité avec succès !';
+
+  @override
+  String get failedToProcessPayout => 'Échec du traitement du paiement';
+
+  @override
+  String get specializedCourses => 'COURS SPÉCIALISÉS';
+
+  @override
+  String get noSpecializedCourses => 'Aucun cours spécialisé associé.';
+
+  @override
+  String get assignedCohorts => 'COHORTES ASSIGNÉES';
+
+  @override
+  String get noAssignedClasses => 'Aucune classe assignée.';
+
+  @override
+  String get confirmAndSettlePayout => 'CONFIRMER ET RÉGLER LE PAIEMENT 🚀';
+
+  @override
+  String get payoutAmountUsd => 'MONTANT DU PAIEMENT (USD)';
+
+  @override
+  String get biographyTeacherInfo => 'BIOGRAPHIE (INFO ENSEIGNANT)';
+
+  @override
+  String get courseLibrary => 'BIBLIOTHÈQUE DE COURS';
+
+  @override
+  String get searchCourseHint =>
+      'Rechercher des cours par titre ou description...';
+
+  @override
+  String get coursePrice => 'Prix du cours (\$)';
+
+  @override
+  String get courseCategory => 'Catégorie';
+
+  @override
+  String get courseLevel => 'Niveau';
+
+  @override
+  String get thumbnailUrl => 'URL de la miniature';
+
+  @override
+  String get saveCourseChanges => 'ENREGISTRER LES MODIFICATIONS 🚀';
+
+  @override
+  String get createCourseAction => 'CRÉER LA MASTERCLASS 🚀';
+
+  @override
+  String get deleteCourse => 'Supprimer le cours';
+
+  @override
+  String get confirmDeleteCourse =>
+      'Êtes-vous sûr de vouloir supprimer ce cours ?';
+
+  @override
+  String get classesAndCohorts => 'Classes et cohortes';
+
+  @override
+  String get cohortDirectory => 'RÉPERTOIRE DES COHORTES';
+
+  @override
+  String get searchClassesHint =>
+      'Rechercher des classes par nom ou enseignant...';
+
+  @override
+  String get noClassesFound => 'Aucune classe trouvée.';
+
+  @override
+  String get activeCohort => 'Cohorte active';
+
+  @override
+  String get inactiveCohort => 'Archivée / Inactive';
+
+  @override
+  String get selectTeacher => 'Sélectionner un instructeur';
+
+  @override
+  String get selectCourse => 'Sélectionner un cours';
+
+  @override
+  String get createClassAction => 'CRÉER UNE NOUVELLE COHORTE 🚀';
+
+  @override
+  String get saveClassChanges => 'ENREGISTRER LES MODIFICATIONS 🚀';
+
+  @override
+  String get liveStreamingStudio => 'STUDIO DE STREAMING EN DIRECT';
+
+  @override
+  String get broadcastRoomUrl => 'Lien de la réunion';
+
+  @override
+  String get financialLedger => 'GRAND LIVRE FINANCIER';
+
+  @override
+  String get allTransactions => 'Toutes les transactions';
+
+  @override
+  String get deposits => 'Dépôts';
+
+  @override
+  String get withdrawals => 'Retraits';
+
+  @override
+  String get awardsAndRecognition => 'RÉCOMPENSES ET RECONNAISSANCE';
+
+  @override
+  String get announcementBroadcast => 'DIFFUSION D\'ANNONCES';
+
+  @override
+  String get publishAnnouncement => 'PUBLIER L\'ANNONCE 📢';
+
+  @override
+  String get supportHelpDesk => 'CENTRE D\'ASSISTANCE';
+
+  @override
+  String get ticketStatusOpen => 'Ouvert';
+
+  @override
+  String get ticketStatusClosed => 'Résolu / Fermé';
+
+  @override
+  String get liveSupportChat => 'Chat de support en direct';
+
+  @override
+  String get adminSettings => 'PARAMÈTRES ADMIN';
+
+  @override
+  String get saveSettings => 'ENREGISTRER LES PARAMÈTRES 🚀';
+
+  @override
+  String get systemConfiguration => 'Configuration du système';
+
+  @override
+  String get loadingDirectory => 'Chargement du répertoire...';
+
+  @override
+  String get teacher => 'Enseignant';
+
+  @override
+  String get course => 'Cours';
+
+  @override
+  String get backToCourses => 'Retour aux cours';
+
+  @override
+  String get noDescription => 'Aucune description fournie.';
+
+  @override
+  String get optional => 'Optionnel';
+
+  @override
+  String get required => 'Requis';
+
+  @override
+  String get backToCohorts => 'Retour aux cohortes';
+
+  @override
+  String get cohortManagement => 'GESTION DES COHORTES';
+
+  @override
+  String get createClassCohortSubtitle =>
+      'Attribuer un cours, un instructeur, un horaire et des liens en ligne pour les étudiants.';
+
+  @override
+  String get classTimeSlot => 'CRÉNEAU HORAIRE DU COURS';
+
+  @override
+  String get classDaysHint => 'ex. Sam, Lun, Mer';
+
+  @override
+  String get classTimeHint => 'ex. 18:00 - 20:00';
+
+  @override
+  String get scheduleNotes => 'INFOS D\'HORAIRE (NOTES)';
+
+  @override
+  String get meetingLinkHint => 'https://zoom.us/j/...';
+
+  @override
+  String get signalLinkHint => 'https://t.me/+...';
+
+  @override
+  String get activeLiveCohort => 'Actif (Cohorte en direct)';
+
+  @override
+  String get archivedCompleted => 'Archivé / Terminé';
+
+  @override
+  String get noLiveSessions => 'Aucune session en direct trouvée.';
+
+  @override
+  String get noLink => 'Aucun lien';
+
+  @override
+  String get manageAction => 'Gérer';
+
+  @override
+  String get manageClassModal => 'Gérer la classe';
+
+  @override
+  String get saveAndUpdateAll => 'ENREGISTRER ET TOUT METTRE À JOUR 🚀';
+
+  @override
+  String get liveSessionsAndCohorts => 'Sessions en direct & cohortes';
+
+  @override
+  String get liveSessionsSubtitle =>
+      'Surveillez les salles actives, les horaires et gérez les cours en toute sécurité.';
+
+  @override
+  String get searchCohortsHint => 'Rechercher des cohortes...';
+
+  @override
+  String get establishingConnection => 'CONNEXION EN DIRECT EN COURS...';
+
+  @override
+  String get auditingRecords => 'AUDIT DES REGISTRES FINANCIERS...';
+
+  @override
+  String get financialLedgerSubtitle =>
+      'Vérifiez les revenus de la plateforme et gérez les paiements des professeurs.';
+
+  @override
+  String get facultyLiability => 'Engagements envers les profs';
+
+  @override
+  String get distributedPayouts => 'Paiements distribués';
+
+  @override
+  String get netProfit => 'Bénéfice net';
+
+  @override
+  String get facultyTab => 'Professeurs';
+
+  @override
+  String get inflowsTab => 'Entrées';
+
+  @override
+  String get outflowsTab => 'Sorties';
+
+  @override
+  String get findInstructorHint => 'Trouver un professeur...';
+
+  @override
+  String get payoutAmount => 'Montant du paiement (\$)';
+
+  @override
+  String get confirmPayout => 'CONFIRMER LE PAIEMENT 💸';
+
+  @override
+  String get studentPayments => 'Paiements étudiants';
+
+  @override
+  String get payoutRecords => 'Historique des paiements';
+
+  @override
+  String get noTransactions => 'Aucune transaction trouvée.';
+
+  @override
+  String get awardsSubtitle =>
+      'Créer, gérer et attribuer des badges et récompenses aux étudiants.';
+
+  @override
+  String get createAwardTitle => 'Créer une nouvelle récompense';
+
+  @override
+  String get awardDescription => 'Description';
+
+  @override
+  String get awardIcon => 'Icône / Émoji';
+
+  @override
+  String get publishAwardAction => 'CRÉER UNE RÉCOMPENSE 🏆';
+
+  @override
+  String get availableAwards => 'Badges et récompenses disponibles';
+
+  @override
+  String get noAwardsFound => 'Aucune récompense trouvée.';
+
+  @override
+  String get deleteAward => 'Supprimer la récompense';
+
+  @override
+  String get announcementsSubtitle =>
+      'Diffuser des avis à l\'échelle du système, des mises à jour ou des alertes.';
+
+  @override
+  String get announcementContent => 'Message / Contenu de l\'annonce';
+
+  @override
+  String get studentsOnly => 'Étudiants seulement';
+
+  @override
+  String get teachersOnly => 'Professeurs seulement';
+
+  @override
+  String get broadcastNow => 'DIFFUSER L\'ANNONCE 📢';
+
+  @override
+  String get recentAnnouncements => 'Historique des diffusions';
+
+  @override
+  String get noAnnouncements => 'Aucune annonce publiée pour l\'instant.';
+
+  @override
+  String get ticketsSubtitle =>
+      'Gérer les demandes d\'assistance et les tickets d\'incidents.';
+
+  @override
+  String get searchTicketsHint =>
+      'Rechercher par sujet, étudiant ou département...';
+
+  @override
+  String get filterStatusAll => 'Tous les tickets';
+
+  @override
+  String get filterDepartment => 'Département';
+
+  @override
+  String get ticketDetails => 'Détails du ticket';
+
+  @override
+  String get typeYourReply => 'Tapez votre réponse...';
+
+  @override
+  String get reopenTicket => 'Rouvrir le ticket';
+
+  @override
+  String get liveSupportSubtitle =>
+      'Assistance en direct pour étudiants et professeurs en temps réel.';
+
+  @override
+  String get searchSupportHint => 'Rechercher des demandes d\'assistance...';
+
+  @override
+  String get openChat => 'Ouvrir le chat';
+
+  @override
+  String get noSupportRequests => 'Aucune demande d\'assistance trouvée.';
+
+  @override
+  String get supportChatTitle => 'Chat d\'assistance';
+
+  @override
+  String get markResolved => 'Marquer comme résolu';
+
+  @override
+  String get adminSettingsSubtitle =>
+      'Gérer votre profil administrateur, les préférences système et la sécurité.';
+
+  @override
+  String get systemAdmin => 'Administrateur système';
+
+  @override
+  String get adminRole => 'Rôle administratif';
+
+  @override
+  String get logOutAccount => 'Se déconnecter';
+
+  @override
+  String get confirmLogout => 'Êtes-vous sûr de vouloir vous déconnecter ?';
+
+  @override
+  String get avatarUrl => 'URL de l\'avatar';
+
+  @override
+  String get superAdminRole => 'Administrateur (Super Admin)';
+
+  @override
+  String get teacherRole => 'Instructeur / Mentor (Enseignant)';
+
+  @override
+  String get studentRole => 'Étudiant (Normal)';
+
+  @override
+  String get teacherInfoAndCredentials => 'INFOS ENSEIGNANT & DIPLÔMES';
+
+  @override
+  String get facultyIdentityAndRole => 'IDENTITÉ & RÔLE DE L\'ENSEIGNANT';
+
+  @override
+  String get synchronizingEngine => 'SYNCHRONISATION DU SYSTÈME...';
+
+  @override
+  String get settingsUpdatedSuccess =>
+      'Paramètres et configurations synchronisés avec succès ! 🚀';
+
+  @override
+  String get failedToUpdateSettings =>
+      'Échec de la mise à jour de la configuration';
+
+  @override
+  String get noMessages => 'Pas encore de messages.';
+
+  @override
+  String get teachers => 'Enseignants';
 }

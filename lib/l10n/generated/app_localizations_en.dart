@@ -2417,4 +2417,464 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get systemSettings => 'System Settings';
+
+  @override
+  String get backToClassRoster => 'Back to Class Roster';
+
+  @override
+  String get enrollStudents => 'Enroll Students';
+
+  @override
+  String get enrollStudentsSubtitle =>
+      'Select multiple students to enroll in this cohort.';
+
+  @override
+  String get confirmEnrollment => 'Confirm Enrollment';
+
+  @override
+  String get paidAll => 'Paid (All)';
+
+  @override
+  String get facultyManagement => 'Faculty Management';
+
+  @override
+  String get facultyDirectory => 'FACULTY DIRECTORY';
+
+  @override
+  String get facultyManagementSubtitle =>
+      'Review instructor profiles and active cohorts from profiles & teacher_info.';
+
+  @override
+  String get activeCohorts => 'Active Cohorts';
+
+  @override
+  String get searchInstructorsHint => 'Search instructor by name or email...';
+
+  @override
+  String get noInstructorsFound => 'No instructors found.';
+
+  @override
+  String get noBiographyProvided => 'No professional biography provided.';
+
+  @override
+  String get viewProfile => 'View Profile';
+
+  @override
+  String get backToFaculty => 'Back to Faculty';
+
+  @override
+  String get instructorNotFound => 'Instructor Not Found';
+
+  @override
+  String get walletBalanceAndPayouts => 'WALLET BALANCE & PAYOUTS';
+
+  @override
+  String get processPayout => 'Process Payout';
+
+  @override
+  String get instructorProfileSyncSuccess =>
+      'Instructor profile & admin controls successfully synchronized! 🚀';
+
+  @override
+  String get invalidPayoutAmount => 'Invalid payout amount.';
+
+  @override
+  String get payoutSuccess => 'Payout successfully processed!';
+
+  @override
+  String get failedToProcessPayout => 'Failed to process payout';
+
+  @override
+  String get specializedCourses => 'SPECIALIZED COURSES';
+
+  @override
+  String get noSpecializedCourses => 'No specialized courses linked.';
+
+  @override
+  String get assignedCohorts => 'ASSIGNED COHORTS';
+
+  @override
+  String get noAssignedClasses => 'No assigned classes.';
+
+  @override
+  String get confirmAndSettlePayout => 'CONFIRM & SETTLE PAYOUT 🚀';
+
+  @override
+  String get payoutAmountUsd => 'PAYOUT AMOUNT (USD)';
+
+  @override
+  String get biographyTeacherInfo => 'BIOGRAPHY (TEACHER INFO)';
+
+  @override
+  String get courseLibrary => 'COURSE LIBRARY';
+
+  @override
+  String get searchCourseHint => 'Search courses by title or description...';
+
+  @override
+  String get coursePrice => 'Course Price (\$)';
+
+  @override
+  String get courseCategory => 'Category';
+
+  @override
+  String get courseLevel => 'Level';
+
+  @override
+  String get thumbnailUrl => 'Thumbnail Image URL';
+
+  @override
+  String get saveCourseChanges => 'SAVE COURSE CHANGES 🚀';
+
+  @override
+  String get createCourseAction => 'CREATE MASTERCLASS 🚀';
+
+  @override
+  String get deleteCourse => 'Delete Course';
+
+  @override
+  String get confirmDeleteCourse =>
+      'Are you sure you want to delete this course?';
+
+  @override
+  String get classesAndCohorts => 'Classes & Cohorts';
+
+  @override
+  String get cohortDirectory => 'COHORT DIRECTORY';
+
+  @override
+  String get searchClassesHint => 'Search classes by name or instructor...';
+
+  @override
+  String get noClassesFound => 'No classes found.';
+
+  @override
+  String get activeCohort => 'Active Cohort';
+
+  @override
+  String get inactiveCohort => 'Archived / Inactive';
+
+  @override
+  String get selectTeacher => 'Select Instructor';
+
+  @override
+  String get selectCourse => 'Select Course';
+
+  @override
+  String get createClassAction => 'CREATE NEW COHORT 🚀';
+
+  @override
+  String get saveClassChanges => 'SAVE CLASS CHANGES 🚀';
+
+  @override
+  String get liveStreamingStudio => 'LIVE STREAMING STUDIO';
+
+  @override
+  String get broadcastRoomUrl => 'Broadcast Room URL / Meeting Link';
+
+  @override
+  String get financialLedger => 'FINANCIAL LEDGER';
+
+  @override
+  String get allTransactions => 'All Transactions';
+
+  @override
+  String get deposits => 'Deposits';
+
+  @override
+  String get withdrawals => 'Withdrawals';
+
+  @override
+  String get awardsAndRecognition => 'AWARDS & RECOGNITION';
+
+  @override
+  String get announcementBroadcast => 'ANNOUNCEMENT BROADCAST';
+
+  @override
+  String get publishAnnouncement => 'PUBLISH ANNOUNCEMENT 📢';
+
+  @override
+  String get supportHelpDesk => 'SUPPORT HELP DESK';
+
+  @override
+  String get ticketStatusOpen => 'Open';
+
+  @override
+  String get ticketStatusClosed => 'Resolved / Closed';
+
+  @override
+  String get liveSupportChat => 'Live Support Chat';
+
+  @override
+  String get adminSettings => 'ADMIN SETTINGS';
+
+  @override
+  String get saveSettings => 'SAVE SETTINGS 🚀';
+
+  @override
+  String get systemConfiguration => 'System Configuration';
+
+  @override
+  String get loadingDirectory => 'Loading Directory...';
+
+  @override
+  String get teacher => 'Teacher';
+
+  @override
+  String get course => 'Course';
+
+  @override
+  String get backToCourses => 'Back to Courses';
+
+  @override
+  String get noDescription => 'No description provided.';
+
+  @override
+  String get optional => 'Optional';
+
+  @override
+  String get required => 'Required';
+
+  @override
+  String get backToCohorts => 'Back to Cohorts';
+
+  @override
+  String get cohortManagement => 'COHORT MANAGEMENT';
+
+  @override
+  String get createClassCohortSubtitle =>
+      'Assign course, instructor, schedule and online links for students.';
+
+  @override
+  String get classTimeSlot => 'CLASS TIME SLOT';
+
+  @override
+  String get classDaysHint => 'e.g. Sat, Mon, Wed';
+
+  @override
+  String get classTimeHint => 'e.g. 18:00 - 20:00';
+
+  @override
+  String get scheduleNotes => 'SCHEDULE INFO (NOTES)';
+
+  @override
+  String get meetingLinkHint => 'https://zoom.us/j/...';
+
+  @override
+  String get signalLinkHint => 'https://t.me/+...';
+
+  @override
+  String get activeLiveCohort => 'Active (Live Cohort)';
+
+  @override
+  String get archivedCompleted => 'Archived / Completed';
+
+  @override
+  String get noLiveSessions => 'No live sessions found.';
+
+  @override
+  String get noLink => 'No Link';
+
+  @override
+  String get manageAction => 'Manage';
+
+  @override
+  String get manageClassModal => 'Manage Class';
+
+  @override
+  String get saveAndUpdateAll => 'SAVE & UPDATE ALL PROPERTIES 🚀';
+
+  @override
+  String get liveSessionsAndCohorts => 'Live Sessions & Cohorts';
+
+  @override
+  String get liveSessionsSubtitle =>
+      'Monitor active rooms, schedules, and manage all class properties securely.';
+
+  @override
+  String get searchCohortsHint => 'Search cohorts...';
+
+  @override
+  String get establishingConnection => 'ESTABLISHING LIVE CONNECTION...';
+
+  @override
+  String get auditingRecords => 'AUDITING FINANCIAL RECORDS...';
+
+  @override
+  String get financialLedgerSubtitle =>
+      'Audit global platform revenue and manage faculty payouts securely.';
+
+  @override
+  String get facultyLiability => 'Faculty Liability';
+
+  @override
+  String get distributedPayouts => 'Distributed Payouts';
+
+  @override
+  String get netProfit => 'Net Profit';
+
+  @override
+  String get facultyTab => 'Faculty';
+
+  @override
+  String get inflowsTab => 'Inflows';
+
+  @override
+  String get outflowsTab => 'Outflows';
+
+  @override
+  String get findInstructorHint => 'Find instructor...';
+
+  @override
+  String get payoutAmount => 'Payout Amount (\$)';
+
+  @override
+  String get confirmPayout => 'CONFIRM PAYOUT 💸';
+
+  @override
+  String get studentPayments => 'Student Inflows';
+
+  @override
+  String get payoutRecords => 'Payout Outflows';
+
+  @override
+  String get noTransactions => 'No transactions found.';
+
+  @override
+  String get awardsSubtitle =>
+      'Create, manage and distribute student achievement badges & rewards.';
+
+  @override
+  String get createAwardTitle => 'Create New Award';
+
+  @override
+  String get awardDescription => 'Award Description';
+
+  @override
+  String get awardIcon => 'Icon / Emoji';
+
+  @override
+  String get publishAwardAction => 'CREATE NEW AWARD 🏆';
+
+  @override
+  String get availableAwards => 'Available Badges & Awards';
+
+  @override
+  String get noAwardsFound => 'No awards or badges found.';
+
+  @override
+  String get deleteAward => 'Delete Award';
+
+  @override
+  String get announcementsSubtitle =>
+      'Broadcast system-wide notices, updates, or maintenance alerts to all users.';
+
+  @override
+  String get announcementContent => 'Announcement Message / Content';
+
+  @override
+  String get studentsOnly => 'Students Only';
+
+  @override
+  String get teachersOnly => 'Faculty Only';
+
+  @override
+  String get broadcastNow => 'BROADCAST ANNOUNCEMENT 📢';
+
+  @override
+  String get recentAnnouncements => 'Broadcast History';
+
+  @override
+  String get noAnnouncements => 'No announcements broadcast yet.';
+
+  @override
+  String get ticketsSubtitle =>
+      'Manage support desk inquiries, unresolved issues, and departmental tickets.';
+
+  @override
+  String get searchTicketsHint => 'Search by subject, student or department...';
+
+  @override
+  String get filterStatusAll => 'All Tickets';
+
+  @override
+  String get filterDepartment => 'Department';
+
+  @override
+  String get ticketDetails => 'Ticket Details';
+
+  @override
+  String get typeYourReply => 'Type your reply...';
+
+  @override
+  String get reopenTicket => 'Reopen Ticket';
+
+  @override
+  String get liveSupportSubtitle =>
+      'Handle live student & faculty assistance in real time.';
+
+  @override
+  String get searchSupportHint => 'Search support requests...';
+
+  @override
+  String get openChat => 'Open Chat';
+
+  @override
+  String get noSupportRequests => 'No support requests found.';
+
+  @override
+  String get supportChatTitle => 'Support Chat';
+
+  @override
+  String get markResolved => 'Mark Resolved';
+
+  @override
+  String get adminSettingsSubtitle =>
+      'Manage your administrator profile, system preferences, and security settings.';
+
+  @override
+  String get systemAdmin => 'System Administrator';
+
+  @override
+  String get adminRole => 'Administrative Role';
+
+  @override
+  String get logOutAccount => 'Log Out Account';
+
+  @override
+  String get confirmLogout => 'Are you sure you want to log out?';
+
+  @override
+  String get avatarUrl => 'Avatar URL';
+
+  @override
+  String get superAdminRole => 'Administrator (Super Admin)';
+
+  @override
+  String get teacherRole => 'Instructor / Mentor (Teacher)';
+
+  @override
+  String get studentRole => 'Student (Normal)';
+
+  @override
+  String get teacherInfoAndCredentials => 'TEACHER INFO & CREDENTIALS';
+
+  @override
+  String get facultyIdentityAndRole => 'FACULTY IDENTITY & ROLE';
+
+  @override
+  String get synchronizingEngine => 'SYNCHRONIZING ENGINE...';
+
+  @override
+  String get settingsUpdatedSuccess =>
+      'Settings & configurations synced successfully! 🚀';
+
+  @override
+  String get failedToUpdateSettings => 'Failed to update configuration';
+
+  @override
+  String get noMessages => 'No messages yet.';
+
+  @override
+  String get teachers => 'Teachers';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 import '../../../core/routing/auth_gate.dart';
 
 class AdminSettingsScreen extends StatefulWidget {
@@ -17,7 +18,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   bool isLoggingOut = false;
   Map<String, String>? message;
 
-  // Controllers مطابق با جداول دیتابیس (profiles و teacher_info)
   final firstNameCtrl = TextEditingController();
   final lastNameCtrl = TextEditingController();
   final emailCtrl = TextEditingController();
@@ -34,7 +34,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   List<Map<String, dynamic>> teacherCourses = [];
   List<Map<String, dynamic>> teacherClasses = [];
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
@@ -113,14 +112,18 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             .select("course:courses(id, title, category)")
             .eq("teacher_info_id", userId);
 
-        teacherCourses = (tCourses as List).map((tc) => tc['course'] as Map<String, dynamic>).toList();
+        teacherCourses = (tCourses as List)
+            .map((tc) => tc['course'] as Map<String, dynamic>)
+            .toList();
       } catch (_) {}
 
       // 4. دریافت کلاس‌های مرتبط از class_groups
       try {
         final classesData = await supabase
             .from("class_groups")
-            .select("id, class_name, is_active, course:courses(title), class_students(student_id)")
+            .select(
+              "id, class_name, is_active, course:courses(title), class_students(student_id)",
+            )
             .eq("teacher_id", userId);
 
         teacherClasses = (classesData as List).map((cls) {
@@ -128,11 +131,14 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             'class_name': cls['class_name'],
             'is_active': cls['is_active'],
             'students_count': (cls['class_students'] as List?)?.length ?? 0,
-            'course_title': cls['course'] != null ? (cls['course'] is List ? cls['course'][0]['title'] : cls['course']['title']) : 'General'
+            'course_title': cls['course'] != null
+                ? (cls['course'] is List
+                      ? cls['course'][0]['title']
+                      : cls['course']['title'])
+                : 'General',
           };
         }).toList();
       } catch (_) {}
-
     } catch (e) {
       debugPrint("Error fetching faculty settings profile: $e");
     } finally {
@@ -179,17 +185,27 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
         'avatar_url': avatar.isNotEmpty ? avatar : null,
       });
 
-      setState(() {
-        message = {'type': 'success', 'text': 'Faculty profile, role & system configurations synced successfully! 🚀'};
-      });
+      if (mounted) {
+        setState(() {
+          message = {
+            'type': 'success',
+            'text': context.l10n.settingsUpdatedSuccess,
+          };
+        });
+      }
 
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted) setState(() => message = null);
       });
     } catch (e) {
-      setState(() {
-        message = {'type': 'error', 'text': 'Failed to update configuration: ${e.toString()}'};
-      });
+      if (mounted) {
+        setState(() {
+          message = {
+            'type': 'error',
+            'text': '${context.l10n.failedToUpdateSettings}: ${e.toString()}',
+          };
+        });
+      }
     } finally {
       if (mounted) setState(() => isSaving = false);
     }
@@ -198,9 +214,9 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   Future<void> _logout() async {
     await supabase.auth.signOut();
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const AuthGate()),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthGate()));
     }
   }
 
@@ -209,12 +225,43 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: surfaceWhite,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: cardBorder, width: 1.5)),
-        title: const Text("Secure Logout", style: TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
-        content: const Text("Are you sure you want to securely log out of the command center?", style: TextStyle(color: textGrey, fontSize: 11)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: cardBorder, width: 1.5),
+        ),
+        title: Text(
+          context.l10n.logOutAccount,
+          style: const TextStyle(
+            color: textDark,
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        content: Text(
+          context.l10n.confirmLogout,
+          style: const TextStyle(color: textGrey, fontSize: 12),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold))),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Logout", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold))),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              context.l10n.cancel,
+              style: const TextStyle(
+                color: textGrey,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              context.l10n.logout,
+              style: const TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -234,9 +281,20 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
+              const CircularProgressIndicator(
+                color: primaryPink,
+                strokeWidth: 2.5,
+              ),
               const SizedBox(height: 14),
-              Text("SYNCHRONIZING FACULTY ENGINE...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(
+                context.l10n.synchronizingEngine,
+                style: const TextStyle(
+                  color: textGrey,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.5,
+                ),
+              ),
             ],
           ),
         ),
@@ -254,19 +312,29 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ================= HEADER (ریسپانسیو برای جلوگیری از اورفلو) =================
+                // ================= HEADER =================
                 Container(
                   padding: const EdgeInsets.all(22),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                      colors: [
+                        surfaceWhite,
+                        lightPinkBg.withValues(alpha: 0.4),
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                    border: Border.all(
+                      color: primaryPink.withValues(alpha: 0.15),
+                      width: 1.5,
+                    ),
                     boxShadow: [
-                      BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                      BoxShadow(
+                        color: primaryPink.withValues(alpha: 0.08),
+                        blurRadius: 25,
+                        offset: const Offset(0, 10),
+                      ),
                     ],
                   ),
                   child: Column(
@@ -279,40 +347,83 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: lightPinkBg,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Text(
-                              "SYSTEM SETTINGS & PROFILE",
-                              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
+                            child: Text(
+                              context.l10n.adminSettings,
+                              style: const TextStyle(
+                                fontSize: 8,
+                                fontWeight: FontWeight.w900,
+                                color: primaryPink,
+                                letterSpacing: 1.2,
+                              ),
                             ),
                           ),
                           ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.redAccent.withOpacity(0.12),
+                              backgroundColor: Colors.redAccent.withValues(
+                                alpha: 0.12,
+                              ),
                               foregroundColor: Colors.redAccent,
                               elevation: 0,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              side: BorderSide(color: Colors.redAccent.withOpacity(0.3), width: 1.5),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              side: BorderSide(
+                                color: Colors.redAccent.withValues(alpha: 0.3),
+                                width: 1.5,
+                              ),
                             ),
-                            icon: isLoggingOut ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(color: Colors.redAccent, strokeWidth: 2)) : const Icon(Icons.logout_rounded, size: 16),
-                            label: Text(isLoggingOut ? "Logging out..." : "Logout", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                            icon: isLoggingOut
+                                ? const SizedBox(
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.redAccent,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.logout_rounded, size: 16),
+                            label: Text(
+                              isLoggingOut
+                                  ? context.l10n.loading
+                                  : context.l10n.logout,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
                             onPressed: isLoggingOut ? null : handleLogoutButton,
                           ),
                         ],
                       ),
                       const SizedBox(height: 14),
-                      const Text(
-                        "Faculty & System Control",
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
+                      Text(
+                        context.l10n.systemConfiguration,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          color: textDark,
+                        ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        "Manage your master profile, teacher info, specialized courses & classes.",
-                        style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
+                      Text(
+                        context.l10n.adminSettingsSubtitle,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: textGrey,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
@@ -323,15 +434,41 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: message!['type'] == 'success' ? Colors.green.withOpacity(0.12) : Colors.redAccent.withOpacity(0.12),
+                      color: message!['type'] == 'success'
+                          ? Colors.green.withValues(alpha: 0.12)
+                          : Colors.redAccent.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: message!['type'] == 'success' ? Colors.green.withOpacity(0.3) : Colors.redAccent.withOpacity(0.3), width: 1.5),
+                      border: Border.all(
+                        color: message!['type'] == 'success'
+                            ? Colors.green.withValues(alpha: 0.3)
+                            : Colors.redAccent.withValues(alpha: 0.3),
+                        width: 1.5,
+                      ),
                     ),
                     child: Row(
                       children: [
-                        Icon(message!['type'] == 'success' ? Icons.check_circle_rounded : Icons.error_rounded, color: message!['type'] == 'success' ? Colors.green.shade700 : Colors.redAccent, size: 18),
+                        Icon(
+                          message!['type'] == 'success'
+                              ? Icons.check_circle_rounded
+                              : Icons.error_rounded,
+                          color: message!['type'] == 'success'
+                              ? Colors.green.shade700
+                              : Colors.redAccent,
+                          size: 18,
+                        ),
                         const SizedBox(width: 10),
-                        Expanded(child: Text(message!['text']!, style: TextStyle(color: message!['type'] == 'success' ? Colors.green.shade700 : Colors.redAccent, fontSize: 11, fontWeight: FontWeight.w900))),
+                        Expanded(
+                          child: Text(
+                            message!['text']!,
+                            style: TextStyle(
+                              color: message!['type'] == 'success'
+                                  ? Colors.green.shade700
+                                  : Colors.redAccent,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -345,12 +482,26 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                     color: surfaceWhite,
                     borderRadius: BorderRadius.circular(28),
                     border: Border.all(color: cardBorder, width: 1.5),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 15,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("FACULTY IDENTITY & ROLE", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                      Text(
+                        context.l10n.facultyIdentityAndRole,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: textGrey,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
                       const SizedBox(height: 16),
 
                       // Avatar
@@ -359,21 +510,48 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                           CircleAvatar(
                             radius: 28,
                             backgroundColor: lightPinkBg,
-                            backgroundImage: avatarCtrl.text.trim().isNotEmpty ? NetworkImage(avatarCtrl.text.trim()) : null,
-                            child: avatarCtrl.text.trim().isEmpty ? Text(firstNameCtrl.text.isNotEmpty ? firstNameCtrl.text[0] : 'T', style: const TextStyle(color: primaryPink, fontWeight: FontWeight.w900, fontSize: 16)) : null,
+                            backgroundImage: avatarCtrl.text.trim().isNotEmpty
+                                ? NetworkImage(avatarCtrl.text.trim())
+                                : null,
+                            child: avatarCtrl.text.trim().isEmpty
+                                ? Text(
+                                    firstNameCtrl.text.isNotEmpty
+                                        ? firstNameCtrl.text[0]
+                                        : 'T',
+                                    style: const TextStyle(
+                                      color: primaryPink,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 16,
+                                    ),
+                                  )
+                                : null,
                           ),
                           const SizedBox(width: 14),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text("AVATAR URL", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                                Text(
+                                  context.l10n.avatarUrl,
+                                  style: const TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                    color: textGrey,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
                                 const SizedBox(height: 6),
                                 TextField(
                                   controller: avatarCtrl,
                                   onChanged: (_) => setState(() {}),
-                                  style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                                  decoration: _inputFieldDecoration("https://..."),
+                                  style: const TextStyle(
+                                    color: textDark,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  decoration: _inputFieldDecoration(
+                                    "https://...",
+                                  ),
                                 ),
                               ],
                             ),
@@ -389,9 +567,27 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text("FIRST NAME *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                                Text(
+                                  "${context.l10n.firstName} *",
+                                  style: const TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                    color: textGrey,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
                                 const SizedBox(height: 6),
-                                TextField(controller: firstNameCtrl, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("First Name")),
+                                TextField(
+                                  controller: firstNameCtrl,
+                                  style: const TextStyle(
+                                    color: textDark,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  decoration: _inputFieldDecoration(
+                                    context.l10n.firstName,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -400,9 +596,27 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text("LAST NAME *", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                                Text(
+                                  "${context.l10n.lastName} *",
+                                  style: const TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                    color: textGrey,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
                                 const SizedBox(height: 6),
-                                TextField(controller: lastNameCtrl, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("Last Name")),
+                                TextField(
+                                  controller: lastNameCtrl,
+                                  style: const TextStyle(
+                                    color: textDark,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  decoration: _inputFieldDecoration(
+                                    context.l10n.lastName,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -410,28 +624,86 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      const Text("EMAIL ADDRESS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                      Text(
+                        context.l10n.email,
+                        style: const TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          color: textGrey,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
                       const SizedBox(height: 6),
-                      TextField(controller: emailCtrl, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("Email address")),
+                      TextField(
+                        controller: emailCtrl,
+                        style: const TextStyle(
+                          color: textDark,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        decoration: _inputFieldDecoration(context.l10n.email),
+                      ),
                       const SizedBox(height: 16),
 
-                      const Text("PHONE NUMBER", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                      Text(
+                        context.l10n.phoneNumber,
+                        style: const TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          color: textGrey,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
                       const SizedBox(height: 6),
-                      TextField(controller: phoneCtrl, keyboardType: TextInputType.phone, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold), decoration: _inputFieldDecoration("Phone number")),
+                      TextField(
+                        controller: phoneCtrl,
+                        keyboardType: TextInputType.phone,
+                        style: const TextStyle(
+                          color: textDark,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        decoration: _inputFieldDecoration(
+                          context.l10n.phoneNumber,
+                        ),
+                      ),
                       const SizedBox(height: 16),
 
                       // System Role Dropdown
-                      const Text("SYSTEM ROLE", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                      Text(
+                        context.l10n.adminRole,
+                        style: const TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          color: textGrey,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<String>(
-                        initialValue: role,
+                        value: role,
                         dropdownColor: surfaceWhite,
-                        style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                        decoration: _inputFieldDecoration("Select role"),
-                        items: const [
-                          DropdownMenuItem(value: 'teacher', child: Text("Instructor / Mentor (Teacher)")),
-                          DropdownMenuItem(value: 'super_admin', child: Text("Administrator (Super Admin)")),
-                          DropdownMenuItem(value: 'student', child: Text("Student (Normal)")),
+                        style: const TextStyle(
+                          color: textDark,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        decoration: _inputFieldDecoration(
+                          context.l10n.adminRole,
+                        ),
+                        items: [
+                          DropdownMenuItem(
+                            value: 'teacher',
+                            child: Text(context.l10n.teacherRole),
+                          ),
+                          DropdownMenuItem(
+                            value: 'super_admin',
+                            child: Text(context.l10n.superAdminRole),
+                          ),
+                          DropdownMenuItem(
+                            value: 'student',
+                            child: Text(context.l10n.studentRole),
+                          ),
                         ],
                         onChanged: (val) {
                           if (val != null) setState(() => role = val);
@@ -449,31 +721,71 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                     color: surfaceWhite,
                     borderRadius: BorderRadius.circular(28),
                     border: Border.all(color: cardBorder, width: 1.5),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 15,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("TEACHER INFO & CREDENTIALS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                      Text(
+                        context.l10n.teacherInfoAndCredentials,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: textGrey,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
                       const SizedBox(height: 16),
 
-                      const Text("BIOGRAPHY", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                      Text(
+                        context.l10n.bio,
+                        style: const TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          color: textGrey,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
                       const SizedBox(height: 6),
                       TextField(
                         controller: bioCtrl,
                         maxLines: 4,
-                        style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                        decoration: _inputFieldDecoration("Write comprehensive professional biography..."),
+                        style: const TextStyle(
+                          color: textDark,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        decoration: _inputFieldDecoration(context.l10n.bio),
                       ),
                       const SizedBox(height: 16),
 
-                      const Text("ACHIEVEMENTS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                      Text(
+                        context.l10n.achievements,
+                        style: const TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          color: textGrey,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
                       const SizedBox(height: 6),
                       TextField(
                         controller: achievementsCtrl,
                         maxLines: 3,
-                        style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                        decoration: _inputFieldDecoration("List certifications, awards or milestones..."),
+                        style: const TextStyle(
+                          color: textDark,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        decoration: _inputFieldDecoration(
+                          context.l10n.achievements,
+                        ),
                       ),
                     ],
                   ),
@@ -487,36 +799,83 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                     color: surfaceWhite,
                     borderRadius: BorderRadius.circular(28),
                     border: Border.all(color: cardBorder, width: 1.5),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 15,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("SPECIALIZED COURSES (TEACHER INFO COURSES)", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                      Text(
+                        context.l10n.specializedCourses,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: textGrey,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
                       const SizedBox(height: 12),
                       teacherCourses.isEmpty
-                          ? const Text("No specialized courses linked.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold))
+                          ? Text(
+                              context.l10n.noSpecializedCourses,
+                              style: const TextStyle(
+                                color: textGrey,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
                           : ListView.separated(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: teacherCourses.length,
-                              separatorBuilder: (_, _) => const SizedBox(height: 8),
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(height: 8),
                               itemBuilder: (context, index) {
                                 final crs = teacherCourses[index];
                                 return Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: cardBorder.withOpacity(0.5),
+                                    color: cardBorder.withValues(alpha: 0.5),
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Expanded(child: Text(crs['title'] ?? 'Course', style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12))),
+                                      Expanded(
+                                        child: Text(
+                                          crs['title'] ?? 'Course',
+                                          style: const TextStyle(
+                                            color: textDark,
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                        decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                                        child: Text(crs['category'] ?? 'General', style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 3,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: lightPinkBg,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          crs['category'] ?? 'General',
+                                          style: const TextStyle(
+                                            color: primaryPink,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -525,40 +884,86 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                             ),
                       const SizedBox(height: 20),
 
-                      const Text("ASSIGNED CLASSES (CLASS GROUPS)", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                      Text(
+                        context.l10n.assignedClasses,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: textGrey,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
                       const SizedBox(height: 12),
                       teacherClasses.isEmpty
-                          ? const Text("No active classes assigned.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold))
+                          ? Text(
+                              context.l10n.noAssignedClasses,
+                              style: const TextStyle(
+                                color: textGrey,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
                           : ListView.separated(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: teacherClasses.length,
-                              separatorBuilder: (_, _) => const SizedBox(height: 8),
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(height: 8),
                               itemBuilder: (context, index) {
                                 final cls = teacherClasses[index];
                                 return Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: cardBorder.withOpacity(0.5),
+                                    color: cardBorder.withValues(alpha: 0.5),
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            Text(cls['class_name'], style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
+                                            Text(
+                                              cls['class_name'],
+                                              style: const TextStyle(
+                                                color: textDark,
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: 12,
+                                              ),
+                                            ),
                                             const SizedBox(height: 2),
-                                            Text("Course: ${cls['course_title']}", style: const TextStyle(color: textGrey, fontSize: 10)),
+                                            Text(
+                                              "${context.l10n.course}: ${cls['course_title']}",
+                                              style: const TextStyle(
+                                                color: textGrey,
+                                                fontSize: 10,
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                                        child: Text("${cls['students_count']} Students", style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: lightPinkBg,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          "${cls['students_count']} ${context.l10n.students}",
+                                          style: const TextStyle(
+                                            color: primaryPink,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -579,12 +984,28 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                       foregroundColor: Colors.white,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                     onPressed: isSaving ? null : handleSaveChanges,
                     child: isSaving
-                        ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                        : const Text("SAVE CONFIGURATION & SYNC 🚀", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
+                          )
+                        : Text(
+                            context.l10n.saveSettings,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 11,
+                              letterSpacing: 1,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -601,11 +1022,20 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       hintText: hint,
       hintStyle: const TextStyle(color: textGrey, fontSize: 11),
       filled: true,
-      fillColor: cardBorder.withOpacity(0.5),
+      fillColor: cardBorder.withValues(alpha: 0.5),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: cardBorder),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: cardBorder),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: primaryPink, width: 1.5),
+      ),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class TeacherDetailScreen extends StatefulWidget {
   final String teacherId;
@@ -21,29 +22,29 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
   List<Map<String, dynamic>> payouts = [];
   int totalStudents = 0;
 
-  // Controllers برای اطلاعات شخصی (قفل‌شده)
+  // Controllers for personal details (locked)
   final firstNameCtrl = TextEditingController();
   final lastNameCtrl = TextEditingController();
   final emailCtrl = TextEditingController();
   final phoneCtrl = TextEditingController();
 
-  // Controllers برای اطلاعات قابل ویرایش ادمین
+  // Controllers for editable admin fields
   final walletCtrl = TextEditingController();
   final scoreCtrl = TextEditingController();
   String selectedRole = 'teacher';
 
-  // Controllers برای اطلاعات تکمیلی (teacher_info)
+  // Controllers for teacher_info
   final infoBioCtrl = TextEditingController();
   final achievementsCtrl = TextEditingController();
 
-  // مودال تسویه حساب
+  // Payout modal state
   bool isPayoutModalOpen = false;
   double payoutAmount = 0;
   bool isProcessingPayout = false;
   String? messageText;
   bool isSuccessMessage = false;
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  // Luxury Light-Pink Palette
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
@@ -201,7 +202,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
         teacher!['role'] = selectedRole;
         teacher!['bio'] = bio;
 
-        messageText = 'Instructor profile & admin controls successfully synchronized! 🚀';
+        messageText = context.l10n.instructorProfileSyncSuccess;
         isSuccessMessage = true;
       });
 
@@ -210,7 +211,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
       });
     } catch (e) {
       setState(() {
-        messageText = 'Failed to update profile: ${e.toString()}';
+        messageText = '${context.l10n.failedToUpdateDatabase}: ${e.toString()}';
         isSuccessMessage = false;
       });
     } finally {
@@ -224,7 +225,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
 
     if (payoutAmount <= 0 || payoutAmount > currentBalance) {
       setState(() {
-        messageText = 'Invalid payout amount.';
+        messageText = context.l10n.invalidPayoutAmount;
         isSuccessMessage = false;
       });
       return;
@@ -260,7 +261,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
           'status': 'COMPLETED',
           'created_at': DateTime.now().toIso8601String(),
         });
-        messageText = 'Payout successfully processed!';
+        messageText = context.l10n.payoutSuccess;
         isSuccessMessage = true;
       });
 
@@ -274,7 +275,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
       });
     } catch (e) {
       setState(() {
-        messageText = 'Failed to process payout: ${e.toString()}';
+        messageText = '${context.l10n.failedToProcessPayout}: ${e.toString()}';
         isSuccessMessage = false;
       });
     } finally {
@@ -293,7 +294,10 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
             children: [
               const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
-              Text("LOADING INSTRUCTOR DATA...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(
+                context.l10n.loadingDirectory.toUpperCase(),
+                style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2),
+              ),
             ],
           ),
         ),
@@ -309,12 +313,12 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
             children: [
               const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 40),
               const SizedBox(height: 12),
-              const Text("Instructor Not Found", style: TextStyle(color: textDark, fontWeight: FontWeight.bold)),
+              Text(context.l10n.instructorNotFound, style: const TextStyle(color: textDark, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: primaryPink, foregroundColor: Colors.white),
                 onPressed: () => Navigator.pop(context),
-                child: const Text("Go Back"),
+                child: Text(context.l10n.back),
               ),
             ],
           ),
@@ -347,12 +351,12 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: cardBorder, width: 1.5),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.arrow_back_rounded, color: textDark, size: 14),
-                          SizedBox(width: 6),
-                          Text("Back to Faculty", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
+                          const Icon(Icons.arrow_back_rounded, color: textDark, size: 14),
+                          const SizedBox(width: 6),
+                          Text(context.l10n.backToFaculty, style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),
@@ -364,14 +368,14 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                     padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                        colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                      border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                       boxShadow: [
-                        BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                        BoxShadow(color: primaryPink.withValues(alpha: 0.08), blurRadius: 25, offset: const Offset(0, 10)),
                       ],
                     ),
                     child: Row(
@@ -389,7 +393,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("${firstNameCtrl.text} ${lastNameCtrl.text}", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: textDark)),
+                              Text("${firstNameCtrl.text} ${lastNameCtrl.text}".trim(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: textDark)),
                               const SizedBox(height: 4),
                               Text(emailCtrl.text, style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500)),
                             ],
@@ -403,9 +407,9 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                   // Metrics
                   Row(
                     children: [
-                      Expanded(child: _buildMiniStat("Assigned Classes", classes.length.toString(), Icons.menu_book_rounded)),
+                      Expanded(child: _buildMiniStat(context.l10n.assignedClasses, classes.length.toString(), Icons.menu_book_rounded)),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildMiniStat("Total Students", totalStudents.toString(), Icons.group_rounded)),
+                      Expanded(child: _buildMiniStat(context.l10n.totalStudents, totalStudents.toString(), Icons.group_rounded)),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -417,12 +421,12 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                       color: surfaceWhite,
                       borderRadius: BorderRadius.circular(28),
                       border: Border.all(color: cardBorder, width: 1.5),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6))],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("WALLET BALANCE & PAYOUTS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                        Text(context.l10n.walletBalanceAndPayouts, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
                         const SizedBox(height: 12),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -443,7 +447,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                                   isPayoutModalOpen = true;
                                 });
                               } : null,
-                              child: const Text("Process Payout", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                              child: Text(context.l10n.processPayout, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
                             ),
                           ],
                         ),
@@ -456,9 +460,9 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isSuccessMessage ? Colors.green.withOpacity(0.12) : Colors.redAccent.withOpacity(0.12),
+                        color: isSuccessMessage ? Colors.green.withValues(alpha: 0.12) : Colors.redAccent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: isSuccessMessage ? Colors.green.withOpacity(0.3) : Colors.redAccent.withOpacity(0.3), width: 1.5),
+                        border: Border.all(color: isSuccessMessage ? Colors.green.withValues(alpha: 0.3) : Colors.redAccent.withValues(alpha: 0.3), width: 1.5),
                       ),
                       child: Row(
                         children: [
@@ -471,82 +475,81 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                     const SizedBox(height: 20),
                   ],
 
-                  // بخش اول: اطلاعات شخصی (قفل‌شده)
+                  // Personal Details (Locked)
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: surfaceWhite,
                       borderRadius: BorderRadius.circular(28),
                       border: Border.all(color: cardBorder, width: 1.5),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6))],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                        Row(
                           children: [
-                            Icon(Icons.lock_outline_rounded, color: textGrey, size: 14),
-                            SizedBox(width: 6),
-                            Text("PERSONAL DETAILS (LOCKED)", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                            const Icon(Icons.lock_outline_rounded, color: textGrey, size: 14),
+                            const SizedBox(width: 6),
+                            Text(context.l10n.personalDetailsLocked, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
                           ],
                         ),
                         const SizedBox(height: 16),
                         Row(
                           children: [
-                            Expanded(child: _buildLockedInput("FIRST NAME", firstNameCtrl)),
+                            Expanded(child: _buildLockedInput(context.l10n.firstName.toUpperCase(), firstNameCtrl)),
                             const SizedBox(width: 12),
-                            Expanded(child: _buildLockedInput("LAST NAME", lastNameCtrl)),
+                            Expanded(child: _buildLockedInput(context.l10n.lastName.toUpperCase(), lastNameCtrl)),
                           ],
                         ),
                         const SizedBox(height: 14),
-                        _buildLockedInput("EMAIL ADDRESS", emailCtrl),
+                        _buildLockedInput(context.l10n.email.toUpperCase(), emailCtrl),
                         const SizedBox(height: 14),
-                        _buildLockedInput("PHONE NUMBER", phoneCtrl),
+                        _buildLockedInput(context.l10n.phone.toUpperCase(), phoneCtrl),
                       ],
                     ),
                   ),
                   const SizedBox(height: 20),
 
-                  // بخش دوم: کنترل‌های ادمین و اطلاعات تکمیلی قابل ویرایش
+                  // Admin Controls & Teacher Info
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: surfaceWhite,
                       borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: primaryPink.withOpacity(0.25), width: 1.5),
-                      boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 6))],
+                      border: Border.all(color: primaryPink.withValues(alpha: 0.25), width: 1.5),
+                      boxShadow: [BoxShadow(color: primaryPink.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 6))],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                        Row(
                           children: [
-                            Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 16),
-                            SizedBox(width: 6),
-                            Text("ADMIN CONTROLS & TEACHER INFO", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2)),
+                            const Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 16),
+                            const SizedBox(width: 6),
+                            Text("${context.l10n.adminSettings} & ${context.l10n.teacher}", style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2)),
                           ],
                         ),
                         const SizedBox(height: 16),
 
                         Row(
                           children: [
-                            Expanded(child: _buildEditableInput("WALLET BALANCE (\$)", walletCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true))),
+                            Expanded(child: _buildEditableInput("${context.l10n.wallet} (\$)", walletCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true))),
                             const SizedBox(width: 12),
-                            Expanded(child: _buildEditableInput("ACADEMIC SCORE (PTS)", scoreCtrl, keyboardType: TextInputType.number)),
+                            Expanded(child: _buildEditableInput(context.l10n.academicScore, scoreCtrl, keyboardType: TextInputType.number)),
                           ],
                         ),
                         const SizedBox(height: 16),
 
-                        const Text("SYSTEM ROLE & PROMOTION", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                        Text(context.l10n.systemRolePromotion, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                         const SizedBox(height: 6),
                         
-                        // منوی کشویی لوکس و شیک
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                           decoration: BoxDecoration(
-                            color: cardBorder.withOpacity(0.6),
+                            color: cardBorder.withValues(alpha: 0.6),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                            border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
@@ -554,14 +557,14 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                               dropdownColor: surfaceWhite,
                               isExpanded: true,
                               icon: const Icon(Icons.keyboard_arrow_down_rounded, color: primaryPink),
-                              items: const [
+                              items: [
                                 DropdownMenuItem(
                                   value: 'student',
                                   child: Row(
                                     children: [
-                                      Icon(Icons.school_rounded, color: Color(0xFF00897B), size: 18),
-                                      SizedBox(width: 12),
-                                      Text("Student (Demote)", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
+                                      const Icon(Icons.school_rounded, color: Color(0xFF00897B), size: 18),
+                                      const SizedBox(width: 12),
+                                      Text(context.l10n.roleStudent, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
                                     ],
                                   ),
                                 ),
@@ -569,9 +572,9 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                                   value: 'teacher',
                                   child: Row(
                                     children: [
-                                      Icon(Icons.psychology_rounded, color: Color(0xFF3949AB), size: 18),
-                                      SizedBox(width: 12),
-                                      Text("Instructor / Mentor", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
+                                      const Icon(Icons.psychology_rounded, color: Color(0xFF3949AB), size: 18),
+                                      const SizedBox(width: 12),
+                                      Text(context.l10n.roleTeacher, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
                                     ],
                                   ),
                                 ),
@@ -579,9 +582,9 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                                   value: 'super_admin',
                                   child: Row(
                                     children: [
-                                      Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 18),
-                                      SizedBox(width: 12),
-                                      Text("Administrator (Super Admin)", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
+                                      const Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 18),
+                                      const SizedBox(width: 12),
+                                      Text(context.l10n.roleAdmin, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
                                     ],
                                   ),
                                 ),
@@ -594,25 +597,25 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        const Text("BIOGRAPHY (TEACHER INFO)", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                        Text(context.l10n.biographyTeacherInfo, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                         const SizedBox(height: 6),
                         TextField(
                           controller: infoBioCtrl,
                           maxLines: 4,
                           cursorColor: primaryPink,
                           style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                          decoration: _inputFieldDecoration("Write comprehensive faculty biography..."),
+                          decoration: _inputFieldDecoration(context.l10n.noBiographyProvided),
                         ),
                         const SizedBox(height: 16),
 
-                        const Text("ACHIEVEMENTS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                        Text(context.l10n.honorsAndAwards.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                         const SizedBox(height: 6),
                         TextField(
                           controller: achievementsCtrl,
                           maxLines: 3,
                           cursorColor: primaryPink,
                           style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
-                          decoration: _inputFieldDecoration("List awards, certifications or achievements..."),
+                          decoration: _inputFieldDecoration(context.l10n.honorsAndAwards),
                         ),
                       ],
                     ),
@@ -632,13 +635,13 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                       onPressed: isSaving ? null : handleUpdateProfile,
                       child: isSaving
                           ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                          : const Text("SAVE CHANGES & SYNC PROFILE 🚀", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                          : Text(context.l10n.syncChangesToDatabase, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
                     ),
                   ),
                   const SizedBox(height: 30),
 
-                  // Assigned Courses / Specialties Section
-                  const Text("SPECIALIZED COURSES", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.5)),
+                  // Specialized Courses
+                  Text(context.l10n.specializedCourses, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.5)),
                   const SizedBox(height: 12),
                   teacherCourses.isEmpty
                       ? Container(
@@ -649,7 +652,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: cardBorder, width: 1.5),
                           ),
-                          child: const Text("No specialized courses linked.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                          child: Text(context.l10n.noSpecializedCourses, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                         )
                       : ListView.separated(
                           shrinkWrap: true,
@@ -672,7 +675,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                     decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                                    child: Text(crs['category'] ?? 'Tech', style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                                    child: Text(crs['category'] ?? 'General', style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
                                   ),
                                 ],
                               ),
@@ -682,7 +685,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                   const SizedBox(height: 24),
 
                   // Assigned Classes Section
-                  const Text("ASSIGNED COHORTS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.5)),
+                  Text(context.l10n.assignedCohorts, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.5)),
                   const SizedBox(height: 12),
                   classes.isEmpty
                       ? Container(
@@ -693,7 +696,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: cardBorder, width: 1.5),
                           ),
-                          child: const Text("No assigned classes.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                          child: Text(context.l10n.noAssignedClasses, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                         )
                       : ListView.separated(
                           shrinkWrap: true,
@@ -708,7 +711,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                                 color: surfaceWhite,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(color: cardBorder, width: 1.5),
-                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -717,16 +720,16 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(cls['class_name'], style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                        Text(cls['class_name'] ?? '', style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
                                         const SizedBox(height: 2),
-                                        Text("Course: ${cls['course_title']}", style: const TextStyle(color: textGrey, fontSize: 10)),
+                                        Text("${context.l10n.course}: ${cls['course_title']}", style: const TextStyle(color: textGrey, fontSize: 10)),
                                       ],
                                     ),
                                   ),
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8)),
-                                    child: Text("${cls['students_count']} Students", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
+                                    child: Text("${cls['students_count']} ${context.l10n.students}", style: const TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900)),
                                   ),
                                 ],
                               ),
@@ -749,7 +752,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                 color: surfaceWhite,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
                 border: Border.all(color: cardBorder, width: 1.5),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 30, offset: const Offset(0, -10))],
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 30, offset: const Offset(0, -10))],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -758,7 +761,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("Process Payout: ${firstNameCtrl.text}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
+                      Text("${context.l10n.processPayout}: ${firstNameCtrl.text}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 14)),
                       GestureDetector(
                         onTap: () {
                           if (!isProcessingPayout) setState(() => isPayoutModalOpen = false);
@@ -768,7 +771,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Text("PAYOUT AMOUNT (USD)", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                  Text(context.l10n.payoutAmountUsd, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: TextEditingController(text: payoutAmount.toString()) ..selection = TextSelection.fromPosition(TextPosition(offset: payoutAmount.toString().length)),
@@ -796,7 +799,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                       onPressed: isProcessingPayout ? null : handleProcessPayout,
                       child: isProcessingPayout
                           ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                          : const Text("CONFIRM & SETTLE PAYOUT 🚀", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                          : Text(context.l10n.confirmAndSettlePayout, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
                     ),
                   ),
                 ],
@@ -819,7 +822,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
           style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             filled: true,
-            fillColor: cardBorder.withOpacity(0.8),
+            fillColor: cardBorder.withValues(alpha: 0.4),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
@@ -844,7 +847,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
           cursorColor: primaryPink,
           decoration: InputDecoration(
             filled: true,
-            fillColor: cardBorder.withOpacity(0.5),
+            fillColor: cardBorder.withValues(alpha: 0.5),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
@@ -860,7 +863,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
       hintText: hint,
       hintStyle: const TextStyle(color: textGrey, fontSize: 11),
       filled: true,
-      fillColor: cardBorder.withOpacity(0.5),
+      fillColor: cardBorder.withValues(alpha: 0.5),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
@@ -875,7 +878,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
         color: surfaceWhite,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2))],
       ),
       child: Row(
         children: [

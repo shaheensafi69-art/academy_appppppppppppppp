@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class ProfileInfo {
   final String firstName;
@@ -8,7 +9,12 @@ class ProfileInfo {
   final String? avatarUrl;
   final String email;
 
-  ProfileInfo({required this.firstName, required this.lastName, this.avatarUrl, required this.email});
+  ProfileInfo({
+    required this.firstName,
+    required this.lastName,
+    this.avatarUrl,
+    required this.email,
+  });
 
   factory ProfileInfo.fromJson(Map<String, dynamic> json) {
     return ProfileInfo(
@@ -28,7 +34,7 @@ class TicketItem {
   final String status; // "OPEN" | "CLOSED" | "PENDING"
   final String createdAt;
   final ProfileInfo? student;
-  final String? role; // نقش درخواست‌دهنده: 'teacher' | 'student' | ...
+  final String? role;
 
   TicketItem({
     required this.id,
@@ -43,7 +49,9 @@ class TicketItem {
 
   factory TicketItem.fromJson(Map<String, dynamic> json) {
     final studentObj = json['student'];
-    Map<String, dynamic>? formattedStudent = studentObj is List ? (studentObj.isNotEmpty ? studentObj[0] : null) : studentObj;
+    Map<String, dynamic>? formattedStudent = studentObj is List
+        ? (studentObj.isNotEmpty ? studentObj[0] : null)
+        : studentObj;
 
     return TicketItem(
       id: json['id'] ?? '',
@@ -52,7 +60,9 @@ class TicketItem {
       department: json['department'] ?? '',
       status: json['status'] ?? 'OPEN',
       createdAt: json['created_at'] ?? '',
-      student: formattedStudent != null ? ProfileInfo.fromJson(formattedStudent) : null,
+      student: formattedStudent != null
+          ? ProfileInfo.fromJson(formattedStudent)
+          : null,
       role: formattedStudent?['role'],
     );
   }
@@ -79,7 +89,9 @@ class TicketMessage {
 
   factory TicketMessage.fromJson(Map<String, dynamic> json) {
     final senderObj = json['sender'];
-    Map<String, dynamic>? formattedSender = senderObj is List ? (senderObj.isNotEmpty ? senderObj[0] : null) : senderObj;
+    Map<String, dynamic>? formattedSender = senderObj is List
+        ? (senderObj.isNotEmpty ? senderObj[0] : null)
+        : senderObj;
 
     return TicketMessage(
       id: json['id'] ?? '',
@@ -87,7 +99,9 @@ class TicketMessage {
       senderId: json['sender_id'] ?? '',
       messageText: json['message_text'] ?? '',
       createdAt: json['created_at'] ?? '',
-      sender: formattedSender != null ? ProfileInfo.fromJson(formattedSender) : null,
+      sender: formattedSender != null
+          ? ProfileInfo.fromJson(formattedSender)
+          : null,
     );
   }
 }
@@ -116,7 +130,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
   bool isSending = false;
   Timer? _adminPollTimer;
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  // Luxury Light-Pink Theme Palette
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
@@ -153,12 +167,16 @@ class _TicketsScreenState extends State<TicketsScreen> {
     try {
       final response = await supabase
           .from("ticket_messages")
-          .select("*, sender:profiles!sender_id(first_name, last_name, avatar_url, email)")
+          .select(
+            "*, sender:profiles!sender_id(first_name, last_name, avatar_url, email)",
+          )
           .eq("ticket_id", selectedTicket!.id)
           .order("created_at", ascending: true);
 
-      final newMessages = (response as List).map((m) => TicketMessage.fromJson(m)).toList();
-      
+      final newMessages = (response as List)
+          .map((m) => TicketMessage.fromJson(m))
+          .toList();
+
       if (newMessages.length != messages.length) {
         if (mounted) {
           setState(() {
@@ -176,11 +194,15 @@ class _TicketsScreenState extends State<TicketsScreen> {
     try {
       final response = await supabase
           .from("tickets")
-          .select("*, student:profiles!student_id(first_name, last_name, avatar_url, email, role)")
+          .select(
+            "*, student:profiles!student_id(first_name, last_name, avatar_url, email, role)",
+          )
           .order("created_at", ascending: false);
 
-      final newTickets = (response as List).map((t) => TicketItem.fromJson(t)).toList();
-      
+      final newTickets = (response as List)
+          .map((t) => TicketItem.fromJson(t))
+          .toList();
+
       if (mounted) {
         setState(() {
           tickets = newTickets;
@@ -213,13 +235,19 @@ class _TicketsScreenState extends State<TicketsScreen> {
     try {
       final response = await supabase
           .from("tickets")
-          .select("*, student:profiles!student_id(first_name, last_name, avatar_url, email, role)")
+          .select(
+            "*, student:profiles!student_id(first_name, last_name, avatar_url, email, role)",
+          )
           .order("created_at", ascending: false);
 
-      setState(() {
-        tickets = (response as List).map((t) => TicketItem.fromJson(t)).toList();
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          tickets = (response as List)
+              .map((t) => TicketItem.fromJson(t))
+              .toList();
+          isLoading = false;
+        });
+      }
     } catch (e) {
       debugPrint("Error fetching tickets: $e");
       if (mounted) setState(() => isLoading = false);
@@ -235,15 +263,21 @@ class _TicketsScreenState extends State<TicketsScreen> {
     try {
       final response = await supabase
           .from("ticket_messages")
-          .select("*, sender:profiles!sender_id(first_name, last_name, avatar_url, email)")
+          .select(
+            "*, sender:profiles!sender_id(first_name, last_name, avatar_url, email)",
+          )
           .eq("ticket_id", ticket.id)
           .order("created_at", ascending: true);
 
-      setState(() {
-        messages = (response as List).map((m) => TicketMessage.fromJson(m)).toList();
-        isLoadingMessages = false;
-      });
-      Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
+      if (mounted) {
+        setState(() {
+          messages = (response as List)
+              .map((m) => TicketMessage.fromJson(m))
+              .toList();
+          isLoadingMessages = false;
+        });
+        Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
+      }
     } catch (e) {
       debugPrint("Error fetching messages: $e");
       if (mounted) setState(() => isLoadingMessages = false);
@@ -255,7 +289,10 @@ class _TicketsScreenState extends State<TicketsScreen> {
     String newStatus = selectedTicket!.status == "CLOSED" ? "OPEN" : "CLOSED";
 
     try {
-      await supabase.from("tickets").update({'status': newStatus}).eq("id", selectedTicket!.id);
+      await supabase
+          .from("tickets")
+          .update({'status': newStatus})
+          .eq("id", selectedTicket!.id);
 
       setState(() {
         selectedTicket = TicketItem(
@@ -266,8 +303,11 @@ class _TicketsScreenState extends State<TicketsScreen> {
           status: newStatus,
           createdAt: selectedTicket!.createdAt,
           student: selectedTicket!.student,
+          role: selectedTicket!.role,
         );
-        tickets = tickets.map((t) => t.id == selectedTicket!.id ? selectedTicket! : t).toList();
+        tickets = tickets
+            .map((t) => t.id == selectedTicket!.id ? selectedTicket! : t)
+            .toList();
       });
     } catch (e) {
       debugPrint("Error updating status: $e");
@@ -289,13 +329,18 @@ class _TicketsScreenState extends State<TicketsScreen> {
             'sender_id': adminId,
             'message_text': replyCtrl.text.trim(),
           })
-          .select("*, sender:profiles!sender_id(first_name, last_name, avatar_url, email)")
+          .select(
+            "*, sender:profiles!sender_id(first_name, last_name, avatar_url, email)",
+          )
           .single();
 
       final newMsg = TicketMessage.fromJson(res);
 
       if (selectedTicket!.status == "CLOSED") {
-        await supabase.from("tickets").update({'status': 'OPEN'}).eq("id", selectedTicket!.id);
+        await supabase
+            .from("tickets")
+            .update({'status': 'OPEN'})
+            .eq("id", selectedTicket!.id);
         setState(() {
           selectedTicket = TicketItem(
             id: selectedTicket!.id,
@@ -305,6 +350,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
             status: 'OPEN',
             createdAt: selectedTicket!.createdAt,
             student: selectedTicket!.student,
+            role: selectedTicket!.role,
           );
         });
       }
@@ -324,10 +370,15 @@ class _TicketsScreenState extends State<TicketsScreen> {
   List<TicketItem> get filteredTickets {
     return tickets.where((t) {
       bool matchesFilter = filterStatus == "ALL" || t.status == filterStatus;
-      bool matchesSearch = searchQuery.isEmpty ||
+      bool matchesSearch =
+          searchQuery.isEmpty ||
           t.subject.toLowerCase().contains(searchQuery.toLowerCase()) ||
-          (t.student?.firstName.toLowerCase().contains(searchQuery.toLowerCase()) ?? false);
-      bool matchesRole = filterRole == "ALL" ||
+          (t.student?.firstName.toLowerCase().contains(
+                searchQuery.toLowerCase(),
+              ) ??
+              false);
+      bool matchesRole =
+          filterRole == "ALL" ||
           (filterRole == "TEACHER" && t.isTeacher) ||
           (filterRole == "STUDENT" && !t.isTeacher);
       return matchesFilter && matchesSearch && matchesRole;
@@ -349,9 +400,20 @@ class _TicketsScreenState extends State<TicketsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
+              const CircularProgressIndicator(
+                color: primaryPink,
+                strokeWidth: 2.5,
+              ),
               const SizedBox(height: 14),
-              Text("LOADING SUPPORT DESK...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(
+                context.l10n.loadingDirectory,
+                style: const TextStyle(
+                  color: textGrey,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                ),
+              ),
             ],
           ),
         ),
@@ -361,7 +423,6 @@ class _TicketsScreenState extends State<TicketsScreen> {
     final currentStats = stats;
     final currentFiltered = filteredTickets;
 
-    // اگر تیکتی در موبایل انتخاب شده بود، صفحه چت را نشان بده
     if (selectedTicket != null) {
       return Scaffold(
         backgroundColor: surfaceWhite,
@@ -373,21 +434,45 @@ class _TicketsScreenState extends State<TicketsScreen> {
             icon: const Icon(Icons.arrow_back_rounded, color: textDark),
             onPressed: () => setState(() => selectedTicket = null),
           ),
-          title: Text(selectedTicket!.subject, style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+          title: Text(
+            selectedTicket!.subject,
+            style: const TextStyle(
+              color: textDark,
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 12.0),
               child: Center(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: selectedTicket!.status == 'OPEN' ? Colors.redAccent.withOpacity(0.12) : Colors.green.withOpacity(0.12),
-                    foregroundColor: selectedTicket!.status == 'OPEN' ? Colors.redAccent : Colors.green.shade700,
+                    backgroundColor: selectedTicket!.status == 'OPEN'
+                        ? Colors.redAccent.withValues(alpha: 0.12)
+                        : Colors.green.withValues(alpha: 0.12),
+                    foregroundColor: selectedTicket!.status == 'OPEN'
+                        ? Colors.redAccent
+                        : Colors.green.shade700,
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                   onPressed: toggleTicketStatus,
-                  child: Text(selectedTicket!.status == 'OPEN' ? "Close Ticket" : "Reopen", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                  child: Text(
+                    selectedTicket!.status == 'OPEN'
+                        ? context.l10n.closeTicket
+                        : context.l10n.reopenTicket,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -397,54 +482,102 @@ class _TicketsScreenState extends State<TicketsScreen> {
           children: [
             Expanded(
               child: isLoadingMessages
-                  ? const Center(child: CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5))
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: primaryPink,
+                        strokeWidth: 2.5,
+                      ),
+                    )
                   : messages.isEmpty
-                      ? const Center(child: Text("No messages yet.", style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.bold)))
-                      : ListView.builder(
-                          controller: _scrollController,
-                          physics: const BouncingScrollPhysics(),
-                          padding: const EdgeInsets.all(16),
-                          itemCount: messages.length,
-                          itemBuilder: (context, index) {
-                            final msg = messages[index];
-                            bool isAdmin = msg.senderId != selectedTicket!.studentId;
-
-                            return Align(
-                              alignment: isAdmin ? Alignment.centerRight : Alignment.centerLeft,
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(vertical: 6),
-                                padding: const EdgeInsets.all(14),
-                                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-                                decoration: BoxDecoration(
-                                  color: isAdmin ? lightPinkBg : surfaceWhite,
-                                  borderRadius: BorderRadius.circular(18),
-                                  border: Border.all(color: isAdmin ? primaryPink.withOpacity(0.2) : cardBorder, width: 1.5),
-                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      msg.senderId == '' || msg.senderId == 'ai'
-                                          ? "Support AI 🤖"
-                                          : (msg.senderId == selectedTicket!.studentId
-                                              ? "${selectedTicket!.isTeacher ? 'استاد' : 'دانشجو'} ${msg.sender?.firstName ?? ''}".trim()
-                                              : "Support Agent (Human)"),
-                                      style: TextStyle(color: (msg.senderId == '' || msg.senderId == 'ai') ? Colors.purple : (isAdmin ? primaryPink : textGrey), fontSize: 9, fontWeight: FontWeight.w900),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(msg.messageText, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w500)),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
+                  ? Center(
+                      child: Text(
+                        context.l10n.noMessages,
+                        style: const TextStyle(
+                          color: textGrey,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
                         ),
+                      ),
+                    )
+                  : ListView.builder(
+                      controller: _scrollController,
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.all(16),
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                        final msg = messages[index];
+                        bool isAdmin =
+                            msg.senderId != selectedTicket!.studentId;
+
+                        return Align(
+                          alignment: isAdmin
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            padding: const EdgeInsets.all(14),
+                            constraints: BoxConstraints(
+                              maxWidth:
+                                  MediaQuery.of(context).size.width * 0.75,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isAdmin ? lightPinkBg : surfaceWhite,
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: isAdmin
+                                    ? primaryPink.withValues(alpha: 0.2)
+                                    : cardBorder,
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.02),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  msg.senderId == '' || msg.senderId == 'ai'
+                                      ? "Support AI 🤖"
+                                      : (msg.senderId ==
+                                                selectedTicket!.studentId
+                                            ? "${selectedTicket!.isTeacher ? context.l10n.teacher : context.l10n.studentsOnly} ${msg.sender?.firstName ?? ''}"
+                                                  .trim()
+                                            : context.l10n.supportHelpDesk),
+                                  style: TextStyle(
+                                    color:
+                                        (msg.senderId == '' ||
+                                            msg.senderId == 'ai')
+                                        ? Colors.purple
+                                        : (isAdmin ? primaryPink : textGrey),
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  msg.messageText,
+                                  style: const TextStyle(
+                                    color: textDark,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
             ),
             // Reply Input
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: surfaceWhite,
                 border: Border(top: BorderSide(color: cardBorder, width: 1.5)),
               ),
@@ -453,16 +586,38 @@ class _TicketsScreenState extends State<TicketsScreen> {
                   Expanded(
                     child: TextField(
                       controller: replyCtrl,
-                      style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        color: textDark,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                       decoration: InputDecoration(
-                        hintText: "Type your response...",
-                        hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                        hintText: context.l10n.typeYourReply,
+                        hintStyle: const TextStyle(
+                          color: textGrey,
+                          fontSize: 11,
+                        ),
                         filled: true,
-                        fillColor: cardBorder.withOpacity(0.5),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                        fillColor: cardBorder.withValues(alpha: 0.5),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(color: cardBorder),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(color: cardBorder),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(
+                            color: primaryPink,
+                            width: 1.5,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -476,11 +631,20 @@ class _TicketsScreenState extends State<TicketsScreen> {
                         foregroundColor: Colors.white,
                         elevation: 0,
                         padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
                       onPressed: isSending ? null : handleSendReply,
                       child: isSending
-                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
                           : const Icon(Icons.send_rounded, size: 18),
                     ),
                   ),
@@ -492,7 +656,6 @@ class _TicketsScreenState extends State<TicketsScreen> {
       );
     }
 
-    // نمای اصلی لیست تیکت‌ها برای موبایل
     return Scaffold(
       backgroundColor: surfaceWhite,
       body: SingleChildScrollView(
@@ -506,14 +669,21 @@ class _TicketsScreenState extends State<TicketsScreen> {
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                  colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                border: Border.all(
+                  color: primaryPink.withValues(alpha: 0.15),
+                  width: 1.5,
+                ),
                 boxShadow: [
-                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                  BoxShadow(
+                    color: primaryPink.withValues(alpha: 0.08),
+                    blurRadius: 25,
+                    offset: const Offset(0, 10),
+                  ),
                 ],
               ),
               child: Column(
@@ -523,31 +693,69 @@ class _TicketsScreenState extends State<TicketsScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: lightPinkBg,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Text(
-                          "SUPPORT DESK",
-                          style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
+                        child: Text(
+                          context.l10n.supportHelpDesk,
+                          style: const TextStyle(
+                            fontSize: 8,
+                            fontWeight: FontWeight.w900,
+                            color: primaryPink,
+                            letterSpacing: 1.2,
+                          ),
                         ),
                       ),
-                      const Icon(Icons.support_agent_rounded, color: primaryPink, size: 22),
+                      const Icon(
+                        Icons.support_agent_rounded,
+                        color: primaryPink,
+                        size: 22,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  const Text("Support Desk", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark)),
+                  Text(
+                    context.l10n.supportHelpDesk,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: textDark,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  const Text("Resolve inquiries and manage support tickets.", style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500)),
+                  Text(
+                    context.l10n.ticketsSubtitle,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: textGrey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                   const SizedBox(height: 18),
                   Row(
                     children: [
-                      Expanded(child: _buildMiniStat("Open", currentStats['open'].toString(), primaryPink)),
+                      Expanded(
+                        child: _buildMiniStat(
+                          context.l10n.ticketStatusOpen,
+                          currentStats['open'].toString(),
+                          primaryPink,
+                        ),
+                      ),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildMiniStat("Resolved", currentStats['closed'].toString(), textGrey)),
+                      Expanded(
+                        child: _buildMiniStat(
+                          context.l10n.ticketStatusClosed,
+                          currentStats['closed'].toString(),
+                          textGrey,
+                        ),
+                      ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
@@ -557,23 +765,36 @@ class _TicketsScreenState extends State<TicketsScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                color: cardBorder.withOpacity(0.5),
+                color: cardBorder.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: cardBorder, width: 1.5),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.search_rounded, color: primaryPink, size: 18),
+                  const Icon(
+                    Icons.search_rounded,
+                    color: primaryPink,
+                    size: 18,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       onChanged: (val) => setState(() => searchQuery = val),
-                      style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        color: textDark,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                       decoration: InputDecoration(
-                        hintText: "Search tickets...",
-                        hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                        hintText: context.l10n.searchTicketsHint,
+                        hintStyle: const TextStyle(
+                          color: textGrey,
+                          fontSize: 11,
+                        ),
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                        ),
                       ),
                     ),
                   ),
@@ -585,22 +806,43 @@ class _TicketsScreenState extends State<TicketsScreen> {
             // Filter Tabs
             Row(
               children: [
-                Expanded(child: _buildFilterBtn("All", "ALL")),
+                Expanded(
+                  child: _buildFilterBtn(context.l10n.filterStatusAll, "ALL"),
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: _buildFilterBtn("Open", "OPEN")),
+                Expanded(
+                  child: _buildFilterBtn(context.l10n.ticketStatusOpen, "OPEN"),
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: _buildFilterBtn("Closed", "CLOSED")),
+                Expanded(
+                  child: _buildFilterBtn(
+                    context.l10n.ticketStatusClosed,
+                    "CLOSED",
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 10),
-            // فیلتر نقش درخواست‌دهنده (دانشجو / استاد)
+            // Filter Role Tabs
             Row(
               children: [
-                Expanded(child: _buildRoleFilterBtn("All", "ALL")),
+                Expanded(
+                  child: _buildRoleFilterBtn(context.l10n.allUsers, "ALL"),
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: _buildRoleFilterBtn("Students", "STUDENT")),
+                Expanded(
+                  child: _buildRoleFilterBtn(
+                    context.l10n.studentsOnly,
+                    "STUDENT",
+                  ),
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: _buildRoleFilterBtn("Teachers", "TEACHER")),
+                Expanded(
+                  child: _buildRoleFilterBtn(
+                    context.l10n.teachersOnly,
+                    "TEACHER",
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -615,7 +857,14 @@ class _TicketsScreenState extends State<TicketsScreen> {
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(color: cardBorder, width: 1.5),
                     ),
-                    child: const Text("No tickets found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      context.l10n.noTicketsFound,
+                      style: const TextStyle(
+                        color: textGrey,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   )
                 : ListView.separated(
                     shrinkWrap: true,
@@ -631,7 +880,13 @@ class _TicketsScreenState extends State<TicketsScreen> {
                           color: surfaceWhite,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: cardBorder, width: 1.5),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.03),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: Row(
                           children: [
@@ -642,7 +897,9 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
-                                isOpen ? Icons.mark_email_unread_rounded : Icons.mark_email_read_rounded,
+                                isOpen
+                                    ? Icons.mark_email_unread_rounded
+                                    : Icons.mark_email_read_rounded,
                                 color: isOpen ? primaryPink : textGrey,
                                 size: 20,
                               ),
@@ -652,22 +909,44 @@ class _TicketsScreenState extends State<TicketsScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(t.subject, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                  Text(
+                                    t.subject,
+                                    style: const TextStyle(
+                                      color: textDark,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 13,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                   const SizedBox(height: 2),
                                   Row(
                                     children: [
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 1,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: t.isTeacher
-                                              ? Colors.indigo.withOpacity(0.12)
-                                              : primaryPink.withOpacity(0.12),
-                                          borderRadius: BorderRadius.circular(6),
+                                              ? Colors.indigo.withValues(
+                                                  alpha: 0.12,
+                                                )
+                                              : primaryPink.withValues(
+                                                  alpha: 0.12,
+                                                ),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
                                         ),
                                         child: Text(
-                                          t.isTeacher ? "استاد" : "دانشجو",
+                                          t.isTeacher
+                                              ? context.l10n.teacher
+                                              : context.l10n.studentsOnly,
                                           style: TextStyle(
-                                            color: t.isTeacher ? Colors.indigo : primaryPink,
+                                            color: t.isTeacher
+                                                ? Colors.indigo
+                                                : primaryPink,
                                             fontSize: 8,
                                             fontWeight: FontWeight.w900,
                                           ),
@@ -678,8 +957,12 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                         child: Text(
                                           t.student != null
                                               ? "${t.student!.firstName} ${t.student!.lastName}"
-                                              : "Unknown",
-                                          style: const TextStyle(color: textGrey, fontSize: 10),
+                                                    .trim()
+                                              : "",
+                                          style: const TextStyle(
+                                            color: textGrey,
+                                            fontSize: 10,
+                                          ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -694,11 +977,22 @@ class _TicketsScreenState extends State<TicketsScreen> {
                                 backgroundColor: lightPinkBg,
                                 foregroundColor: primaryPink,
                                 elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
                               onPressed: () => handleSelectTicket(t),
-                              child: const Text("Open Chat", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                              child: Text(
+                                context.l10n.openChat,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -719,13 +1013,34 @@ class _TicketsScreenState extends State<TicketsScreen> {
         color: surfaceWhite,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 6, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
-          Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: color)),
+          Text(
+            title.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 8,
+              fontWeight: FontWeight.w900,
+              color: textGrey,
+              letterSpacing: 0.8,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+              color: color,
+            ),
+          ),
         ],
       ),
     );
@@ -738,12 +1053,22 @@ class _TicketsScreenState extends State<TicketsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? lightPinkBg : cardBorder.withOpacity(0.5),
+          color: isActive ? lightPinkBg : cardBorder.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isActive ? primaryPink : cardBorder, width: isActive ? 1.5 : 1),
+          border: Border.all(
+            color: isActive ? primaryPink : cardBorder,
+            width: isActive ? 1.5 : 1,
+          ),
         ),
         alignment: Alignment.center,
-        child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: isActive ? primaryPink : textGrey)),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w900,
+            color: isActive ? primaryPink : textGrey,
+          ),
+        ),
       ),
     );
   }
@@ -755,7 +1080,9 @@ class _TicketsScreenState extends State<TicketsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 9),
         decoration: BoxDecoration(
-          color: isActive ? primaryPink.withOpacity(0.15) : cardBorder.withOpacity(0.5),
+          color: isActive
+              ? primaryPink.withValues(alpha: 0.15)
+              : cardBorder.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isActive ? primaryPink : cardBorder,
@@ -770,13 +1097,20 @@ class _TicketsScreenState extends State<TicketsScreen> {
               roleKey == "TEACHER"
                   ? Icons.psychology_rounded
                   : roleKey == "STUDENT"
-                      ? Icons.school_rounded
-                      : Icons.people_alt_rounded,
+                  ? Icons.school_rounded
+                  : Icons.people_alt_rounded,
               size: 13,
               color: isActive ? primaryPink : textGrey,
             ),
             const SizedBox(width: 5),
-            Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: isActive ? primaryPink : textGrey)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+                color: isActive ? primaryPink : textGrey,
+              ),
+            ),
           ],
         ),
       ),

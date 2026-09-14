@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
 
 class AddCourseScreen extends StatefulWidget {
@@ -34,7 +35,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   File? thumbnailFile;
   final ImagePicker _picker = ImagePicker();
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  // Luxury Light-Pink Palette
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
@@ -76,7 +77,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         categoryCtrl.text.isEmpty ||
         descCtrl.text.isEmpty ||
         priceCtrl.text.isEmpty) {
-      _showError("Please fill all required fields.");
+      _showError(context.l10n.fillRequiredFields);
       return;
     }
 
@@ -85,7 +86,6 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
     try {
       String thumbnailUrl = "";
 
-      // 1. Upload Thumbnail (if selected)
       if (thumbnailFile != null) {
         final fileExt = thumbnailFile!.path.split('.').last;
         final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
@@ -98,7 +98,6 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         );
       }
 
-      // 2. Insert into Database
       await supabase.from('courses').insert({
         'title': titleCtrl.text.trim(),
         'description': descCtrl.text.trim(),
@@ -117,15 +116,15 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Course created successfully! 🚀"),
+          SnackBar(
+            content: Text(context.l10n.adminSyncSuccess),
             backgroundColor: Colors.green,
           ),
         );
         Navigator.pop(context);
       }
     } catch (error) {
-      _showError("Error: ${error.toString()}");
+      _showError("${context.l10n.failedToUpdateDatabase}: ${error.toString()}");
     } finally {
       if (mounted) setState(() => isSubmitting = false);
     }
@@ -146,9 +145,9 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: textDark),
-        title: const Text(
-          "Create Course",
-          style: TextStyle(
+        title: Text(
+          context.l10n.addNewCourse,
+          style: const TextStyle(
             color: textDark,
             fontSize: 14,
             fontWeight: FontWeight.w900,
@@ -170,18 +169,18 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                  colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: primaryPink.withOpacity(0.15),
+                  color: primaryPink.withValues(alpha: 0.15),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: primaryPink.withOpacity(0.08),
+                    color: primaryPink.withValues(alpha: 0.08),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -199,9 +198,9 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                       color: lightPinkBg,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Text(
-                      "ADMIN STUDIO",
-                      style: TextStyle(
+                    child: Text(
+                      context.l10n.adminCommandCenter,
+                      style: const TextStyle(
                         color: primaryPink,
                         fontSize: 8,
                         fontWeight: FontWeight.w900,
@@ -210,18 +209,18 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    "Design a premium course page.",
-                    style: TextStyle(
+                  Text(
+                    context.l10n.manageCourses,
+                    style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
                       color: textDark,
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
-                    "Upload assets, add instructors, and publish your course with high visual impact.",
-                    style: TextStyle(
+                  Text(
+                    context.l10n.manageCoursesSubtitle,
+                    style: const TextStyle(
                       color: textGrey,
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
@@ -234,11 +233,11 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
 
             // 1. Course Details Section
             _buildSection(
-              title: "Course Details",
+              title: context.l10n.courseDetails,
               children: [
                 _buildTextField(
                   titleCtrl,
-                  "Course Title *",
+                  "${context.l10n.courseTitle} *",
                   "Fintech Mastery...",
                 ),
                 const SizedBox(height: 16),
@@ -247,7 +246,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                     Expanded(
                       child: _buildTextField(
                         categoryCtrl,
-                        "Category *",
+                        "${context.l10n.courseCategory} *",
                         "Finance, Tech...",
                       ),
                     ),
@@ -256,9 +255,9 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            "Language *",
-                            style: TextStyle(
+                          Text(
+                            "${context.l10n.language} *",
+                            style: const TextStyle(
                               color: textDark,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
@@ -268,7 +267,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 14),
                             decoration: BoxDecoration(
-                              color: cardBorder.withOpacity(0.5),
+                              color: cardBorder.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(color: cardBorder, width: 1.5),
                             ),
@@ -306,7 +305,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                 const SizedBox(height: 16),
                 _buildTextField(
                   descCtrl,
-                  "Description *",
+                  "${context.l10n.courseDescription} *",
                   "Write a compelling summary...",
                   maxLines: 4,
                 ),
@@ -316,15 +315,15 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
 
             // 2. Instructor 1
             _buildSection(
-              title: "Instructor 1",
-              subtitle: "Primary course instructor",
+              title: context.l10n.leadInstructor,
+              subtitle: context.l10n.leadInstructor,
               isRequired: true,
               children: [
-                _buildTextField(inst1NameCtrl, "Name", "Instructor Name"),
+                _buildTextField(inst1NameCtrl, context.l10n.teacherName, "Instructor Name"),
                 const SizedBox(height: 12),
                 _buildTextField(
                   inst1BioCtrl,
-                  "Bio",
+                  context.l10n.biographyTeacherInfo,
                   "Brief background...",
                   maxLines: 3,
                 ),
@@ -336,14 +335,14 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
 
             // 3. Instructor 2 (Optional)
             _buildSection(
-              title: "Instructor 2",
-              subtitle: "Optional co-instructor",
+              title: context.l10n.coInstructor,
+              subtitle: "${context.l10n.coInstructor} (${context.l10n.optional})",
               children: [
-                _buildTextField(inst2NameCtrl, "Name", "Instructor 2 Name"),
+                _buildTextField(inst2NameCtrl, context.l10n.teacherName, "Instructor 2 Name"),
                 const SizedBox(height: 12),
                 _buildTextField(
                   inst2BioCtrl,
-                  "Bio",
+                  context.l10n.biographyTeacherInfo,
                   "Brief background...",
                   maxLines: 3,
                 ),
@@ -355,7 +354,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
 
             // 4. Asset Upload & Price
             _buildSection(
-              title: "Asset & Pricing",
+              title: "${context.l10n.thumbnailUrl} & ${context.l10n.coursePrice}",
               children: [
                 GestureDetector(
                   onTap: _pickImage,
@@ -363,10 +362,10 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                     height: 170,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: cardBorder.withOpacity(0.5),
+                      color: cardBorder.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: primaryPink.withOpacity(0.3),
+                        color: primaryPink.withValues(alpha: 0.3),
                         width: 1.5,
                         style: BorderStyle.solid,
                       ),
@@ -388,18 +387,18 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                                 size: 36,
                               ),
                               const SizedBox(height: 10),
-                              const Text(
-                                "Upload 16:9 Thumbnail",
-                                style: TextStyle(
+                              Text(
+                                context.l10n.thumbnailUrl,
+                                style: const TextStyle(
                                   color: textDark,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w900,
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
-                                "Tap to browse gallery",
-                                style: TextStyle(color: textGrey, fontSize: 10),
+                              Text(
+                                context.l10n.upload,
+                                style: const TextStyle(color: textGrey, fontSize: 10),
                               ),
                               const SizedBox(height: 12),
                               Container(
@@ -411,9 +410,9 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                                   color: primaryPink,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: const Text(
-                                  "Choose File",
-                                  style: TextStyle(
+                                child: Text(
+                                  context.l10n.upload,
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w900,
                                     fontSize: 10,
@@ -427,29 +426,9 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                 const SizedBox(height: 16),
                 _buildTextField(
                   priceCtrl,
-                  "Price (USD) *",
-                  "e.g. 99.99",
+                  "${context.l10n.coursePrice} *",
+                  "0.00",
                   isNumber: true,
-                ),
-                const SizedBox(height: 14),
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: lightPinkBg.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: primaryPink.withOpacity(0.2),
-                      width: 1,
-                    ),
-                  ),
-                  child: const Text(
-                    "The course is saved as a draft and will be published after you submit. You can edit it later.",
-                    style: TextStyle(
-                      color: primaryPink,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
                 ),
               ],
             ),
@@ -470,7 +449,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                 ),
                 onPressed: isSubmitting ? null : _handleSubmit,
                 child: Text(
-                  isSubmitting ? "Publishing..." : "PUBLISH COURSE NOW 🚀",
+                  isSubmitting ? context.l10n.uploading : context.l10n.createCourseAction,
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w900,
@@ -500,7 +479,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         border: Border.all(color: cardBorder, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 6),
           ),
@@ -546,9 +525,9 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                     color: lightPinkBg,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
-                    "REQUIRED",
-                    style: TextStyle(
+                  child: Text(
+                    context.l10n.required.toUpperCase(),
+                    style: const TextStyle(
                       color: primaryPink,
                       fontSize: 8,
                       fontWeight: FontWeight.w900,
@@ -597,7 +576,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
             hintText: hint,
             hintStyle: const TextStyle(color: textGrey, fontSize: 11),
             filled: true,
-            fillColor: cardBorder.withOpacity(0.5),
+            fillColor: cardBorder.withValues(alpha: 0.5),
             contentPadding: maxLines > 1
                 ? const EdgeInsets.all(14)
                 : const EdgeInsets.symmetric(horizontal: 14, vertical: 14),

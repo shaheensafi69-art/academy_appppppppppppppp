@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 import 'create_course_screen.dart';
 import 'course_detail_screen.dart';
 
@@ -36,7 +37,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
   List<CourseItemModel> courses = [];
   String searchQuery = "";
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  // Luxury Light-Pink Palette
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
@@ -100,7 +101,10 @@ class _CoursesScreenState extends State<CoursesScreen> {
             children: [
               const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
-              Text("LOADING COURSE LIBRARY...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(
+                context.l10n.loadingDirectory.toUpperCase(),
+                style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2),
+              ),
             ],
           ),
         ),
@@ -117,19 +121,19 @@ class _CoursesScreenState extends State<CoursesScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ================= HEADER =================
+            // Header
             Container(
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                  colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                 boxShadow: [
-                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                  BoxShadow(color: primaryPink.withValues(alpha: 0.08), blurRadius: 25, offset: const Offset(0, 10)),
                 ],
               ),
               child: Column(
@@ -144,9 +148,9 @@ class _CoursesScreenState extends State<CoursesScreen> {
                           color: lightPinkBg,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Text(
-                          "COURSE LIBRARY",
-                          style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
+                        child: Text(
+                          context.l10n.courseLibrary,
+                          style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
                         ),
                       ),
                       ElevatedButton.icon(
@@ -158,7 +162,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         icon: const Icon(Icons.add_rounded, size: 16),
-                        label: const Text("Deploy", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                        label: Text(context.l10n.addNewCourse, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -169,20 +173,20 @@ class _CoursesScreenState extends State<CoursesScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    "Manage Courses",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
+                  Text(
+                    context.l10n.manageCourses,
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    "Create and organize educational programs effortlessly.",
-                    style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
+                  Text(
+                    context.l10n.manageCoursesSubtitle,
+                    style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 16),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: BoxDecoration(
-                      color: cardBorder.withOpacity(0.5),
+                      color: cardBorder.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: cardBorder, width: 1.5),
                     ),
@@ -195,7 +199,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
                             onChanged: (val) => setState(() => searchQuery = val),
                             style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                             decoration: InputDecoration(
-                              hintText: "Search courses by title...",
+                              hintText: context.l10n.searchCourseHint,
                               hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                               border: InputBorder.none,
                               contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -210,7 +214,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
             ),
             const SizedBox(height: 24),
 
-            // ================= COURSES LIST =================
+            // Courses List
             currentFiltered.isEmpty
                 ? Container(
                     padding: const EdgeInsets.all(40),
@@ -220,7 +224,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(color: cardBorder, width: 1.5),
                     ),
-                    child: const Text("No courses found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                    child: Text(context.l10n.noCoursesFound, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                   )
                 : ListView.separated(
                     shrinkWrap: true,
@@ -242,7 +246,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
                             color: surfaceWhite,
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(color: cardBorder, width: 1.5),
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                           ),
                           child: Row(
                             children: [
@@ -252,7 +256,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
                                 decoration: BoxDecoration(
                                   color: lightPinkBg,
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.5),
+                                  border: Border.all(color: primaryPink.withValues(alpha: 0.2), width: 1.5),
                                   image: course.thumbnailUrl != null ? DecorationImage(image: NetworkImage(course.thumbnailUrl!), fit: BoxFit.cover) : null,
                                 ),
                                 child: course.thumbnailUrl == null ? const Icon(Icons.menu_book_rounded, color: primaryPink, size: 28) : null,
@@ -275,11 +279,11 @@ class _CoursesScreenState extends State<CoursesScreen> {
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                           decoration: BoxDecoration(
-                                            color: course.isPublished ? Colors.green.withOpacity(0.12) : lightPinkBg,
+                                            color: course.isPublished ? Colors.green.withValues(alpha: 0.12) : lightPinkBg,
                                             borderRadius: BorderRadius.circular(8),
                                           ),
                                           child: Text(
-                                            course.isPublished ? "PUBLISHED" : "DRAFT",
+                                            course.isPublished ? context.l10n.published.toUpperCase() : context.l10n.draft.toUpperCase(),
                                             style: TextStyle(
                                               color: course.isPublished ? Colors.green.shade700 : primaryPink,
                                               fontSize: 8,
@@ -298,7 +302,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
-                                      course.price > 0 ? "\$${course.price.toStringAsFixed(2)}" : "FREE",
+                                      course.price > 0 ? "\$${course.price.toStringAsFixed(2)}" : context.l10n.free,
                                       style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.w900),
                                     ),
                                   ],

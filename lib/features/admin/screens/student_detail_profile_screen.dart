@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class StudentDetailProfileScreen extends StatefulWidget {
   final String studentId;
@@ -101,7 +102,6 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
       double newWallet = double.tryParse(walletCtrl.text.trim()) ?? 0.0;
       int newScore = int.tryParse(scoreCtrl.text.trim()) ?? 0;
 
-      // فراخوانی تابع RPC اصلاح شده در دیتابیس
       await supabase.rpc(
         'admin_update_user_profile',
         params: {
@@ -112,7 +112,6 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
         },
       );
 
-      // دریافت اطلاعات جدید برای اطمینان از اعمال تغییرات
       final updatedData = await supabase
           .from("profiles")
           .select("*")
@@ -122,7 +121,7 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
       if (mounted) {
         setState(() {
           if (updatedData != null) studentData = updatedData;
-          messageText = 'Admin changes successfully synchronized with database! ✅';
+          messageText = context.l10n.adminSyncSuccess;
           isSuccessMessage = true;
         });
       }
@@ -134,7 +133,7 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
       debugPrint("Database Update Error: $e");
       if (mounted) {
         setState(() {
-          messageText = 'Failed to update database: ${e.toString()}';
+          messageText = '${context.l10n.failedToUpdateDatabase}: ${e.toString()}';
           isSuccessMessage = false;
         });
       }
@@ -155,8 +154,8 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
               const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
               Text(
-                "LOADING PROFILE...",
-                style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2),
+                context.l10n.loading,
+                style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2),
               ),
             ],
           ),
@@ -171,12 +170,12 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Student Profile Not Found", style: TextStyle(color: textDark, fontWeight: FontWeight.bold)),
+              Text(context.l10n.studentProfileNotFound, style: const TextStyle(color: textDark, fontWeight: FontWeight.bold)),
               const SizedBox(height: 14),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: primaryPink, foregroundColor: Colors.white),
                 onPressed: () => Navigator.pop(context),
-                child: const Text("Go Back"),
+                child: Text(context.l10n.back),
               ),
             ],
           ),
@@ -207,12 +206,12 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: cardBorder, width: 1.5),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.arrow_back_rounded, color: textDark, size: 16),
-                          SizedBox(width: 6),
-                          Text("Back to Students", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
+                          const Icon(Icons.arrow_back_rounded, color: textDark, size: 16),
+                          const SizedBox(width: 6),
+                          Text(context.l10n.backToStudents, style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),
@@ -224,14 +223,14 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                        colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                      border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                       boxShadow: [
-                        BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                        BoxShadow(color: primaryPink.withValues(alpha: 0.08), blurRadius: 25, offset: const Offset(0, 10)),
                       ],
                     ),
                     child: Row(
@@ -277,9 +276,9 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isSuccessMessage ? Colors.green.withOpacity(0.12) : Colors.redAccent.withOpacity(0.12),
+                        color: isSuccessMessage ? Colors.green.withValues(alpha: 0.12) : Colors.redAccent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: isSuccessMessage ? Colors.green.withOpacity(0.3) : Colors.redAccent.withOpacity(0.3), width: 1.5),
+                        border: Border.all(color: isSuccessMessage ? Colors.green.withValues(alpha: 0.3) : Colors.redAccent.withValues(alpha: 0.3), width: 1.5),
                       ),
                       child: Row(
                         children: [
@@ -308,33 +307,33 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
                       color: surfaceWhite,
                       borderRadius: BorderRadius.circular(28),
                       border: Border.all(color: cardBorder, width: 1.5),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6))],
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6))],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                        Row(
                           children: [
-                            Icon(Icons.lock_outline_rounded, color: textGrey, size: 14),
-                            SizedBox(width: 6),
-                            Text("PERSONAL DETAILS (LOCKED)", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
+                            const Icon(Icons.lock_outline_rounded, color: textGrey, size: 14),
+                            const SizedBox(width: 6),
+                            Text(context.l10n.personalDetailsLocked, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 1.2)),
                           ],
                         ),
                         const SizedBox(height: 16),
 
                         Row(
                           children: [
-                            Expanded(child: _buildLockedInput("FIRST NAME", firstNameCtrl)),
+                            Expanded(child: _buildLockedInput(context.l10n.firstName.toUpperCase(), firstNameCtrl)),
                             const SizedBox(width: 12),
-                            Expanded(child: _buildLockedInput("LAST NAME", lastNameCtrl)),
+                            Expanded(child: _buildLockedInput(context.l10n.lastName.toUpperCase(), lastNameCtrl)),
                           ],
                         ),
                         const SizedBox(height: 14),
-                        _buildLockedInput("EMAIL ADDRESS", emailCtrl),
+                        _buildLockedInput(context.l10n.emailAddress.toUpperCase(), emailCtrl),
                         const SizedBox(height: 14),
-                        _buildLockedInput("PHONE NUMBER", phoneCtrl),
+                        _buildLockedInput(context.l10n.phoneNumber.toUpperCase(), phoneCtrl),
                         const SizedBox(height: 14),
-                        _buildLockedInput("BIOGRAPHY", bioCtrl, maxLines: 3),
+                        _buildLockedInput(context.l10n.bio.toUpperCase(), bioCtrl, maxLines: 3),
                       ],
                     ),
                   ),
@@ -346,40 +345,39 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
                     decoration: BoxDecoration(
                       color: surfaceWhite,
                       borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: primaryPink.withOpacity(0.25), width: 1.5),
-                      boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 6))],
+                      border: Border.all(color: primaryPink.withValues(alpha: 0.25), width: 1.5),
+                      boxShadow: [BoxShadow(color: primaryPink.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 6))],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                        Row(
                           children: [
-                            Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 16),
-                            SizedBox(width: 6),
-                            Text("ADMIN CONTROLS & DATABASE SYNC", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2)),
+                            const Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 16),
+                            const SizedBox(width: 6),
+                            Text(context.l10n.adminControls, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2)),
                           ],
                         ),
                         const SizedBox(height: 16),
 
                         Row(
                           children: [
-                            Expanded(child: _buildEditableInput("WALLET BALANCE (\$)", walletCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true))),
+                            Expanded(child: _buildEditableInput("${context.l10n.walletBalance.toUpperCase()} (\$)", walletCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true))),
                             const SizedBox(width: 12),
-                            Expanded(child: _buildEditableInput("ACADEMIC SCORE (PTS)", scoreCtrl, keyboardType: TextInputType.number)),
+                            Expanded(child: _buildEditableInput(context.l10n.academicScore, scoreCtrl, keyboardType: TextInputType.number)),
                           ],
                         ),
                         const SizedBox(height: 16),
 
-                        const Text("SYSTEM ROLE & PROMOTION", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+                        Text(context.l10n.systemRolePromotion, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
                         const SizedBox(height: 6),
                         
-                        // منوی کشویی جدید با استایل و آیکون‌های بسیار شیک
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                           decoration: BoxDecoration(
-                            color: cardBorder.withOpacity(0.6),
+                            color: cardBorder.withValues(alpha: 0.6),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                            border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
@@ -387,14 +385,14 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
                               dropdownColor: surfaceWhite,
                               isExpanded: true,
                               icon: const Icon(Icons.keyboard_arrow_down_rounded, color: primaryPink),
-                              items: const [
+                              items: [
                                 DropdownMenuItem(
                                   value: 'student',
                                   child: Row(
                                     children: [
-                                      Icon(Icons.school_rounded, color: Color(0xFF00897B), size: 18),
-                                      SizedBox(width: 12),
-                                      Text("Student (Normal Access)", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
+                                      const Icon(Icons.school_rounded, color: Color(0xFF00897B), size: 18),
+                                      const SizedBox(width: 12),
+                                      Text(context.l10n.roleStudent, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
                                     ],
                                   ),
                                 ),
@@ -402,9 +400,9 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
                                   value: 'teacher',
                                   child: Row(
                                     children: [
-                                      Icon(Icons.psychology_rounded, color: Color(0xFF3949AB), size: 18),
-                                      SizedBox(width: 12),
-                                      Text("Instructor / Mentor", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
+                                      const Icon(Icons.psychology_rounded, color: Color(0xFF3949AB), size: 18),
+                                      const SizedBox(width: 12),
+                                      Text(context.l10n.roleTeacher, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
                                     ],
                                   ),
                                 ),
@@ -412,9 +410,9 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
                                   value: 'super_admin',
                                   child: Row(
                                     children: [
-                                      Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 18),
-                                      SizedBox(width: 12),
-                                      Text("Administrator (Full Access)", style: TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
+                                      const Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 18),
+                                      const SizedBox(width: 12),
+                                      Text(context.l10n.roleAdmin, style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold)),
                                     ],
                                   ),
                                 ),
@@ -443,7 +441,7 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
                       onPressed: isSaving ? null : handleUpdateProfile,
                       child: isSaving
                           ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                          : const Text("SYNC CHANGES TO DATABASE 🚀", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                          : Text(context.l10n.syncChangesToDatabase, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -469,7 +467,7 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
           style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             filled: true,
-            fillColor: cardBorder.withOpacity(0.8),
+            fillColor: cardBorder.withValues(alpha: 0.8),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
@@ -494,7 +492,7 @@ class _StudentDetailProfileScreenState extends State<StudentDetailProfileScreen>
           cursorColor: primaryPink,
           decoration: InputDecoration(
             filled: true,
-            fillColor: cardBorder.withOpacity(0.5),
+            fillColor: cardBorder.withValues(alpha: 0.5),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),

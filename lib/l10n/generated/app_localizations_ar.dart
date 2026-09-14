@@ -1788,7 +1788,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get primaryInstructor => 'المعلم الرئيسي';
 
   @override
-  String get coInstructor => 'المعلم المساعد';
+  String get coInstructor => 'مدرس مساعد';
 
   @override
   String get selectCoInstructor => 'اختر المعلم المساعد';
@@ -2404,4 +2404,461 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get systemSettings => 'إعدادات النظام';
+
+  @override
+  String get backToClassRoster => 'العودة إلى قائمة الفصل';
+
+  @override
+  String get enrollStudents => 'تسجيل الطلاب';
+
+  @override
+  String get enrollStudentsSubtitle => 'حدد عدة طلاب لتسجيلهم في هذه الدفعة.';
+
+  @override
+  String get confirmEnrollment => 'تأكيد التسجيل';
+
+  @override
+  String get paidAll => 'مدفوع (الكل)';
+
+  @override
+  String get facultyManagement => 'إدارة أعضاء هيئة التدريس';
+
+  @override
+  String get facultyDirectory => 'دليل هيئة التدريس';
+
+  @override
+  String get facultyManagementSubtitle =>
+      'مراجعة ملفات تعريف المدرسين والمجموعات النشطة.';
+
+  @override
+  String get activeCohorts => 'المجموعات النشطة';
+
+  @override
+  String get searchInstructorsHint =>
+      'ابحث عن المدرس بالاسم أو البريد الإلكتروني...';
+
+  @override
+  String get noInstructorsFound => 'لم يتم العثور على مدرسين.';
+
+  @override
+  String get noBiographyProvided => 'لم يتم تقديم سيرة ذاتية.';
+
+  @override
+  String get viewProfile => 'عرض الملف الشخصي';
+
+  @override
+  String get backToFaculty => 'العودة إلى الأساتذة';
+
+  @override
+  String get instructorNotFound => 'لم يتم العثور على المدرس';
+
+  @override
+  String get walletBalanceAndPayouts => 'رصيد المحفظة والمدفوعات';
+
+  @override
+  String get processPayout => 'معالجة الدفع';
+
+  @override
+  String get instructorProfileSyncSuccess =>
+      'تمت مزامنة ملف تعريف المدرس وعناصر التحكم بنجاح! 🚀';
+
+  @override
+  String get invalidPayoutAmount => 'مبلغ الدفع غير صالح.';
+
+  @override
+  String get payoutSuccess => 'تمت معالجة الدفعة بنجاح!';
+
+  @override
+  String get failedToProcessPayout => 'فشلت معالجة الدفعة';
+
+  @override
+  String get specializedCourses => 'دورات متخصصة';
+
+  @override
+  String get noSpecializedCourses => 'لا توجد دورات متخصصة مرتبطة.';
+
+  @override
+  String get assignedCohorts => 'المجموعات المخصصة';
+
+  @override
+  String get noAssignedClasses => 'لا توجد فصول مخصصة.';
+
+  @override
+  String get confirmAndSettlePayout => 'تأكيد وتسوية الدفعة 🚀';
+
+  @override
+  String get payoutAmountUsd => 'مبلغ الدفع (دولار)';
+
+  @override
+  String get biographyTeacherInfo => 'السيرة الذاتية (معلومات المدرس)';
+
+  @override
+  String get courseLibrary => 'مكتبة الدورات';
+
+  @override
+  String get searchCourseHint => 'ابحث عن الدورات بالعنوان أو الوصف...';
+
+  @override
+  String get coursePrice => 'سعر الدورة (\$)';
+
+  @override
+  String get courseCategory => 'الفئة';
+
+  @override
+  String get courseLevel => 'المستوى';
+
+  @override
+  String get thumbnailUrl => 'رابط الصورة المصغرة';
+
+  @override
+  String get saveCourseChanges => 'حفظ تغييرات الدورة 🚀';
+
+  @override
+  String get createCourseAction => 'إنشاء دورة تدريبية 🚀';
+
+  @override
+  String get deleteCourse => 'حذف الدورة';
+
+  @override
+  String get confirmDeleteCourse => 'هل أنت متأكد من رغبتك في حذف هذه الدورة؟';
+
+  @override
+  String get classesAndCohorts => 'الفصول والدفعات';
+
+  @override
+  String get cohortDirectory => 'دليل المجموعات';
+
+  @override
+  String get searchClassesHint => 'ابحث عن الفصول بالاسم أو المدرس...';
+
+  @override
+  String get noClassesFound => 'لم يتم العثور على فصول.';
+
+  @override
+  String get activeCohort => 'مجموعة نشطة';
+
+  @override
+  String get inactiveCohort => 'مؤرشفة / غير نشطة';
+
+  @override
+  String get selectTeacher => 'اختر المدرس';
+
+  @override
+  String get selectCourse => 'اختر الدورة';
+
+  @override
+  String get createClassAction => 'إنشاء دفعة جديدة 🚀';
+
+  @override
+  String get saveClassChanges => 'حفظ تغييرات الفصل 🚀';
+
+  @override
+  String get liveStreamingStudio => 'استوديو البث المباشر';
+
+  @override
+  String get broadcastRoomUrl => 'رابط الاجتماع';
+
+  @override
+  String get financialLedger => 'دفتر الأستاذ المالي';
+
+  @override
+  String get allTransactions => 'جميع المعاملات';
+
+  @override
+  String get deposits => 'الإيداعات';
+
+  @override
+  String get withdrawals => 'السحوبات';
+
+  @override
+  String get awardsAndRecognition => 'الجوائز والتقدير';
+
+  @override
+  String get announcementBroadcast => 'بث الإعلانات';
+
+  @override
+  String get publishAnnouncement => 'نشر الإعلان 📢';
+
+  @override
+  String get supportHelpDesk => 'مكتب المساعدة والدعم';
+
+  @override
+  String get ticketStatusOpen => 'مفتوح';
+
+  @override
+  String get ticketStatusClosed => 'تم الحل / مغلق';
+
+  @override
+  String get liveSupportChat => 'دردشة الدعم المباشر';
+
+  @override
+  String get adminSettings => 'إعدادات المدير';
+
+  @override
+  String get saveSettings => 'حفظ الإعدادات 🚀';
+
+  @override
+  String get systemConfiguration => 'تكوين النظام';
+
+  @override
+  String get loadingDirectory => 'جارٍ تحميل الدليل...';
+
+  @override
+  String get teacher => 'مدرس';
+
+  @override
+  String get course => 'دورة';
+
+  @override
+  String get backToCourses => 'العودة إلى الدورات';
+
+  @override
+  String get noDescription => 'لم يتم تقديم وصف.';
+
+  @override
+  String get optional => 'اختياري';
+
+  @override
+  String get required => 'مطلوب';
+
+  @override
+  String get backToCohorts => 'العودة إلى المجموعات';
+
+  @override
+  String get cohortManagement => 'إدارة المجموعات';
+
+  @override
+  String get createClassCohortSubtitle =>
+      'تعيين الدورة والمدرس والجدول الزمني والروابط عبر الإنترنت للطلاب.';
+
+  @override
+  String get classTimeSlot => 'وقت الحصة';
+
+  @override
+  String get classDaysHint => 'مثال: السبت، الاثنين، الأربعاء';
+
+  @override
+  String get classTimeHint => 'مثال: 18:00 - 20:00';
+
+  @override
+  String get scheduleNotes => 'معلومات الجدول الزمني (ملاحظات)';
+
+  @override
+  String get meetingLinkHint => 'https://zoom.us/j/...';
+
+  @override
+  String get signalLinkHint => 'https://t.me/+...';
+
+  @override
+  String get activeLiveCohort => 'نشط (فوج مباشر)';
+
+  @override
+  String get archivedCompleted => 'مؤرشف / مكتمل';
+
+  @override
+  String get noLiveSessions => 'لم يتم العثور على جلسات مباشرة.';
+
+  @override
+  String get noLink => 'لا يوجد رابط';
+
+  @override
+  String get manageAction => 'إدارة';
+
+  @override
+  String get manageClassModal => 'إدارة الفصل';
+
+  @override
+  String get saveAndUpdateAll => 'حفظ وتحديث جميع الخصائص 🚀';
+
+  @override
+  String get liveSessionsAndCohorts => 'الجلسات المباشرة والأفواج';
+
+  @override
+  String get liveSessionsSubtitle =>
+      'مراقبة الغرف النشطة والجداول الزمنية وإدارة جميع خصائص الفصل بأمان.';
+
+  @override
+  String get searchCohortsHint => 'البحث في المجموعات...';
+
+  @override
+  String get establishingConnection => 'جارٍ إنشاء الاتصال المباشر...';
+
+  @override
+  String get auditingRecords => 'جارٍ تدقيق السجلات المالية...';
+
+  @override
+  String get financialLedgerSubtitle =>
+      'تدقيق إيرادات المنصة وإدارة مدفوعات المعلمين بأمان.';
+
+  @override
+  String get facultyLiability => 'مستحقات المعلمين';
+
+  @override
+  String get distributedPayouts => 'المدفوعات الموزعة';
+
+  @override
+  String get netProfit => 'صافي الربح';
+
+  @override
+  String get facultyTab => 'هيئة التدريس';
+
+  @override
+  String get inflowsTab => 'التدفقات الداخلة';
+
+  @override
+  String get outflowsTab => 'التدفقات الخارجة';
+
+  @override
+  String get findInstructorHint => 'ابحث عن مدرس...';
+
+  @override
+  String get payoutAmount => 'مبلغ الدفعة (\$)';
+
+  @override
+  String get confirmPayout => 'تأكيد الدفع 💸';
+
+  @override
+  String get studentPayments => 'مدفوعات الطلاب';
+
+  @override
+  String get payoutRecords => 'سجلات المدفوعات';
+
+  @override
+  String get noTransactions => 'لم يتم العثور على معاملات.';
+
+  @override
+  String get awardsSubtitle => 'إنشاء وإدارة وتوزيع شارات وجوائز إنجاز الطلاب.';
+
+  @override
+  String get createAwardTitle => 'إنشاء جائزة جديدة';
+
+  @override
+  String get awardDescription => 'وصف الجائزة';
+
+  @override
+  String get awardIcon => 'أيقونة / رمز تعبيري';
+
+  @override
+  String get publishAwardAction => 'إنشاء جائزة جديدة 🏆';
+
+  @override
+  String get availableAwards => 'الشارات والجوائز المتاحة';
+
+  @override
+  String get noAwardsFound => 'لم يتم العثور على جوائز.';
+
+  @override
+  String get deleteAward => 'حذف الجائزة';
+
+  @override
+  String get announcementsSubtitle =>
+      'بث إشعارات وتحديثات وتنبيهات على مستوى النظام لجميع المستخدمين.';
+
+  @override
+  String get announcementContent => 'رسالة / محتوى الإعلان';
+
+  @override
+  String get studentsOnly => 'الطلاب فقط';
+
+  @override
+  String get teachersOnly => 'المعلمون فقط';
+
+  @override
+  String get broadcastNow => 'بث الإعلان 📢';
+
+  @override
+  String get recentAnnouncements => 'سجل الإعلانات';
+
+  @override
+  String get noAnnouncements => 'لم يتم نشر أي إعلانات بعد.';
+
+  @override
+  String get ticketsSubtitle => 'إدارة استفسارات الدعم وتذاكر الأقسام.';
+
+  @override
+  String get searchTicketsHint => 'البحث حسب الموضوع أو الطالب أو القسم...';
+
+  @override
+  String get filterStatusAll => 'جميع التذاكر';
+
+  @override
+  String get filterDepartment => 'القسم';
+
+  @override
+  String get ticketDetails => 'تفاصيل التذكرة';
+
+  @override
+  String get typeYourReply => 'اكتب ردك...';
+
+  @override
+  String get reopenTicket => 'إعادة فتح التذكرة';
+
+  @override
+  String get liveSupportSubtitle =>
+      'تقديم الدعم المباشر للطلاب وأعضاء هيئة التدريس في الوقت الفعلي.';
+
+  @override
+  String get searchSupportHint => 'البحث في طلبات الدعم...';
+
+  @override
+  String get openChat => 'فتح الدردشة';
+
+  @override
+  String get noSupportRequests => 'لم يتم العثور على طلبات دعم.';
+
+  @override
+  String get supportChatTitle => 'دردشة الدعم';
+
+  @override
+  String get markResolved => 'وضع علامة كمحلول';
+
+  @override
+  String get adminSettingsSubtitle =>
+      'إدارة ملف تعريف المسؤول وتفضيلات النظام وإعدادات الأمان.';
+
+  @override
+  String get systemAdmin => 'مسؤول النظام';
+
+  @override
+  String get adminRole => 'الدور الإداري';
+
+  @override
+  String get logOutAccount => 'تسجيل الخروج';
+
+  @override
+  String get confirmLogout => 'هل أنت متأكد أنك تريد تسجيل الخروج؟';
+
+  @override
+  String get avatarUrl => 'رابط الصورة الرمزية';
+
+  @override
+  String get superAdminRole => 'مدير النظام (المسؤول الرئيسي)';
+
+  @override
+  String get teacherRole => 'أستاذ / موجه (معلم)';
+
+  @override
+  String get studentRole => 'طالب (عادي)';
+
+  @override
+  String get teacherInfoAndCredentials => 'معلومات المعلم والمؤهلات';
+
+  @override
+  String get facultyIdentityAndRole => 'هوية الكادر والدور';
+
+  @override
+  String get synchronizingEngine => 'جارٍ مزامنة النظام...';
+
+  @override
+  String get settingsUpdatedSuccess =>
+      'تمت مزامنة الإعدادات والتكوينات بنجاح! 🚀';
+
+  @override
+  String get failedToUpdateSettings => 'فشل في تحديث التكوين';
+
+  @override
+  String get noMessages => 'لا توجد رسائل بعد.';
+
+  @override
+  String get teachers => 'الأساتذة';
 }

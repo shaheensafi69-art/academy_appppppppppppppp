@@ -2422,4 +2422,464 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get systemSettings => 'Sistem Ayarları';
+
+  @override
+  String get backToClassRoster => 'Sınıf Listesine Dön';
+
+  @override
+  String get enrollStudents => 'Öğrencileri Kaydet';
+
+  @override
+  String get enrollStudentsSubtitle =>
+      'Bu gruba kaydetmek için birden fazla öğrenci seçin.';
+
+  @override
+  String get confirmEnrollment => 'Kaydı Onayla';
+
+  @override
+  String get paidAll => 'Ödendi (Tümü)';
+
+  @override
+  String get facultyManagement => 'Eğitmen Yönetimi';
+
+  @override
+  String get facultyDirectory => 'EĞİTMEN REHBERİ';
+
+  @override
+  String get facultyManagementSubtitle =>
+      'Eğitmen profillerini ve aktif grupları inceleyin.';
+
+  @override
+  String get activeCohorts => 'Aktif Gruplar';
+
+  @override
+  String get searchInstructorsHint => 'İsim veya e-posta ile eğitmen arayın...';
+
+  @override
+  String get noInstructorsFound => 'Eğitmen bulunamadı.';
+
+  @override
+  String get noBiographyProvided => 'Biyografi belirtilmedi.';
+
+  @override
+  String get viewProfile => 'Profili Görüntüle';
+
+  @override
+  String get backToFaculty => 'Eğitmenlere Dön';
+
+  @override
+  String get instructorNotFound => 'Eğitmen Bulunamadı';
+
+  @override
+  String get walletBalanceAndPayouts => 'CÜZDAN BAKİYESİ VE ÖDEMELER';
+
+  @override
+  String get processPayout => 'Ödemeyi İşle';
+
+  @override
+  String get instructorProfileSyncSuccess =>
+      'Eğitmen profili başarıyla senkronize edildi! 🚀';
+
+  @override
+  String get invalidPayoutAmount => 'Geçersiz ödeme tutarı.';
+
+  @override
+  String get payoutSuccess => 'Ödeme başarıyla işlendi!';
+
+  @override
+  String get failedToProcessPayout => 'Ödeme işlenemedi';
+
+  @override
+  String get specializedCourses => 'UZMANLIK KURSLARI';
+
+  @override
+  String get noSpecializedCourses => 'Bağlantılı uzmanlık kursu yok.';
+
+  @override
+  String get assignedCohorts => 'ATANAN GRUPLAR';
+
+  @override
+  String get noAssignedClasses => 'Atanan sınıf yok.';
+
+  @override
+  String get confirmAndSettlePayout => 'ÖDEMEYİ ONAYLA VE TAMAMLA 🚀';
+
+  @override
+  String get payoutAmountUsd => 'ÖDEME TUTARI (USD)';
+
+  @override
+  String get biographyTeacherInfo => 'BİYOGRAFİ (EĞİTMEN BİLGİSİ)';
+
+  @override
+  String get courseLibrary => 'KURS KÜTÜPHANESİ';
+
+  @override
+  String get searchCourseHint => 'Başlık veya açıklamaya göre kurs ara...';
+
+  @override
+  String get coursePrice => 'Kurs Fiyatı (\$)';
+
+  @override
+  String get courseCategory => 'Kategori';
+
+  @override
+  String get courseLevel => 'Seviye';
+
+  @override
+  String get thumbnailUrl => 'Küçük Resim URL';
+
+  @override
+  String get saveCourseChanges => 'KURS DEĞİŞİKLİKLERİNİ KAYDET 🚀';
+
+  @override
+  String get createCourseAction => 'MASTERCLASS OLUŞTUR 🚀';
+
+  @override
+  String get deleteCourse => 'Kursu Sil';
+
+  @override
+  String get confirmDeleteCourse =>
+      'Bu kursu silmek istediğinizden emin misiniz?';
+
+  @override
+  String get classesAndCohorts => 'Sınıflar ve Gruplar';
+
+  @override
+  String get cohortDirectory => 'GRUP REHBERİ';
+
+  @override
+  String get searchClassesHint => 'İsim veya eğitmene göre sınıf ara...';
+
+  @override
+  String get noClassesFound => 'Sınıf bulunamadı.';
+
+  @override
+  String get activeCohort => 'Aktif Grup';
+
+  @override
+  String get inactiveCohort => 'Arşivlenmiş / Pasif';
+
+  @override
+  String get selectTeacher => 'Eğitmen Seç';
+
+  @override
+  String get selectCourse => 'Kurs Seç';
+
+  @override
+  String get createClassAction => 'YENİ GRUP OLUŞTUR 🚀';
+
+  @override
+  String get saveClassChanges => 'SINIF DEĞİŞİKLİKLERİNİ KAYDET 🚀';
+
+  @override
+  String get liveStreamingStudio => 'CANLI YAYIN STÜDYOSU';
+
+  @override
+  String get broadcastRoomUrl => 'Toplantı Bağlantısı';
+
+  @override
+  String get financialLedger => 'FİNANS DEFTERİ';
+
+  @override
+  String get allTransactions => 'Tüm İşlemler';
+
+  @override
+  String get deposits => 'Para Yatırma';
+
+  @override
+  String get withdrawals => 'Para Çekme';
+
+  @override
+  String get awardsAndRecognition => 'ÖDÜLLER VE TAKDİR';
+
+  @override
+  String get announcementBroadcast => 'DUYURU YAYINI';
+
+  @override
+  String get publishAnnouncement => 'DUYURUYU YAYINLA 📢';
+
+  @override
+  String get supportHelpDesk => 'DESTEK MERKEZİ';
+
+  @override
+  String get ticketStatusOpen => 'Açık';
+
+  @override
+  String get ticketStatusClosed => 'Çözüldü / Kapalı';
+
+  @override
+  String get liveSupportChat => 'Canlı Destek Sohbeti';
+
+  @override
+  String get adminSettings => 'YÖNETİCİ AYARLARI';
+
+  @override
+  String get saveSettings => 'AYARLARI KAYDET 🚀';
+
+  @override
+  String get systemConfiguration => 'Sistem Yapılandırması';
+
+  @override
+  String get loadingDirectory => 'Rehber Yükleniyor...';
+
+  @override
+  String get teacher => 'Eğitmen';
+
+  @override
+  String get course => 'Kurs';
+
+  @override
+  String get backToCourses => 'Kurslara Dön';
+
+  @override
+  String get noDescription => 'Açıklama belirtilmedi.';
+
+  @override
+  String get optional => 'İsteğe Bağlı';
+
+  @override
+  String get required => 'Gerekli';
+
+  @override
+  String get backToCohorts => 'Kohortlara Dön';
+
+  @override
+  String get cohortManagement => 'KOHORT YÖNETİMİ';
+
+  @override
+  String get createClassCohortSubtitle =>
+      'Öğrenciler için kurs, eğitmen, program ve çevrimiçi bağlantılar atayın.';
+
+  @override
+  String get classTimeSlot => 'DERS SAATİ';
+
+  @override
+  String get classDaysHint => 'örn. Cmt, Pzt, Çar';
+
+  @override
+  String get classTimeHint => 'örn. 18:00 - 20:00';
+
+  @override
+  String get scheduleNotes => 'PROGRAM BİLGİSİ (NOTLAR)';
+
+  @override
+  String get meetingLinkHint => 'https://zoom.us/j/...';
+
+  @override
+  String get signalLinkHint => 'https://t.me/+...';
+
+  @override
+  String get activeLiveCohort => 'Aktif (Canlı Kohort)';
+
+  @override
+  String get archivedCompleted => 'Arşivlendi / Tamamlandı';
+
+  @override
+  String get noLiveSessions => 'Canlı oturum bulunamadı.';
+
+  @override
+  String get noLink => 'Bağlantı Yok';
+
+  @override
+  String get manageAction => 'Yönet';
+
+  @override
+  String get manageClassModal => 'Sınıfı Yönet';
+
+  @override
+  String get saveAndUpdateAll => 'TÜM ÖZELLİKLERİ KAYDET VE GÜNCELLE 🚀';
+
+  @override
+  String get liveSessionsAndCohorts => 'Canlı Oturumlar ve Kohortlar';
+
+  @override
+  String get liveSessionsSubtitle =>
+      'Aktif odaları, programları izleyin ve sınıf özelliklerini güvenle yönetin.';
+
+  @override
+  String get searchCohortsHint => 'Kohortlarda ara...';
+
+  @override
+  String get establishingConnection => 'CANLI BAĞLANTI KURULUYOR...';
+
+  @override
+  String get auditingRecords => 'FİNANSAL KAYITLAR DENETLENİYOR...';
+
+  @override
+  String get financialLedgerSubtitle =>
+      'Platform gelirini denetleyin ve eğitmen ödemelerini güvenle yönetin.';
+
+  @override
+  String get facultyLiability => 'Eğitmen Yükümlülüğü';
+
+  @override
+  String get distributedPayouts => 'Dağıtılan Ödemeler';
+
+  @override
+  String get netProfit => 'Net Kâr';
+
+  @override
+  String get facultyTab => 'Eğitmenler';
+
+  @override
+  String get inflowsTab => 'Girişler';
+
+  @override
+  String get outflowsTab => 'Çıkışlar';
+
+  @override
+  String get findInstructorHint => 'Eğitmen bul...';
+
+  @override
+  String get payoutAmount => 'Ödeme Tutarı (\$)';
+
+  @override
+  String get confirmPayout => 'ÖDEMEYİ ONAYLA 💸';
+
+  @override
+  String get studentPayments => 'Öğrenci Girişleri';
+
+  @override
+  String get payoutRecords => 'Ödeme Çıkışları';
+
+  @override
+  String get noTransactions => 'İşlem bulunamadı.';
+
+  @override
+  String get awardsSubtitle =>
+      'Öğrenci başarı rozetlerini ve ödüllerini oluşturun ve yönetin.';
+
+  @override
+  String get createAwardTitle => 'Yeni Ödül Oluştur';
+
+  @override
+  String get awardDescription => 'Ödül Açıklaması';
+
+  @override
+  String get awardIcon => 'Simge / Emoji';
+
+  @override
+  String get publishAwardAction => 'YENİ ÖDÜL OLUŞTUR 🏆';
+
+  @override
+  String get availableAwards => 'Mevcut Rozetler ve Ödüller';
+
+  @override
+  String get noAwardsFound => 'Ödül veya rozet bulunamadı.';
+
+  @override
+  String get deleteAward => 'Ödülü Sil';
+
+  @override
+  String get announcementsSubtitle =>
+      'Sistem genelinde bildirimler ve güncellemeler yayınlayın.';
+
+  @override
+  String get announcementContent => 'Duyuru Mesajı / İçeriği';
+
+  @override
+  String get studentsOnly => 'Yalnızca Öğrenciler';
+
+  @override
+  String get teachersOnly => 'Yalnızca Eğitmenler';
+
+  @override
+  String get broadcastNow => 'DUYURUYU YAYINLA 📢';
+
+  @override
+  String get recentAnnouncements => 'Duyuru Geçmişi';
+
+  @override
+  String get noAnnouncements => 'Henüz yayınlanan duyuru yok.';
+
+  @override
+  String get ticketsSubtitle =>
+      'Destek taleplerini ve departman biletlerini yönetin.';
+
+  @override
+  String get searchTicketsHint => 'Konu, öğrenci veya departmana göre ara...';
+
+  @override
+  String get filterStatusAll => 'Tüm Biletler';
+
+  @override
+  String get filterDepartment => 'Departman';
+
+  @override
+  String get ticketDetails => 'Bilet Detayları';
+
+  @override
+  String get typeYourReply => 'Yanıtınızı yazın...';
+
+  @override
+  String get reopenTicket => 'Bileti Yeniden Aç';
+
+  @override
+  String get liveSupportSubtitle =>
+      'Öğrenci ve eğitmenlere gerçek zamanlı canlı destek sağlayın.';
+
+  @override
+  String get searchSupportHint => 'Destek taleplerini ara...';
+
+  @override
+  String get openChat => 'Sohbeti Aç';
+
+  @override
+  String get noSupportRequests => 'Destek talebi bulunamadı.';
+
+  @override
+  String get supportChatTitle => 'Destek Sohbeti';
+
+  @override
+  String get markResolved => 'Çözüldü Olarak İşaretle';
+
+  @override
+  String get adminSettingsSubtitle =>
+      'Yönetici profilinizi, sistem tercihlerinizi ve güvenlik ayarlarınızı yönetin.';
+
+  @override
+  String get systemAdmin => 'Sistem Yöneticisi';
+
+  @override
+  String get adminRole => 'Yönetici Rolü';
+
+  @override
+  String get logOutAccount => 'Hesaptan Çıkış Yap';
+
+  @override
+  String get confirmLogout => 'Çıkış yapmak istediğinizden emin misiniz?';
+
+  @override
+  String get avatarUrl => 'Profil Resmi URL\'si';
+
+  @override
+  String get superAdminRole => 'Yönetici (Süper Yönetici)';
+
+  @override
+  String get teacherRole => 'Eğitmen / Mentor (Öğretmen)';
+
+  @override
+  String get studentRole => 'Öğrenci (Normal)';
+
+  @override
+  String get teacherInfoAndCredentials => 'EĞİTMEN BİLGİLERİ VE SERTİFİKALAR';
+
+  @override
+  String get facultyIdentityAndRole => 'EĞİTMEN KİMLİĞİ VE ROLÜ';
+
+  @override
+  String get synchronizingEngine => 'SİSTEM SENKRONİZE EDİLİYOR...';
+
+  @override
+  String get settingsUpdatedSuccess =>
+      'Ayarlar ve yapılandırma başarıyla senkronize edildi! 🚀';
+
+  @override
+  String get failedToUpdateSettings => 'Yapılandırma güncellenemedi';
+
+  @override
+  String get noMessages => 'Henüz mesaj yok.';
+
+  @override
+  String get teachers => 'Eğitmenler';
 }

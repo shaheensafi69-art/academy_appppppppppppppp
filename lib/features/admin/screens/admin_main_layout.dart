@@ -24,6 +24,7 @@ import '../../feed/screens/upload_reel_screen.dart';
 
 import '../../../core/routing/auth_gate.dart';
 import '../../../core/utils/system_ui_helper.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class AdminMainLayout extends StatefulWidget {
   const AdminMainLayout({super.key});
@@ -70,81 +71,105 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     StudentReelsScreen(isActive: _currentIndex == 15), // 15: Educational Reels
   ];
 
-  // لیست گزینه‌های منوی کامل ادمین
   final List<Map<String, dynamic>> _menuItems = [
     {
-      "name": "Overview",
       "icon": Icons.dashboard_rounded,
       "index": 0,
       "color": primaryPink,
     },
     {
-      "name": "Students",
       "icon": Icons.school_rounded,
       "index": 1,
       "color": const Color(0xFF00897B),
     },
     {
-      "name": "Faculty",
       "icon": Icons.psychology_rounded,
       "index": 2,
       "color": const Color(0xFF3949AB),
     },
     {
-      "name": "Courses",
       "icon": Icons.menu_book_rounded,
       "index": 3,
       "color": const Color(0xFF7B1FA2),
     },
     {
-      "name": "Classes",
       "icon": Icons.class_rounded,
       "index": 4,
       "color": const Color(0xFF00ACC1),
     },
     {
-      "name": "Finance",
       "icon": Icons.payments_rounded,
       "index": 5,
       "color": const Color(0xFF2E7D32),
     },
     {
-      "name": "Honors",
       "icon": Icons.emoji_events_rounded,
       "index": 6,
       "color": const Color(0xFFFFA000),
     },
     {
-      "name": "Notices",
       "icon": Icons.campaign_rounded,
       "index": 7,
       "color": const Color(0xFFFB8C00),
     },
     {
-      "name": "Live Studio",
       "icon": Icons.live_tv_rounded,
       "index": 8,
       "color": const Color(0xFFE53935),
     },
     {
-      "name": "Academy Feed",
       "icon": Icons.dynamic_feed_rounded,
       "index": 12,
       "color": const Color(0xFFD81B60),
     },
     {
-      "name": "Support Requests",
       "icon": Icons.headset_mic_rounded,
       "index": 9,
       "color": primaryPink,
     },
     {
-      "name": "Settings",
       "icon": Icons.settings_rounded,
       "index": 10,
       "color": textGrey,
     },
   ];
+
+  String _getMenuItemName(BuildContext context, int index) {
+    switch (index) {
+      case 0:
+        return context.l10n.overview;
+      case 1:
+        return context.l10n.students;
+      case 2:
+        return context.l10n.teachers;
+      case 3:
+        return context.l10n.courses;
+      case 4:
+        return context.l10n.classes;
+      case 5:
+        return context.l10n.finance;
+      case 6:
+        return context.l10n.achievements;
+      case 7:
+        return context.l10n.announcements;
+      case 8:
+        return context.l10n.liveStudio;
+      case 9:
+        return context.l10n.supportRequests;
+      case 10:
+        return context.l10n.settings;
+      case 12:
+        return context.l10n.feed;
+      case 13:
+        return context.l10n.friends;
+      case 14:
+        return context.l10n.profile;
+      case 15:
+        return context.l10n.reels;
+      default:
+        return '';
+    }
+  }
 
   @override
   void initState() {
@@ -188,7 +213,6 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     }
   }
 
-  // بررسی اینکه ادمین در بخش سوشال (فید، نتورک، پست،  // تشخیص اینکه آیا کاربر در بخش اجتماعی است یا خیر
   bool get _isInSocialSection =>
       _currentIndex == 11 ||
       _currentIndex == 12 ||
@@ -248,8 +272,8 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
               ),
               const SizedBox(height: 16),
               Text(
-                "INITIALIZING COMMAND CENTER...",
-                style: TextStyle(
+                context.l10n.adminInitializing,
+                style: const TextStyle(
                   color: primaryPink,
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
@@ -303,91 +327,91 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                         _buildSidebarItem(
                           0,
                           Icons.dashboard_rounded,
-                          "Command Center",
+                          context.l10n.overview,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           1,
                           Icons.school_rounded,
-                          "Students Control",
+                          context.l10n.students,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           2,
                           Icons.psychology_rounded,
-                          "Faculty Control",
+                          context.l10n.teachers,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           3,
                           Icons.menu_book_rounded,
-                          "Courses",
+                          context.l10n.courses,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           4,
                           Icons.class_rounded,
-                          "Classes & Cohorts",
+                          context.l10n.classes,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           5,
                           Icons.attach_money_rounded,
-                          "Finance & Treasury",
+                          context.l10n.finance,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           6,
                           Icons.emoji_events_rounded,
-                          "Honors & Badges",
+                          context.l10n.achievements,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           7,
                           Icons.campaign_rounded,
-                          "Announcements",
+                          context.l10n.announcements,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           8,
                           Icons.podcasts_rounded,
-                          "Live Studio",
+                          context.l10n.liveStudio,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           9,
                           Icons.support_agent_rounded,
-                          "Support Requests",
+                          context.l10n.supportRequests,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           10,
                           Icons.settings_rounded,
-                          "Admin Settings",
+                          context.l10n.settings,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           12,
                           Icons.dynamic_feed_rounded,
-                          "Community Feed",
+                          context.l10n.feed,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           15,
                           Icons.video_library_rounded,
-                          "Short Reels",
+                          context.l10n.reels,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           13,
                           Icons.people_alt_rounded,
-                          "Friends & Network",
+                          context.l10n.friends,
                           isWideScreen,
                         ),
                         _buildSidebarItem(
                           14,
                           Icons.person_rounded,
-                          "Admin Profile",
+                          context.l10n.profile,
                           isWideScreen,
                         ),
                       ],
@@ -463,7 +487,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: primaryPink.withOpacity(0.4),
+            color: primaryPink.withValues(alpha: 0.4),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -484,9 +508,9 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
               ),
               if (isExpanded) ...[
                 const SizedBox(width: 8),
-                const Text(
-                  "Create Post / Reel",
-                  style: TextStyle(
+                Text(
+                  context.l10n.createPost,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
@@ -522,9 +546,9 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                "Create New Content 🚀",
-                style: TextStyle(
+              Text(
+                context.l10n.createNewContent,
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
                   color: Color(0xFF111827),
@@ -544,17 +568,17 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                     size: 24,
                   ),
                 ),
-                title: const Text(
-                  "Upload Educational Reel 🎬",
-                  style: TextStyle(
+                title: Text(
+                  context.l10n.uploadEducationalReel,
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                     color: Color(0xFF111827),
                   ),
                 ),
-                subtitle: const Text(
-                  "Share short trading or coding videos with peers",
-                  style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                subtitle: Text(
+                  context.l10n.shareReelSubtitle,
+                  style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -578,17 +602,17 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                     size: 24,
                   ),
                 ),
-                title: const Text(
-                  "Create Feed Post 📝",
-                  style: TextStyle(
+                title: Text(
+                  context.l10n.createFeedPost,
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                     color: Color(0xFF111827),
                   ),
                 ),
-                subtitle: const Text(
-                  "Share text, questions, or images on the academy feed",
-                  style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                subtitle: Text(
+                  context.l10n.sharePostSubtitle,
+                  style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -615,7 +639,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
             Expanded(
               child: _buildNavTab(
                 12,
-                "FEED",
+                context.l10n.feed,
                 Icons.dynamic_feed_rounded,
                 color: primaryPink,
               ),
@@ -623,7 +647,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
             Expanded(
               child: _buildNavTab(
                 15,
-                "REELS",
+                context.l10n.reels,
                 Icons.video_library_rounded,
                 color: primaryPink,
               ),
@@ -655,7 +679,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
             Expanded(
               child: _buildNavTab(
                 13,
-                "FRIENDS",
+                context.l10n.friends,
                 Icons.people_alt_rounded,
                 color: primaryPink,
               ),
@@ -663,7 +687,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
             Expanded(
               child: _buildNavTab(
                 14,
-                "PROFILE",
+                context.l10n.profile,
                 Icons.person_rounded,
                 color: primaryPink,
               ),
@@ -706,7 +730,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
               Expanded(
                 child: _buildNavTab(
                   0,
-                  "Overview",
+                  context.l10n.overview,
                   Icons.dashboard_rounded,
                   color: primaryPink,
                 ),
@@ -714,16 +738,16 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
               Expanded(
                 child: _buildNavTab(
                   1,
-                  "Students",
+                  context.l10n.students,
                   Icons.school_rounded,
                   color: const Color(0xFF00897B),
                 ),
               ),
-              // دکمه جدید پشتیبانی اضافه شده به Bottom Nav
+              // دکمه پشتیبانی
               Expanded(
                 child: _buildNavTab(
                   9,
-                  "Support",
+                  context.l10n.support,
                   Icons.headset_mic_rounded,
                   color: const Color(0xFFE53935),
                 ),
@@ -731,7 +755,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
               Expanded(
                 child: _buildNavTab(
                   12,
-                  "Feed",
+                  context.l10n.feed,
                   Icons.dynamic_feed_rounded,
                   color: primaryPink,
                 ),
@@ -749,18 +773,18 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                       color: _isMenuOpen ? lightPinkBg : Colors.transparent,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Column(
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.grid_view_rounded,
                           color: primaryPink,
                           size: 22,
                         ),
-                        SizedBox(height: 3),
+                        const SizedBox(height: 3),
                         Text(
-                          "MENU",
-                          style: TextStyle(
+                          context.l10n.menu,
+                          style: const TextStyle(
                             fontSize: 8,
                             fontWeight: FontWeight.w900,
                             color: primaryPink,
@@ -857,22 +881,22 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "COMMAND CENTER",
-                            style: TextStyle(
+                            context.l10n.adminCommandCenter,
+                            style: const TextStyle(
                               color: textDark,
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 1.2,
                             ),
                           ),
-                          SizedBox(height: 2),
+                          const SizedBox(height: 2),
                           Text(
-                            "Select a management module",
-                            style: TextStyle(
+                            context.l10n.selectManagementModule,
+                            style: const TextStyle(
                               color: textGrey,
                               fontSize: 10,
                               fontWeight: FontWeight.w500,
@@ -919,6 +943,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                           final item = _menuItems[index];
                           final int targetIndex = item['index'];
                           bool isActive = _currentIndex == targetIndex;
+                          final itemName = _getMenuItemName(context, targetIndex);
 
                           return GestureDetector(
                             onTap: () {
@@ -976,7 +1001,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                                           MainAxisAlignment.center,
                                       children: [
                                         Text(
-                                          item['name'],
+                                          itemName,
                                           style: TextStyle(
                                             color: isActive
                                                 ? Colors.white
@@ -989,7 +1014,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          "Module",
+                                          context.l10n.module,
                                           style: TextStyle(
                                             color: isActive
                                                 ? Colors.white70
@@ -1060,7 +1085,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                                       _userProfile?['role']
                                               ?.toString()
                                               .toUpperCase() ??
-                                          'ADMINISTRATOR',
+                                          context.l10n.administrator,
                                       style: const TextStyle(
                                         color: primaryPink,
                                         fontSize: 9,
@@ -1093,9 +1118,9 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                                 ),
                               ),
                               icon: const Icon(Icons.logout_rounded, size: 18),
-                              label: const Text(
-                                "SIGN OUT SESSION",
-                                style: TextStyle(
+                              label: Text(
+                                context.l10n.signOutSession,
+                                style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: 1,

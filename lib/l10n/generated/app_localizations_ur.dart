@@ -2421,4 +2421,465 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get systemSettings => 'سسٹم کی ترتیبات';
+
+  @override
+  String get backToClassRoster => 'کلاس کی فہرست میں واپس';
+
+  @override
+  String get enrollStudents => 'طلباء کا اندراج کریں';
+
+  @override
+  String get enrollStudentsSubtitle =>
+      'اس کوہورٹ میں اندراج کے لیے متعدد طلباء کو منتخب کریں۔';
+
+  @override
+  String get confirmEnrollment => 'اندراج کی تصدیق کریں';
+
+  @override
+  String get paidAll => 'ادا شدہ (سب)';
+
+  @override
+  String get facultyManagement => 'اساتذہ کا انتظام';
+
+  @override
+  String get facultyDirectory => 'اساتذہ کی ڈائرکٹری';
+
+  @override
+  String get facultyManagementSubtitle =>
+      'اساتذہ کے پروفائلز اور فعال کوہورٹس کا جائزہ لیں۔';
+
+  @override
+  String get activeCohorts => 'فعال گروپس';
+
+  @override
+  String get searchInstructorsHint =>
+      'نام یا ای میل کے ذریعے استاد تلاش کریں...';
+
+  @override
+  String get noInstructorsFound => 'کوئی استاد نہیں ملا۔';
+
+  @override
+  String get noBiographyProvided => 'کوئی سوانح حیات فراہم نہیں کی گئی۔';
+
+  @override
+  String get viewProfile => 'پروفائل دیکھیں';
+
+  @override
+  String get backToFaculty => 'اساتذہ کی طرف واپس';
+
+  @override
+  String get instructorNotFound => 'استاد نہیں ملا';
+
+  @override
+  String get walletBalanceAndPayouts => 'والیٹ بیلنس اور ادائیگیاں';
+
+  @override
+  String get processPayout => 'ادائیگی کا عمل';
+
+  @override
+  String get instructorProfileSyncSuccess =>
+      'انسٹرکٹر پروفائل اور ایڈمن کنٹرولز کامیابی کے ساتھ مطابقت پذیر ہو گئے! 🚀';
+
+  @override
+  String get invalidPayoutAmount => 'غلط ادائیگی کی رقم۔';
+
+  @override
+  String get payoutSuccess => 'ادائیگی کامیابی کے ساتھ مکمل ہوئی!';
+
+  @override
+  String get failedToProcessPayout => 'ادائیگی پروسیس کرنے میں ناکامی';
+
+  @override
+  String get specializedCourses => 'خصوصی کورسز';
+
+  @override
+  String get noSpecializedCourses => 'کوئی خصوصی کورس منسلک نہیں ہے۔';
+
+  @override
+  String get assignedCohorts => 'مختص کردہ کوہورٹس';
+
+  @override
+  String get noAssignedClasses => 'کوئی کلاس مختص نہیں کی گئی۔';
+
+  @override
+  String get confirmAndSettlePayout => 'ادائیگی کی تصدیق اور تصفیہ کریں 🚀';
+
+  @override
+  String get payoutAmountUsd => 'ادائیگی کی رقم (امریکی ڈالر)';
+
+  @override
+  String get biographyTeacherInfo => 'سوانح حیات (اساتذہ کی معلومات)';
+
+  @override
+  String get courseLibrary => 'کورس لائبریری';
+
+  @override
+  String get searchCourseHint => 'عنوان یا تفصیل سے کورسز تلاش کریں...';
+
+  @override
+  String get coursePrice => 'کورس کی قیمت (\$)';
+
+  @override
+  String get courseCategory => 'زمرہ';
+
+  @override
+  String get courseLevel => 'سطح';
+
+  @override
+  String get thumbnailUrl => 'تھمب نیل تصویر کا یو آر ایل';
+
+  @override
+  String get saveCourseChanges => 'کورس کی تبدیلیاں محفوظ کریں 🚀';
+
+  @override
+  String get createCourseAction => 'ماسٹر کلاس بنائیں 🚀';
+
+  @override
+  String get deleteCourse => 'کورس حذف کریں';
+
+  @override
+  String get confirmDeleteCourse =>
+      'کیا آپ واقعی اس کورس کو حذف کرنا چاہتے ہیں؟';
+
+  @override
+  String get classesAndCohorts => 'کلاسیں اور کوہورٹس';
+
+  @override
+  String get cohortDirectory => 'کوہورٹ ڈائرکٹری';
+
+  @override
+  String get searchClassesHint => 'نام یا استاد سے کلاسیں تلاش کریں...';
+
+  @override
+  String get noClassesFound => 'کوئی کلاس نہیں ملی۔';
+
+  @override
+  String get activeCohort => 'فعال کوہورٹ';
+
+  @override
+  String get inactiveCohort => 'غیر فعال';
+
+  @override
+  String get selectTeacher => 'استاد کا انتخاب کریں';
+
+  @override
+  String get selectCourse => 'کورس منتخب کریں';
+
+  @override
+  String get createClassAction => 'نیا کوہورٹ بنائیں 🚀';
+
+  @override
+  String get saveClassChanges => 'کلاس کی تبدیلیاں محفوظ کریں 🚀';
+
+  @override
+  String get liveStreamingStudio => 'لائیو اسٹریمنگ اسٹوڈیو';
+
+  @override
+  String get broadcastRoomUrl => 'میٹنگ لنک';
+
+  @override
+  String get financialLedger => 'مالیاتی کھاتہ';
+
+  @override
+  String get allTransactions => 'تمام لین دین';
+
+  @override
+  String get deposits => 'جمع شدہ رقوم';
+
+  @override
+  String get withdrawals => 'نکلوائی گئی رقم';
+
+  @override
+  String get awardsAndRecognition => 'اعزازات اور اعتراف';
+
+  @override
+  String get announcementBroadcast => 'اعلانات کی نشریات';
+
+  @override
+  String get publishAnnouncement => 'اعلان شائع کریں 📢';
+
+  @override
+  String get supportHelpDesk => 'سپورٹ ہیلپ ڈیسک';
+
+  @override
+  String get ticketStatusOpen => 'کھلا';
+
+  @override
+  String get ticketStatusClosed => 'حل شدہ / بند';
+
+  @override
+  String get liveSupportChat => 'لائیو سپورٹ چیٹ';
+
+  @override
+  String get adminSettings => 'ایڈمن ترتیبات';
+
+  @override
+  String get saveSettings => 'ترتیبات محفوظ کریں 🚀';
+
+  @override
+  String get systemConfiguration => 'سسٹم کنفیگریشن';
+
+  @override
+  String get loadingDirectory => 'ڈائرکٹری لوڈ ہو رہی ہے...';
+
+  @override
+  String get teacher => 'استاد';
+
+  @override
+  String get course => 'کورس';
+
+  @override
+  String get backToCourses => 'کورسز کی طرف واپس';
+
+  @override
+  String get noDescription => 'کوئی تفصیل فراہم نہیں کی گئی۔';
+
+  @override
+  String get optional => 'اختیاری';
+
+  @override
+  String get required => 'لازمی';
+
+  @override
+  String get backToCohorts => 'کلاسوں پر واپس';
+
+  @override
+  String get cohortManagement => 'کلاس مینجمنٹ';
+
+  @override
+  String get createClassCohortSubtitle =>
+      'طلباء کے لیے کورس، استاد، شیڈول اور آن لائن لنکس تفویض کریں۔';
+
+  @override
+  String get classTimeSlot => 'کلاس کے اوقات';
+
+  @override
+  String get classDaysHint => 'مثلاً ہفتہ، پیر، بدھ';
+
+  @override
+  String get classTimeHint => 'مثلاً 18:00 - 20:00';
+
+  @override
+  String get scheduleNotes => 'شیڈول کی معلومات (نوٹس)';
+
+  @override
+  String get meetingLinkHint => 'https://zoom.us/j/...';
+
+  @override
+  String get signalLinkHint => 'https://t.me/+...';
+
+  @override
+  String get activeLiveCohort => 'فعال (لائیو کلاس)';
+
+  @override
+  String get archivedCompleted => 'آرکائیو / مکمل';
+
+  @override
+  String get noLiveSessions => 'کوئی لائیو سیشن نہیں ملا۔';
+
+  @override
+  String get noLink => 'کوئی لنک نہیں';
+
+  @override
+  String get manageAction => 'انتظام کریں';
+
+  @override
+  String get manageClassModal => 'کلاس کا انتظام';
+
+  @override
+  String get saveAndUpdateAll => 'تمام تفصیلات محفوظ کریں 🚀';
+
+  @override
+  String get liveSessionsAndCohorts => 'لائیو سیشنز اور کلاسز';
+
+  @override
+  String get liveSessionsSubtitle =>
+      'ایکٹو رومز، نظام الاوقات کی نگرانی کریں اور تمام پراپرٹیز کا انتظام کریں۔';
+
+  @override
+  String get searchCohortsHint => 'کلاسز تلاش کریں...';
+
+  @override
+  String get establishingConnection => 'لائیو کنکشن قائم ہو رہا ہے...';
+
+  @override
+  String get auditingRecords => 'مالی ریکارڈز کا آڈٹ ہو رہا ہے...';
+
+  @override
+  String get financialLedgerSubtitle =>
+      'پلیٹ فارم کی آمدنی کی جانچ کریں اور اساتذہ کی ادائیگیوں کا انتظام کریں۔';
+
+  @override
+  String get facultyLiability => 'اساتذہ کی واجب الادا رقم';
+
+  @override
+  String get distributedPayouts => 'تقسیم شدہ ادائیگیاں';
+
+  @override
+  String get netProfit => 'خالص منافع';
+
+  @override
+  String get facultyTab => 'اساتذہ';
+
+  @override
+  String get inflowsTab => 'آمدنی';
+
+  @override
+  String get outflowsTab => 'اخراجات';
+
+  @override
+  String get findInstructorHint => 'استاد تلاش کریں...';
+
+  @override
+  String get payoutAmount => 'ادائیگی کی رقم (\$)';
+
+  @override
+  String get confirmPayout => 'ادائیگی کی تصدیق کریں 💸';
+
+  @override
+  String get studentPayments => 'طلباء کی ادائیگیاں';
+
+  @override
+  String get payoutRecords => 'ادائیگی کا ریکارڈ';
+
+  @override
+  String get noTransactions => 'کوئی لین دین نہیں ملا۔';
+
+  @override
+  String get awardsSubtitle =>
+      'طلباء کے کامیابی کے بیجز اور انعامات بنائیں اور تقسیم کریں۔';
+
+  @override
+  String get createAwardTitle => 'نیا انعام بنائیں';
+
+  @override
+  String get awardDescription => 'انعام کی تفصیل';
+
+  @override
+  String get awardIcon => 'آئیکن / ایموجی';
+
+  @override
+  String get publishAwardAction => 'نیا انعام بنائیں 🏆';
+
+  @override
+  String get availableAwards => 'دستیاب بیجز اور انعامات';
+
+  @override
+  String get noAwardsFound => 'کوئی انعام نہیں ملا۔';
+
+  @override
+  String get deleteAward => 'انعام حذف کریں';
+
+  @override
+  String get announcementsSubtitle =>
+      'سسٹم کے تمام صارفین کو اعلانات اور الرٹس بھیجیں۔';
+
+  @override
+  String get announcementContent => 'اعلان کا پیغام / مواد';
+
+  @override
+  String get studentsOnly => 'صرف طلباء';
+
+  @override
+  String get teachersOnly => 'صرف اساتذہ';
+
+  @override
+  String get broadcastNow => 'اعلان نشر کریں 📢';
+
+  @override
+  String get recentAnnouncements => 'اعلانات کی تاریخ';
+
+  @override
+  String get noAnnouncements => 'ابھی تک کوئی اعلان نشر نہیں ہوا۔';
+
+  @override
+  String get ticketsSubtitle =>
+      'سپورٹ ڈیسک کے سوالات اور ٹکٹوں کا انتظام کریں۔';
+
+  @override
+  String get searchTicketsHint =>
+      'عنوان، طالب علم یا شعبہ کے لحاظ سے تلاش کریں...';
+
+  @override
+  String get filterStatusAll => 'تمام ٹکٹ';
+
+  @override
+  String get filterDepartment => 'شعبہ';
+
+  @override
+  String get ticketDetails => 'ٹکٹ کی تفصیلات';
+
+  @override
+  String get typeYourReply => 'اپنا جواب لکھیں...';
+
+  @override
+  String get reopenTicket => 'ٹکٹ دوبارہ کھولیں';
+
+  @override
+  String get liveSupportSubtitle =>
+      'طلباء اور اساتذہ کی لائیو معاونت حقیقی وقت میں کریں۔';
+
+  @override
+  String get searchSupportHint => 'سپورٹ کی درخواستیں تلاش کریں...';
+
+  @override
+  String get openChat => 'چیٹ کھولیں';
+
+  @override
+  String get noSupportRequests => 'کوئی سپورٹ درخواست نہیں ملی۔';
+
+  @override
+  String get supportChatTitle => 'سپورٹ چیٹ';
+
+  @override
+  String get markResolved => 'حل شدہ قرار دیں';
+
+  @override
+  String get adminSettingsSubtitle =>
+      'ایڈمنسٹریٹر پروفائل، سسٹم کی ترجیحات اور سیکیورٹی سیٹنگز کا انتظام کریں۔';
+
+  @override
+  String get systemAdmin => 'سسٹم ایڈمنسٹریٹر';
+
+  @override
+  String get adminRole => 'انتظامی کردار';
+
+  @override
+  String get logOutAccount => 'اکاؤنٹ لاگ آؤٹ کریں';
+
+  @override
+  String get confirmLogout => 'کیا آپ واقعی لاگ آؤٹ کرنا چاہتے ہیں؟';
+
+  @override
+  String get avatarUrl => 'پروفائل تصویر کا لنک';
+
+  @override
+  String get superAdminRole => 'ایڈمنسٹریٹر (سپر ایڈمن)';
+
+  @override
+  String get teacherRole => 'استاد / رہنما';
+
+  @override
+  String get studentRole => 'طالب علم (عام)';
+
+  @override
+  String get teacherInfoAndCredentials => 'استاد کی معلومات اور اسناد';
+
+  @override
+  String get facultyIdentityAndRole => 'فیکلٹی شناخت اور کردار';
+
+  @override
+  String get synchronizingEngine => 'سسٹم ہم آہنگ ہو رہا ہے...';
+
+  @override
+  String get settingsUpdatedSuccess => 'ترتیبات کامیابی سے ہم آہنگ ہو گئیں! 🚀';
+
+  @override
+  String get failedToUpdateSettings => 'ترتیبات اپ ڈیٹ کرنے میں ناکامی';
+
+  @override
+  String get noMessages => 'ابھی تک کوئی پیغام نہیں ہے۔';
+
+  @override
+  String get teachers => 'اساتذہ';
 }

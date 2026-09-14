@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 import 'teacher_detail_screen.dart';
 
 class TeacherProfileModel {
@@ -39,7 +40,7 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
   List<TeacherProfileModel> users = [];
   String searchQuery = "";
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  // Luxury Light-Pink Palette
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
@@ -56,14 +57,12 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
   Future<void> _fetchTeachers() async {
     setState(() => isLoading = true);
     try {
-      // 1. دریافت اساتید از جدول profiles
       final profiles = await supabase
           .from("profiles")
           .select("id, first_name, last_name, email, role, bio, avatar_url")
           .inFilter("role", ["teacher", "super_admin"])
           .order("created_at", ascending: false);
 
-      // 2. دریافت اطلاعات تکمیلی از جدول teacher_info برای تطبیق دقیق‌تر
       final teacherInfoList = await supabase
           .from("teacher_info")
           .select("*");
@@ -75,7 +74,6 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
         String fName = teacher['first_name'] ?? '';
         String lName = teacher['last_name'] ?? '';
         
-        // جستجو در جدول teacher_info برای تکمیل بیوگرافی و آواتار در صورت نیاز
         Map<String, dynamic>? tInfo;
         try {
           tInfo = (teacherInfoList as List).firstWhere(
@@ -90,7 +88,6 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
         final bioVal = teacher['bio'] ?? (tInfo != null && tInfo.isNotEmpty ? tInfo['bio'] : null);
         final avatarVal = teacher['avatar_url'] ?? (tInfo != null && tInfo.isNotEmpty ? tInfo['avatar_url'] : null);
 
-        // یافتن کلاس‌های فعال و تعداد دانشجویان منحصربه‌فرد استاد
         final groups = await supabase
             .from("class_groups")
             .select("id, is_active, class_students(student_id)")
@@ -160,7 +157,10 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
             children: [
               const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
-              Text("LOADING FACULTY RECORDS...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(
+                context.l10n.loadingDirectory.toUpperCase(),
+                style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2),
+              ),
             ],
           ),
         ),
@@ -178,19 +178,19 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ================= HEADER =================
+            // Header
             Container(
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                  colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                 boxShadow: [
-                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                  BoxShadow(color: primaryPink.withValues(alpha: 0.08), blurRadius: 25, offset: const Offset(0, 10)),
                 ],
               ),
               child: Column(
@@ -205,30 +205,30 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
                           color: lightPinkBg,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Text(
-                          "FACULTY DIRECTORY",
-                          style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
+                        child: Text(
+                          context.l10n.facultyDirectory,
+                          style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2),
                         ),
                       ),
                       const Icon(Icons.admin_panel_settings_rounded, color: primaryPink, size: 22),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    "Faculty Management",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
+                  Text(
+                    context.l10n.facultyManagement,
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    "Review instructor profiles and active cohorts from profiles & teacher_info.",
-                    style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
+                  Text(
+                    context.l10n.facultyManagementSubtitle,
+                    style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 18),
                   Row(
                     children: [
-                      Expanded(child: _buildMiniStat("Total Faculty", currentStats['totalFaculty'].toString(), Icons.verified_user_rounded)),
+                      Expanded(child: _buildMiniStat(context.l10n.totalFaculty, currentStats['totalFaculty'].toString(), Icons.verified_user_rounded)),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildMiniStat("Active Cohorts", currentStats['totalClasses'].toString(), Icons.menu_book_rounded)),
+                      Expanded(child: _buildMiniStat(context.l10n.activeCohorts, currentStats['totalClasses'].toString(), Icons.menu_book_rounded)),
                     ],
                   )
                 ],
@@ -236,11 +236,11 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
             ),
             const SizedBox(height: 20),
 
-            // ================= SEARCH BAR =================
+            // Search Bar
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                color: cardBorder.withOpacity(0.5),
+                color: cardBorder.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: cardBorder, width: 1.5),
               ),
@@ -253,7 +253,7 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
                       onChanged: (val) => setState(() => searchQuery = val),
                       style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                       decoration: InputDecoration(
-                        hintText: "Search instructor by name or email...",
+                        hintText: context.l10n.searchInstructorsHint,
                         hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -265,7 +265,7 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
             ),
             const SizedBox(height: 20),
 
-            // ================= FACULTY LIST =================
+            // Faculty List
             currentFiltered.isEmpty
                 ? Container(
                     padding: const EdgeInsets.all(40),
@@ -279,7 +279,7 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
                       children: [
                         const Icon(Icons.search_off_rounded, color: textGrey, size: 36),
                         const SizedBox(height: 10),
-                        const Text("No instructors found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                        Text(context.l10n.noInstructorsFound, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
                       ],
                     ),
                   )
@@ -296,7 +296,7 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
                           color: surfaceWhite,
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: cardBorder, width: 1.5),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,7 +318,7 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text("${teacher.firstName} ${teacher.lastName}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                                      Text("${teacher.firstName} ${teacher.lastName}".trim(), style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
                                       const SizedBox(height: 2),
                                       Text(teacher.email, style: const TextStyle(color: textGrey, fontSize: 10)),
                                     ],
@@ -327,11 +327,13 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: teacher.role == "super_admin" ? Colors.purple.withOpacity(0.12) : lightPinkBg,
+                                    color: teacher.role == "super_admin" ? Colors.purple.withValues(alpha: 0.12) : lightPinkBg,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    teacher.role.replaceFirst('_', ' ').toUpperCase(),
+                                    teacher.role == "super_admin"
+                                        ? context.l10n.roleAdmin
+                                        : context.l10n.roleTeacher,
                                     style: TextStyle(
                                       color: teacher.role == "super_admin" ? Colors.purple.shade700 : primaryPink,
                                       fontSize: 9,
@@ -343,7 +345,7 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              teacher.bio ?? "No professional biography provided.",
+                              teacher.bio ?? context.l10n.noBiographyProvided,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500),
@@ -356,9 +358,9 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    Text("Classes: ${teacher.activeClasses}", style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
+                                    Text("${context.l10n.classes}: ${teacher.activeClasses}", style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
                                     const SizedBox(width: 14),
-                                    Text("Students: ${teacher.totalStudents}", style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
+                                    Text("${context.l10n.students}: ${teacher.totalStudents}", style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
                                   ],
                                 ),
                                 ElevatedButton.icon(
@@ -370,7 +372,7 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
                                   icon: const Icon(Icons.visibility_rounded, size: 14),
-                                  label: const Text("View Profile", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+                                  label: Text(context.l10n.viewProfile, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
                                   onPressed: () {
                                     Navigator.push(
                                       context,
@@ -401,7 +403,7 @@ class _ManageTeachersScreenState extends State<ManageTeachersScreen> {
         color: surfaceWhite,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: cardBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 3))],
       ),
       child: Row(
         children: [

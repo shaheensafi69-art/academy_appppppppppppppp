@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class AddStudentToClassScreen extends StatefulWidget {
   final String classId;
@@ -20,7 +21,7 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
   bool isPaid = false;
   bool isEnrolling = false;
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  // Luxury Light-Pink Palette
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
@@ -136,7 +137,10 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
             children: [
               const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
               const SizedBox(height: 14),
-              Text("LOADING GLOBAL DIRECTORY...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(
+                context.l10n.loadingDirectory.toUpperCase(),
+                style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2),
+              ),
             ],
           ),
         ),
@@ -153,7 +157,7 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // دکمه بازگشت
+              // Back Button
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
@@ -163,44 +167,53 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: cardBorder, width: 1.5),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.arrow_back_rounded, color: textDark, size: 14),
-                      SizedBox(width: 6),
-                      Text("Back to Class Roster", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold)),
+                      const Icon(Icons.arrow_back_rounded, color: textDark, size: 14),
+                      const SizedBox(width: 6),
+                      Text(
+                        context.l10n.backToClassRoster,
+                        style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 14),
 
-              // هدر و جستجو (ثابت بالای صفحه)
+              // Header & Search
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                    colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                  border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                   boxShadow: [
-                    BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 8)),
+                    BoxShadow(color: primaryPink.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 8)),
                   ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Enroll Students", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: textDark)),
+                    Text(
+                      context.l10n.enrollStudents,
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: textDark),
+                    ),
                     const SizedBox(height: 4),
-                    const Text("Select multiple students to enroll in this cohort.", style: TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500)),
+                    Text(
+                      context.l10n.enrollStudentsSubtitle,
+                      style: const TextStyle(fontSize: 11, color: textGrey, fontWeight: FontWeight.w500),
+                    ),
                     const SizedBox(height: 14),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       decoration: BoxDecoration(
-                        color: cardBorder.withOpacity(0.5),
+                        color: cardBorder.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: cardBorder, width: 1.5),
                       ),
@@ -213,7 +226,7 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
                               onChanged: (val) => setState(() => searchQuery = val),
                               style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                               decoration: InputDecoration(
-                                hintText: "Search by name, email...",
+                                hintText: context.l10n.searchByNameOrEmail,
                                 hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -228,7 +241,7 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
               ),
               const SizedBox(height: 16),
 
-              // لیست دانشجویان با قابلیت اسکرول کامل بدون تداخل
+              // Students List
               Expanded(
                 child: currentFiltered.isEmpty
                     ? Center(
@@ -239,7 +252,10 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(color: cardBorder, width: 1.5),
                           ),
-                          child: const Text("No students found.", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)),
+                          child: Text(
+                            context.l10n.noStudentsFound,
+                            style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
                         ),
                       )
                     : ListView.separated(
@@ -264,10 +280,10 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
                             child: Container(
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: isSelected ? lightPinkBg.withOpacity(0.5) : surfaceWhite,
+                                color: isSelected ? lightPinkBg.withValues(alpha: 0.5) : surfaceWhite,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(color: isSelected ? primaryPink : cardBorder, width: isSelected ? 2 : 1.5),
-                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                               ),
                               child: Row(
                                 children: [
@@ -275,16 +291,16 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
                                     radius: 18,
                                     backgroundColor: lightPinkBg,
                                     backgroundImage: student['avatar_url'] != null ? NetworkImage(student['avatar_url']) : null,
-                                    child: student['avatar_url'] == null ? Text(student['first_name'][0], style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.bold)) : null,
+                                    child: student['avatar_url'] == null ? Text(student['first_name'] != null && student['first_name'].isNotEmpty ? student['first_name'][0] : 'S', style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.bold)) : null,
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text("${student['first_name']} ${student['last_name']}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
+                                        Text("${student['first_name'] ?? ''} ${student['last_name'] ?? ''}".trim(), style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
                                         const SizedBox(height: 2),
-                                        Text(student['email'], style: const TextStyle(color: textGrey, fontSize: 10)),
+                                        Text(student['email'] ?? '', style: const TextStyle(color: textGrey, fontSize: 10)),
                                       ],
                                     ),
                                   ),
@@ -311,7 +327,7 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
                       ),
               ),
 
-              // نوار عملیات پایین صفحه (فقط زمانی که حداقل یک دانشجو انتخاب شده باشد به صورت کاملاً فیکس ظاهر می‌شود)
+              // Bottom Action Bar
               if (selectedStudentIds.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 Container(
@@ -319,8 +335,8 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
                   decoration: BoxDecoration(
                     color: surfaceWhite,
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
-                    boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 6))],
+                    border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
+                    boxShadow: [BoxShadow(color: primaryPink.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 6))],
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -329,7 +345,7 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "${selectedStudentIds.length} Students Selected",
+                            "${selectedStudentIds.length} ${context.l10n.enrolledStudents}",
                             style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12),
                           ),
                           Row(
@@ -341,7 +357,7 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                                 onChanged: (val) => setState(() => isPaid = val ?? false),
                               ),
-                              const Text("Paid (All)", style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.w900)),
+                              Text(context.l10n.paidAll, style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.w900)),
                             ],
                           )
                         ],
@@ -360,7 +376,7 @@ class _AddStudentToClassScreenState extends State<AddStudentToClassScreen> {
                           onPressed: isEnrolling ? null : handleEnrollStudents,
                           child: isEnrolling
                               ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                              : Text("CONFIRM ENROLLMENT (${selectedStudentIds.length}) 🚀", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+                              : Text("${context.l10n.confirmEnrollment.toUpperCase()} (${selectedStudentIds.length}) 🚀", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
                         ),
                       ),
                     ],

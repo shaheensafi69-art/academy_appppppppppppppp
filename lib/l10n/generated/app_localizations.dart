@@ -4791,6 +4791,900 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'System Settings'**
   String get systemSettings;
+
+  /// No description provided for @backToClassRoster.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Class Roster'**
+  String get backToClassRoster;
+
+  /// No description provided for @enrollStudents.
+  ///
+  /// In en, this message translates to:
+  /// **'Enroll Students'**
+  String get enrollStudents;
+
+  /// No description provided for @enrollStudentsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select multiple students to enroll in this cohort.'**
+  String get enrollStudentsSubtitle;
+
+  /// No description provided for @confirmEnrollment.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Enrollment'**
+  String get confirmEnrollment;
+
+  /// No description provided for @paidAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid (All)'**
+  String get paidAll;
+
+  /// No description provided for @facultyManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Faculty Management'**
+  String get facultyManagement;
+
+  /// No description provided for @facultyDirectory.
+  ///
+  /// In en, this message translates to:
+  /// **'FACULTY DIRECTORY'**
+  String get facultyDirectory;
+
+  /// No description provided for @facultyManagementSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review instructor profiles and active cohorts from profiles & teacher_info.'**
+  String get facultyManagementSubtitle;
+
+  /// No description provided for @activeCohorts.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Cohorts'**
+  String get activeCohorts;
+
+  /// No description provided for @searchInstructorsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search instructor by name or email...'**
+  String get searchInstructorsHint;
+
+  /// No description provided for @noInstructorsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No instructors found.'**
+  String get noInstructorsFound;
+
+  /// No description provided for @noBiographyProvided.
+  ///
+  /// In en, this message translates to:
+  /// **'No professional biography provided.'**
+  String get noBiographyProvided;
+
+  /// No description provided for @viewProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'View Profile'**
+  String get viewProfile;
+
+  /// No description provided for @backToFaculty.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Faculty'**
+  String get backToFaculty;
+
+  /// No description provided for @instructorNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructor Not Found'**
+  String get instructorNotFound;
+
+  /// No description provided for @walletBalanceAndPayouts.
+  ///
+  /// In en, this message translates to:
+  /// **'WALLET BALANCE & PAYOUTS'**
+  String get walletBalanceAndPayouts;
+
+  /// No description provided for @processPayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Process Payout'**
+  String get processPayout;
+
+  /// No description provided for @instructorProfileSyncSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructor profile & admin controls successfully synchronized! 🚀'**
+  String get instructorProfileSyncSuccess;
+
+  /// No description provided for @invalidPayoutAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid payout amount.'**
+  String get invalidPayoutAmount;
+
+  /// No description provided for @payoutSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Payout successfully processed!'**
+  String get payoutSuccess;
+
+  /// No description provided for @failedToProcessPayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to process payout'**
+  String get failedToProcessPayout;
+
+  /// No description provided for @specializedCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'SPECIALIZED COURSES'**
+  String get specializedCourses;
+
+  /// No description provided for @noSpecializedCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'No specialized courses linked.'**
+  String get noSpecializedCourses;
+
+  /// No description provided for @assignedCohorts.
+  ///
+  /// In en, this message translates to:
+  /// **'ASSIGNED COHORTS'**
+  String get assignedCohorts;
+
+  /// No description provided for @noAssignedClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'No assigned classes.'**
+  String get noAssignedClasses;
+
+  /// No description provided for @confirmAndSettlePayout.
+  ///
+  /// In en, this message translates to:
+  /// **'CONFIRM & SETTLE PAYOUT 🚀'**
+  String get confirmAndSettlePayout;
+
+  /// No description provided for @payoutAmountUsd.
+  ///
+  /// In en, this message translates to:
+  /// **'PAYOUT AMOUNT (USD)'**
+  String get payoutAmountUsd;
+
+  /// No description provided for @biographyTeacherInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'BIOGRAPHY (TEACHER INFO)'**
+  String get biographyTeacherInfo;
+
+  /// No description provided for @courseLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'COURSE LIBRARY'**
+  String get courseLibrary;
+
+  /// No description provided for @searchCourseHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search courses by title or description...'**
+  String get searchCourseHint;
+
+  /// No description provided for @coursePrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Price (\$)'**
+  String get coursePrice;
+
+  /// No description provided for @courseCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get courseCategory;
+
+  /// No description provided for @courseLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Level'**
+  String get courseLevel;
+
+  /// No description provided for @thumbnailUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Thumbnail Image URL'**
+  String get thumbnailUrl;
+
+  /// No description provided for @saveCourseChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'SAVE COURSE CHANGES 🚀'**
+  String get saveCourseChanges;
+
+  /// No description provided for @createCourseAction.
+  ///
+  /// In en, this message translates to:
+  /// **'CREATE MASTERCLASS 🚀'**
+  String get createCourseAction;
+
+  /// No description provided for @deleteCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Course'**
+  String get deleteCourse;
+
+  /// No description provided for @confirmDeleteCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this course?'**
+  String get confirmDeleteCourse;
+
+  /// No description provided for @classesAndCohorts.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes & Cohorts'**
+  String get classesAndCohorts;
+
+  /// No description provided for @cohortDirectory.
+  ///
+  /// In en, this message translates to:
+  /// **'COHORT DIRECTORY'**
+  String get cohortDirectory;
+
+  /// No description provided for @searchClassesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search classes by name or instructor...'**
+  String get searchClassesHint;
+
+  /// No description provided for @noClassesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No classes found.'**
+  String get noClassesFound;
+
+  /// No description provided for @activeCohort.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Cohort'**
+  String get activeCohort;
+
+  /// No description provided for @inactiveCohort.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived / Inactive'**
+  String get inactiveCohort;
+
+  /// No description provided for @selectTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Instructor'**
+  String get selectTeacher;
+
+  /// No description provided for @selectCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Course'**
+  String get selectCourse;
+
+  /// No description provided for @createClassAction.
+  ///
+  /// In en, this message translates to:
+  /// **'CREATE NEW COHORT 🚀'**
+  String get createClassAction;
+
+  /// No description provided for @saveClassChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'SAVE CLASS CHANGES 🚀'**
+  String get saveClassChanges;
+
+  /// No description provided for @liveStreamingStudio.
+  ///
+  /// In en, this message translates to:
+  /// **'LIVE STREAMING STUDIO'**
+  String get liveStreamingStudio;
+
+  /// No description provided for @broadcastRoomUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Broadcast Room URL / Meeting Link'**
+  String get broadcastRoomUrl;
+
+  /// No description provided for @financialLedger.
+  ///
+  /// In en, this message translates to:
+  /// **'FINANCIAL LEDGER'**
+  String get financialLedger;
+
+  /// No description provided for @allTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'All Transactions'**
+  String get allTransactions;
+
+  /// No description provided for @deposits.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposits'**
+  String get deposits;
+
+  /// No description provided for @withdrawals.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawals'**
+  String get withdrawals;
+
+  /// No description provided for @awardsAndRecognition.
+  ///
+  /// In en, this message translates to:
+  /// **'AWARDS & RECOGNITION'**
+  String get awardsAndRecognition;
+
+  /// No description provided for @announcementBroadcast.
+  ///
+  /// In en, this message translates to:
+  /// **'ANNOUNCEMENT BROADCAST'**
+  String get announcementBroadcast;
+
+  /// No description provided for @publishAnnouncement.
+  ///
+  /// In en, this message translates to:
+  /// **'PUBLISH ANNOUNCEMENT 📢'**
+  String get publishAnnouncement;
+
+  /// No description provided for @supportHelpDesk.
+  ///
+  /// In en, this message translates to:
+  /// **'SUPPORT HELP DESK'**
+  String get supportHelpDesk;
+
+  /// No description provided for @ticketStatusOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get ticketStatusOpen;
+
+  /// No description provided for @ticketStatusClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved / Closed'**
+  String get ticketStatusClosed;
+
+  /// No description provided for @liveSupportChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Support Chat'**
+  String get liveSupportChat;
+
+  /// No description provided for @adminSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'ADMIN SETTINGS'**
+  String get adminSettings;
+
+  /// No description provided for @saveSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'SAVE SETTINGS 🚀'**
+  String get saveSettings;
+
+  /// No description provided for @systemConfiguration.
+  ///
+  /// In en, this message translates to:
+  /// **'System Configuration'**
+  String get systemConfiguration;
+
+  /// No description provided for @loadingDirectory.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading Directory...'**
+  String get loadingDirectory;
+
+  /// No description provided for @teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher'**
+  String get teacher;
+
+  /// No description provided for @course.
+  ///
+  /// In en, this message translates to:
+  /// **'Course'**
+  String get course;
+
+  /// No description provided for @backToCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Courses'**
+  String get backToCourses;
+
+  /// No description provided for @noDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'No description provided.'**
+  String get noDescription;
+
+  /// No description provided for @optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get optional;
+
+  /// No description provided for @required.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get required;
+
+  /// No description provided for @backToCohorts.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Cohorts'**
+  String get backToCohorts;
+
+  /// No description provided for @cohortManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'COHORT MANAGEMENT'**
+  String get cohortManagement;
+
+  /// No description provided for @createClassCohortSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign course, instructor, schedule and online links for students.'**
+  String get createClassCohortSubtitle;
+
+  /// No description provided for @classTimeSlot.
+  ///
+  /// In en, this message translates to:
+  /// **'CLASS TIME SLOT'**
+  String get classTimeSlot;
+
+  /// No description provided for @classDaysHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Sat, Mon, Wed'**
+  String get classDaysHint;
+
+  /// No description provided for @classTimeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 18:00 - 20:00'**
+  String get classTimeHint;
+
+  /// No description provided for @scheduleNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'SCHEDULE INFO (NOTES)'**
+  String get scheduleNotes;
+
+  /// No description provided for @meetingLinkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://zoom.us/j/...'**
+  String get meetingLinkHint;
+
+  /// No description provided for @signalLinkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://t.me/+...'**
+  String get signalLinkHint;
+
+  /// No description provided for @activeLiveCohort.
+  ///
+  /// In en, this message translates to:
+  /// **'Active (Live Cohort)'**
+  String get activeLiveCohort;
+
+  /// No description provided for @archivedCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived / Completed'**
+  String get archivedCompleted;
+
+  /// No description provided for @noLiveSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'No live sessions found.'**
+  String get noLiveSessions;
+
+  /// No description provided for @noLink.
+  ///
+  /// In en, this message translates to:
+  /// **'No Link'**
+  String get noLink;
+
+  /// No description provided for @manageAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get manageAction;
+
+  /// No description provided for @manageClassModal.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Class'**
+  String get manageClassModal;
+
+  /// No description provided for @saveAndUpdateAll.
+  ///
+  /// In en, this message translates to:
+  /// **'SAVE & UPDATE ALL PROPERTIES 🚀'**
+  String get saveAndUpdateAll;
+
+  /// No description provided for @liveSessionsAndCohorts.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Sessions & Cohorts'**
+  String get liveSessionsAndCohorts;
+
+  /// No description provided for @liveSessionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Monitor active rooms, schedules, and manage all class properties securely.'**
+  String get liveSessionsSubtitle;
+
+  /// No description provided for @searchCohortsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search cohorts...'**
+  String get searchCohortsHint;
+
+  /// No description provided for @establishingConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'ESTABLISHING LIVE CONNECTION...'**
+  String get establishingConnection;
+
+  /// No description provided for @auditingRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'AUDITING FINANCIAL RECORDS...'**
+  String get auditingRecords;
+
+  /// No description provided for @financialLedgerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Audit global platform revenue and manage faculty payouts securely.'**
+  String get financialLedgerSubtitle;
+
+  /// No description provided for @facultyLiability.
+  ///
+  /// In en, this message translates to:
+  /// **'Faculty Liability'**
+  String get facultyLiability;
+
+  /// No description provided for @distributedPayouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Distributed Payouts'**
+  String get distributedPayouts;
+
+  /// No description provided for @netProfit.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Profit'**
+  String get netProfit;
+
+  /// No description provided for @facultyTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Faculty'**
+  String get facultyTab;
+
+  /// No description provided for @inflowsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Inflows'**
+  String get inflowsTab;
+
+  /// No description provided for @outflowsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Outflows'**
+  String get outflowsTab;
+
+  /// No description provided for @findInstructorHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Find instructor...'**
+  String get findInstructorHint;
+
+  /// No description provided for @payoutAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Payout Amount (\$)'**
+  String get payoutAmount;
+
+  /// No description provided for @confirmPayout.
+  ///
+  /// In en, this message translates to:
+  /// **'CONFIRM PAYOUT 💸'**
+  String get confirmPayout;
+
+  /// No description provided for @studentPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Student Inflows'**
+  String get studentPayments;
+
+  /// No description provided for @payoutRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'Payout Outflows'**
+  String get payoutRecords;
+
+  /// No description provided for @noTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions found.'**
+  String get noTransactions;
+
+  /// No description provided for @awardsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create, manage and distribute student achievement badges & rewards.'**
+  String get awardsSubtitle;
+
+  /// No description provided for @createAwardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create New Award'**
+  String get createAwardTitle;
+
+  /// No description provided for @awardDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Award Description'**
+  String get awardDescription;
+
+  /// No description provided for @awardIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon / Emoji'**
+  String get awardIcon;
+
+  /// No description provided for @publishAwardAction.
+  ///
+  /// In en, this message translates to:
+  /// **'CREATE NEW AWARD 🏆'**
+  String get publishAwardAction;
+
+  /// No description provided for @availableAwards.
+  ///
+  /// In en, this message translates to:
+  /// **'Available Badges & Awards'**
+  String get availableAwards;
+
+  /// No description provided for @noAwardsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No awards or badges found.'**
+  String get noAwardsFound;
+
+  /// No description provided for @deleteAward.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Award'**
+  String get deleteAward;
+
+  /// No description provided for @announcementsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Broadcast system-wide notices, updates, or maintenance alerts to all users.'**
+  String get announcementsSubtitle;
+
+  /// No description provided for @announcementContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Announcement Message / Content'**
+  String get announcementContent;
+
+  /// No description provided for @studentsOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Students Only'**
+  String get studentsOnly;
+
+  /// No description provided for @teachersOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Faculty Only'**
+  String get teachersOnly;
+
+  /// No description provided for @broadcastNow.
+  ///
+  /// In en, this message translates to:
+  /// **'BROADCAST ANNOUNCEMENT 📢'**
+  String get broadcastNow;
+
+  /// No description provided for @recentAnnouncements.
+  ///
+  /// In en, this message translates to:
+  /// **'Broadcast History'**
+  String get recentAnnouncements;
+
+  /// No description provided for @noAnnouncements.
+  ///
+  /// In en, this message translates to:
+  /// **'No announcements broadcast yet.'**
+  String get noAnnouncements;
+
+  /// No description provided for @ticketsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage support desk inquiries, unresolved issues, and departmental tickets.'**
+  String get ticketsSubtitle;
+
+  /// No description provided for @searchTicketsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by subject, student or department...'**
+  String get searchTicketsHint;
+
+  /// No description provided for @filterStatusAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All Tickets'**
+  String get filterStatusAll;
+
+  /// No description provided for @filterDepartment.
+  ///
+  /// In en, this message translates to:
+  /// **'Department'**
+  String get filterDepartment;
+
+  /// No description provided for @ticketDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Ticket Details'**
+  String get ticketDetails;
+
+  /// No description provided for @typeYourReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your reply...'**
+  String get typeYourReply;
+
+  /// No description provided for @reopenTicket.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen Ticket'**
+  String get reopenTicket;
+
+  /// No description provided for @liveSupportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Handle live student & faculty assistance in real time.'**
+  String get liveSupportSubtitle;
+
+  /// No description provided for @searchSupportHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search support requests...'**
+  String get searchSupportHint;
+
+  /// No description provided for @openChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Chat'**
+  String get openChat;
+
+  /// No description provided for @noSupportRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'No support requests found.'**
+  String get noSupportRequests;
+
+  /// No description provided for @supportChatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Support Chat'**
+  String get supportChatTitle;
+
+  /// No description provided for @markResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark Resolved'**
+  String get markResolved;
+
+  /// No description provided for @adminSettingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your administrator profile, system preferences, and security settings.'**
+  String get adminSettingsSubtitle;
+
+  /// No description provided for @systemAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'System Administrator'**
+  String get systemAdmin;
+
+  /// No description provided for @adminRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Administrative Role'**
+  String get adminRole;
+
+  /// No description provided for @logOutAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out Account'**
+  String get logOutAccount;
+
+  /// No description provided for @confirmLogout.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to log out?'**
+  String get confirmLogout;
+
+  /// No description provided for @avatarUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Avatar URL'**
+  String get avatarUrl;
+
+  /// No description provided for @superAdminRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Administrator (Super Admin)'**
+  String get superAdminRole;
+
+  /// No description provided for @teacherRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructor / Mentor (Teacher)'**
+  String get teacherRole;
+
+  /// No description provided for @studentRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Student (Normal)'**
+  String get studentRole;
+
+  /// No description provided for @teacherInfoAndCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'TEACHER INFO & CREDENTIALS'**
+  String get teacherInfoAndCredentials;
+
+  /// No description provided for @facultyIdentityAndRole.
+  ///
+  /// In en, this message translates to:
+  /// **'FACULTY IDENTITY & ROLE'**
+  String get facultyIdentityAndRole;
+
+  /// No description provided for @synchronizingEngine.
+  ///
+  /// In en, this message translates to:
+  /// **'SYNCHRONIZING ENGINE...'**
+  String get synchronizingEngine;
+
+  /// No description provided for @settingsUpdatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings & configurations synced successfully! 🚀'**
+  String get settingsUpdatedSuccess;
+
+  /// No description provided for @failedToUpdateSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update configuration'**
+  String get failedToUpdateSettings;
+
+  /// No description provided for @noMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet.'**
+  String get noMessages;
+
+  /// No description provided for @teachers.
+  ///
+  /// In en, this message translates to:
+  /// **'Teachers'**
+  String get teachers;
 }
 
 class _AppLocalizationsDelegate

@@ -1,6 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class TicketDetailScreen extends StatefulWidget {
   final String ticketId;
@@ -21,7 +21,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   bool isSending = false;
   RealtimeChannel? _ticketChannel;
 
-  // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
+  // Luxury Light-Pink Theme Palette
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
   static const Color surfaceWhite = Colors.white;
@@ -59,38 +59,38 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   Future<void> _loadTicketData() async {
     setState(() => isLoading = true);
     try {
-      // ۱. اطلاعات اصلی تیکت به همراه پروفایل دانش‌آموز
       final ticketData = await supabase
           .from("tickets")
-          .select("id, student_id, subject, department, status, created_at, profiles!student_id(first_name, last_name, avatar_url, role, email)")
+          .select(
+            "id, student_id, subject, department, status, created_at, profiles!student_id(first_name, last_name, avatar_url, role, email)",
+          )
           .eq("id", widget.ticketId)
           .single();
 
       final studentObj = ticketData['profiles'];
-      Map<String, dynamic>? formattedStudent = studentObj is List ? (studentObj.isNotEmpty ? studentObj[0] : null) : studentObj;
+      Map<String, dynamic>? formattedStudent = studentObj is List
+          ? (studentObj.isNotEmpty ? studentObj[0] : null)
+          : studentObj;
 
-      ticket = {
-        ...ticketData,
-        'profiles': formattedStudent,
-      };
+      ticket = {...ticketData, 'profiles': formattedStudent};
 
-      // ۲. دریافت پیام‌های چت
       final msgData = await supabase
           .from("ticket_messages")
-          .select("id, sender_id, message_text, created_at, profiles!sender_id(first_name, last_name, avatar_url, role)")
+          .select(
+            "id, sender_id, message_text, created_at, profiles!sender_id(first_name, last_name, avatar_url, role)",
+          )
           .eq("ticket_id", widget.ticketId)
           .order("created_at", ascending: true);
 
       List<Map<String, dynamic>> formattedMsgs = [];
       for (var m in (msgData as List)) {
         final senderObj = m['profiles'];
-        Map<String, dynamic>? formattedSender = senderObj is List ? (senderObj.isNotEmpty ? senderObj[0] : null) : senderObj;
-        formattedMsgs.add({
-          ...m,
-          'profiles': formattedSender,
-        });
+        Map<String, dynamic>? formattedSender = senderObj is List
+            ? (senderObj.isNotEmpty ? senderObj[0] : null)
+            : senderObj;
+        formattedMsgs.add({...m, 'profiles': formattedSender});
       }
-    
+
       if (mounted) {
         setState(() {
           messages = formattedMsgs;
@@ -128,10 +128,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
             if (mounted) {
               setState(() {
-                messages.add({
-                  ...newRow,
-                  'profiles': senderInfo,
-                });
+                messages.add({...newRow, 'profiles': senderInfo});
               });
               _scrollToBottom();
             }
@@ -156,9 +153,11 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
       messageCtrl.clear();
 
-      // آپدیت وضعیت تیکت به in_progress در صورت باز بودن اولیه
       if (ticket!['status'] == "open" || ticket!['status'] == "OPEN") {
-        await supabase.from("tickets").update({'status': 'in_progress'}).eq("id", widget.ticketId);
+        await supabase
+            .from("tickets")
+            .update({'status': 'in_progress'})
+            .eq("id", widget.ticketId);
         setState(() {
           ticket!['status'] = 'in_progress';
         });
@@ -172,7 +171,10 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
   Future<void> handleUpdateStatus(String newStatus) async {
     try {
-      await supabase.from("tickets").update({'status': newStatus}).eq("id", widget.ticketId);
+      await supabase
+          .from("tickets")
+          .update({'status': newStatus})
+          .eq("id", widget.ticketId);
       setState(() {
         ticket!['status'] = newStatus;
       });
@@ -190,9 +192,20 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: primaryPink, strokeWidth: 2.5),
+              const CircularProgressIndicator(
+                color: primaryPink,
+                strokeWidth: 2.5,
+              ),
               const SizedBox(height: 14),
-              Text("LOADING TICKET CONVERSATION...", style: TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              Text(
+                context.l10n.loadingDirectory,
+                style: const TextStyle(
+                  color: textGrey,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                ),
+              ),
             ],
           ),
         ),
@@ -202,15 +215,24 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
     if (ticket == null) {
       return Scaffold(
         backgroundColor: surfaceWhite,
-        body: const Center(child: Text("Ticket not found", style: TextStyle(color: textDark, fontWeight: FontWeight.bold))),
+        body: Center(
+          child: Text(
+            context.l10n.noTicketsFound,
+            style: const TextStyle(
+              color: textDark,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
       );
     }
 
-    bool isClosed = ticket!['status'] == "closed" || ticket!['status'] == "resolved";
+    bool isClosed =
+        ticket!['status'] == "closed" || ticket!['status'] == "resolved";
 
     return Scaffold(
       backgroundColor: surfaceWhite,
-      resizeToAvoidBottomInset: true, // جلوگیری از به هم ریختگی صفحه با کیبورد گوشی
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: surfaceWhite,
         elevation: 0,
@@ -221,18 +243,32 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             GestureDetector(
               onTap: () => Navigator.pop(context),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: cardBorder,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: cardBorder, width: 1.5),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.arrow_back_rounded, color: textDark, size: 14),
-                    SizedBox(width: 4),
-                    Text("Back", style: TextStyle(color: textDark, fontSize: 10, fontWeight: FontWeight.bold)),
+                    const Icon(
+                      Icons.arrow_back_rounded,
+                      color: textDark,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      context.l10n.back,
+                      style: const TextStyle(
+                        color: textDark,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -245,14 +281,32 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             child: Center(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isClosed ? Colors.green.withOpacity(0.12) : lightPinkBg,
-                  foregroundColor: isClosed ? Colors.green.shade700 : primaryPink,
+                  backgroundColor: isClosed
+                      ? Colors.green.withValues(alpha: 0.12)
+                      : lightPinkBg,
+                  foregroundColor: isClosed
+                      ? Colors.green.shade700
+                      : primaryPink,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                child: Text(isClosed ? "Reopen Ticket" : "Mark Resolved", style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900)),
-                onPressed: () => handleUpdateStatus(isClosed ? "open" : "closed"),
+                child: Text(
+                  isClosed
+                      ? context.l10n.reopenTicket
+                      : context.l10n.markResolved,
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                onPressed: () =>
+                    handleUpdateStatus(isClosed ? "open" : "closed"),
               ),
             ),
           ),
@@ -270,7 +324,13 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                 color: surfaceWhite,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: cardBorder, width: 1.5),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -279,21 +339,45 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(ticket!['subject'], style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13)),
+                        Text(
+                          ticket!['subject'] ?? '',
+                          style: const TextStyle(
+                            color: textDark,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text("Student: ${ticket!['profiles']?['first_name'] ?? ''} ${ticket!['profiles']?['last_name'] ?? ''}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500)),
+                        Text(
+                          "${context.l10n.studentsOnly}: ${ticket!['profiles']?['first_name'] ?? ''} ${ticket!['profiles']?['last_name'] ?? ''}"
+                              .trim(),
+                          style: const TextStyle(
+                            color: textGrey,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: isClosed ? Colors.green.withOpacity(0.12) : lightPinkBg,
+                      color: isClosed
+                          ? Colors.green.withValues(alpha: 0.12)
+                          : lightPinkBg,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      ticket!['status'].toUpperCase(),
-                      style: TextStyle(color: isClosed ? Colors.green.shade700 : primaryPink, fontSize: 9, fontWeight: FontWeight.w900),
+                      (ticket!['status'] ?? '').toString().toUpperCase(),
+                      style: TextStyle(
+                        color: isClosed ? Colors.green.shade700 : primaryPink,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ),
                 ],
@@ -306,41 +390,82 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: cardBorder.withOpacity(0.4),
+                  color: cardBorder.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: cardBorder, width: 1.5),
                 ),
                 child: messages.isEmpty
-                    ? const Center(child: Text("No messages yet. Start the conversation!", style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold)))
+                    ? Center(
+                        child: Text(
+                          context.l10n.noMessages,
+                          style: const TextStyle(
+                            color: textGrey,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      )
                     : ListView.builder(
                         controller: _scrollController,
                         physics: const BouncingScrollPhysics(),
                         itemCount: messages.length,
                         itemBuilder: (context, index) {
                           final msg = messages[index];
-                          bool isAdmin = msg['profiles']?['role'] == "super_admin" || msg['sender_id'] != ticket!['student_id'];
+                          bool isAdmin =
+                              msg['profiles']?['role'] == "super_admin" ||
+                              msg['sender_id'] != ticket!['student_id'];
 
                           return Align(
-                            alignment: isAdmin ? Alignment.centerRight : Alignment.centerLeft,
+                            alignment: isAdmin
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
                             child: Container(
                               margin: const EdgeInsets.symmetric(vertical: 6),
                               padding: const EdgeInsets.all(14),
-                              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+                              constraints: BoxConstraints(
+                                maxWidth:
+                                    MediaQuery.of(context).size.width * 0.75,
+                              ),
                               decoration: BoxDecoration(
                                 color: isAdmin ? lightPinkBg : surfaceWhite,
                                 borderRadius: BorderRadius.circular(18),
-                                border: Border.all(color: isAdmin ? primaryPink.withOpacity(0.2) : cardBorder, width: 1.5),
-                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
+                                border: Border.all(
+                                  color: isAdmin
+                                      ? primaryPink.withValues(alpha: 0.2)
+                                      : cardBorder,
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.02),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    isAdmin ? "Support Agent" : (msg['profiles']?['first_name'] ?? 'User'),
-                                    style: TextStyle(color: isAdmin ? primaryPink : textGrey, fontSize: 9, fontWeight: FontWeight.w900),
+                                    isAdmin
+                                        ? context.l10n.supportHelpDesk
+                                        : (msg['profiles']?['first_name'] ??
+                                              'User'),
+                                    style: TextStyle(
+                                      color: isAdmin ? primaryPink : textGrey,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w900,
+                                    ),
                                   ),
                                   const SizedBox(height: 4),
-                                  Text(msg['message_text'], style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.w500)),
+                                  Text(
+                                    msg['message_text'] ?? '',
+                                    style: const TextStyle(
+                                      color: textDark,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -356,8 +481,22 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
               Container(
                 padding: const EdgeInsets.all(14),
                 alignment: Alignment.center,
-                decoration: BoxDecoration(color: Colors.red.withOpacity(0.08), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.redAccent.withOpacity(0.2), width: 1.5)),
-                child: const Text("This ticket is closed. Reopen it to send a message.", style: TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.w900)),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.redAccent.withValues(alpha: 0.2),
+                    width: 1.5,
+                  ),
+                ),
+                child: Text(
+                  context.l10n.ticketStatusClosed,
+                  style: const TextStyle(
+                    color: Colors.redAccent,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
               )
             else
               Row(
@@ -365,16 +504,38 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                   Expanded(
                     child: TextField(
                       controller: messageCtrl,
-                      style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        color: textDark,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                       decoration: InputDecoration(
-                        hintText: "Type your official response...",
-                        hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                        hintText: context.l10n.typeYourReply,
+                        hintStyle: const TextStyle(
+                          color: textGrey,
+                          fontSize: 11,
+                        ),
                         filled: true,
-                        fillColor: cardBorder.withOpacity(0.5),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                        fillColor: cardBorder.withValues(alpha: 0.5),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(color: cardBorder),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(color: cardBorder),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: const BorderSide(
+                            color: primaryPink,
+                            width: 1.5,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -388,11 +549,20 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                         foregroundColor: Colors.white,
                         elevation: 0,
                         padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
                       onPressed: isSending ? null : handleSendMessage,
                       child: isSending
-                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
                           : const Icon(Icons.send_rounded, size: 18),
                     ),
                   ),

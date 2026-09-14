@@ -964,7 +964,7 @@ class AppLocalizationsPs extends AppLocalizations {
   String get noDocumentAttached => 'کوم سند نه دی ضمیمه شوی.';
 
   @override
-  String get leadInstructor => 'لارښود استاد';
+  String get leadInstructor => 'د کورس اصلي ښوونکی';
 
   @override
   String get includesCertificate => 'معتبر سند لري';
@@ -1795,7 +1795,7 @@ class AppLocalizationsPs extends AppLocalizations {
   String get primaryInstructor => 'اصلي ښوونکی';
 
   @override
-  String get coInstructor => 'همکار ښوونکی';
+  String get coInstructor => 'مرستیال ښوونکی';
 
   @override
   String get selectCoInstructor => 'د همکار ښوونکي ټاکل';
@@ -2412,4 +2412,464 @@ class AppLocalizationsPs extends AppLocalizations {
 
   @override
   String get systemSettings => 'د سیسټم ترتیبات';
+
+  @override
+  String get backToClassRoster => 'بېرته د ټولګي لړلیک ته';
+
+  @override
+  String get enrollStudents => 'د محصلینو نوم لیکنه';
+
+  @override
+  String get enrollStudentsSubtitle =>
+      'پدې ټولګي کې د شاملولو لپاره محصلین وټاکئ.';
+
+  @override
+  String get confirmEnrollment => 'د نوم لیکنې تایید';
+
+  @override
+  String get paidAll => 'ورکړل شوی (ټول)';
+
+  @override
+  String get facultyManagement => 'د ښوونکو سمبالښت';
+
+  @override
+  String get facultyDirectory => 'د ښوونکو نوملړ';
+
+  @override
+  String get facultyManagementSubtitle =>
+      'د ښوونکو مشخصات او فعال ټولګي وڅارئ.';
+
+  @override
+  String get activeCohorts => 'فعال ټولګي';
+
+  @override
+  String get searchInstructorsHint =>
+      'د ښوونکي لټون د نوم یا بریښنالیک له لارې...';
+
+  @override
+  String get noInstructorsFound => 'هیڅ ښوونکی ونه موندل شو.';
+
+  @override
+  String get noBiographyProvided => 'کوم ژوندلیک ندی ثبت شوی.';
+
+  @override
+  String get viewProfile => 'پروفایل وګورئ';
+
+  @override
+  String get backToFaculty => 'بېرته ښوونکو ته';
+
+  @override
+  String get instructorNotFound => 'ښوونکی ونه موندل شو';
+
+  @override
+  String get walletBalanceAndPayouts => 'د بټوې بیلانس او ​​تادیات';
+
+  @override
+  String get processPayout => 'تادیه کول';
+
+  @override
+  String get instructorProfileSyncSuccess =>
+      'د ښوونکي پروفایل او مدیریتي کنټرولونه په بریالیتوب سره همغږي شول! 🚀';
+
+  @override
+  String get invalidPayoutAmount => 'د تادیې اندازه سمه نه ده.';
+
+  @override
+  String get payoutSuccess => 'تادیه په بریالیتوب سره وشوه!';
+
+  @override
+  String get failedToProcessPayout => 'د تادیې په کولو کې ستونزه';
+
+  @override
+  String get specializedCourses => 'تخصصي کورسونه';
+
+  @override
+  String get noSpecializedCourses => 'کوم تخصصي کورس نه دی تړل شوی.';
+
+  @override
+  String get assignedCohorts => 'سپارل شوي ټولګي';
+
+  @override
+  String get noAssignedClasses => 'هیڅ ټولګی ندی سپارل شوی.';
+
+  @override
+  String get confirmAndSettlePayout => 'د تادیې تایید او تادیه کول 🚀';
+
+  @override
+  String get payoutAmountUsd => 'د تادیې اندازه (ډالر)';
+
+  @override
+  String get biographyTeacherInfo => 'د ښوونکي ژوندلیک';
+
+  @override
+  String get courseLibrary => 'د کورسونو کتابتون';
+
+  @override
+  String get searchCourseHint => 'د کورسونو لټون د سرلیک یا تفصیل له مخې...';
+
+  @override
+  String get coursePrice => 'د کورس قیمت (\$)';
+
+  @override
+  String get courseCategory => 'کټګوري';
+
+  @override
+  String get courseLevel => 'کچه';
+
+  @override
+  String get thumbnailUrl => 'د انځور لینک';
+
+  @override
+  String get saveCourseChanges => 'د کورس بدلونونه خوندي کړئ 🚀';
+
+  @override
+  String get createCourseAction => 'ماسټرکلاس جوړ کړئ 🚀';
+
+  @override
+  String get deleteCourse => 'کورس ړنګ کړئ';
+
+  @override
+  String get confirmDeleteCourse => 'ایا تاسو ډاډه یاست چې دا کورس ړنګ کړئ؟';
+
+  @override
+  String get classesAndCohorts => 'ټولګي او ګروپونه';
+
+  @override
+  String get cohortDirectory => 'د ټولګیو نوملړ';
+
+  @override
+  String get searchClassesHint => 'د ټولګي لټون د نوم یا ښوونکي له لارې...';
+
+  @override
+  String get noClassesFound => 'هیڅ ټولګی ونه موندل شو.';
+
+  @override
+  String get activeCohort => 'فعال ګروپ';
+
+  @override
+  String get inactiveCohort => 'غیر فعال';
+
+  @override
+  String get selectTeacher => 'ښوونکی وټاکئ';
+
+  @override
+  String get selectCourse => 'کورس وټاکئ';
+
+  @override
+  String get createClassAction => 'نوی ټولګی جوړ کړئ 🚀';
+
+  @override
+  String get saveClassChanges => 'د ټولګي بدلونونه خوندي کړئ 🚀';
+
+  @override
+  String get liveStreamingStudio => 'د ژوندی خپرونې سټوډیو';
+
+  @override
+  String get broadcastRoomUrl => 'د ناستې لینک';
+
+  @override
+  String get financialLedger => 'مالي دفتر';
+
+  @override
+  String get allTransactions => 'ټولې معاملې';
+
+  @override
+  String get deposits => 'جمع شوي پیسې';
+
+  @override
+  String get withdrawals => 'ایستل شوې پیسې';
+
+  @override
+  String get awardsAndRecognition => 'افتخارات او ستاینلیکونه';
+
+  @override
+  String get announcementBroadcast => 'د خبرتیاوو خپرول';
+
+  @override
+  String get publishAnnouncement => 'خبرتیا خپره کړئ 📢';
+
+  @override
+  String get supportHelpDesk => 'د ملاتړ مرکز';
+
+  @override
+  String get ticketStatusOpen => 'خلاص';
+
+  @override
+  String get ticketStatusClosed => 'بند شوی';
+
+  @override
+  String get liveSupportChat => 'ژوندۍ خبرې اترې';
+
+  @override
+  String get adminSettings => 'د مدیر ترتیبات';
+
+  @override
+  String get saveSettings => 'ترتیبات خوندي کړئ 🚀';
+
+  @override
+  String get systemConfiguration => 'د سیسټم ترتیبات';
+
+  @override
+  String get loadingDirectory => 'د نوملړ بارول...';
+
+  @override
+  String get teacher => 'ښوونکی';
+
+  @override
+  String get course => 'کورس';
+
+  @override
+  String get backToCourses => 'بېرته کورسونو ته';
+
+  @override
+  String get noDescription => 'کوم تفصیل ندی ورکړل شوی.';
+
+  @override
+  String get optional => 'اختیاري';
+
+  @override
+  String get required => 'لازمي';
+
+  @override
+  String get backToCohorts => 'ټولګیو ته ستنېدل';
+
+  @override
+  String get cohortManagement => 'د ټولګیو مدیریت';
+
+  @override
+  String get createClassCohortSubtitle =>
+      'د زده کوونکو لپاره کورس، ښوونکی، مهالوېش او آنلاین لینکونه وټاکئ.';
+
+  @override
+  String get classTimeSlot => 'د ټولګي د وخت وقفه';
+
+  @override
+  String get classDaysHint => 'لکه شنبه، دوشنبه، چهارشنبه';
+
+  @override
+  String get classTimeHint => 'لکه ۱۸:۰۰ - ۲۰:۰۰';
+
+  @override
+  String get scheduleNotes => 'د مهالوېش معلومات (یادښتونه)';
+
+  @override
+  String get meetingLinkHint => 'https://zoom.us/j/...';
+
+  @override
+  String get signalLinkHint => 'https://t.me/+...';
+
+  @override
+  String get activeLiveCohort => 'فعال (روان ټولګی)';
+
+  @override
+  String get archivedCompleted => 'آرشیف شوی / بشپړ شوی';
+
+  @override
+  String get noLiveSessions => 'هیڅ ژوندی غونډه ونه موندل شوه.';
+
+  @override
+  String get noLink => 'بې لینکه';
+
+  @override
+  String get manageAction => 'مدیریت';
+
+  @override
+  String get manageClassModal => 'د ټولګي سمبالول';
+
+  @override
+  String get saveAndUpdateAll => 'ټول مشخصات خوندي او تازه کړئ 🚀';
+
+  @override
+  String get liveSessionsAndCohorts => 'ژوندۍ غونډې او ټولګي';
+
+  @override
+  String get liveSessionsSubtitle =>
+      'فعالې خونې، مهالوېش او د ټولګي ټول مشخصات په خوندي توګه وڅارئ.';
+
+  @override
+  String get searchCohortsHint => 'ټولګي وپلټئ...';
+
+  @override
+  String get establishingConnection => 'د ژوندۍ اړیکې ټینګول...';
+
+  @override
+  String get auditingRecords => 'د مالي ریکارډونو ارزونه روانه ده...';
+
+  @override
+  String get financialLedgerSubtitle =>
+      'د پلاتفارم ټولیز عاید وڅارئ او د ښوونکو تادیات تنظیم کړئ.';
+
+  @override
+  String get facultyLiability => 'د ښوونکو پورونه';
+
+  @override
+  String get distributedPayouts => 'ویشل شوي تادیات';
+
+  @override
+  String get netProfit => 'خالص ګټه';
+
+  @override
+  String get facultyTab => 'ښوونکي';
+
+  @override
+  String get inflowsTab => 'راتلونکي عواید';
+
+  @override
+  String get outflowsTab => 'وتلي لګښتونه';
+
+  @override
+  String get findInstructorHint => 'ښوونکی وپلټئ...';
+
+  @override
+  String get payoutAmount => 'د تادیې اندازه (\\\$)';
+
+  @override
+  String get confirmPayout => 'تادیه تایید کړئ 💸';
+
+  @override
+  String get studentPayments => 'د زده کوونکو تادیات';
+
+  @override
+  String get payoutRecords => 'ښوونکو ته تادیات';
+
+  @override
+  String get noTransactions => 'هیڅ معامله ونه موندل شوه.';
+
+  @override
+  String get awardsSubtitle =>
+      'د زده کوونکو د بریالیتوب مډالونه او جایزې جوړ او تنظیم کړئ.';
+
+  @override
+  String get createAwardTitle => 'نوې جایزه جوړول';
+
+  @override
+  String get awardDescription => 'د جایزې تفصیل';
+
+  @override
+  String get awardIcon => 'آیکون یا ایموجي';
+
+  @override
+  String get publishAwardAction => 'نوې جایزه جوړه کړئ 🏆';
+
+  @override
+  String get availableAwards => 'شته مډالونه او جایزې';
+
+  @override
+  String get noAwardsFound => 'هیڅ جایزه یا مډال ونه موندل شو.';
+
+  @override
+  String get deleteAward => 'جایزه ړنګول';
+
+  @override
+  String get announcementsSubtitle =>
+      'د سیسټم خبرتیاوې، تازه معلومات او مهم خبرونه ټولو ته واستوئ.';
+
+  @override
+  String get announcementContent => 'د خبرتیا متن / منځپانګه';
+
+  @override
+  String get studentsOnly => 'یوازې زده کوونکي';
+
+  @override
+  String get teachersOnly => 'یوازې ښوونکي';
+
+  @override
+  String get broadcastNow => 'خبرتیا خپره کړئ 📢';
+
+  @override
+  String get recentAnnouncements => 'د خبرتیاوو تاریخچه';
+
+  @override
+  String get noAnnouncements => 'تر اوسه هیڅ خبرتیا نه ده خپره شوې.';
+
+  @override
+  String get ticketsSubtitle =>
+      'د ملاتړ پوښتنې، ناحل شوې ستونزې او ټکټونه تنظیم کړئ.';
+
+  @override
+  String get searchTicketsHint => 'د موضوع، زده کوونکي یا څانګې له مخې لټون...';
+
+  @override
+  String get filterStatusAll => 'ټول ټکټونه';
+
+  @override
+  String get filterDepartment => 'څانګه';
+
+  @override
+  String get ticketDetails => 'د ټکټ تفصیالت';
+
+  @override
+  String get typeYourReply => 'خپل ځواب ولیکئ...';
+
+  @override
+  String get reopenTicket => 'ټکټ بېرته پرانیستل';
+
+  @override
+  String get liveSupportSubtitle =>
+      'د محصلینو او استادانو پوښتنو ته په ژوندۍ بڼه رسیدګي وکړئ.';
+
+  @override
+  String get searchSupportHint => 'د ملاتړ غوښتنې وپلټئ...';
+
+  @override
+  String get openChat => 'چټ پرانیستل';
+
+  @override
+  String get noSupportRequests => 'د ملاتړ هیڅ غوښتنه ونه موندل شوه.';
+
+  @override
+  String get supportChatTitle => 'د ملاتړ چټ';
+
+  @override
+  String get markResolved => 'حل شوی په نښه کړئ';
+
+  @override
+  String get adminSettingsSubtitle =>
+      'د مدیر پروفایل، د سیسټم غوره توبونه او امنیتي ترتیبات تنظیم کړئ.';
+
+  @override
+  String get systemAdmin => 'د سیسټم مدیر';
+
+  @override
+  String get adminRole => 'مدیریتي رول';
+
+  @override
+  String get logOutAccount => 'له حساب څخه وتل';
+
+  @override
+  String get confirmLogout => 'ایا ډاډه یاست چې غواړئ ووځئ؟';
+
+  @override
+  String get avatarUrl => 'د پروفایل انځور پته';
+
+  @override
+  String get superAdminRole => 'د سیسټم مدیر (سوپر اډمین)';
+
+  @override
+  String get teacherRole => 'استاد / لارښود';
+
+  @override
+  String get studentRole => 'زده کوونکی (عادي)';
+
+  @override
+  String get teacherInfoAndCredentials => 'د ښوونکي معلومات او اسناد';
+
+  @override
+  String get facultyIdentityAndRole => 'د پوهنځي هویت او رول';
+
+  @override
+  String get synchronizingEngine => 'د سیسټم همغږي کول...';
+
+  @override
+  String get settingsUpdatedSuccess =>
+      'ترتیبات او تنظیمات په بریالیتوب سره همغږي شول! 🚀';
+
+  @override
+  String get failedToUpdateSettings => 'د ترتیباتو په تازه کولو کې تېروتنه';
+
+  @override
+  String get noMessages => 'تر اوسه هیڅ پیغام نشته.';
+
+  @override
+  String get teachers => 'ښوونکي';
 }

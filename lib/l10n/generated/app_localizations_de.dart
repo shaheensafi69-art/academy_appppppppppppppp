@@ -2438,4 +2438,465 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get systemSettings => 'Systemeinstellungen';
+
+  @override
+  String get backToClassRoster => 'Zurück zur Klassenliste';
+
+  @override
+  String get enrollStudents => 'Studenten einschreiben';
+
+  @override
+  String get enrollStudentsSubtitle =>
+      'Wählen Sie Studenten aus, um sie in diese Kohorte einzuschreiben.';
+
+  @override
+  String get confirmEnrollment => 'Einschreibung bestätigen';
+
+  @override
+  String get paidAll => 'Bezahlt (Alle)';
+
+  @override
+  String get facultyManagement => 'Dozentenverwaltung';
+
+  @override
+  String get facultyDirectory => 'DOZENTENVERZEICHNIS';
+
+  @override
+  String get facultyManagementSubtitle =>
+      'Überprüfen Sie Dozentenprofile und aktive Kohorten.';
+
+  @override
+  String get activeCohorts => 'Aktive Kohorten';
+
+  @override
+  String get searchInstructorsHint => 'Dozent nach Name oder E-Mail suchen...';
+
+  @override
+  String get noInstructorsFound => 'Keine Dozenten gefunden.';
+
+  @override
+  String get noBiographyProvided => 'Keine Biografie angegeben.';
+
+  @override
+  String get viewProfile => 'Profil anzeigen';
+
+  @override
+  String get backToFaculty => 'Zurück zu den Dozenten';
+
+  @override
+  String get instructorNotFound => 'Dozent nicht gefunden';
+
+  @override
+  String get walletBalanceAndPayouts => 'GUTHABEN & AUSZAHLUNGEN';
+
+  @override
+  String get processPayout => 'Auszahlung bearbeiten';
+
+  @override
+  String get instructorProfileSyncSuccess =>
+      'Dozentenprofil & Admin-Kontrollen erfolgreich synchronisiert! 🚀';
+
+  @override
+  String get invalidPayoutAmount => 'Ungültiger Auszahlungsbetrag.';
+
+  @override
+  String get payoutSuccess => 'Auszahlung erfolgreich verarbeitet!';
+
+  @override
+  String get failedToProcessPayout => 'Auszahlung fehlgeschlagen';
+
+  @override
+  String get specializedCourses => 'SPEZIALISIERTE KURSE';
+
+  @override
+  String get noSpecializedCourses => 'Keine Spezialkurse verknüpft.';
+
+  @override
+  String get assignedCohorts => 'ZUGEWIESENE KOHORTEN';
+
+  @override
+  String get noAssignedClasses => 'Keine Klassen zugewiesen.';
+
+  @override
+  String get confirmAndSettlePayout => 'AUSZAHLUNG BESTÄTIGEN & ABWICKELN 🚀';
+
+  @override
+  String get payoutAmountUsd => 'AUSZAHLUNGSBETRAG (USD)';
+
+  @override
+  String get biographyTeacherInfo => 'BIOGRAFIE (DOZENTEN-INFO)';
+
+  @override
+  String get courseLibrary => 'KURS-BIBLIOTHEK';
+
+  @override
+  String get searchCourseHint => 'Kurse nach Titel oder Beschreibung suchen...';
+
+  @override
+  String get coursePrice => 'Kurspreis (\$)';
+
+  @override
+  String get courseCategory => 'Kategorie';
+
+  @override
+  String get courseLevel => 'Stufe';
+
+  @override
+  String get thumbnailUrl => 'Vorschaubild-URL';
+
+  @override
+  String get saveCourseChanges => 'KURSÄNDERUNGEN SPEICHERN 🚀';
+
+  @override
+  String get createCourseAction => 'MASTERCLASS ERSTELLEN 🚀';
+
+  @override
+  String get deleteCourse => 'Kurs löschen';
+
+  @override
+  String get confirmDeleteCourse => 'Möchten Sie diesen Kurs wirklich löschen?';
+
+  @override
+  String get classesAndCohorts => 'Klassen & Kohorten';
+
+  @override
+  String get cohortDirectory => 'KOHORTEN-VERZEICHNIS';
+
+  @override
+  String get searchClassesHint => 'Klassen nach Name oder Dozent suchen...';
+
+  @override
+  String get noClassesFound => 'Keine Klassen gefunden.';
+
+  @override
+  String get activeCohort => 'Aktive Kohorte';
+
+  @override
+  String get inactiveCohort => 'Archiviert / Inaktiv';
+
+  @override
+  String get selectTeacher => 'Dozent auswählen';
+
+  @override
+  String get selectCourse => 'Kurs auswählen';
+
+  @override
+  String get createClassAction => 'NEUE KOHORTE ERSTELLEN 🚀';
+
+  @override
+  String get saveClassChanges => 'KLASSENÄNDERUNGEN SPEICHERN 🚀';
+
+  @override
+  String get liveStreamingStudio => 'LIVE-STREAMING-STUDIO';
+
+  @override
+  String get broadcastRoomUrl => 'Meeting-Link / URL';
+
+  @override
+  String get financialLedger => 'FINANZBUCH';
+
+  @override
+  String get allTransactions => 'Alle Transaktionen';
+
+  @override
+  String get deposits => 'Einzahlungen';
+
+  @override
+  String get withdrawals => 'Auszahlungen';
+
+  @override
+  String get awardsAndRecognition => 'AUSZEICHNUNGEN & ANERKENNUNG';
+
+  @override
+  String get announcementBroadcast => 'MITTEILUNGS-BROADCAST';
+
+  @override
+  String get publishAnnouncement => 'MITTEILUNG VERÖFFENTLICHEN 📢';
+
+  @override
+  String get supportHelpDesk => 'SUPPORT-HELPDESK';
+
+  @override
+  String get ticketStatusOpen => 'Offen';
+
+  @override
+  String get ticketStatusClosed => 'Gelöst / Geschlossen';
+
+  @override
+  String get liveSupportChat => 'Live-Support-Chat';
+
+  @override
+  String get adminSettings => 'ADMIN-EINSTELLUNGEN';
+
+  @override
+  String get saveSettings => 'EINSTELLUNGEN SPEICHERN 🚀';
+
+  @override
+  String get systemConfiguration => 'Systemkonfiguration';
+
+  @override
+  String get loadingDirectory => 'Verzeichnis wird geladen...';
+
+  @override
+  String get teacher => 'Dozent';
+
+  @override
+  String get course => 'Kurs';
+
+  @override
+  String get backToCourses => 'Zurück zu den Kursen';
+
+  @override
+  String get noDescription => 'Keine Beschreibung angegeben.';
+
+  @override
+  String get optional => 'Optional';
+
+  @override
+  String get required => 'Erforderlich';
+
+  @override
+  String get backToCohorts => 'Zurück zu den Kohorten';
+
+  @override
+  String get cohortManagement => 'KOHORTEN-VERWALTUNG';
+
+  @override
+  String get createClassCohortSubtitle =>
+      'Kurs, Dozent, Zeitplan und Online-Links für Studenten zuweisen.';
+
+  @override
+  String get classTimeSlot => 'UNTERRICHTSZEIT';
+
+  @override
+  String get classDaysHint => 'z.B. Sa, Mo, Mi';
+
+  @override
+  String get classTimeHint => 'z.B. 18:00 - 20:00';
+
+  @override
+  String get scheduleNotes => 'ZEITPLAN-DETAILS (NOTIZEN)';
+
+  @override
+  String get meetingLinkHint => 'https://zoom.us/j/...';
+
+  @override
+  String get signalLinkHint => 'https://t.me/+...';
+
+  @override
+  String get activeLiveCohort => 'Aktiv (Laufende Kohorte)';
+
+  @override
+  String get archivedCompleted => 'Archiviert / Abgeschlossen';
+
+  @override
+  String get noLiveSessions => 'Keine Live-Sitzungen gefunden.';
+
+  @override
+  String get noLink => 'Kein Link';
+
+  @override
+  String get manageAction => 'Verwalten';
+
+  @override
+  String get manageClassModal => 'Klasse verwalten';
+
+  @override
+  String get saveAndUpdateAll => 'ALLE EIGENSCHAFTEN SPEICHERN 🚀';
+
+  @override
+  String get liveSessionsAndCohorts => 'Live-Sitzungen & Kohorten';
+
+  @override
+  String get liveSessionsSubtitle =>
+      'Aktive Räume und Zeitpläne überwachen und Klasseneigenschaften sicher verwalten.';
+
+  @override
+  String get searchCohortsHint => 'Kohorten durchsuchen...';
+
+  @override
+  String get establishingConnection => 'LIVE-VERBINDUNG WIRD HERGESTELLT...';
+
+  @override
+  String get auditingRecords => 'FINANZDATEN WERDEN GEPRÜFT...';
+
+  @override
+  String get financialLedgerSubtitle =>
+      'Plattformumsatz prüfen und Dozentenauszahlungen sicher verwalten.';
+
+  @override
+  String get facultyLiability => 'Verbindlichkeiten Dozenten';
+
+  @override
+  String get distributedPayouts => 'Ausgezahlte Beträge';
+
+  @override
+  String get netProfit => 'Nettogewinn';
+
+  @override
+  String get facultyTab => 'Dozenten';
+
+  @override
+  String get inflowsTab => 'Einnahmen';
+
+  @override
+  String get outflowsTab => 'Ausgaben';
+
+  @override
+  String get findInstructorHint => 'Dozent finden...';
+
+  @override
+  String get payoutAmount => 'Auszahlungsbetrag (\$)';
+
+  @override
+  String get confirmPayout => 'AUSZAHLUNG BESTÄTIGEN 💸';
+
+  @override
+  String get studentPayments => 'Studenteneinzahlungen';
+
+  @override
+  String get payoutRecords => 'Auszahlungsverlauf';
+
+  @override
+  String get noTransactions => 'Keine Transaktionen gefunden.';
+
+  @override
+  String get awardsSubtitle =>
+      'Erfolge, Abzeichen und Belohnungen erstellen und verwalten.';
+
+  @override
+  String get createAwardTitle => 'Neue Auszeichnung erstellen';
+
+  @override
+  String get awardDescription => 'Beschreibung';
+
+  @override
+  String get awardIcon => 'Icon / Emoji';
+
+  @override
+  String get publishAwardAction => 'NEUE AUSZEICHNUNG ERSTELLEN 🏆';
+
+  @override
+  String get availableAwards => 'Verfügbare Auszeichnungen & Abzeichen';
+
+  @override
+  String get noAwardsFound => 'Keine Auszeichnungen gefunden.';
+
+  @override
+  String get deleteAward => 'Auszeichnung löschen';
+
+  @override
+  String get announcementsSubtitle =>
+      'Systemweite Mitteilungen, Updates oder Wartungsalarme senden.';
+
+  @override
+  String get announcementContent => 'Nachricht / Inhalt';
+
+  @override
+  String get studentsOnly => 'Nur Studenten';
+
+  @override
+  String get teachersOnly => 'Nur Dozenten';
+
+  @override
+  String get broadcastNow => 'MITTEILUNG SENDEN 📢';
+
+  @override
+  String get recentAnnouncements => 'Gesendete Mitteilungen';
+
+  @override
+  String get noAnnouncements => 'Noch keine Mitteilungen veröffentlicht.';
+
+  @override
+  String get ticketsSubtitle =>
+      'Support-Anfragen und Tickets sicher verwalten.';
+
+  @override
+  String get searchTicketsHint =>
+      'Nach Betreff, Student oder Abteilung suchen...';
+
+  @override
+  String get filterStatusAll => 'Alle Tickets';
+
+  @override
+  String get filterDepartment => 'Abteilung';
+
+  @override
+  String get ticketDetails => 'Ticket-Details';
+
+  @override
+  String get typeYourReply => 'Antwort eingeben...';
+
+  @override
+  String get reopenTicket => 'Ticket wiedereröffnen';
+
+  @override
+  String get liveSupportSubtitle =>
+      'Live-Support für Studenten und Dozenten in Echtzeit.';
+
+  @override
+  String get searchSupportHint => 'Support-Anfragen durchsuchen...';
+
+  @override
+  String get openChat => 'Chat öffnen';
+
+  @override
+  String get noSupportRequests => 'Keine Support-Anfragen gefunden.';
+
+  @override
+  String get supportChatTitle => 'Support-Chat';
+
+  @override
+  String get markResolved => 'Als gelöst markieren';
+
+  @override
+  String get adminSettingsSubtitle =>
+      'Administratorprofil, Systemeinstellungen und Sicherheitseinstellungen verwalten.';
+
+  @override
+  String get systemAdmin => 'Systemadministrator';
+
+  @override
+  String get adminRole => 'Administrator-Rolle';
+
+  @override
+  String get logOutAccount => 'Konto abmelden';
+
+  @override
+  String get confirmLogout => 'Möchten Sie sich wirklich abmelden?';
+
+  @override
+  String get avatarUrl => 'Profilbild-URL';
+
+  @override
+  String get superAdminRole => 'Administrator (Super-Admin)';
+
+  @override
+  String get teacherRole => 'Dozent / Mentor (Lehrer)';
+
+  @override
+  String get studentRole => 'Student (Normal)';
+
+  @override
+  String get teacherInfoAndCredentials => 'LEHRERINFO & ZERTIFIZIERUNGEN';
+
+  @override
+  String get facultyIdentityAndRole => 'DOZENTENIDENTITÄT & ROLLE';
+
+  @override
+  String get synchronizingEngine => 'SYSTEM WIRD SYNCHRONISIERT...';
+
+  @override
+  String get settingsUpdatedSuccess =>
+      'Einstellungen & Konfigurationen erfolgreich synchronisiert! 🚀';
+
+  @override
+  String get failedToUpdateSettings =>
+      'Fehler beim Aktualisieren der Konfiguration';
+
+  @override
+  String get noMessages => 'Noch keine Nachrichten.';
+
+  @override
+  String get teachers => 'Dozenten';
 }
