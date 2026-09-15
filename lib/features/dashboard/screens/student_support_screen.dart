@@ -86,16 +86,16 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isError
-                    ? Colors.redAccent.withOpacity(0.85)
-                    : Colors.green.withOpacity(0.85),
+                    ? Colors.redAccent.withValues(alpha: 0.85)
+                    : Colors.green.withValues(alpha: 0.85),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: (isError ? Colors.red : Colors.green).withOpacity(0.3),
+                  color: (isError ? Colors.red : Colors.green).withValues(alpha: 0.3),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -373,7 +373,7 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
     }
 
     return Scaffold(
-      backgroundColor: lightPinkBg.withOpacity(0.3),
+      backgroundColor: lightPinkBg.withValues(alpha: 0.3),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -418,7 +418,7 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                   borderRadius: BorderRadius.circular(28),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryPink.withOpacity(0.3),
+                      color: primaryPink.withValues(alpha: 0.3),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -432,7 +432,7 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -460,7 +460,7 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                                 context.l10n.aiAndHumanOnline,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -478,7 +478,7 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -588,7 +588,7 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                             border: Border.all(color: cardBorder, width: 1.5),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.02),
+                                color: Colors.black.withValues(alpha: 0.02),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -621,8 +621,8 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                                             Container(
                                               padding: const EdgeInsets.all(12),
                                               decoration: BoxDecoration(
-                                                color: statusColor.withOpacity(
-                                                  0.1,
+                                                color: statusColor.withValues(
+                                                  alpha: 0.1,
                                                 ),
                                                 borderRadius:
                                                     BorderRadius.circular(14),
@@ -674,7 +674,7 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                                           vertical: 6,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: statusColor.withOpacity(0.12),
+                                          color: statusColor.withValues(alpha: 0.12),
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
@@ -749,10 +749,10 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
       decoration: BoxDecoration(
         color: surfaceWhite,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.05),
+            color: color.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -767,7 +767,7 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: color, size: 16),

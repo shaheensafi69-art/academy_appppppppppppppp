@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'teacher_create_course_screen.dart';
+import 'teacher_lessons_screen.dart';
 import '../../../core/localization/l10n_extensions.dart';
 
 class CourseCurriculumItem {
@@ -120,7 +121,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                           color: surfaceWhite,
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: cardBorder, width: 1.5),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,6 +152,35 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                               ],
                             ),
                           ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryPink,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          icon: const Icon(Icons.auto_stories_rounded, size: 18),
+                          label: Text(
+                            "${context.l10n.lessons} (${context.l10n.manageAction})",
+                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => TeacherLessonsScreen(
+                                  courseId: widget.courseId,
+                                  courseTitle: widget.courseTitle,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -186,7 +216,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                     color: surfaceWhite,
                                     borderRadius: BorderRadius.circular(18),
                                     border: Border.all(color: cardBorder, width: 1.5),
-                                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))],
+                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2))],
                                   ),
                                   child: Row(
                                     children: [
@@ -209,7 +239,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                       ),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                        decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                                         child: Text("$progress% ${context.l10n.completed}", style: const TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.w900)),
                                       ),
                                     ],
@@ -300,15 +330,15 @@ class _TeacherCoursesCurriculumScreenState extends State<TeacherCoursesCurriculu
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                    colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.3)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(32),
-                  border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                  border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryPink.withOpacity(0.08),
+                      color: primaryPink.withValues(alpha: 0.08),
                       blurRadius: 25,
                       offset: const Offset(0, 10),
                     ),
@@ -327,7 +357,7 @@ class _TeacherCoursesCurriculumScreenState extends State<TeacherCoursesCurriculu
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: primaryPink.withOpacity(0.12),
+                                color: primaryPink.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: const Icon(Icons.menu_book_rounded, color: primaryPink, size: 26),
@@ -394,7 +424,7 @@ class _TeacherCoursesCurriculumScreenState extends State<TeacherCoursesCurriculu
                                 borderRadius: BorderRadius.circular(22),
                                 border: Border.all(color: cardBorder, width: 1.5),
                                 boxShadow: [
-                                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6)),
+                                  BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6)),
                                 ],
                               ),
                               child: Column(

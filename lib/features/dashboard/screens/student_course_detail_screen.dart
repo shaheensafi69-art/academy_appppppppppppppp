@@ -237,7 +237,7 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
               colors: [
                 const Color(0xFFFFF0F5),
                 surfaceWhite,
-                lightPinkBg.withOpacity(0.2),
+                lightPinkBg.withValues(alpha: 0.2),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -406,15 +406,15 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.purple.withOpacity(0.08),
-                          primaryPink.withOpacity(0.08),
+                          Colors.purple.withValues(alpha: 0.08),
+                          primaryPink.withValues(alpha: 0.08),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: Colors.purple.withOpacity(0.2),
+                        color: Colors.purple.withValues(alpha: 0.2),
                         width: 1.5,
                       ),
                     ),
@@ -423,7 +423,7 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.purple.withOpacity(0.12),
+                            color: Colors.purple.withValues(alpha: 0.12),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -522,10 +522,10 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.12),
+                        color: Colors.green.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: Colors.green.withOpacity(0.4),
+                          color: Colors.green.withValues(alpha: 0.4),
                           width: 1.5,
                         ),
                       ),
@@ -593,12 +593,12 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                         color: surfaceWhite,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                          color: primaryPink.withOpacity(0.3),
+                          color: primaryPink.withValues(alpha: 0.3),
                           width: 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: primaryPink.withOpacity(0.06),
+                            color: primaryPink.withValues(alpha: 0.06),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
@@ -829,7 +829,7 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                                     color: lightPinkBg,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
-                                      color: primaryPink.withOpacity(0.3),
+                                      color: primaryPink.withValues(alpha: 0.3),
                                       width: 1.5,
                                     ),
                                   ),
@@ -884,7 +884,7 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
-                                shadowColor: primaryPink.withOpacity(0.3),
+                                shadowColor: primaryPink.withValues(alpha: 0.3),
                               ),
                               onPressed: isEnrolling
                                   ? null
@@ -967,7 +967,7 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
         border: Border.all(color: cardBorder, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -1031,7 +1031,7 @@ class _StudentCourseDetailScreenState extends State<StudentCourseDetailScreen> {
       hintText: hint,
       hintStyle: const TextStyle(color: textGrey, fontSize: 11),
       filled: true,
-      fillColor: cardBorder.withOpacity(0.6),
+      fillColor: cardBorder.withValues(alpha: 0.6),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -1072,7 +1072,7 @@ class AcademyLoadingOverlay extends StatelessWidget {
         child,
         if (isLoading)
           Container(
-            color: Colors.white.withOpacity(0.95),
+            color: Colors.white.withValues(alpha: 0.95),
             alignment: Alignment.center,
             child: _AcademyThinkingLoadingAnimation(message: message),
           ),
@@ -1127,8 +1127,8 @@ class _AcademyThinkingLoadingAnimationState
                   shape: BoxShape.circle,
                   gradient: SweepGradient(
                     colors: [
-                      const Color(0xFFF494AC).withOpacity(0.0),
-                      const Color(0xFFF494AC).withOpacity(0.8),
+                      const Color(0xFFF494AC).withValues(alpha: 0.0),
+                      const Color(0xFFF494AC).withValues(alpha: 0.8),
                       const Color(0xFFF494AC),
                     ],
                   ),
@@ -1150,7 +1150,7 @@ class _AcademyThinkingLoadingAnimationState
                 color: const Color(0xFFFAF4F6),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color(0xFFF494AC).withOpacity(0.25),
+                  color: const Color(0xFFF494AC).withValues(alpha: 0.25),
                   width: 2,
                 ),
               ),
@@ -1172,7 +1172,7 @@ class _AcademyThinkingLoadingAnimationState
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.12),
+                            color: Colors.black.withValues(alpha: 0.12),
                             blurRadius: 6,
                           ),
                         ],

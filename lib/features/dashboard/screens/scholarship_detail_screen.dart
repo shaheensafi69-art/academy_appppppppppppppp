@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'scholarships_screen.dart'; // مطمئن شوید مدل ScholarshipItem در این فایل است
+import 'scholarships_screen.dart';
+import '../../../core/localization/l10n_extensions.dart';
 
 class ScholarshipDetailScreen extends StatelessWidget {
   final ScholarshipItem scholarship;
@@ -31,7 +32,6 @@ class ScholarshipDetailScreen extends StatelessWidget {
         .trim();
   }
 
-  // استخراج و تبدیل ایمن ساختار آرایه‌ای یا رشته‌ای دیتابیس
   List<String> _parseToList(dynamic rawData) {
     if (rawData == null) return [];
 
@@ -64,18 +64,23 @@ class ScholarshipDetailScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: surfaceWhite,
-      // دکمه اپلای را در یک باتم‌بار ثابت قرار می‌دهیم تا همیشه در دسترس باشد
       bottomNavigationBar: scholarship.applyLink != null && scholarship.applyLink!.isNotEmpty
           ? Container(
               padding: EdgeInsets.only(
-                left: 24, 
-                right: 24, 
-                top: 16, 
-                bottom: MediaQuery.of(context).padding.bottom > 0 ? MediaQuery.of(context).padding.bottom : 24
+                left: 24,
+                right: 24,
+                top: 16,
+                bottom: MediaQuery.of(context).padding.bottom > 0 ? MediaQuery.of(context).padding.bottom : 24,
               ),
               decoration: BoxDecoration(
                 color: surfaceWhite,
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, -5))],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
               ),
               child: SizedBox(
                 height: 54,
@@ -87,7 +92,10 @@ class ScholarshipDetailScreen extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                   icon: const Icon(Icons.rocket_launch_rounded, size: 20),
-                  label: const Text("APPLY FOR SCHOLARSHIP NOW", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                  label: Text(
+                    context.l10n.applyNow.toUpperCase(),
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                  ),
                   onPressed: () => _launchURL(scholarship.applyLink!),
                 ),
               ),
@@ -96,7 +104,7 @@ class ScholarshipDetailScreen extends StatelessWidget {
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // ================= هدر تصویر متحرک (SliverAppBar) =================
+          // هدر تصویر متحرک با پشتیبانی از بازگشت
           SliverAppBar(
             expandedHeight: 280.0,
             pinned: true,
@@ -111,19 +119,18 @@ class ScholarshipDetailScreen extends StatelessWidget {
                       ? Image.network(
                           scholarship.coverImage!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => _buildFallbackBanner(),
+                          errorBuilder: (_, _, _) => _buildFallbackBanner(context),
                         )
-                      : _buildFallbackBanner(),
-                  // گرادینت تیره برای خوانایی دکمه بک و زیبایی تصویر
+                      : _buildFallbackBanner(context),
                   DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.6),
+                          Colors.black.withValues(alpha: 0.6),
                           Colors.transparent,
-                          Colors.black.withOpacity(0.4),
+                          Colors.black.withValues(alpha: 0.4),
                         ],
                       ),
                     ),
@@ -133,20 +140,20 @@ class ScholarshipDetailScreen extends StatelessWidget {
             ),
           ),
 
-          // ================= محتوای اصلی =================
+          // محتوای اصلی
           SliverToBoxAdapter(
             child: Container(
               decoration: const BoxDecoration(
                 color: surfaceWhite,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(32)), // گرد کردن لبه‌های بالای محتوا
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
               ),
-              transform: Matrix4.translationValues(0.0, -32.0, 0.0), // کشیدن محتوا روی عکس
+              transform: Matrix4.translationValues(0.0, -32.0, 0.0),
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // برچسب‌ها (Tags)
+                    // تگ‌های موقعیت و درجه علمی
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -170,7 +177,7 @@ class ScholarshipDetailScreen extends StatelessWidget {
                       children: [
                         Container(
                           padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
+                          decoration: const BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
                           child: const Icon(Icons.account_balance_rounded, size: 16, color: primaryPink),
                         ),
                         const SizedBox(width: 12),
@@ -193,13 +200,19 @@ class ScholarshipDetailScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [lightPinkBg.withOpacity(0.5), surfaceWhite],
+                          colors: [lightPinkBg.withValues(alpha: 0.5), surfaceWhite],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.5),
-                        boxShadow: [BoxShadow(color: primaryPink.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                        border: Border.all(color: primaryPink.withValues(alpha: 0.2), width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: primaryPink.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Row(
                         children: [
@@ -213,9 +226,20 @@ class ScholarshipDetailScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text("APPLICATION DEADLINE", style: TextStyle(color: primaryPink, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
+                                Text(
+                                  context.l10n.deadline.toUpperCase(),
+                                  style: const TextStyle(
+                                    color: primaryPink,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
                                 const SizedBox(height: 4),
-                                Text(scholarship.deadline.split('T')[0], style: const TextStyle(color: textDark, fontSize: 16, fontWeight: FontWeight.w900)),
+                                Text(
+                                  scholarship.deadline.split('T')[0],
+                                  style: const TextStyle(color: textDark, fontSize: 16, fontWeight: FontWeight.w900),
+                                ),
                               ],
                             ),
                           ),
@@ -225,7 +249,7 @@ class ScholarshipDetailScreen extends StatelessWidget {
                     const SizedBox(height: 32),
 
                     // توضیحات بورسیه
-                    _buildSectionHeader(Icons.info_outline_rounded, "About Scholarship"),
+                    _buildSectionHeader(Icons.info_outline_rounded, context.l10n.overview),
                     const SizedBox(height: 12),
                     Text(
                       scholarship.description,
@@ -235,7 +259,7 @@ class ScholarshipDetailScreen extends StatelessWidget {
 
                     // شرایط پذیرش
                     if (criteriaList.isNotEmpty) ...[
-                      _buildSectionHeader(Icons.verified_user_rounded, "Eligibility Criteria"),
+                      _buildSectionHeader(Icons.verified_user_rounded, context.l10n.eligibilityCriteria),
                       const SizedBox(height: 16),
                       Container(
                         width: double.infinity,
@@ -244,7 +268,13 @@ class ScholarshipDetailScreen extends StatelessWidget {
                           color: surfaceWhite,
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: cardBorder, width: 1.5),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))],
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.02),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: Column(
                           children: criteriaList.map((item) => Padding(
@@ -270,7 +300,7 @@ class ScholarshipDetailScreen extends StatelessWidget {
 
                     // مدارک مورد نیاز
                     if (documentsList.isNotEmpty) ...[
-                      _buildSectionHeader(Icons.folder_shared_rounded, "Required Documents"),
+                      _buildSectionHeader(Icons.folder_shared_rounded, context.l10n.requiredDocuments),
                       const SizedBox(height: 16),
                       Container(
                         width: double.infinity,
@@ -279,7 +309,13 @@ class ScholarshipDetailScreen extends StatelessWidget {
                           color: surfaceWhite,
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: cardBorder, width: 1.5),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))],
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.02),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: Column(
                           children: documentsList.map((doc) => Padding(
@@ -340,8 +376,7 @@ class ScholarshipDetailScreen extends StatelessWidget {
     );
   }
 
-  // بنر جایگزین در صورت نداشتن عکس کاور
-  Widget _buildFallbackBanner() {
+  Widget _buildFallbackBanner(BuildContext context) {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -356,17 +391,27 @@ class ScholarshipDetailScreen extends StatelessWidget {
           Positioned(
             right: -30,
             bottom: -30,
-            child: Icon(Icons.school_rounded, size: 200, color: Colors.white.withOpacity(0.08)),
+            child: Icon(
+              Icons.school_rounded,
+              size: 200,
+              color: Colors.white.withValues(alpha: 0.08),
+            ),
           ),
-          const Center(
+          Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.verified_rounded, color: Colors.white, size: 48),
-                SizedBox(height: 16),
-                Text("Global Academic Grant", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900)),
-                SizedBox(height: 4),
-                Text("Verified International Opportunity", style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                const Icon(Icons.verified_rounded, color: Colors.white, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  context.l10n.globalScholarships,
+                  style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  context.l10n.globalScholarshipsDesc,
+                  style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1),
+                ),
               ],
             ),
           ),

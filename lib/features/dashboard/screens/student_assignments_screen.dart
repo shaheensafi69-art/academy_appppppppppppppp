@@ -250,18 +250,18 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(28),
               border: Border.all(
-                color: primaryPink.withOpacity(0.15),
+                color: primaryPink.withValues(alpha: 0.15),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: primaryPink.withOpacity(0.08),
+                  color: primaryPink.withValues(alpha: 0.08),
                   blurRadius: 25,
                   offset: const Offset(0, 10),
                 ),
@@ -275,7 +275,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
                     color: lightPinkBg,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: primaryPink.withOpacity(0.3),
+                      color: primaryPink.withValues(alpha: 0.3),
                       width: 1.5,
                     ),
                   ),
@@ -350,7 +350,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
                         border: Border.all(color: cardBorder, width: 1.5),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.03),
+                            color: Colors.black.withValues(alpha: 0.03),
                             blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),
@@ -379,7 +379,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: Colors.green.withOpacity(0.12),
+                                        color: Colors.green.withValues(alpha: 0.12),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Text(
@@ -563,7 +563,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
                           border: Border.all(color: cardBorder, width: 1.5),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.03),
+                              color: Colors.black.withValues(alpha: 0.03),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -604,7 +604,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> {
                                     vertical: 3,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: color.withOpacity(0.12),
+                                    color: color.withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
@@ -845,7 +845,7 @@ class _StudentAssignmentDetailScreenState
                   border: Border.all(color: cardBorder, width: 1.5),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
+                      color: Colors.black.withValues(alpha: 0.03),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -962,7 +962,7 @@ class _StudentAssignmentDetailScreenState
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: cardBorder.withOpacity(0.5),
+                      color: cardBorder.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(color: cardBorder, width: 1.5),
                     ),
@@ -1031,7 +1031,7 @@ class _StudentAssignmentDetailScreenState
                   padding: const EdgeInsets.all(20),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.08),
+                    color: Colors.blue.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -1048,7 +1048,7 @@ class _StudentAssignmentDetailScreenState
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.08),
+                    color: Colors.green.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(

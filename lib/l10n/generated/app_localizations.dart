@@ -5685,6 +5685,8 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Teachers'**
   String get teachers;
+
+  get totalScore => null;
 }
 
 class _AppLocalizationsDelegate

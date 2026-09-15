@@ -116,7 +116,7 @@ class _TeacherAssignmentDetailScreenState extends State<TeacherAssignmentDetailS
                   color: surfaceWhite,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: cardBorder, width: 1.5),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,7 +174,7 @@ class _TeacherAssignmentDetailScreenState extends State<TeacherAssignmentDetailS
                       decoration: InputDecoration(
                         hintText: context.l10n.score,
                         filled: true,
-                        fillColor: cardBorder.withOpacity(0.5),
+                        fillColor: cardBorder.withValues(alpha: 0.5),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
                         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
@@ -192,7 +192,7 @@ class _TeacherAssignmentDetailScreenState extends State<TeacherAssignmentDetailS
                       decoration: InputDecoration(
                         hintText: context.l10n.feedback,
                         filled: true,
-                        fillColor: cardBorder.withOpacity(0.5),
+                        fillColor: cardBorder.withValues(alpha: 0.5),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
                         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),

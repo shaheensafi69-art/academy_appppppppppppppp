@@ -220,14 +220,14 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                  colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                 boxShadow: [
-                  BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                  BoxShadow(color: primaryPink.withValues(alpha: 0.08), blurRadius: 25, offset: const Offset(0, 10)),
                 ],
               ),
               child: Column(
@@ -240,7 +240,7 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
                         decoration: BoxDecoration(
                           color: lightPinkBg,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                          border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
                         ),
                         child: const Icon(Icons.people_alt_rounded, color: primaryPink, size: 24),
                       ),
@@ -261,7 +261,7 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: BoxDecoration(
-                      color: cardBorder.withOpacity(0.5),
+                      color: cardBorder.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: cardBorder, width: 1.5),
                     ),
@@ -307,8 +307,8 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
                           decoration: BoxDecoration(
                             color: surfaceWhite,
                             borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: hasSignal ? primaryPink.withOpacity(0.3) : cardBorder, width: 1.5),
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                            border: Border.all(color: hasSignal ? primaryPink.withValues(alpha: 0.3) : cardBorder, width: 1.5),
+                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                           ),
                           child: Row(
                             children: [
@@ -318,7 +318,7 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
                                 decoration: BoxDecoration(
                                   color: lightPinkBg,
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.5),
+                                  border: Border.all(color: primaryPink.withValues(alpha: 0.2), width: 1.5),
                                 ),
                                 alignment: Alignment.center,
                                 child: Text(

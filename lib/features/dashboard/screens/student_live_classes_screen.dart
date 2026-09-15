@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/language_service.dart';
 import 'student_class_detail_screen.dart';
+import 'student_groups_screen.dart';
 
 class ClassGroup {
   final String id;
@@ -140,14 +141,14 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                    colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                  border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                   boxShadow: [
-                    BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                    BoxShadow(color: primaryPink.withValues(alpha: 0.08), blurRadius: 25, offset: const Offset(0, 10)),
                   ],
                 ),
                 child: Row(
@@ -157,7 +158,7 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
                       decoration: BoxDecoration(
                         color: lightPinkBg,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                        border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
                       ),
                       child: const Icon(Icons.podcasts_rounded, color: primaryPink, size: 24),
                     ),
@@ -170,6 +171,34 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
                           const SizedBox(height: 3),
                           Text(context.l10n.joinLiveMeetingRoom, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
                         ],
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const StudentGroupsScreen()),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: lightPinkBg,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.2),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.people_alt_rounded, color: primaryPink, size: 16),
+                            const SizedBox(width: 6),
+                            Text(
+                              context.l10n.safiCommunity,
+                              style: const TextStyle(color: primaryPink, fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -207,8 +236,8 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
                             decoration: BoxDecoration(
                               color: surfaceWhite,
                               borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: room.isPaid ? primaryPink.withOpacity(0.3) : cardBorder, width: 1.5),
-                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                              border: Border.all(color: room.isPaid ? primaryPink.withValues(alpha: 0.3) : cardBorder, width: 1.5),
+                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,7 +253,7 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
                                           )
                                         : Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                            decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8), border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5)),
+                                            decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8), border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5)),
                                             child: Text(context.l10n.pending, style: const TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900)),
                                           ),
                                     const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: textGrey),
@@ -278,7 +307,7 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
                               color: surfaceWhite,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(color: cardBorder, width: 1.5),
-                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,7 +323,7 @@ class _StudentLiveClassesScreenState extends State<StudentLiveClassesScreen> {
                                           )
                                         : Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                            decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8), border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5)),
+                                            decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(8), border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5)),
                                             child: Text(context.l10n.pending, style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
                                           ),
                                     const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: textGrey),
@@ -353,7 +382,7 @@ class AcademyLoadingOverlay extends StatelessWidget {
         child,
         if (isLoading)
           Container(
-            color: Colors.white.withOpacity(0.95),
+            color: Colors.white.withValues(alpha: 0.95),
             alignment: Alignment.center,
             child: _AcademyThinkingLoadingAnimation(message: message),
           ),
@@ -402,8 +431,8 @@ class _AcademyThinkingLoadingAnimationState extends State<_AcademyThinkingLoadin
                   shape: BoxShape.circle,
                   gradient: SweepGradient(
                     colors: [
-                      const Color(0xFFF494AC).withOpacity(0.0),
-                      const Color(0xFFF494AC).withOpacity(0.8),
+                      const Color(0xFFF494AC).withValues(alpha: 0.0),
+                      const Color(0xFFF494AC).withValues(alpha: 0.8),
                       const Color(0xFFF494AC),
                     ],
                   ),
@@ -424,7 +453,7 @@ class _AcademyThinkingLoadingAnimationState extends State<_AcademyThinkingLoadin
               decoration: BoxDecoration(
                 color: const Color(0xFFFAF4F6),
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFF494AC).withOpacity(0.25), width: 2),
+                border: Border.all(color: const Color(0xFFF494AC).withValues(alpha: 0.25), width: 2),
               ),
               child: Stack(
                 alignment: Alignment.center,
@@ -443,7 +472,7 @@ class _AcademyThinkingLoadingAnimationState extends State<_AcademyThinkingLoadin
                         color: Colors.white,
                         shape: BoxShape.circle,
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 6),
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 6),
                         ],
                       ),
                       child: const Icon(

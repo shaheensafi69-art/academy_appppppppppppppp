@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/localization/l10n_extensions.dart';
 import 'teacher_add_student_screen.dart';
+import 'teacher_student_detail_screen.dart';
 
 class EnrolledStudentItem {
   final String recordId;
@@ -282,14 +283,14 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                       padding: const EdgeInsets.all(22),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                          colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.3)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(28),
-                        border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                        border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                         boxShadow: [
-                          BoxShadow(color: primaryPink.withOpacity(0.06), blurRadius: 20, offset: const Offset(0, 8)),
+                          BoxShadow(color: primaryPink.withValues(alpha: 0.06), blurRadius: 20, offset: const Offset(0, 8)),
                         ],
                       ),
                       child: LayoutBuilder(
@@ -305,7 +306,7 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                                   Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: primaryPink.withOpacity(0.12),
+                                      color: primaryPink.withValues(alpha: 0.12),
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                     child: const Icon(Icons.people_alt_rounded, color: primaryPink, size: 26),
@@ -364,7 +365,7 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                                   borderRadius: BorderRadius.circular(24),
                                   border: Border.all(color: cardBorder, width: 1.5),
                                   boxShadow: [
-                                    BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6)),
+                                    BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6)),
                                   ],
                                 ),
                                 child: Row(
@@ -400,13 +401,20 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                                     const SizedBox(width: 10),
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: primaryPink.withOpacity(0.1),
+                                        backgroundColor: primaryPink.withValues(alpha: 0.1),
                                         foregroundColor: primaryPink,
                                         elevation: 0,
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                       ),
-                                      onPressed: () => setState(() => selectedStudent = student),
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => TeacherStudentDetailScreen(studentId: student.studentId),
+                                          ),
+                                        ).then((_) => _fetchClassAndStudentsData());
+                                      },
                                       child: Text(context.l10n.viewDetails, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
                                     ),
                                   ],
@@ -452,9 +460,9 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                   decoration: BoxDecoration(
                     color: surfaceWhite,
                     borderRadius: BorderRadius.circular(26),
-                    border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                    border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
                     boxShadow: [
-                      BoxShadow(color: primaryPink.withOpacity(0.1), blurRadius: 25, offset: const Offset(0, 10)),
+                      BoxShadow(color: primaryPink.withValues(alpha: 0.1), blurRadius: 25, offset: const Offset(0, 10)),
                     ],
                   ),
                   child: SingleChildScrollView(
@@ -483,7 +491,7 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                         const SizedBox(height: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(color: Colors.amber.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+                          decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
                           child: Text("${context.l10n.score}: ${selectedStudent!.totalScore}",
                               style: const TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.w900)),
                         ),
@@ -501,7 +509,7 @@ class _TeacherClassStudentsScreenState extends State<TeacherClassStudentsScreen>
                                   hintText: context.l10n.score,
                                   hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                                   filled: true,
-                                  fillColor: cardBorder.withOpacity(0.5),
+                                  fillColor: cardBorder.withValues(alpha: 0.5),
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: cardBorder)),
                                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: cardBorder)),

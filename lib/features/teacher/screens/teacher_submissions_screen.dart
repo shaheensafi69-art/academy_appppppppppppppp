@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/localization/l10n_extensions.dart';
+import 'teacher_assignment_detail_screen.dart';
 
 class SubmissionItem {
   final String submissionId;
@@ -34,7 +35,8 @@ class TeacherSubmissionsScreen extends StatefulWidget {
   const TeacherSubmissionsScreen({super.key, required this.assignmentId});
 
   @override
-  State<TeacherSubmissionsScreen> createState() => _TeacherSubmissionsScreenState();
+  State<TeacherSubmissionsScreen> createState() =>
+      _TeacherSubmissionsScreenState();
 }
 
 class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
@@ -79,7 +81,7 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
           .single();
 
       assignmentInfo = assignData;
-    
+
       final subData = await supabase
           .from("assignment_submissions")
           .select("id, student_id, file_url, grade, feedback, submitted_at")
@@ -137,7 +139,10 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
 
     if (score == null || score < 0 || score > maxScore) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Invalid grade. Must be between 0 and $maxScore"), backgroundColor: Colors.redAccent),
+        SnackBar(
+          content: Text("Invalid grade. Must be between 0 and $maxScore"),
+          backgroundColor: Colors.redAccent,
+        ),
       );
       return;
     }
@@ -148,7 +153,9 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
           .from("assignment_submissions")
           .update({
             'grade': score,
-            'feedback': _feedbackController.text.trim().isEmpty ? null : _feedbackController.text.trim(),
+            'feedback': _feedbackController.text.trim().isEmpty
+                ? null
+                : _feedbackController.text.trim(),
           })
           .eq("id", selectedSubmission!.submissionId);
 
@@ -175,7 +182,10 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Grade and feedback submitted successfully!"), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text("Grade and feedback submitted successfully!"),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
@@ -197,7 +207,9 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
     if (isLoading) {
       return Scaffold(
         backgroundColor: surfaceWhite,
-        body: const Center(child: CircularProgressIndicator(color: primaryPink)),
+        body: const Center(
+          child: CircularProgressIndicator(color: primaryPink),
+        ),
       );
     }
 
@@ -208,7 +220,14 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: textDark),
-        title: Text(assignmentInfo?['title'] ?? 'Submissions', style: const TextStyle(color: textDark, fontSize: 14, fontWeight: FontWeight.w900)),
+        title: Text(
+          assignmentInfo?['title'] ?? 'Submissions',
+          style: const TextStyle(
+            color: textDark,
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(color: cardBorder, height: 1),
@@ -233,12 +252,27 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                           color: surfaceWhite,
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: cardBorder, width: 1.5),
-                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.03),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(assignmentInfo?['description'] ?? 'No instructions provided.', style: const TextStyle(color: textGrey, fontSize: 11, height: 1.4, fontWeight: FontWeight.w500)),
+                            Text(
+                              assignmentInfo?['description'] ??
+                                  'No instructions provided.',
+                              style: const TextStyle(
+                                color: textGrey,
+                                fontSize: 11,
+                                height: 1.4,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                             const SizedBox(height: 16),
                             const Divider(color: cardBorder),
                             const SizedBox(height: 10),
@@ -246,11 +280,31 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
-                                  child: Text("${context.l10n.score}: ${assignmentInfo?['max_score'] ?? 100}", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.w900, fontSize: 10)),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    "${context.l10n.score}: ${assignmentInfo?['max_score'] ?? 100}",
+                                    style: const TextStyle(
+                                      color: Colors.amber,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 10,
+                                    ),
+                                  ),
                                 ),
-                                Text("${context.l10n.dueDate}: ${assignmentInfo?['deadline']?.toString().split('T')[0] ?? ''}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                                Text(
+                                  "${context.l10n.dueDate}: ${assignmentInfo?['deadline']?.toString().split('T')[0] ?? ''}",
+                                  style: const TextStyle(
+                                    color: textGrey,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ],
                             ),
                           ],
@@ -258,7 +312,14 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      Text(context.l10n.submissions, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15)),
+                      Text(
+                        context.l10n.submissions,
+                        style: const TextStyle(
+                          color: textDark,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 15,
+                        ),
+                      ),
                       const SizedBox(height: 12),
 
                       submissions.isNotEmpty
@@ -266,100 +327,258 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: submissions.length,
-                              separatorBuilder: (_, _) => const SizedBox(height: 14),
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(height: 14),
                               itemBuilder: (context, index) {
                                 final sub = submissions[index];
                                 bool isGraded = sub.grade != null;
 
-                                return Container(
-                                  padding: const EdgeInsets.all(18),
-                                  decoration: BoxDecoration(
-                                    color: surfaceWhite,
-                                    borderRadius: BorderRadius.circular(24),
-                                    border: Border.all(
-                                      color: isGraded ? Colors.green.withValues(alpha: 0.3) : primaryPink.withValues(alpha: 0.2),
-                                      width: 1.5,
-                                    ),
-                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6))],
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Row(
-                                              children: [
-                                                CircleAvatar(
-                                                  radius: 20,
-                                                  backgroundColor: lightPinkBg,
-                                                  backgroundImage: sub.avatarUrl != null ? NetworkImage(sub.avatarUrl!) : null,
-                                                  child: sub.avatarUrl == null ? Text(sub.firstName[0], style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 12)) : null,
-                                                ),
-                                                const SizedBox(width: 12),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text("${sub.firstName} ${sub.lastName}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                                      const SizedBox(height: 2),
-                                                      Text(sub.email, style: const TextStyle(color: textGrey, fontSize: 9), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
+                                return GestureDetector(
+                                  onTap: () async {
+                                    final res = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            TeacherAssignmentDetailScreen(
+                                              submission: {
+                                                'id': sub.submissionId,
+                                                'grade': sub.grade,
+                                                'feedback': sub.feedback,
+                                                'file_url': sub.fileUrl,
+                                                'submitted_at': sub.submittedAt,
+                                                'profiles': {
+                                                  'first_name': sub.firstName,
+                                                  'last_name': sub.lastName,
+                                                  'avatar_url': sub.avatarUrl,
+                                                  'email': sub.email,
+                                                },
+                                                'assignments': {
+                                                  'title':
+                                                      assignmentInfo?['title'] ??
+                                                      'Assignment',
+                                                },
+                                              },
                                             ),
+                                      ),
+                                    );
+                                    if (res == true) {
+                                      _fetchAssignmentData();
+                                    }
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(18),
+                                    decoration: BoxDecoration(
+                                      color: surfaceWhite,
+                                      borderRadius: BorderRadius.circular(24),
+                                      border: Border.all(
+                                        color: isGraded
+                                            ? Colors.green.withValues(
+                                                alpha: 0.3,
+                                              )
+                                            : primaryPink.withValues(
+                                                alpha: 0.2,
+                                              ),
+                                        width: 1.5,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.04,
                                           ),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: isGraded ? Colors.green.withValues(alpha: 0.12) : lightPinkBg,
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              isGraded ? "${context.l10n.grade} (${sub.grade})" : "● ${context.l10n.pendingApprovals}",
-                                              style: TextStyle(
-                                                color: isGraded ? Colors.green.shade700 : primaryPink,
-                                                fontSize: 9,
-                                                fontWeight: FontWeight.w900,
+                                          blurRadius: 15,
+                                          offset: const Offset(0, 6),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Row(
+                                                children: [
+                                                  CircleAvatar(
+                                                    radius: 20,
+                                                    backgroundColor:
+                                                        lightPinkBg,
+                                                    backgroundImage:
+                                                        sub.avatarUrl != null
+                                                        ? NetworkImage(
+                                                            sub.avatarUrl!,
+                                                          )
+                                                        : null,
+                                                    child: sub.avatarUrl == null
+                                                        ? Text(
+                                                            sub.firstName[0],
+                                                            style:
+                                                                const TextStyle(
+                                                                  color:
+                                                                      primaryPink,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize: 12,
+                                                                ),
+                                                          )
+                                                        : null,
+                                                  ),
+                                                  const SizedBox(width: 12),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          "${sub.firstName} ${sub.lastName}",
+                                                          style:
+                                                              const TextStyle(
+                                                                color: textDark,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w900,
+                                                                fontSize: 13,
+                                                              ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                        ),
+                                                        const SizedBox(
+                                                          height: 2,
+                                                        ),
+                                                        Text(
+                                                          sub.email,
+                                                          style:
+                                                              const TextStyle(
+                                                                color: textGrey,
+                                                                fontSize: 9,
+                                                              ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 14),
-                                      const Divider(color: cardBorder, height: 1),
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          sub.fileUrl != null
-                                              ? GestureDetector(
-                                                  onTap: () => _launchURL(sub.fileUrl!),
-                                                  child: Row(
-                                                    children: [
-                                                      const Icon(Icons.folder_open_rounded, size: 14, color: Colors.blueAccent),
-                                                      const SizedBox(width: 5),
-                                                      Text(context.l10n.viewDetails, style: const TextStyle(color: Colors.blueAccent, fontSize: 11, fontWeight: FontWeight.w900)),
-                                                    ],
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 4,
                                                   ),
-                                                )
-                                              : Text(context.l10n.noDataFound, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: primaryPink,
-                                              foregroundColor: Colors.white,
-                                              elevation: 0,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                              decoration: BoxDecoration(
+                                                color: isGraded
+                                                    ? Colors.green.withValues(
+                                                        alpha: 0.12,
+                                                      )
+                                                    : lightPinkBg,
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              child: Text(
+                                                isGraded
+                                                    ? "${context.l10n.grade} (${sub.grade})"
+                                                    : "● ${context.l10n.pendingApprovals}",
+                                                style: TextStyle(
+                                                  color: isGraded
+                                                      ? Colors.green.shade700
+                                                      : primaryPink,
+                                                  fontSize: 9,
+                                                  fontWeight: FontWeight.w900,
+                                                ),
+                                              ),
                                             ),
-                                            onPressed: () => _openGradeModal(sub),
-                                            child: Text(context.l10n.gradeSubmission, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                          ],
+                                        ),
+                                        const SizedBox(height: 14),
+                                        const Divider(
+                                          color: cardBorder,
+                                          height: 1,
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            sub.fileUrl != null
+                                                ? GestureDetector(
+                                                    onTap: () => _launchURL(
+                                                      sub.fileUrl!,
+                                                    ),
+                                                    child: Row(
+                                                      children: [
+                                                        const Icon(
+                                                          Icons
+                                                              .folder_open_rounded,
+                                                          size: 14,
+                                                          color:
+                                                              Colors.blueAccent,
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 5,
+                                                        ),
+                                                        Text(
+                                                          context
+                                                              .l10n
+                                                              .viewDetails,
+                                                          style:
+                                                              const TextStyle(
+                                                                color: Colors
+                                                                    .blueAccent,
+                                                                fontSize: 11,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w900,
+                                                              ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  )
+                                                : Text(
+                                                    context.l10n.noDataFound,
+                                                    style: const TextStyle(
+                                                      color: textGrey,
+                                                      fontSize: 10,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                            ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: primaryPink,
+                                                foregroundColor: Colors.white,
+                                                elevation: 0,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 14,
+                                                      vertical: 8,
+                                                    ),
+                                              ),
+                                              onPressed: () =>
+                                                  _openGradeModal(sub),
+                                              child: Text(
+                                                context.l10n.gradeSubmission,
+                                                style: const TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w900,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 );
                               },
@@ -374,11 +593,29 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                               ),
                               child: Column(
                                 children: [
-                                  const Icon(Icons.folder_off_rounded, size: 36, color: textGrey),
+                                  const Icon(
+                                    Icons.folder_off_rounded,
+                                    size: 36,
+                                    color: textGrey,
+                                  ),
                                   const SizedBox(height: 10),
-                                  Text(context.l10n.submissions, style: const TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 13)),
+                                  Text(
+                                    context.l10n.submissions,
+                                    style: const TextStyle(
+                                      color: textDark,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                  ),
                                   const SizedBox(height: 4),
-                                  Text(context.l10n.noDataFound, style: const TextStyle(color: textGrey, fontSize: 10), textAlign: TextAlign.center),
+                                  Text(
+                                    context.l10n.noDataFound,
+                                    style: const TextStyle(
+                                      color: textGrey,
+                                      fontSize: 10,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ],
                               ),
                             ),
@@ -403,8 +640,17 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                   decoration: BoxDecoration(
                     color: surfaceWhite,
                     borderRadius: BorderRadius.circular(26),
-                    border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
-                    boxShadow: [BoxShadow(color: primaryPink.withValues(alpha: 0.1), blurRadius: 25, offset: const Offset(0, 10))],
+                    border: Border.all(
+                      color: primaryPink.withValues(alpha: 0.3),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryPink.withValues(alpha: 0.1),
+                        blurRadius: 25,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
                   ),
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
@@ -416,37 +662,84 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
-                              child: Text("${context.l10n.gradeSubmission}: ${selectedSubmission!.firstName}",
-                                  style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 15),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis),
+                              child: Text(
+                                "${context.l10n.gradeSubmission}: ${selectedSubmission!.firstName}",
+                                style: const TextStyle(
+                                  color: textDark,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 15,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.close_rounded, color: textGrey, size: 20),
-                              onPressed: () => setState(() => selectedSubmission = null),
+                              icon: const Icon(
+                                Icons.close_rounded,
+                                color: textGrey,
+                                size: 20,
+                              ),
+                              onPressed: () =>
+                                  setState(() => selectedSubmission = null),
                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
-                        Text("${context.l10n.score} *", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                        Text(
+                          "${context.l10n.score} *",
+                          style: const TextStyle(
+                            color: textGrey,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 6),
                         TextField(
                           controller: _gradeController,
                           keyboardType: TextInputType.number,
-                          style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            color: textDark,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                           decoration: InputDecoration(
                             hintText: context.l10n.score,
-                            hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                            hintStyle: const TextStyle(
+                              color: textGrey,
+                              fontSize: 11,
+                            ),
                             filled: true,
                             fillColor: cardBorder.withValues(alpha: 0.5),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 14,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(color: cardBorder),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(color: cardBorder),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                color: primaryPink,
+                                width: 1.5,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Text(context.l10n.feedback, style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+                        Text(
+                          context.l10n.feedback,
+                          style: const TextStyle(
+                            color: textGrey,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 6),
                         TextField(
                           controller: _feedbackController,
@@ -454,13 +747,28 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                           style: const TextStyle(color: textDark, fontSize: 12),
                           decoration: InputDecoration(
                             hintText: context.l10n.feedback,
-                            hintStyle: const TextStyle(color: textGrey, fontSize: 11),
+                            hintStyle: const TextStyle(
+                              color: textGrey,
+                              fontSize: 11,
+                            ),
                             filled: true,
                             fillColor: cardBorder.withValues(alpha: 0.5),
                             contentPadding: const EdgeInsets.all(14),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(color: cardBorder),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(color: cardBorder),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                color: primaryPink,
+                                width: 1.5,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -468,9 +776,18 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                           children: [
                             Expanded(
                               child: TextButton(
-                                style: TextButton.styleFrom(foregroundColor: textGrey),
-                                onPressed: () => setState(() => selectedSubmission = null),
-                                child: Text(context.l10n.cancel, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: textGrey,
+                                ),
+                                onPressed: () =>
+                                    setState(() => selectedSubmission = null),
+                                child: Text(
+                                  context.l10n.cancel,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -480,11 +797,23 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
                                   backgroundColor: primaryPink,
                                   foregroundColor: Colors.white,
                                   elevation: 0,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
                                 ),
                                 onPressed: isSavingGrade ? null : _saveGrade,
-                                child: Text(isSavingGrade ? "..." : context.l10n.saveChanges, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+                                child: Text(
+                                  isSavingGrade
+                                      ? "..."
+                                      : context.l10n.saveChanges,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
@@ -499,4 +828,6 @@ class _TeacherSubmissionsScreenState extends State<TeacherSubmissionsScreen> {
       ),
     );
   }
+
+  void _fetchAssignmentData() {}
 }

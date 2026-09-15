@@ -874,8 +874,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          if (!isProcessingPayout)
+                          if (!isProcessingPayout) {
                             setState(() => selectedTeacher = null);
+                          }
                         },
                         child: const Icon(
                           Icons.close_rounded,

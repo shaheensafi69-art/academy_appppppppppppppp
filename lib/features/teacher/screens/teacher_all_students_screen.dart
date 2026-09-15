@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/localization/l10n_extensions.dart';
+import 'teacher_student_detail_screen.dart';
 
 class TeacherStudentProfileItem {
   final String id;
@@ -236,35 +237,62 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
               const SizedBox(height: 24),
               const Divider(color: cardBorder),
               const SizedBox(height: 16),
-              _buildProfileDetailRow("Father's Name", student.fatherName),
-              _buildProfileDetailRow("Date of Birth", student.dateOfBirth),
-              _buildProfileDetailRow("Phone Number", student.phoneNumber),
-              _buildProfileDetailRow("Country", student.country),
-              _buildProfileDetailRow("Total Score", "${student.totalScore} Points"),
-              _buildProfileDetailRow("Wallet Balance", "\$${student.walletBalance.toStringAsFixed(2)}"),
+              _buildProfileDetailRow(context.l10n.fatherName, student.fatherName),
+              _buildProfileDetailRow(context.l10n.dateOfBirth, student.dateOfBirth),
+              _buildProfileDetailRow(context.l10n.phoneNumber, student.phoneNumber),
+              _buildProfileDetailRow(context.l10n.country, student.country),
+              _buildProfileDetailRow(context.l10n.academicScore, "${student.totalScore} Pts"),
+              _buildProfileDetailRow(context.l10n.walletBalance, "\$${student.walletBalance.toStringAsFixed(2)}"),
               const SizedBox(height: 12),
               Text(context.l10n.bio, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 12)),
               const SizedBox(height: 6),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: cardBorder.withOpacity(0.5), borderRadius: BorderRadius.circular(12)),
+                decoration: BoxDecoration(color: cardBorder.withValues(alpha: 0.5), borderRadius: BorderRadius.circular(12)),
                 child: Text(student.bio, style: const TextStyle(color: textGrey, fontSize: 11)),
               ),
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryPink,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: textDark,
+                        side: const BorderSide(color: cardBorder, width: 1.5),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(context.l10n.cancel, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                    ),
                   ),
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(context.l10n.cancel, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryPink,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => TeacherStudentDetailScreen(
+                              studentId: student.id,
+                              studentName: "${student.firstName} ${student.lastName}",
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text(context.l10n.viewDetails, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 10),
             ],
@@ -325,7 +353,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                     style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: cardBorder.withOpacity(0.5),
+                      fillColor: cardBorder.withValues(alpha: 0.5),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
@@ -359,7 +387,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                     style: const TextStyle(color: textDark, fontSize: 12, fontWeight: FontWeight.bold),
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: cardBorder.withOpacity(0.5),
+                      fillColor: cardBorder.withValues(alpha: 0.5),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
@@ -465,15 +493,15 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.3)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+              border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: primaryPink.withOpacity(0.08),
+                  color: primaryPink.withValues(alpha: 0.08),
                   blurRadius: 25,
                   offset: const Offset(0, 10),
                 ),
@@ -484,7 +512,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: primaryPink.withOpacity(0.12),
+                    color: primaryPink.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(Icons.group_rounded, color: primaryPink, size: 26),
@@ -518,7 +546,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                     hintStyle: const TextStyle(color: textGrey, fontSize: 11),
                     prefixIcon: const Icon(Icons.search_rounded, color: textGrey, size: 20),
                     filled: true,
-                    fillColor: cardBorder.withOpacity(0.5),
+                    fillColor: cardBorder.withValues(alpha: 0.5),
                     contentPadding: const EdgeInsets.symmetric(vertical: 14),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: cardBorder)),
@@ -532,7 +560,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(13),
                   decoration: BoxDecoration(
-                    color: (selectedCourseId != null || selectedClassId != null) ? primaryPink : cardBorder.withOpacity(0.5),
+                    color: (selectedCourseId != null || selectedClassId != null) ? primaryPink : cardBorder.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: (selectedCourseId != null || selectedClassId != null) ? primaryPink : cardBorder, width: 1.5),
                   ),
@@ -562,7 +590,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(color: cardBorder, width: 1.5),
                             boxShadow: [
-                              BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 6)),
+                              BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 6)),
                             ],
                           ),
                           child: Column(
@@ -594,7 +622,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                     decoration: BoxDecoration(
-                                      color: Colors.amber.withOpacity(0.12),
+                                      color: Colors.amber.withValues(alpha: 0.12),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Row(
@@ -616,7 +644,7 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                                   ...student.enrolledCourses.map((crs) => Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                         decoration: BoxDecoration(
-                                          color: primaryPink.withOpacity(0.1),
+                                          color: primaryPink.withValues(alpha: 0.1),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text("${context.l10n.courseName}: $crs",
@@ -645,7 +673,17 @@ class _TeacherAllStudentsScreenState extends State<TeacherAllStudentsScreen> {
                                   ),
                                   icon: const Icon(Icons.visibility_rounded, size: 16, color: primaryPink),
                                   label: Text(context.l10n.viewDetails, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
-                                  onPressed: () => _showStudentProfileModal(student),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => TeacherStudentDetailScreen(
+                                          studentId: student.id,
+                                          studentName: "${student.firstName} ${student.lastName}",
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                             ],

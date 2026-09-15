@@ -115,14 +115,14 @@ class _WishlistScreenState extends State<WishlistScreen> {
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                    colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.4)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+                  border: Border.all(color: primaryPink.withValues(alpha: 0.15), width: 1.5),
                   boxShadow: [
-                    BoxShadow(color: primaryPink.withOpacity(0.08), blurRadius: 25, offset: const Offset(0, 10)),
+                    BoxShadow(color: primaryPink.withValues(alpha: 0.08), blurRadius: 25, offset: const Offset(0, 10)),
                   ],
                 ),
                 child: Row(
@@ -132,7 +132,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                       decoration: BoxDecoration(
                         color: lightPinkBg,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                        border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
                       ),
                       child: const Icon(Icons.favorite_rounded, color: primaryPink, size: 24),
                     ),
@@ -143,7 +143,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                         children: [
                           Text(context.l10n.wishlist, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark)),
                           const SizedBox(height: 3),
-                          Text(context.l10n.wishlist, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
+                          Text(context.l10n.exploreAll, style: const TextStyle(fontSize: 10, color: textGrey, fontWeight: FontWeight.w500, height: 1.3)),
                         ],
                       ),
                     ),
@@ -181,7 +181,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                                 color: surfaceWhite,
                                 borderRadius: BorderRadius.circular(24),
                                 border: Border.all(color: cardBorder, width: 1.5),
-                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                               ),
                               child: Row(
                                 children: [

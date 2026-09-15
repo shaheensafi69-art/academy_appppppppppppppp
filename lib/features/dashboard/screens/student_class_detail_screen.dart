@@ -18,8 +18,6 @@ class StudentClassDetailScreen extends StatelessWidget {
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
   static const Color cardBorder = Color(0xFFF3F4F6);
-  
-  Object? get model => null;
 
   Future<void> _launchURL(String urlString) async {
     final Uri url = Uri.parse(urlString);
@@ -69,7 +67,7 @@ class StudentClassDetailScreen extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(26),
                 boxShadow: [
-                  BoxShadow(color: primaryPink.withOpacity(0.25), blurRadius: 20, offset: const Offset(0, 10)),
+                  BoxShadow(color: primaryPink.withValues(alpha: 0.25), blurRadius: 20, offset: const Offset(0, 10)),
                 ],
               ),
               child: Stack(
@@ -77,7 +75,7 @@ class StudentClassDetailScreen extends StatelessWidget {
                   Positioned(
                     right: -15,
                     bottom: -15,
-                    child: Icon(Icons.school_rounded, size: 110, color: Colors.white.withOpacity(0.12)),
+                    child: Icon(Icons.school_rounded, size: 110, color: Colors.white.withValues(alpha: 0.12)),
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,7 +83,7 @@ class StudentClassDetailScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -125,7 +123,7 @@ class StudentClassDetailScreen extends StatelessWidget {
                 color: surfaceWhite,
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(color: cardBorder, width: 1.5),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
               ),
               child: Column(
                 children: [
@@ -151,7 +149,7 @@ class StudentClassDetailScreen extends StatelessWidget {
             isPaid
                 ? Column(
                     children: [
-                      if (meetingLink != model && meetingLink != null)
+                      if (meetingLink != null && meetingLink.toString().isNotEmpty)
                         _buildActionCard(
                           title: context.l10n.joinTeamsLectureRoom,
                           subtitle: context.l10n.joinTeamsLectureRoomSubtitle,
@@ -161,7 +159,7 @@ class StudentClassDetailScreen extends StatelessWidget {
                           onTap: () => _launchURL(meetingLink),
                         ),
                       if (meetingLink != null && signalLink != null) const SizedBox(height: 12),
-                      if (signalLink != null)
+                      if (signalLink != null && signalLink.toString().isNotEmpty)
                         _buildActionCard(
                           title: context.l10n.openSignalEncryptedGroup,
                           subtitle: context.l10n.signalEncryptedGroupSubtitle,
@@ -178,7 +176,7 @@ class StudentClassDetailScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: lightPinkBg,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                      border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
                     ),
                     child: Column(
                       children: [
@@ -243,15 +241,15 @@ class StudentClassDetailScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: isElevated ? color : cardBorder, width: 1.5),
             boxShadow: isElevated
-                ? [BoxShadow(color: color.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))]
-                : [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 3))],
+                ? [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 6))]
+                : [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 3))],
           ),
           child: Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isElevated ? Colors.white.withOpacity(0.2) : lightPinkBg,
+                  color: isElevated ? Colors.white.withValues(alpha: 0.2) : lightPinkBg,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(icon, color: isElevated ? Colors.white : primaryPink, size: 22),

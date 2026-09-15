@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'teacher_todo_detail_screen.dart';
+import 'teacher_reports_screen.dart';
 import '../../../core/localization/l10n_extensions.dart';
 
 class ClassGroupItem {
@@ -115,7 +116,9 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
 
       final classData = await supabase
           .from("class_groups")
-          .select("id, class_name, schedule_info, is_active, start_date, meeting_link, signal_group_link, class_students(student_id)")
+          .select(
+            "id, class_name, schedule_info, is_active, start_date, meeting_link, signal_group_link, class_students(student_id)",
+          )
           .eq("teacher_id", userId)
           .order("is_active", ascending: false)
           .order("start_date", ascending: true)
@@ -130,13 +133,19 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
         totalStudentsCount += item.enrolledCount;
         return item;
       }).toList();
-    
+
       int pendingCount = 0;
-      final myCourses = await supabase.from("courses").select("id").eq("teacher_id", userId);
+      final myCourses = await supabase
+          .from("courses")
+          .select("id")
+          .eq("teacher_id", userId);
 
       if ((myCourses as List).isNotEmpty) {
         final courseIds = myCourses.map((c) => c['id']).toList();
-        final myAssignments = await supabase.from("assignments").select("id").inFilter("course_id", courseIds);
+        final myAssignments = await supabase
+            .from("assignments")
+            .select("id")
+            .inFilter("course_id", courseIds);
 
         if ((myAssignments as List).isNotEmpty) {
           final assignmentIds = myAssignments.map((a) => a['id']).toList();
@@ -238,9 +247,10 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
 
   Future<void> _toggleTodoStatus(String id, bool currentStatus) async {
     try {
-      await supabase.from("teacher_todos").update({
-        'is_completed': !currentStatus,
-      }).eq('id', id);
+      await supabase
+          .from("teacher_todos")
+          .update({'is_completed': !currentStatus})
+          .eq('id', id);
 
       _fetchDashboardData();
     } catch (e) {
@@ -258,9 +268,7 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: primaryPink),
-      );
+      return const Center(child: CircularProgressIndicator(color: primaryPink));
     }
 
     return SingleChildScrollView(
@@ -274,15 +282,18 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [surfaceWhite, lightPinkBg.withOpacity(0.3)],
+                colors: [surfaceWhite, lightPinkBg.withValues(alpha: 0.3)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: primaryPink.withOpacity(0.15), width: 1.5),
+              border: Border.all(
+                color: primaryPink.withValues(alpha: 0.15),
+                width: 1.5,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: primaryPink.withOpacity(0.08),
+                  color: primaryPink.withValues(alpha: 0.08),
                   blurRadius: 25,
                   offset: const Offset(0, 10),
                 ),
@@ -299,9 +310,18 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                   child: CircleAvatar(
                     radius: 30,
                     backgroundColor: lightPinkBg,
-                    backgroundImage: instructor['avatar'].isNotEmpty ? NetworkImage(instructor['avatar']) : null,
+                    backgroundImage: instructor['avatar'].isNotEmpty
+                        ? NetworkImage(instructor['avatar'])
+                        : null,
                     child: instructor['avatar'].isEmpty
-                        ? Text(instructor['first_name'][0], style: const TextStyle(color: primaryPink, fontSize: 22, fontWeight: FontWeight.w900))
+                        ? Text(
+                            instructor['first_name'][0],
+                            style: const TextStyle(
+                              color: primaryPink,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          )
                         : null,
                   ),
                 ),
@@ -311,24 +331,43 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
-                          color: primaryPink.withOpacity(0.1),
+                          color: primaryPink.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(context.l10n.teacherPortal.toUpperCase(), style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: primaryPink, letterSpacing: 1.2)),
+                        child: Text(
+                          context.l10n.teacherPortal.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 7,
+                            fontWeight: FontWeight.w900,
+                            color: primaryPink,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 6),
                       Text(
                         "${instructor['first_name']} ${instructor['last_name']}",
-                        style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 18),
+                        style: const TextStyle(
+                          color: textDark,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),
                       Text(
                         instructor['email'],
-                        style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                          color: textGrey,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -337,21 +376,42 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: surfaceWhite,
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(color: cardBorder),
                     boxShadow: [
-                      BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 3)),
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.02),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
                     ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(context.l10n.balance.toUpperCase(), style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w800, color: textGrey)),
+                      Text(
+                        context.l10n.balance.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 7,
+                          fontWeight: FontWeight.w800,
+                          color: textGrey,
+                        ),
+                      ),
                       const SizedBox(height: 2),
-                      Text("\$${instructor['wallet'].toStringAsFixed(2)}", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Colors.green)),
+                      Text(
+                        "\$${instructor['wallet'].toStringAsFixed(2)}",
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.green,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -360,15 +420,60 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
           ),
           const SizedBox(height: 28),
 
-          // ================= ۲. آمار زنده =================
+          // ================= ۲. آمار زنده و دسترسی به گزارش‌ها =================
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(context.l10n.overview.toUpperCase(), style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2)),
-              Container(
-                width: 20,
-                height: 3,
-                decoration: BoxDecoration(color: primaryPink, borderRadius: BorderRadius.circular(2)),
+              Text(
+                context.l10n.overview.toUpperCase(),
+                style: const TextStyle(
+                  color: textDark,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 11,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const TeacherReportsScreen(),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: lightPinkBg,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: primaryPink.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.analytics_rounded,
+                        size: 13,
+                        color: primaryPink,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        context.l10n.teacherReports,
+                        style: const TextStyle(
+                          color: primaryPink,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -381,10 +486,30 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
             mainAxisSpacing: 12,
             childAspectRatio: 1.55,
             children: [
-              _buildGorgeousStatCard(context.l10n.totalStudents, "${stats['totalStudents']}", Icons.group_rounded, primaryPink),
-              _buildGorgeousStatCard(context.l10n.liveCampus, "${stats['totalClasses']}", Icons.live_tv_rounded, Colors.redAccent),
-              _buildGorgeousStatCard(context.l10n.pendingApprovals, "${stats['pendingGrading']}", Icons.assignment_turned_in_rounded, Colors.orange),
-              _buildGorgeousStatCard(context.l10n.active, "${stats['todayAttendance']}", Icons.how_to_reg_rounded, Colors.green),
+              _buildGorgeousStatCard(
+                context.l10n.totalStudents,
+                "${stats['totalStudents']}",
+                Icons.group_rounded,
+                primaryPink,
+              ),
+              _buildGorgeousStatCard(
+                context.l10n.liveCampus,
+                "${stats['totalClasses']}",
+                Icons.live_tv_rounded,
+                Colors.redAccent,
+              ),
+              _buildGorgeousStatCard(
+                context.l10n.pendingApprovals,
+                "${stats['pendingGrading']}",
+                Icons.assignment_turned_in_rounded,
+                Colors.orange,
+              ),
+              _buildGorgeousStatCard(
+                context.l10n.active,
+                "${stats['todayAttendance']}",
+                Icons.how_to_reg_rounded,
+                Colors.green,
+              ),
             ],
           ),
           const SizedBox(height: 32),
@@ -393,8 +518,23 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("${context.l10n.faculty.toUpperCase()} ${context.l10n.assignments.toUpperCase()}", style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2)),
-              Text("${todoList.where((t) => t['is_completed'] == true).length}/${todoList.length} ${context.l10n.completed}", style: const TextStyle(color: textGrey, fontSize: 10, fontWeight: FontWeight.bold)),
+              Text(
+                "${context.l10n.faculty.toUpperCase()} ${context.l10n.assignments.toUpperCase()}",
+                style: const TextStyle(
+                  color: textDark,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 11,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              Text(
+                "${todoList.where((t) => t['is_completed'] == true).length}/${todoList.length} ${context.l10n.completed}",
+                style: const TextStyle(
+                  color: textGrey,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -404,7 +544,13 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
               color: surfaceWhite,
               borderRadius: BorderRadius.circular(22),
               border: Border.all(color: cardBorder),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               children: [
@@ -413,20 +559,38 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                     Expanded(
                       child: TextField(
                         controller: _todoController,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textDark),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: textDark,
+                        ),
                         decoration: InputDecoration(
                           hintText: context.l10n.search,
-                          hintStyle: const TextStyle(fontSize: 11, color: textGrey),
+                          hintStyle: const TextStyle(
+                            fontSize: 11,
+                            color: textGrey,
+                          ),
                           filled: true,
-                          fillColor: cardBorder.withOpacity(0.5),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                          fillColor: cardBorder.withValues(alpha: 0.5),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     IconButton(
-                      icon: Icon(Icons.access_time_rounded, color: _selectedDueDate != null ? primaryPink : textGrey),
+                      icon: Icon(
+                        Icons.access_time_rounded,
+                        color: _selectedDueDate != null
+                            ? primaryPink
+                            : textGrey,
+                      ),
                       onPressed: _pickDueDate,
                       tooltip: "Set Due Time",
                     ),
@@ -435,8 +599,13 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                         backgroundColor: primaryPink,
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                       onPressed: _addTodoItem,
                       child: const Icon(Icons.add_rounded, size: 20),
@@ -447,9 +616,20 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.timer_rounded, size: 14, color: primaryPink),
+                      const Icon(
+                        Icons.timer_rounded,
+                        size: 14,
+                        color: primaryPink,
+                      ),
                       const SizedBox(width: 6),
-                      Text("Due: ${_selectedDueDate.toString().split('.')[0]}", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: primaryPink)),
+                      Text(
+                        "Due: ${_selectedDueDate.toString().split('.')[0]}",
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: primaryPink,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -468,8 +648,11 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                       bool isAlert = false;
                       if (!isCompleted && dueTimeString != null) {
                         final dueDate = DateTime.parse(dueTimeString);
-                        if (DateTime.now().isAfter(dueDate.subtract(const Duration(hours: 2)))) {
-                          isAlert = true; // اگر کمتر از ۲ ساعت مانده باشد یا وقتش گذشته باشد
+                        if (DateTime.now().isAfter(
+                          dueDate.subtract(const Duration(hours: 2)),
+                        )) {
+                          isAlert =
+                              true; // اگر کمتر از ۲ ساعت مانده باشد یا وقتش گذشته باشد
                         }
                       }
 
@@ -477,23 +660,33 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                         onTap: () async {
                           final result = await Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => TeacherTodoDetailScreen(todoItem: task)),
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  TeacherTodoDetailScreen(todoItem: task),
+                            ),
                           );
                           if (result == true) {
                             _fetchDashboardData();
                           }
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
-                            color: isCompleted 
-                                ? Colors.green.withOpacity(0.05) 
-                                : (isAlert ? Colors.amber.withOpacity(0.2) : cardBorder.withOpacity(0.3)),
+                            color: isCompleted
+                                ? Colors.green.withValues(alpha: 0.05)
+                                : (isAlert
+                                      ? Colors.amber.withValues(alpha: 0.2)
+                                      : cardBorder.withValues(alpha: 0.3)),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: isCompleted 
-                                  ? Colors.green.withOpacity(0.2) 
-                                  : (isAlert ? Colors.amber.shade700 : cardBorder),
+                              color: isCompleted
+                                  ? Colors.green.withValues(alpha: 0.2)
+                                  : (isAlert
+                                        ? Colors.amber.shade700
+                                        : cardBorder),
                               width: isAlert ? 1.5 : 1,
                             ),
                           ),
@@ -502,11 +695,18 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                               Checkbox(
                                 value: isCompleted,
                                 activeColor: primaryPink,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                onChanged: (val) => _toggleTodoStatus(task['id'], isCompleted),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                onChanged: (val) =>
+                                    _toggleTodoStatus(task['id'], isCompleted),
                               ),
                               if (isAlert) ...[
-                                const Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 16),
+                                const Icon(
+                                  Icons.warning_amber_rounded,
+                                  color: Colors.amber,
+                                  size: 16,
+                                ),
                                 const SizedBox(width: 6),
                               ],
                               Expanded(
@@ -518,21 +718,35 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
-                                        color: isCompleted ? textGrey : textDark,
-                                        decoration: isCompleted ? TextDecoration.lineThrough : null,
+                                        color: isCompleted
+                                            ? textGrey
+                                            : textDark,
+                                        decoration: isCompleted
+                                            ? TextDecoration.lineThrough
+                                            : null,
                                       ),
                                     ),
                                     if (dueTimeString != null) ...[
                                       const SizedBox(height: 2),
                                       Text(
                                         "Due: ${dueTimeString.split('T')[0]} ${dueTimeString.split('T')[1].substring(0, 5)}",
-                                        style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: isAlert ? Colors.amber.shade900 : textGrey),
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                          color: isAlert
+                                              ? Colors.amber.shade900
+                                              : textGrey,
+                                        ),
                                       ),
                                     ],
                                   ],
                                 ),
                               ),
-                              const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: textGrey),
+                              const Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                size: 12,
+                                color: textGrey,
+                              ),
                             ],
                           ),
                         ),
@@ -549,14 +763,32 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(context.l10n.manageClasses.toUpperCase(), style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2)),
+              Text(
+                context.l10n.manageClasses.toUpperCase(),
+                style: const TextStyle(
+                  color: textDark,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 11,
+                  letterSpacing: 1.2,
+                ),
+              ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: lightPinkBg,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text("${classes.length} ${context.l10n.totalClasses}", style: const TextStyle(color: primaryPink, fontSize: 9, fontWeight: FontWeight.w900)),
+                child: Text(
+                  "${classes.length} ${context.l10n.totalClasses}",
+                  style: const TextStyle(
+                    color: primaryPink,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
               ),
             ],
           ),
@@ -581,7 +813,9 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: room.isActive ? primaryPink.withOpacity(0.15) : Colors.black.withOpacity(0.04),
+                            color: room.isActive
+                                ? primaryPink.withValues(alpha: 0.15)
+                                : Colors.black.withValues(alpha: 0.04),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
@@ -594,15 +828,24 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: room.isActive ? primaryPink : lightPinkBg,
+                                  color: room.isActive
+                                      ? primaryPink
+                                      : lightPinkBg,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
-                                  room.isActive ? "● ${context.l10n.live.toUpperCase()}" : "○ ${context.l10n.pending.toUpperCase()}",
+                                  room.isActive
+                                      ? "● ${context.l10n.live.toUpperCase()}"
+                                      : "○ ${context.l10n.pending.toUpperCase()}",
                                   style: TextStyle(
-                                    color: room.isActive ? Colors.white : primaryPink,
+                                    color: room.isActive
+                                        ? Colors.white
+                                        : primaryPink,
                                     fontSize: 9,
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: 0.8,
@@ -611,21 +854,52 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                               ),
                               Row(
                                 children: [
-                                  const Icon(Icons.people_alt_rounded, size: 14, color: textGrey),
+                                  const Icon(
+                                    Icons.people_alt_rounded,
+                                    size: 14,
+                                    color: textGrey,
+                                  ),
                                   const SizedBox(width: 5),
-                                  Text("${room.enrolledCount} ${context.l10n.myStudents}", style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w700)),
+                                  Text(
+                                    "${room.enrolledCount} ${context.l10n.myStudents}",
+                                    style: const TextStyle(
+                                      color: textGrey,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ],
                           ),
                           const SizedBox(height: 14),
-                          Text(room.className, style: const TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 17)),
+                          Text(
+                            room.className,
+                            style: const TextStyle(
+                              color: textDark,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 17,
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              const Icon(Icons.access_time_rounded, size: 14, color: textGrey),
+                              const Icon(
+                                Icons.access_time_rounded,
+                                size: 14,
+                                color: textGrey,
+                              ),
                               const SizedBox(width: 6),
-                              Text(room.scheduleInfo.isNotEmpty ? room.scheduleInfo : context.l10n.schedule, style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500)),
+                              Text(
+                                room.scheduleInfo.isNotEmpty
+                                    ? room.scheduleInfo
+                                    : context.l10n.schedule,
+                                style: const TextStyle(
+                                  color: textGrey,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 18),
@@ -635,30 +909,66 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                                 Expanded(
                                   child: ElevatedButton.icon(
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: room.isActive ? primaryPink : textDark,
+                                      backgroundColor: room.isActive
+                                          ? primaryPink
+                                          : textDark,
                                       foregroundColor: Colors.white,
                                       elevation: 0,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 14,
+                                      ),
                                     ),
-                                    icon: const Icon(Icons.video_call_rounded, size: 18),
-                                    label: Text(context.l10n.joinClass, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                                    onPressed: () => _launchURL(room.meetingLink!),
+                                    icon: const Icon(
+                                      Icons.video_call_rounded,
+                                      size: 18,
+                                    ),
+                                    label: Text(
+                                      context.l10n.joinClass,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    onPressed: () =>
+                                        _launchURL(room.meetingLink!),
                                   ),
                                 ),
-                              if (room.meetingLink != null && room.signalGroupLink != null) const SizedBox(width: 10),
+                              if (room.meetingLink != null &&
+                                  room.signalGroupLink != null)
+                                const SizedBox(width: 10),
                               if (room.signalGroupLink != null)
                                 Expanded(
                                   child: OutlinedButton.icon(
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: textDark,
-                                      side: const BorderSide(color: cardBorder, width: 1.5),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      side: const BorderSide(
+                                        color: cardBorder,
+                                        width: 1.5,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 14,
+                                      ),
                                     ),
-                                    icon: const Icon(Icons.chat_bubble_rounded, color: primaryPink, size: 16),
-                                    label: Text(context.l10n.chat, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                                    onPressed: () => _launchURL(room.signalGroupLink!),
+                                    icon: const Icon(
+                                      Icons.chat_bubble_rounded,
+                                      color: primaryPink,
+                                      size: 16,
+                                    ),
+                                    label: Text(
+                                      context.l10n.chat,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    onPressed: () =>
+                                        _launchURL(room.signalGroupLink!),
                                   ),
                                 ),
                             ],
@@ -676,7 +986,14 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(color: cardBorder),
                   ),
-                  child: Text(context.l10n.noDataFound, style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w600)),
+                  child: Text(
+                    context.l10n.noDataFound,
+                    style: const TextStyle(
+                      color: textGrey,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
           const SizedBox(height: 40),
         ],
@@ -684,7 +1001,12 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
     );
   }
 
-  Widget _buildGorgeousStatCard(String title, String value, IconData icon, Color accentColor) {
+  Widget _buildGorgeousStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color accentColor,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -693,7 +1015,7 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
         border: Border.all(color: cardBorder),
         boxShadow: [
           BoxShadow(
-            color: accentColor.withOpacity(0.04),
+            color: accentColor.withValues(alpha: 0.04),
             blurRadius: 15,
             offset: const Offset(0, 6),
           ),
@@ -709,15 +1031,30 @@ class _TeacherOverviewScreenState extends State<TeacherOverviewScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.12),
+                  color: accentColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: accentColor, size: 20),
               ),
-              Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: accentColor)),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: accentColor,
+                ),
+              ),
             ],
           ),
-          Text(title.toUpperCase(), style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+          Text(
+            title.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 8,
+              fontWeight: FontWeight.w900,
+              color: textGrey,
+              letterSpacing: 0.8,
+            ),
+          ),
         ],
       ),
     );
