@@ -8,6 +8,7 @@ import 'core/services/ad_service.dart';
 import 'core/services/deep_link_service.dart';
 import 'core/services/language_service.dart';
 import 'core/services/notification_service.dart';
+import 'core/services/security_service.dart';
 import 'core/utils/system_ui_helper.dart';
 import 'features/auth/screens/welcome_screen.dart';
 import 'l10n/generated/app_localizations.dart';
@@ -52,10 +53,39 @@ Future<void> main() async {
   runApp(SafiAcademyApp(supabaseReady: isInitialized));
 }
 
-class SafiAcademyApp extends StatelessWidget {
+class SafiAcademyApp extends StatefulWidget {
   final bool supabaseReady;
 
   const SafiAcademyApp({super.key, required this.supabaseReady});
+
+  @override
+  State<SafiAcademyApp> createState() => _SafiAcademyAppState();
+}
+
+class _SafiAcademyAppState extends State<SafiAcademyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      SecurityService.instance.markSessionLocked();
+    } else if (state == AppLifecycleState.resumed) {
+      final context = appNavigatorKey.currentContext;
+      if (context != null) {
+        SecurityService.instance.verifyLockIfNeeded(context);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +109,7 @@ class SafiAcademyApp extends StatelessWidget {
             colorScheme: const ColorScheme.dark(primary: Colors.white),
             useMaterial3: true,
           ),
-          home: supabaseReady ? const AuthGate() : const WelcomeScreen(),
+          home: widget.supabaseReady ? const AuthGate() : const WelcomeScreen(),
         );
       },
     );

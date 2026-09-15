@@ -928,5 +928,14 @@
   "settingsUpdatedSuccess": "Einstellungen & Konfigurationen erfolgreich synchronisiert! 🚀",
   "failedToUpdateSettings": "Fehler beim Aktualisieren der Konfiguration",
   "noMessages": "Noch keine Nachrichten.",
-  "teachers": "Dozenten"
+  "teachers": "Dozenten",
+  "activityLog": "Aktivitätsprotokoll",
+  "loginActivity": "Anmeldeaktivität",
+  "activeSessions": "Aktive Sitzungen & Geräte",
+  "currentDevice": "Aktuelles Gerät (Dieses Smartphone)",
+  "pastSessions": "Vergangene Anmeldungen",
+  "noOtherActiveSessions": "Keine weiteren aktiven Sitzungen aufgezeichnet.",
+  "activeNow": "Jetzt aktiv",
+  "refresh": "Aktualisieren",
+  "clear": "Löschen"
 }

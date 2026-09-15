@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:local_auth/local_auth.dart';
 import '../../../core/localization/l10n_extensions.dart';
 import '../../../core/routing/auth_gate.dart';
+import '../../../core/services/language_service.dart';
+import '../../../core/services/security_service.dart';
+import '../../../core/widgets/language_selector_sheet.dart';
+import '../../auth/screens/activity_log_screen.dart';
 
 class AdminSettingsScreen extends StatefulWidget {
   const AdminSettingsScreen({super.key});
@@ -12,11 +17,11 @@ class AdminSettingsScreen extends StatefulWidget {
 
 class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   final supabase = Supabase.instance.client;
+  final LocalAuthentication auth = LocalAuthentication();
 
   bool isLoading = true;
   bool isSaving = false;
   bool isLoggingOut = false;
-  Map<String, String>? message;
 
   final firstNameCtrl = TextEditingController();
   final lastNameCtrl = TextEditingController();
@@ -24,15 +29,13 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   final phoneCtrl = TextEditingController();
   final avatarCtrl = TextEditingController();
   final bioCtrl = TextEditingController();
-  final achievementsCtrl = TextEditingController();
+  final newPasswordCtrl = TextEditingController();
 
-  String role = "teacher";
-  int totalScore = 0;
-  double walletBalance = 0;
+  String role = "super_admin";
   String userId = "";
 
-  List<Map<String, dynamic>> teacherCourses = [];
-  List<Map<String, dynamic>> teacherClasses = [];
+  bool _notificationsEnabled = true;
+  bool _biometricEnabled = false;
 
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
@@ -44,7 +47,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchAdminAndFacultyData();
+    _loadAdminData();
   }
 
   @override
@@ -55,11 +58,11 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     phoneCtrl.dispose();
     avatarCtrl.dispose();
     bioCtrl.dispose();
-    achievementsCtrl.dispose();
+    newPasswordCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _fetchAdminAndFacultyData() async {
+  Future<void> _loadAdminData() async {
     setState(() => isLoading = true);
     try {
       final user = supabase.auth.currentUser;
@@ -67,183 +70,180 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
         _logout();
         return;
       }
-
       userId = user.id;
 
-      // 1. دریافت اطلاعات از جدول profiles
+      // بارگذاری پروفایل ادمین
       final profile = await supabase
           .from("profiles")
           .select("*")
           .eq("id", userId)
-          .single();
+          .maybeSingle();
 
-      firstNameCtrl.text = profile['first_name'] ?? "";
-      lastNameCtrl.text = profile['last_name'] ?? "";
-      emailCtrl.text = profile['email'] ?? "";
-      phoneCtrl.text = profile['phone_number'] ?? "";
-      avatarCtrl.text = profile['avatar_url'] ?? "";
-      bioCtrl.text = profile['bio'] ?? "";
+      if (profile != null) {
+        firstNameCtrl.text = profile['first_name'] ?? "";
+        lastNameCtrl.text = profile['last_name'] ?? "";
+        emailCtrl.text = profile['email'] ?? "";
+        phoneCtrl.text = profile['phone_number'] ?? "";
+        avatarCtrl.text = profile['avatar_url'] ?? "";
+        bioCtrl.text = profile['bio'] ?? "";
+        role = profile['role'] ?? "super_admin";
+      }
 
-      role = profile['role'] ?? "teacher";
-      totalScore = profile['total_score'] ?? 0;
-      walletBalance = (profile['wallet_balance'] ?? 0).toDouble();
-
-      // 2. دریافت اطلاعات از جدول teacher_info
-      try {
-        final info = await supabase
-            .from("teacher_info")
-            .select("*")
-            .eq("id", userId)
-            .maybeSingle();
-
-        if (info != null) {
-          bioCtrl.text = info['bio'] ?? bioCtrl.text;
-          achievementsCtrl.text = info['achievements'] ?? "";
-          if (info['avatar_url'] != null && avatarCtrl.text.isEmpty) {
-            avatarCtrl.text = info['avatar_url'];
-          }
-        }
-      } catch (_) {}
-
-      // 3. دریافت دوره‌ها و تخصص‌های مرتبط از teacher_info_courses و courses
-      try {
-        final tCourses = await supabase
-            .from("teacher_info_courses")
-            .select("course:courses(id, title, category)")
-            .eq("teacher_info_id", userId);
-
-        teacherCourses = (tCourses as List)
-            .map((tc) => tc['course'] as Map<String, dynamic>)
-            .toList();
-      } catch (_) {}
-
-      // 4. دریافت کلاس‌های مرتبط از class_groups
-      try {
-        final classesData = await supabase
-            .from("class_groups")
-            .select(
-              "id, class_name, is_active, course:courses(title), class_students(student_id)",
-            )
-            .eq("teacher_id", userId);
-
-        teacherClasses = (classesData as List).map((cls) {
-          return {
-            'class_name': cls['class_name'],
-            'is_active': cls['is_active'],
-            'students_count': (cls['class_students'] as List?)?.length ?? 0,
-            'course_title': cls['course'] != null
-                ? (cls['course'] is List
-                      ? cls['course'][0]['title']
-                      : cls['course']['title'])
-                : 'General',
-          };
-        }).toList();
-      } catch (_) {}
+      // بارگذاری تنظیمات امنیتی
+      _biometricEnabled = await SecurityService.instance.isAppLockEnabled();
     } catch (e) {
-      debugPrint("Error fetching faculty settings profile: $e");
+      debugPrint("Error loading admin settings: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
   }
 
-  Future<void> handleSaveChanges() async {
-    setState(() {
-      isSaving = true;
-      message = null;
-    });
+  // ================= تغییر رمز عبور =================
+  Future<void> _changePassword() async {
+    if (newPasswordCtrl.text.trim().length < 6) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.passwordMinLength),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
 
+    setState(() => isSaving = true);
     try {
-      String fName = firstNameCtrl.text.trim();
-      String lName = lastNameCtrl.text.trim();
-      String email = emailCtrl.text.trim();
-      String phone = phoneCtrl.text.trim();
-      String bio = bioCtrl.text.trim();
-      String achievements = achievementsCtrl.text.trim();
-      String avatar = avatarCtrl.text.trim();
+      await supabase.auth.updateUser(
+        UserAttributes(password: newPasswordCtrl.text.trim()),
+      );
+      if (!mounted) return;
+      newPasswordCtrl.clear();
+      FocusScope.of(context).unfocus();
 
-      // آپدیت جدول profiles
-      await supabase
-          .from("profiles")
-          .update({
-            'first_name': fName,
-            'last_name': lName,
-            'email': email,
-            'phone_number': phone.isNotEmpty ? phone : null,
-            'bio': bio.isNotEmpty ? bio : null,
-            'avatar_url': avatar.isNotEmpty ? avatar : null,
-            'role': role,
-          })
-          .eq("id", userId);
-
-      // آپدیت جدول teacher_info
-      await supabase.from("teacher_info").upsert({
-        'id': userId,
-        'first_name': fName,
-        'last_name': lName,
-        'bio': bio.isNotEmpty ? bio : null,
-        'achievements': achievements.isNotEmpty ? achievements : null,
-        'avatar_url': avatar.isNotEmpty ? avatar : null,
-      });
-
-      if (mounted) {
-        setState(() {
-          message = {
-            'type': 'success',
-            'text': context.l10n.settingsUpdatedSuccess,
-          };
-        });
-      }
-
-      Future.delayed(const Duration(seconds: 3), () {
-        if (mounted) setState(() => message = null);
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.passwordChangedSuccess),
+          backgroundColor: Colors.green,
+        ),
+      );
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          message = {
-            'type': 'error',
-            'text': '${context.l10n.failedToUpdateSettings}: ${e.toString()}',
-          };
-        });
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("${context.l10n.errorChangingPassword}: $e"),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
     } finally {
       if (mounted) setState(() => isSaving = false);
     }
   }
 
-  Future<void> _logout() async {
-    await supabase.auth.signOut();
-    if (mounted) {
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthGate()));
+  // ================= احراز هویت و تنظیم قفل بیومتریک و پین =================
+  Future<void> _toggleBiometric(bool value) async {
+    if (value) {
+      // اگر بیومتریک فعال می‌شود، کاربر ملزم به تنظیم یک پین ۴ رقمی است
+      final String? existingPin = await SecurityService.instance.getPinCode();
+      if (existingPin == null || existingPin.length != 4) {
+        if (!mounted) return;
+        _showPinSetupDialog();
+        return;
+      }
+
+      final canAuth = await SecurityService.instance.canCheckBiometrics();
+      if (canAuth) {
+        final authenticated = await SecurityService.instance
+            .authenticateBiometric(
+              reason: 'Authenticate to enable biometric app lock for Admin',
+            );
+        if (authenticated && mounted) {
+          await SecurityService.instance.saveSecuritySettings(
+            enabled: true,
+            pin: existingPin,
+          );
+          setState(() => _biometricEnabled = true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.biometricLoginEnabled),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.biometricsNotSupported),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } else {
+      await SecurityService.instance.disableSecurity();
+      setState(() => _biometricEnabled = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("App Lock Disabled / قفل برنامه غیرفعال شد"),
+            backgroundColor: Colors.black87,
+          ),
+        );
+      }
     }
   }
 
-  Future<void> handleLogoutButton() async {
-    bool? confirmLogout = await showDialog<bool>(
+  // ================= دیالوگ تنظیم پین‌کد برای اولین بار =================
+  void _showPinSetupDialog() {
+    final pinController = TextEditingController();
+    showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
         backgroundColor: surfaceWhite,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: cardBorder, width: 1.5),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
-          context.l10n.logOutAccount,
+          context.l10n.setAppPinLock,
           style: const TextStyle(
             color: textDark,
-            fontSize: 14,
             fontWeight: FontWeight.w900,
+            fontSize: 16,
           ),
         ),
-        content: Text(
-          context.l10n.confirmLogout,
-          style: const TextStyle(color: textGrey, fontSize: 12),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              context.l10n.enter4DigitPin,
+              style: const TextStyle(
+                color: textGrey,
+                fontSize: 12,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: pinController,
+              keyboardType: TextInputType.number,
+              maxLength: 4,
+              obscureText: true,
+              cursorColor: primaryPink,
+              decoration: InputDecoration(
+                hintText: "••••",
+                counterText: "",
+                filled: true,
+                fillColor: lightPinkBg,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(ctx),
             child: Text(
               context.l10n.cancel,
               style: const TextStyle(
@@ -252,763 +252,169 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               ),
             ),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              context.l10n.logout,
-              style: const TextStyle(
-                color: Colors.redAccent,
-                fontWeight: FontWeight.bold,
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryPink,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
               ),
+            ),
+            onPressed: () async {
+              final pin = pinController.text.trim();
+              if (pin.length == 4 && int.tryParse(pin) != null) {
+                Navigator.pop(ctx);
+                await SecurityService.instance.saveSecuritySettings(
+                  enabled: true,
+                  pin: pin,
+                );
+                setState(() => _biometricEnabled = true);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(context.l10n.biometricLoginEnabled),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } else {
+                ScaffoldMessenger.of(ctx).showSnackBar(
+                  SnackBar(
+                    content: Text(context.l10n.enter4DigitPin),
+                    backgroundColor: Colors.redAccent,
+                  ),
+                );
+              }
+            },
+            child: Text(
+              context.l10n.save,
+              style: const TextStyle(fontWeight: FontWeight.w900),
             ),
           ),
         ],
       ),
     );
-
-    if (confirmLogout != true) return;
-
-    setState(() => isLoggingOut = true);
-    await _logout();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (isLoading) {
-      return Scaffold(
-        backgroundColor: surfaceWhite,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const CircularProgressIndicator(
-                color: primaryPink,
-                strokeWidth: 2.5,
-              ),
-              const SizedBox(height: 14),
-              Text(
-                context.l10n.synchronizingEngine,
-                style: const TextStyle(
-                  color: textGrey,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Scaffold(
+  // ================= دیالوگ ویرایش مشخصات ادمین =================
+  void _showEditProfileDialog() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
       backgroundColor: surfaceWhite,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
-        physics: const BouncingScrollPhysics(),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 800),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: SingleChildScrollView(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ================= HEADER =================
-                Container(
-                  padding: const EdgeInsets.all(22),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        surfaceWhite,
-                        lightPinkBg.withValues(alpha: 0.4),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(
-                      color: primaryPink.withValues(alpha: 0.15),
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: primaryPink.withValues(alpha: 0.08),
-                        blurRadius: 25,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        alignment: WrapAlignment.spaceBetween,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: lightPinkBg,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              context.l10n.adminSettings,
-                              style: const TextStyle(
-                                fontSize: 8,
-                                fontWeight: FontWeight.w900,
-                                color: primaryPink,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          ),
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.redAccent.withValues(
-                                alpha: 0.12,
-                              ),
-                              foregroundColor: Colors.redAccent,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              side: BorderSide(
-                                color: Colors.redAccent.withValues(alpha: 0.3),
-                                width: 1.5,
-                              ),
-                            ),
-                            icon: isLoggingOut
-                                ? const SizedBox(
-                                    width: 14,
-                                    height: 14,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.redAccent,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(Icons.logout_rounded, size: 16),
-                            label: Text(
-                              isLoggingOut
-                                  ? context.l10n.loading
-                                  : context.l10n.logout,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            onPressed: isLoggingOut ? null : handleLogoutButton,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        context.l10n.systemConfiguration,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                          color: textDark,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        context.l10n.adminSettingsSubtitle,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: textGrey,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                if (message != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
                     decoration: BoxDecoration(
-                      color: message!['type'] == 'success'
-                          ? Colors.green.withValues(alpha: 0.12)
-                          : Colors.redAccent.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: message!['type'] == 'success'
-                            ? Colors.green.withValues(alpha: 0.3)
-                            : Colors.redAccent.withValues(alpha: 0.3),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          message!['type'] == 'success'
-                              ? Icons.check_circle_rounded
-                              : Icons.error_rounded,
-                          color: message!['type'] == 'success'
-                              ? Colors.green.shade700
-                              : Colors.redAccent,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            message!['text']!,
-                            style: TextStyle(
-                              color: message!['type'] == 'success'
-                                  ? Colors.green.shade700
-                                  : Colors.redAccent,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ),
-                      ],
+                      color: cardBorder,
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                ],
-
-                // ================= SECTION 1: IDENTITY & PROFILES =================
-                Container(
-                  padding: const EdgeInsets.all(22),
-                  decoration: BoxDecoration(
-                    color: surfaceWhite,
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: cardBorder, width: 1.5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 15,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        context.l10n.facultyIdentityAndRole,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          color: textGrey,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Avatar
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 28,
-                            backgroundColor: lightPinkBg,
-                            backgroundImage: avatarCtrl.text.trim().isNotEmpty
-                                ? NetworkImage(avatarCtrl.text.trim())
-                                : null,
-                            child: avatarCtrl.text.trim().isEmpty
-                                ? Text(
-                                    firstNameCtrl.text.isNotEmpty
-                                        ? firstNameCtrl.text[0]
-                                        : 'T',
-                                    style: const TextStyle(
-                                      color: primaryPink,
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 16,
-                                    ),
-                                  )
-                                : null,
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  context.l10n.avatarUrl,
-                                  style: const TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w900,
-                                    color: textGrey,
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                TextField(
-                                  controller: avatarCtrl,
-                                  onChanged: (_) => setState(() {}),
-                                  style: const TextStyle(
-                                    color: textDark,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  decoration: _inputFieldDecoration(
-                                    "https://...",
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Names
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${context.l10n.firstName} *",
-                                  style: const TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w900,
-                                    color: textGrey,
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                TextField(
-                                  controller: firstNameCtrl,
-                                  style: const TextStyle(
-                                    color: textDark,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  decoration: _inputFieldDecoration(
-                                    context.l10n.firstName,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${context.l10n.lastName} *",
-                                  style: const TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w900,
-                                    color: textGrey,
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                TextField(
-                                  controller: lastNameCtrl,
-                                  style: const TextStyle(
-                                    color: textDark,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  decoration: _inputFieldDecoration(
-                                    context.l10n.lastName,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      Text(
-                        context.l10n.email,
-                        style: const TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                          color: textGrey,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      TextField(
-                        controller: emailCtrl,
-                        style: const TextStyle(
-                          color: textDark,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        decoration: _inputFieldDecoration(context.l10n.email),
-                      ),
-                      const SizedBox(height: 16),
-
-                      Text(
-                        context.l10n.phoneNumber,
-                        style: const TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                          color: textGrey,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      TextField(
-                        controller: phoneCtrl,
-                        keyboardType: TextInputType.phone,
-                        style: const TextStyle(
-                          color: textDark,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        decoration: _inputFieldDecoration(
-                          context.l10n.phoneNumber,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // System Role Dropdown
-                      Text(
-                        context.l10n.adminRole,
-                        style: const TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                          color: textGrey,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      DropdownButtonFormField<String>(
-                        value: role,
-                        dropdownColor: surfaceWhite,
-                        style: const TextStyle(
-                          color: textDark,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        decoration: _inputFieldDecoration(
-                          context.l10n.adminRole,
-                        ),
-                        items: [
-                          DropdownMenuItem(
-                            value: 'teacher',
-                            child: Text(context.l10n.teacherRole),
-                          ),
-                          DropdownMenuItem(
-                            value: 'super_admin',
-                            child: Text(context.l10n.superAdminRole),
-                          ),
-                          DropdownMenuItem(
-                            value: 'student',
-                            child: Text(context.l10n.studentRole),
-                          ),
-                        ],
-                        onChanged: (val) {
-                          if (val != null) setState(() => role = val);
-                        },
-                      ),
-                    ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  context.l10n.editProfile,
+                  style: const TextStyle(
+                    color: textDark,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 17,
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // ================= SECTION 2: TEACHER INFO =================
-                Container(
-                  padding: const EdgeInsets.all(22),
-                  decoration: BoxDecoration(
-                    color: surfaceWhite,
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: cardBorder, width: 1.5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 15,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        context.l10n.teacherInfoAndCredentials,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          color: textGrey,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      Text(
-                        context.l10n.bio,
-                        style: const TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                          color: textGrey,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      TextField(
-                        controller: bioCtrl,
-                        maxLines: 4,
-                        style: const TextStyle(
-                          color: textDark,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        decoration: _inputFieldDecoration(context.l10n.bio),
-                      ),
-                      const SizedBox(height: 16),
-
-                      Text(
-                        context.l10n.achievements,
-                        style: const TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                          color: textGrey,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      TextField(
-                        controller: achievementsCtrl,
-                        maxLines: 3,
-                        style: const TextStyle(
-                          color: textDark,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        decoration: _inputFieldDecoration(
-                          context.l10n.achievements,
-                        ),
-                      ),
-                    ],
-                  ),
+                const SizedBox(height: 16),
+                _buildField(context.l10n.firstName, firstNameCtrl),
+                const SizedBox(height: 10),
+                _buildField(context.l10n.lastName, lastNameCtrl),
+                const SizedBox(height: 10),
+                _buildField(
+                  context.l10n.phoneNumber,
+                  phoneCtrl,
+                  keyboardType: TextInputType.phone,
                 ),
-                const SizedBox(height: 20),
-
-                // ================= SECTION 3: SPECIALIZED COURSES & CLASSES =================
-                Container(
-                  padding: const EdgeInsets.all(22),
-                  decoration: BoxDecoration(
-                    color: surfaceWhite,
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: cardBorder, width: 1.5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 15,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        context.l10n.specializedCourses,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          color: textGrey,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      teacherCourses.isEmpty
-                          ? Text(
-                              context.l10n.noSpecializedCourses,
-                              style: const TextStyle(
-                                color: textGrey,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            )
-                          : ListView.separated(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: teacherCourses.length,
-                              separatorBuilder: (_, _) =>
-                                  const SizedBox(height: 8),
-                              itemBuilder: (context, index) {
-                                final crs = teacherCourses[index];
-                                return Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: cardBorder.withValues(alpha: 0.5),
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          crs['title'] ?? 'Course',
-                                          style: const TextStyle(
-                                            color: textDark,
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 3,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: lightPinkBg,
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          crs['category'] ?? 'General',
-                                          style: const TextStyle(
-                                            color: primaryPink,
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                      const SizedBox(height: 20),
-
-                      Text(
-                        context.l10n.assignedClasses,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          color: textGrey,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      teacherClasses.isEmpty
-                          ? Text(
-                              context.l10n.noAssignedClasses,
-                              style: const TextStyle(
-                                color: textGrey,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            )
-                          : ListView.separated(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: teacherClasses.length,
-                              separatorBuilder: (_, _) =>
-                                  const SizedBox(height: 8),
-                              itemBuilder: (context, index) {
-                                final cls = teacherClasses[index];
-                                return Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: cardBorder.withValues(alpha: 0.5),
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              cls['class_name'],
-                                              style: const TextStyle(
-                                                color: textDark,
-                                                fontWeight: FontWeight.w900,
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              "${context.l10n.course}: ${cls['course_title']}",
-                                              style: const TextStyle(
-                                                color: textGrey,
-                                                fontSize: 10,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: lightPinkBg,
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          "${cls['students_count']} ${context.l10n.students}",
-                                          style: const TextStyle(
-                                            color: primaryPink,
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Save Button
+                const SizedBox(height: 10),
+                _buildField(context.l10n.bio, bioCtrl, maxLines: 2),
+                const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
+                  height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryPink,
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    onPressed: isSaving ? null : handleSaveChanges,
+                    onPressed: isSaving
+                        ? null
+                        : () async {
+                            setModalState(() => isSaving = true);
+                            try {
+                              await supabase
+                                  .from("profiles")
+                                  .update({
+                                    "first_name": firstNameCtrl.text.trim(),
+                                    "last_name": lastNameCtrl.text.trim(),
+                                    "phone_number": phoneCtrl.text.trim(),
+                                    "bio": bioCtrl.text.trim(),
+                                    "updated_at": DateTime.now()
+                                        .toIso8601String(),
+                                  })
+                                  .eq("id", userId);
+
+                              if (mounted) {
+                                Navigator.pop(ctx);
+                                setState(() {});
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(context.l10n.profileUpdated),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              ScaffoldMessenger.of(ctx).showSnackBar(
+                                SnackBar(
+                                  content: Text("Error updating profile: $e"),
+                                  backgroundColor: Colors.redAccent,
+                                ),
+                              );
+                            } finally {
+                              setModalState(() => isSaving = false);
+                            }
+                          },
                     child: isSaving
                         ? const SizedBox(
-                            height: 18,
-                            width: 18,
+                            width: 20,
+                            height: 20,
                             child: CircularProgressIndicator(
                               color: Colors.white,
-                              strokeWidth: 2.5,
+                              strokeWidth: 2,
                             ),
                           )
                         : Text(
-                            context.l10n.saveSettings,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 11,
-                              letterSpacing: 1,
-                            ),
+                            context.l10n.saveChanges,
+                            style: const TextStyle(fontWeight: FontWeight.w900),
                           ),
                   ),
                 ),
-                const SizedBox(height: 40),
               ],
             ),
           ),
@@ -1017,24 +423,574 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     );
   }
 
-  InputDecoration _inputFieldDecoration(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: const TextStyle(color: textGrey, fontSize: 11),
-      filled: true,
-      fillColor: cardBorder.withValues(alpha: 0.5),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: cardBorder),
+  Widget _buildField(
+    String label,
+    TextEditingController ctrl, {
+    int maxLines = 1,
+    TextInputType? keyboardType,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: textDark,
+            fontWeight: FontWeight.bold,
+            fontSize: 11,
+          ),
+        ),
+        const SizedBox(height: 4),
+        TextField(
+          controller: ctrl,
+          maxLines: maxLines,
+          keyboardType: keyboardType,
+          style: const TextStyle(fontSize: 13, color: textDark),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: lightPinkBg,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ================= خروج از حساب =================
+  Future<void> _logout() async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: surfaceWhite,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(
+          context.l10n.logout,
+          style: const TextStyle(fontWeight: FontWeight.w900, color: textDark),
+        ),
+        content: Text(
+          context.l10n.confirmLogout,
+          style: const TextStyle(color: textGrey, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              context.l10n.cancel,
+              style: const TextStyle(
+                color: textGrey,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              context.l10n.logout,
+              style: const TextStyle(fontWeight: FontWeight.w900),
+            ),
+          ),
+        ],
       ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: cardBorder),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: primaryPink, width: 1.5),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => isLoggingOut = true);
+    try {
+      await supabase.auth.signOut();
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const AuthGate()),
+        (route) => false,
+      );
+    } catch (e) {
+      debugPrint("Logout error: $e");
+    } finally {
+      if (mounted) setState(() => isLoggingOut = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentLang = LanguageService.instance.currentLanguage;
+
+    return Scaffold(
+      backgroundColor: surfaceWhite,
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator(color: primaryPink))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 20.0,
+              ),
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ================= ۱. هدر پروفایل ادمین =================
+                  Container(
+                    padding: const EdgeInsets.all(22),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          surfaceWhite,
+                          lightPinkBg.withValues(alpha: 0.5),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(
+                        color: primaryPink.withValues(alpha: 0.2),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: primaryPink.withValues(alpha: 0.08),
+                          blurRadius: 25,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 34,
+                          backgroundColor: lightPinkBg,
+                          backgroundImage: avatarCtrl.text.isNotEmpty
+                              ? NetworkImage(avatarCtrl.text)
+                              : null,
+                          child: avatarCtrl.text.isEmpty
+                              ? const Icon(
+                                  Icons.admin_panel_settings_rounded,
+                                  size: 36,
+                                  color: primaryPink,
+                                )
+                              : null,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${firstNameCtrl.text} ${lastNameCtrl.text}"
+                                        .trim()
+                                        .isEmpty
+                                    ? "Administrator"
+                                    : "${firstNameCtrl.text} ${lastNameCtrl.text}",
+                                style: const TextStyle(
+                                  color: textDark,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 17,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                emailCtrl.text,
+                                style: const TextStyle(
+                                  color: textGrey,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: primaryPink,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  role.toUpperCase().replaceAll('_', ' '),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.edit_rounded,
+                            color: primaryPink,
+                          ),
+                          tooltip: context.l10n.editProfile,
+                          onPressed: _showEditProfileDialog,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // ================= ۲. بخش زبان برنامه (Language Selection) =================
+                  _buildSectionHeader(context.l10n.appPreferences),
+                  const SizedBox(height: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.02),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 6,
+                      ),
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: lightPinkBg,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.translate_rounded,
+                          color: primaryPink,
+                          size: 22,
+                        ),
+                      ),
+                      title: Text(
+                        context.l10n.language,
+                        style: const TextStyle(
+                          color: textDark,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                        ),
+                      ),
+                      subtitle: Text(
+                        "${currentLang.flag} ${currentLang.name}",
+                        style: const TextStyle(
+                          color: textGrey,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      trailing: const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: textGrey,
+                        size: 14,
+                      ),
+                      onTap: () {
+                        LanguageSelectorSheet.show(context);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // ================= ۳. امنیت و لاگ فعالیت‌ها =================
+                  _buildSectionHeader(context.l10n.appLockAndPrivacy),
+                  const SizedBox(height: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.02),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        SwitchListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 4,
+                          ),
+                          secondary: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: lightPinkBg,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.fingerprint_rounded,
+                              color: primaryPink,
+                              size: 22,
+                            ),
+                          ),
+                          title: Text(
+                            context.l10n.biometricAuth,
+                            style: const TextStyle(
+                              color: textDark,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                            ),
+                          ),
+                          subtitle: Text(
+                            context.l10n.biometricAuthDesc,
+                            style: const TextStyle(
+                              color: textGrey,
+                              fontSize: 11,
+                            ),
+                          ),
+                          value: _biometricEnabled,
+                          activeThumbColor: primaryPink,
+                          activeTrackColor: lightPinkBg,
+                          onChanged: _toggleBiometric,
+                        ),
+                        const Divider(height: 1, color: cardBorder, indent: 64),
+                        ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 4,
+                          ),
+                          leading: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: lightPinkBg,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.devices_rounded,
+                              color: primaryPink,
+                              size: 22,
+                            ),
+                          ),
+                          title: Text(
+                            context.l10n.activityLog,
+                            style: const TextStyle(
+                              color: textDark,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                            ),
+                          ),
+                          subtitle: Text(
+                            context.l10n.activeSessions,
+                            style: const TextStyle(
+                              color: textGrey,
+                              fontSize: 11,
+                            ),
+                          ),
+                          trailing: const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: textGrey,
+                            size: 14,
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ActivityLogScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        const Divider(height: 1, color: cardBorder, indent: 64),
+                        SwitchListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 4,
+                          ),
+                          secondary: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: lightPinkBg,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.notifications_active_rounded,
+                              color: primaryPink,
+                              size: 22,
+                            ),
+                          ),
+                          title: Text(
+                            context.l10n.pushNotifications,
+                            style: const TextStyle(
+                              color: textDark,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                            ),
+                          ),
+                          subtitle: Text(
+                            context.l10n.notifications,
+                            style: const TextStyle(
+                              color: textGrey,
+                              fontSize: 11,
+                            ),
+                          ),
+                          value: _notificationsEnabled,
+                          activeThumbColor: primaryPink,
+                          activeTrackColor: lightPinkBg,
+                          onChanged: (val) =>
+                              setState(() => _notificationsEnabled = val),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // ================= ۴. تغییر رمز عبور =================
+                  _buildSectionHeader(context.l10n.changePassword),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: cardBorder, width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.02),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextField(
+                          controller: newPasswordCtrl,
+                          obscureText: true,
+                          cursorColor: primaryPink,
+                          decoration: InputDecoration(
+                            hintText: context.l10n.newPassword,
+                            hintStyle: const TextStyle(
+                              color: textGrey,
+                              fontSize: 12,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.lock_outline_rounded,
+                              color: textGrey,
+                              size: 20,
+                            ),
+                            filled: true,
+                            fillColor: lightPinkBg,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 46,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryPink,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            onPressed: isSaving ? null : _changePassword,
+                            child: isSaving
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text(
+                                    context.l10n.updatePassword,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // ================= ۵. دکمه خروج =================
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(
+                          color: Colors.redAccent,
+                          width: 1.5,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                      ),
+                      onPressed: isLoggingOut ? null : _logout,
+                      icon: const Icon(
+                        Icons.logout_rounded,
+                        color: Colors.redAccent,
+                        size: 20,
+                      ),
+                      label: isLoggingOut
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.redAccent,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              context.l10n.logout,
+                              style: const TextStyle(
+                                color: Colors.redAccent,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 14,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        color: textDark,
+        fontSize: 14,
+        fontWeight: FontWeight.w900,
+        letterSpacing: 0.5,
       ),
     );
   }

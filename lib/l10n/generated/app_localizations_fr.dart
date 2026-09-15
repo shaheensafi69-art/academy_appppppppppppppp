@@ -2902,4 +2902,32 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get teachers => 'Enseignants';
+
+  @override
+  String get activityLog => 'Journal d\'activité';
+
+  @override
+  String get loginActivity => 'Activité de connexion';
+
+  @override
+  String get activeSessions => 'Sessions actives et appareils';
+
+  @override
+  String get currentDevice => 'Appareil actuel (Ce téléphone)';
+
+  @override
+  String get pastSessions => 'Connexions passées';
+
+  @override
+  String get noOtherActiveSessions =>
+      'Aucune autre session active enregistrée.';
+
+  @override
+  String get activeNow => 'Actif maintenant';
+
+  @override
+  String get refresh => 'Actualiser';
+
+  @override
+  String get clear => 'Effacer';
 }

@@ -2861,4 +2861,31 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get teachers => 'الأساتذة';
+
+  @override
+  String get activityLog => 'سجل النشاط';
+
+  @override
+  String get loginActivity => 'نشاط تسجيل الدخول';
+
+  @override
+  String get activeSessions => 'الجلسات والأجهزة النشطة';
+
+  @override
+  String get currentDevice => 'الجهاز الحالي (هذا الهاتف)';
+
+  @override
+  String get pastSessions => 'عمليات الدخول السابقة';
+
+  @override
+  String get noOtherActiveSessions => 'لا توجد جلسات نشطة أخرى مسجلة.';
+
+  @override
+  String get activeNow => 'نشط الآن';
+
+  @override
+  String get refresh => 'تحديث';
+
+  @override
+  String get clear => 'مسح';
 }

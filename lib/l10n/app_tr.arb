@@ -928,5 +928,14 @@
   "settingsUpdatedSuccess": "Ayarlar ve yapılandırma başarıyla senkronize edildi! 🚀",
   "failedToUpdateSettings": "Yapılandırma güncellenemedi",
   "noMessages": "Henüz mesaj yok.",
-  "teachers": "Eğitmenler"
+  "teachers": "Eğitmenler",
+  "activityLog": "Aktivite Günlüğü",
+  "loginActivity": "Giriş Aktivitesi",
+  "activeSessions": "Aktif Oturumlar ve Cihazlar",
+  "currentDevice": "Mevcut Cihaz (Bu Telefon)",
+  "pastSessions": "Geçmiş Girişler",
+  "noOtherActiveSessions": "Kayıtlı başka aktif oturum yok.",
+  "activeNow": "Şimdi Aktif",
+  "refresh": "Yenile",
+  "clear": "Temizle"
 }

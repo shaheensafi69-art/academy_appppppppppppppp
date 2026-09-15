@@ -29,7 +29,6 @@ import '../../feed/screens/user_profile_screen.dart'; // صفحه پروفایل
 
 import '../../../core/routing/auth_gate.dart';
 import '../../../core/services/language_service.dart';
-import '../../../core/services/notification_service.dart';
 import '../../../core/utils/system_ui_helper.dart';
 import '../../../core/widgets/language_selector_sheet.dart';
 
@@ -148,9 +147,6 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
       _logout();
       return;
     }
-
-    // ذخیره خودکار توکن FCM پس از لود شدن هویت کاربر
-    NotificationService().saveFCMTokenToDatabase();
 
     try {
       final profile = await supabase

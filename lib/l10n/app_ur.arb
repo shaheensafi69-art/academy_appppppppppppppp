@@ -928,5 +928,14 @@
   "settingsUpdatedSuccess": "ترتیبات کامیابی سے ہم آہنگ ہو گئیں! 🚀",
   "failedToUpdateSettings": "ترتیبات اپ ڈیٹ کرنے میں ناکامی",
   "noMessages": "ابھی تک کوئی پیغام نہیں ہے۔",
-  "teachers": "اساتذہ"
+  "teachers": "اساتذہ",
+  "activityLog": "سرگرمی لاگ",
+  "loginActivity": "لاگ ان کی سرگرمی",
+  "activeSessions": "فعال سیشنز اور آلات",
+  "currentDevice": "موجودہ ڈیوائس (یہ فون)",
+  "pastSessions": "پچھلے لاگ انز",
+  "noOtherActiveSessions": "کوئی اور فعال سیشن ریکارڈ نہیں ہے۔",
+  "activeNow": "ابھی فعال",
+  "refresh": "تازہ کریں",
+  "clear": "صاف کریں"
 }

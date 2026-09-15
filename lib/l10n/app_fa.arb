@@ -928,5 +928,14 @@
   "settingsUpdatedSuccess": "تنظیمات و پیکربندی با موفقیت همگام شد! 🚀",
   "failedToUpdateSettings": "خطا در به‌روزرسانی تنظیمات",
   "noMessages": "هنوز پیامی ارسال نشده است.",
-  "teachers": "اساتید"
+  "teachers": "اساتید",
+  "activityLog": "لاگ فعالیت‌ها",
+  "loginActivity": "سوابق ورود به حساب",
+  "activeSessions": "نشست‌های فعال و دستگاه‌ها",
+  "currentDevice": "دستگاه فعلی (این گوشی)",
+  "pastSessions": "ورودهای قبلی",
+  "noOtherActiveSessions": "هیچ نشست دیگری ثبت نشده است.",
+  "activeNow": "فعال اکنون",
+  "refresh": "تازه‌سازی",
+  "clear": "پاک کردن"
 }

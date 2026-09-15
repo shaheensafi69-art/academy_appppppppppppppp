@@ -928,5 +928,14 @@
   "settingsUpdatedSuccess": "ترتیبات او تنظیمات په بریالیتوب سره همغږي شول! 🚀",
   "failedToUpdateSettings": "د ترتیباتو په تازه کولو کې تېروتنه",
   "noMessages": "تر اوسه هیڅ پیغام نشته.",
-  "teachers": "ښوونکي"
+  "teachers": "ښوونکي",
+  "activityLog": "د فعالیتونو لاګ",
+  "loginActivity": "حساب ته د ننوتلو ریکارډونه",
+  "activeSessions": "فعالې ناستې او وسایل",
+  "currentDevice": "اوسنۍ وسیله (دا ټیلیفون)",
+  "pastSessions": "تیرې ننوتنې",
+  "noOtherActiveSessions": "نورې فعالې ناستې ثبت شوې نه دي.",
+  "activeNow": "اوس فعال دی",
+  "refresh": "تازه کول",
+  "clear": "پاکول"
 }

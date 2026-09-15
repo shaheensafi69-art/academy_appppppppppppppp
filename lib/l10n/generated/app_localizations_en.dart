@@ -2877,4 +2877,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get teachers => 'Teachers';
+
+  @override
+  String get activityLog => 'Activity Log';
+
+  @override
+  String get loginActivity => 'Login Activity';
+
+  @override
+  String get activeSessions => 'Active Sessions & Devices';
+
+  @override
+  String get currentDevice => 'Current Device (This Phone)';
+
+  @override
+  String get pastSessions => 'Past Logins';
+
+  @override
+  String get noOtherActiveSessions => 'No other active sessions recorded.';
+
+  @override
+  String get activeNow => 'Active Now';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get clear => 'Clear';
 }

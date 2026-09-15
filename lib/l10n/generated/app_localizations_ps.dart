@@ -2872,4 +2872,31 @@ class AppLocalizationsPs extends AppLocalizations {
 
   @override
   String get teachers => 'ښوونکي';
+
+  @override
+  String get activityLog => 'د فعالیتونو لاګ';
+
+  @override
+  String get loginActivity => 'حساب ته د ننوتلو ریکارډونه';
+
+  @override
+  String get activeSessions => 'فعالې ناستې او وسایل';
+
+  @override
+  String get currentDevice => 'اوسنۍ وسیله (دا ټیلیفون)';
+
+  @override
+  String get pastSessions => 'تیرې ننوتنې';
+
+  @override
+  String get noOtherActiveSessions => 'نورې فعالې ناستې ثبت شوې نه دي.';
+
+  @override
+  String get activeNow => 'اوس فعال دی';
+
+  @override
+  String get refresh => 'تازه کول';
+
+  @override
+  String get clear => 'پاکول';
 }

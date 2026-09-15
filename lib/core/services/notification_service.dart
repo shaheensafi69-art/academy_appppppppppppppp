@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 @pragma('vm:entry-point')
@@ -17,15 +18,20 @@ class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal() {
-    supabase.auth.onAuthStateChange.listen((data) {
+    supabase.auth.onAuthStateChange.listen((data) async {
       if (data.event == AuthChangeEvent.signedOut) {
         _lastSavedUserId = null;
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('fcm_last_saved_user_id');
+        } catch (_) {}
       }
     });
   }
 
   final supabase = Supabase.instance.client;
   String? _lastSavedUserId;
+  bool _isSavingToken = false;
 
   /// مقداردهی اولیه سیستم push notifications و فایربیس
   Future<void> initPushNotifications() async {
@@ -60,8 +66,10 @@ class NotificationService {
         "User notification permission status: ${settings.authorizationStatus}",
       );
 
-      // ذخیره توکن فایربیس هنگام شروع اپلیکیشن
-      await saveFCMTokenToDatabase();
+      // ذخیره توکن فقط در صورتی که کاربر قبلاً لاگین شده باشد
+      if (supabase.auth.currentUser != null) {
+        await saveFCMTokenToDatabase();
+      }
 
       // گوش دادن به تغییرات توکن دستگاه
       messaging.onTokenRefresh.listen((newToken) {
@@ -80,28 +88,50 @@ class NotificationService {
     }
   }
 
-  /// گرفتن و ذخیره توکن FCM در جدول profiles کاربران در Supabase
+  /// گرفتن و ذخیره توکن FCM در جدول profiles کاربران در Supabase (با جلوگیری کامل از ثبت تکراری)
   Future<void> saveFCMTokenToDatabase() async {
     if (kIsWeb ||
         (defaultTargetPlatform != TargetPlatform.android &&
             defaultTargetPlatform != TargetPlatform.iOS)) {
       return;
     }
-    try {
-      final user = supabase.auth.currentUser;
-      if (user == null) return;
 
-      // Skip if we already saved the token for this user session
-      if (_lastSavedUserId == user.id) return;
+    // اگر عملیات ذخیره هم‌اکنون در حال اجراست، از فراخوانی همزمان جلوگیری کن (Mutex)
+    if (_isSavingToken) {
+      debugPrint("FCM token registration already in-flight, skipping duplicate call.");
+      return;
+    }
+
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+
+    _isSavingToken = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedUserId = prefs.getString('fcm_last_saved_user_id');
+      final savedToken = prefs.getString('fcm_last_saved_token');
 
       final messaging = FirebaseMessaging.instance;
       String? token = await messaging.getToken();
 
-      if (token != null && token.isNotEmpty) {
-        await _updateTokenInSupabase(token);
+      if (token == null || token.isEmpty) {
+        return;
       }
+
+      // اگر توکن و کاربر قبلاً ذخیره شده و تغییری نکرده، از ارسال کوئری اضافه به دیتابیس صرف‌نظر کن
+      if (savedUserId == user.id && savedToken == token && _lastSavedUserId == user.id) {
+        debugPrint("FCM token already up to date for user ${user.id}. Skipping duplicate registration.");
+        return;
+      }
+
+      await _updateTokenInSupabase(token);
+      await prefs.setString('fcm_last_saved_user_id', user.id);
+      await prefs.setString('fcm_last_saved_token', token);
+      _lastSavedUserId = user.id;
     } catch (e) {
       debugPrint("Error saving FCM Token to Supabase: $e");
+    } finally {
+      _isSavingToken = false;
     }
   }
 
@@ -110,16 +140,12 @@ class NotificationService {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
-      // Skip if we already saved the token for this user session
-      if (_lastSavedUserId == user.id) return;
-
       await supabase
           .from('profiles')
           .update({'fcm_token': token})
           .eq('id', user.id);
 
-      _lastSavedUserId =
-          user.id; // Cache the user ID to prevent duplicate updates
+      _lastSavedUserId = user.id;
       debugPrint(
         "Successfully saved FCM token to Supabase profile for user: ${user.id}",
       );

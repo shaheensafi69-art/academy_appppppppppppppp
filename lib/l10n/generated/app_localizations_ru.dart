@@ -2882,4 +2882,32 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get teachers => 'Преподаватели';
+
+  @override
+  String get activityLog => 'Журнал активности';
+
+  @override
+  String get loginActivity => 'История входов';
+
+  @override
+  String get activeSessions => 'Активные сеансы и устройства';
+
+  @override
+  String get currentDevice => 'Текущее устройство (Этот телефон)';
+
+  @override
+  String get pastSessions => 'Предыдущие входы';
+
+  @override
+  String get noOtherActiveSessions =>
+      'Других активных сеансов не зарегистрировано.';
+
+  @override
+  String get activeNow => 'В сети';
+
+  @override
+  String get refresh => 'Обновить';
+
+  @override
+  String get clear => 'Очистить';
 }

@@ -2882,4 +2882,31 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get teachers => 'Eğitmenler';
+
+  @override
+  String get activityLog => 'Aktivite Günlüğü';
+
+  @override
+  String get loginActivity => 'Giriş Aktivitesi';
+
+  @override
+  String get activeSessions => 'Aktif Oturumlar ve Cihazlar';
+
+  @override
+  String get currentDevice => 'Mevcut Cihaz (Bu Telefon)';
+
+  @override
+  String get pastSessions => 'Geçmiş Girişler';
+
+  @override
+  String get noOtherActiveSessions => 'Kayıtlı başka aktif oturum yok.';
+
+  @override
+  String get activeNow => 'Şimdi Aktif';
+
+  @override
+  String get refresh => 'Yenile';
+
+  @override
+  String get clear => 'Temizle';
 }

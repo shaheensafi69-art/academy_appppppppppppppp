@@ -928,5 +928,14 @@
   "settingsUpdatedSuccess": "تمت مزامنة الإعدادات والتكوينات بنجاح! 🚀",
   "failedToUpdateSettings": "فشل في تحديث التكوين",
   "noMessages": "لا توجد رسائل بعد.",
-  "teachers": "الأساتذة"
+  "teachers": "الأساتذة",
+  "activityLog": "سجل النشاط",
+  "loginActivity": "نشاط تسجيل الدخول",
+  "activeSessions": "الجلسات والأجهزة النشطة",
+  "currentDevice": "الجهاز الحالي (هذا الهاتف)",
+  "pastSessions": "عمليات الدخول السابقة",
+  "noOtherActiveSessions": "لا توجد جلسات نشطة أخرى مسجلة.",
+  "activeNow": "نشط الآن",
+  "refresh": "تحديث",
+  "clear": "مسح"
 }

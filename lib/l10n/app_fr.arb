@@ -928,5 +928,14 @@
   "settingsUpdatedSuccess": "Paramètres et configurations synchronisés avec succès ! 🚀",
   "failedToUpdateSettings": "Échec de la mise à jour de la configuration",
   "noMessages": "Pas encore de messages.",
-  "teachers": "Enseignants"
+  "teachers": "Enseignants",
+  "activityLog": "Journal d''activité",
+  "loginActivity": "Activité de connexion",
+  "activeSessions": "Sessions actives et appareils",
+  "currentDevice": "Appareil actuel (Ce téléphone)",
+  "pastSessions": "Connexions passées",
+  "noOtherActiveSessions": "Aucune autre session active enregistrée.",
+  "activeNow": "Actif maintenant",
+  "refresh": "Actualiser",
+  "clear": "Effacer"
 }

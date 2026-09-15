@@ -935,5 +935,14 @@
   "settingsUpdatedSuccess": "Settings & configurations synced successfully! 🚀",
   "failedToUpdateSettings": "Failed to update configuration",
   "noMessages": "No messages yet.",
-  "teachers": "Teachers"
+  "teachers": "Teachers",
+  "activityLog": "Activity Log",
+  "loginActivity": "Login Activity",
+  "activeSessions": "Active Sessions & Devices",
+  "currentDevice": "Current Device (This Phone)",
+  "pastSessions": "Past Logins",
+  "noOtherActiveSessions": "No other active sessions recorded.",
+  "activeNow": "Active Now",
+  "refresh": "Refresh",
+  "clear": "Clear"
 }

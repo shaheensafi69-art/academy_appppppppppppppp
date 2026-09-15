@@ -5686,7 +5686,59 @@ abstract class AppLocalizations {
   /// **'Teachers'**
   String get teachers;
 
-  get totalScore => null;
+  /// No description provided for @activityLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Log'**
+  String get activityLog;
+
+  /// No description provided for @loginActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Login Activity'**
+  String get loginActivity;
+
+  /// No description provided for @activeSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Sessions & Devices'**
+  String get activeSessions;
+
+  /// No description provided for @currentDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Device (This Phone)'**
+  String get currentDevice;
+
+  /// No description provided for @pastSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Past Logins'**
+  String get pastSessions;
+
+  /// No description provided for @noOtherActiveSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'No other active sessions recorded.'**
+  String get noOtherActiveSessions;
+
+  /// No description provided for @activeNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Now'**
+  String get activeNow;
+
+  /// No description provided for @refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refresh;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
 }
 
 class _AppLocalizationsDelegate

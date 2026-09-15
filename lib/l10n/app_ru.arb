@@ -928,5 +928,14 @@
   "settingsUpdatedSuccess": "Настройки и конфигурация успешно синхронизированы! 🚀",
   "failedToUpdateSettings": "Не удалось обновить конфигурацию",
   "noMessages": "Пока нет сообщений.",
-  "teachers": "Преподаватели"
+  "teachers": "Преподаватели",
+  "activityLog": "Журнал активности",
+  "loginActivity": "История входов",
+  "activeSessions": "Активные сеансы и устройства",
+  "currentDevice": "Текущее устройство (Этот телефон)",
+  "pastSessions": "Предыдущие входы",
+  "noOtherActiveSessions": "Других активных сеансов не зарегистрировано.",
+  "activeNow": "В сети",
+  "refresh": "Обновить",
+  "clear": "Очистить"
 }

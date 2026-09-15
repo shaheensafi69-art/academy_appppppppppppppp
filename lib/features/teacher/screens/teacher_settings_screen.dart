@@ -6,6 +6,9 @@ import '../../../core/services/language_service.dart';
 import '../../../core/widgets/language_selector_sheet.dart';
 import '../../../core/localization/l10n_extensions.dart';
 
+import '../../../core/services/security_service.dart';
+import '../../auth/screens/activity_log_screen.dart';
+
 class TeacherSettingsScreen extends StatefulWidget {
   const TeacherSettingsScreen({super.key});
 
@@ -30,6 +33,23 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
   static const Color cardBorder = Color(0xFFF3F4F6);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSecuritySettings();
+  }
+
+  Future<void> _loadSecuritySettings() async {
+    final bool isEnabled = await SecurityService.instance.isAppLockEnabled();
+    final String? pin = await SecurityService.instance.getPinCode();
+    if (mounted) {
+      setState(() {
+        _biometricEnabled = isEnabled;
+        _pinLockEnabled = (pin != null && pin.isNotEmpty);
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -69,37 +89,56 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
     }
   }
 
-  // احراز هویت بیومتریک
+  // احراز هویت بیومتریک و پین
   Future<void> _toggleBiometric(bool value) async {
-    try {
-      if (value) {
-        bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
-        bool canAuthenticate = canAuthenticateWithBiometrics || await auth.isDeviceSupported();
+    if (value) {
+      final String? existingPin = await SecurityService.instance.getPinCode();
+      if (existingPin == null || existingPin.length != 4) {
+        if (!mounted) return;
+        _showSetPinDialog(andEnableBiometric: true);
+        return;
+      }
 
-        if (canAuthenticate) {
-          bool authenticated = await auth.authenticate(
-            localizedReason: 'Authenticate to enable biometric security',
-            biometricOnly: true,
+      final canAuth = await SecurityService.instance.canCheckBiometrics();
+      if (canAuth) {
+        final authenticated = await SecurityService.instance.authenticateBiometric(
+          reason: 'Authenticate to enable biometric security for Teacher',
+        );
+        if (authenticated && mounted) {
+          await SecurityService.instance.saveSecuritySettings(
+            enabled: true,
+            pin: existingPin,
           );
-          if (!mounted) return;
-          if (authenticated) {
-            setState(() => _biometricEnabled = true);
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.biometricLoginEnabled), backgroundColor: Colors.green));
-          }
-        } else {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.biometricsNotSupported), backgroundColor: Colors.redAccent));
+          setState(() {
+            _biometricEnabled = true;
+            _pinLockEnabled = true;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(context.l10n.biometricLoginEnabled), backgroundColor: Colors.green),
+          );
         }
       } else {
-        setState(() => _biometricEnabled = false);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.biometricsNotSupported), backgroundColor: Colors.redAccent),
+        );
       }
-    } catch (e) {
-      debugPrint("Biometric error: $e");
+    } else {
+      await SecurityService.instance.disableSecurity();
+      setState(() {
+        _biometricEnabled = false;
+        _pinLockEnabled = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.disabled), backgroundColor: Colors.black87),
+        );
+      }
     }
   }
 
   // دیالوگ پین‌کد
-  void _showSetPinDialog() {
+  void _showSetPinDialog({bool andEnableBiometric = false}) {
     TextEditingController pinController = TextEditingController();
     showDialog(
       context: context,
@@ -137,7 +176,6 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(dialogContext);
-              setState(() => _pinLockEnabled = false);
             },
             child: Text(context.l10n.cancel, style: const TextStyle(color: textGrey, fontWeight: FontWeight.bold)),
           ),
@@ -149,17 +187,29 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-            onPressed: () {
+            onPressed: () async {
               if (pinController.text.length == 4) {
+                final pin = pinController.text.trim();
+                await SecurityService.instance.saveSecuritySettings(
+                  enabled: true,
+                  pin: pin,
+                );
                 setState(() {
                   _pinLockEnabled = true;
+                  if (andEnableBiometric) {
+                    _biometricEnabled = true;
+                  }
                 });
                 Navigator.pop(dialogContext);
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.pinSavedSuccess), backgroundColor: Colors.green));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(context.l10n.pinSavedSuccess), backgroundColor: Colors.green),
+                  );
                 }
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.pinMustBe4Digits), backgroundColor: Colors.redAccent));
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  SnackBar(content: Text(context.l10n.pinMustBe4Digits), backgroundColor: Colors.redAccent),
+                );
               }
             },
             child: Text(context.l10n.savePin, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -367,13 +417,78 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                                   if (val) {
                                     _showSetPinDialog();
                                   } else {
+                                    SecurityService.instance.disableSecurity();
                                     setState(() {
                                       _pinLockEnabled = false;
+                                      _biometricEnabled = false;
                                     });
                                   }
                                 },
                               ),
                             ],
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Divider(color: cardBorder, thickness: 1.5),
+                          ),
+                          // لاگ فعالیت‌ها
+                          InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const ActivityLogScreen(),
+                                ),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: lightPinkBg,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Icon(
+                                        Icons.devices_rounded,
+                                        color: primaryPink,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          context.l10n.activityLog,
+                                          style: const TextStyle(
+                                            color: textDark,
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        Text(
+                                          context.l10n.activeSessions,
+                                          style: const TextStyle(
+                                            color: textGrey,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: textGrey,
+                                  size: 14,
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),

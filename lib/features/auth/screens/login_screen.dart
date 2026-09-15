@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/routing/auth_gate.dart';
+import '../../../core/services/activity_log_service.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/widgets/language_selector_sheet.dart';
 import 'register_screen.dart';
@@ -133,6 +135,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           });
           return;
         }
+
+        // فعال‌سازی ذخیره اطلاعات حساب در Samsung Pass / Apple iCloud Keychain / Google Autofill
+        TextInput.finishAutofillContext(shouldSave: true);
+
+        // ثبت لاگ ورود کاربر در سیستم تاریخچه فعالیت‌ها
+        ActivityLogService.instance.recordLogin(user.id);
 
         // اگر ایمیل تایید شده بود، اجازه ورود به داشبورد را می‌دهیم
         if (mounted) {
@@ -361,41 +369,52 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                     ),
                                   ],
 
-                                  // Email Field
-                                  _buildTextField(
-                                    controller: emailCtrl,
-                                    label: context.l10n.emailAddress,
-                                    hint: context.l10n.enterYourEmail,
-                                    onChanged: _onEmailChanged,
-                                    suffixIcon: isSearching
-                                        ? const Padding(
-                                            padding: EdgeInsets.all(12),
-                                            child: SizedBox(
-                                              width: 16,
-                                              height: 16,
-                                              child: CircularProgressIndicator(color: primaryPink, strokeWidth: 2),
-                                            ),
-                                          )
-                                        : null,
-                                  ),
-                                  const SizedBox(height: 16),
+                                  // Autofill Group for Samsung Pass / Apple Keychain / Google Autofill
+                                  AutofillGroup(
+                                    child: Column(
+                                      children: [
+                                        // Email Field
+                                        _buildTextField(
+                                          controller: emailCtrl,
+                                          label: context.l10n.emailAddress,
+                                          hint: context.l10n.enterYourEmail,
+                                          keyboardType: TextInputType.emailAddress,
+                                          autofillHints: const [AutofillHints.email, AutofillHints.username],
+                                          onChanged: _onEmailChanged,
+                                          suffixIcon: isSearching
+                                              ? const Padding(
+                                                  padding: EdgeInsets.all(12),
+                                                  child: SizedBox(
+                                                    width: 16,
+                                                    height: 16,
+                                                    child: CircularProgressIndicator(color: primaryPink, strokeWidth: 2),
+                                                  ),
+                                                )
+                                              : null,
+                                        ),
+                                        const SizedBox(height: 16),
 
-                                  // Password Field
-                                  _buildTextField(
-                                    controller: passwordCtrl,
-                                    label: context.l10n.password,
-                                    hint: "••••••••",
-                                    isPassword: true,
-                                    showPassword: showPassword,
-                                    onTogglePassword: () => setState(() => showPassword = !showPassword),
-                                    extraLabel: GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
-                                        );
-                                      },
-                                      child: Text(context.l10n.forgot, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryPink)),
+                                        // Password Field
+                                        _buildTextField(
+                                          controller: passwordCtrl,
+                                          label: context.l10n.password,
+                                          hint: "••••••••",
+                                          isPassword: true,
+                                          keyboardType: TextInputType.visiblePassword,
+                                          autofillHints: const [AutofillHints.password],
+                                          showPassword: showPassword,
+                                          onTogglePassword: () => setState(() => showPassword = !showPassword),
+                                          extraLabel: GestureDetector(
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                                              );
+                                            },
+                                            child: Text(context.l10n.forgot, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryPink)),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   const SizedBox(height: 12),
@@ -547,6 +566,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     bool showPassword = false,
     VoidCallback? onTogglePassword,
     Widget? extraLabel,
+    TextInputType? keyboardType,
+    Iterable<String>? autofillHints,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -563,12 +584,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         TextFormField(
           controller: controller,
           onChanged: onChanged,
+          keyboardType: keyboardType,
+          autofillHints: autofillHints,
           obscureText: isPassword && !showPassword,
           cursorColor: primaryPink,
           style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             filled: true,
-            fillColor: cardBorder.withOpacity(0.4),
+            fillColor: cardBorder.withValues(alpha: 0.4),
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             suffixIcon: isPassword
                 ? IconButton(

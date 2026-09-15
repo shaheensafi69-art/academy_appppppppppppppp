@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/language_service.dart';
+import '../../../core/services/security_service.dart';
 
 class SecurityLockScreen extends StatefulWidget {
   const SecurityLockScreen({super.key});
@@ -42,6 +43,7 @@ class _SecurityLockScreenState extends State<SecurityLockScreen> {
       );
 
       if (authenticated && mounted) {
+        SecurityService.instance.markSessionUnlocked();
         Navigator.pop(context, true);
       }
     } catch (e) {
@@ -64,16 +66,10 @@ class _SecurityLockScreenState extends State<SecurityLockScreen> {
 
   Future<void> _verifyPin(String pin) async {
     try {
-      final user = supabase.auth.currentUser;
-      if (user == null) return;
+      final savedPin = await SecurityService.instance.getPinCode();
 
-      final res = await supabase
-          .from('student_security_settings')
-          .select('pin_code')
-          .eq('student_id', user.id)
-          .maybeSingle();
-
-      if (res != null && res['pin_code'] == pin) {
+      if (savedPin != null && savedPin == pin) {
+        SecurityService.instance.markSessionUnlocked();
         if (mounted) Navigator.pop(context, true);
       } else {
         if (mounted) {
@@ -104,7 +100,7 @@ class _SecurityLockScreenState extends State<SecurityLockScreen> {
                 decoration: BoxDecoration(
                   color: lightPinkBg,
                   shape: BoxShape.circle,
-                  border: Border.all(color: primaryPink.withOpacity(0.3), width: 1.5),
+                  border: Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5),
                 ),
                 child: const Icon(Icons.lock_rounded, size: 36, color: primaryPink),
               ),

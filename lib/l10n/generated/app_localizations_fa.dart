@@ -2871,4 +2871,31 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get teachers => 'اساتید';
+
+  @override
+  String get activityLog => 'لاگ فعالیت‌ها';
+
+  @override
+  String get loginActivity => 'سوابق ورود به حساب';
+
+  @override
+  String get activeSessions => 'نشست‌های فعال و دستگاه‌ها';
+
+  @override
+  String get currentDevice => 'دستگاه فعلی (این گوشی)';
+
+  @override
+  String get pastSessions => 'ورودهای قبلی';
+
+  @override
+  String get noOtherActiveSessions => 'هیچ نشست دیگری ثبت نشده است.';
+
+  @override
+  String get activeNow => 'فعال اکنون';
+
+  @override
+  String get refresh => 'تازه‌سازی';
+
+  @override
+  String get clear => 'پاک کردن';
 }

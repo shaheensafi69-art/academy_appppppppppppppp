@@ -2899,4 +2899,32 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get teachers => 'Dozenten';
+
+  @override
+  String get activityLog => 'Aktivitätsprotokoll';
+
+  @override
+  String get loginActivity => 'Anmeldeaktivität';
+
+  @override
+  String get activeSessions => 'Aktive Sitzungen & Geräte';
+
+  @override
+  String get currentDevice => 'Aktuelles Gerät (Dieses Smartphone)';
+
+  @override
+  String get pastSessions => 'Vergangene Anmeldungen';
+
+  @override
+  String get noOtherActiveSessions =>
+      'Keine weiteren aktiven Sitzungen aufgezeichnet.';
+
+  @override
+  String get activeNow => 'Jetzt aktiv';
+
+  @override
+  String get refresh => 'Aktualisieren';
+
+  @override
+  String get clear => 'Löschen';
 }

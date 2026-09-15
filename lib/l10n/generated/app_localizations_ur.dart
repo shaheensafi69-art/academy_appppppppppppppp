@@ -2882,4 +2882,31 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get teachers => 'اساتذہ';
+
+  @override
+  String get activityLog => 'سرگرمی لاگ';
+
+  @override
+  String get loginActivity => 'لاگ ان کی سرگرمی';
+
+  @override
+  String get activeSessions => 'فعال سیشنز اور آلات';
+
+  @override
+  String get currentDevice => 'موجودہ ڈیوائس (یہ فون)';
+
+  @override
+  String get pastSessions => 'پچھلے لاگ انز';
+
+  @override
+  String get noOtherActiveSessions => 'کوئی اور فعال سیشن ریکارڈ نہیں ہے۔';
+
+  @override
+  String get activeNow => 'ابھی فعال';
+
+  @override
+  String get refresh => 'تازہ کریں';
+
+  @override
+  String get clear => 'صاف کریں';
 }
