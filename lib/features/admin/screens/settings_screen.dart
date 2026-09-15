@@ -7,6 +7,7 @@ import '../../../core/services/language_service.dart';
 import '../../../core/services/security_service.dart';
 import '../../../core/widgets/language_selector_sheet.dart';
 import '../../auth/screens/activity_log_screen.dart';
+import '../../auth/screens/delete_account_screen.dart';
 
 class AdminSettingsScreen extends StatefulWidget {
   const AdminSettingsScreen({super.key});
@@ -974,6 +975,26 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                                 fontSize: 14,
                               ),
                             ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Center(
+                    child: TextButton.icon(
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.redAccent.withValues(alpha: 0.8),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      ),
+                      icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                      label: Text(
+                        context.l10n.deleteAccount,
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const DeleteAccountScreen()),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(height: 40),

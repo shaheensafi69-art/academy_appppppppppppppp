@@ -2899,4 +2899,32 @@ class AppLocalizationsPs extends AppLocalizations {
 
   @override
   String get clear => 'پاکول';
+
+  @override
+  String get deleteAccount => 'د حساب ړنګول';
+
+  @override
+  String get deleteAccountSubtitle => 'د تلپاتې حساب ړنګولو غوښتنه';
+
+  @override
+  String get deleteAccountWarning =>
+      'خبرداری: د حساب ړنګول نه بدلیدونکی دی. ټول پیرودل شوي کورسونه، سندونه، د والټ بیلانس او ستاسو تعلیمي پرمختګ به په بشپړ ډول حذف شي.';
+
+  @override
+  String get deleteAccountReasonHint =>
+      'مهرباني وکړئ د خپل حساب د ړنګولو لامل تشریح کړئ (اختیاري)';
+
+  @override
+  String get deleteAccountConfirmCheck =>
+      'زه پوهیږم چې دا اقدام نه بدلیدونکی دی او زما ټول معلومات به حذف شي.';
+
+  @override
+  String get requestAccountDeletion => 'د حساب د ړنګولو غوښتنه ثبت کړئ';
+
+  @override
+  String get accountDeletionSubmitted =>
+      'ستاسو د حذف غوښتنه وسپارل شوه. زموږ د مدیریت ټیم به په 24-48 ساعتونو کې ستاسو حساب وګوري او حذف به یې کړي.';
+
+  @override
+  String get deleteAccountWebPolicy => 'په ویب پاڼه کې د حذف پالیسۍ وګورئ';
 }

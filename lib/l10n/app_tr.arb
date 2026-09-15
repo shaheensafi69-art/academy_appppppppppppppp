@@ -937,5 +937,13 @@
   "noOtherActiveSessions": "Kayıtlı başka aktif oturum yok.",
   "activeNow": "Şimdi Aktif",
   "refresh": "Yenile",
-  "clear": "Temizle"
+  "clear": "Temizle",
+  "deleteAccount": "Hesabı Sil",
+  "deleteAccountSubtitle": "Kalıcı Hesap Silme Talebi",
+  "deleteAccountWarning": "Uyarı: Hesabınızı silmek kalıcıdır. Satın alınan tüm kurslar, sertifikalar, cüzdan bakiyesi ve ilerlemeniz kalıcı olarak silinecektir.",
+  "deleteAccountReasonHint": "Lütfen hesabınızı neden silmek istediğinizi belirtin (isteğe bağlı)",
+  "deleteAccountConfirmCheck": "Bu işlemin geri alınamaz olduğunu ve tüm verilerimin silineceğini anlıyorum.",
+  "requestAccountDeletion": "Silme Talebini Gönder",
+  "accountDeletionSubmitted": "Silme talebiniz iletildi. Yönetici ekibimiz 24-48 saat içinde hesabınızı inceleyecek ve silecektir.",
+  "deleteAccountWebPolicy": "Web Sitesindeki Resmi Silme Politikası"
 }

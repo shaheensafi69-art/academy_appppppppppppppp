@@ -2888,4 +2888,32 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get clear => 'مسح';
+
+  @override
+  String get deleteAccount => 'حذف الحساب';
+
+  @override
+  String get deleteAccountSubtitle => 'طلب حذف الحساب نهائياً';
+
+  @override
+  String get deleteAccountWarning =>
+      'تحذير: حذف الحساب لا رجعة فيه. سيتم مسح جميع الدورات المشتراة والشهادات ورصيد المحفظة وسجلات الاختبارات وتقدمك بشكل دائم.';
+
+  @override
+  String get deleteAccountReasonHint =>
+      'يرجى توضيح سبب رغبتك في حذف حسابك (اختياري)';
+
+  @override
+  String get deleteAccountConfirmCheck =>
+      'أدرك أن هذا الإجراء لا يمكن الرجوع عنه وسيتم حذف جميع بياناتي.';
+
+  @override
+  String get requestAccountDeletion => 'إرسال طلب حذف الحساب';
+
+  @override
+  String get accountDeletionSubmitted =>
+      'تم إرسال طلب الحذف الخاص بك. سيقوم فريق الإدارة بمراجعة حسابك وإزالته في غضون 24-48 ساعة.';
+
+  @override
+  String get deleteAccountWebPolicy => 'عرض سياسة الحذف على الموقع';
 }

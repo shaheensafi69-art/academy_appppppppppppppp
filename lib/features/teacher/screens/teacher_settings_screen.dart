@@ -8,6 +8,7 @@ import '../../../core/localization/l10n_extensions.dart';
 
 import '../../../core/services/security_service.dart';
 import '../../auth/screens/activity_log_screen.dart';
+import '../../auth/screens/delete_account_screen.dart';
 
 class TeacherSettingsScreen extends StatefulWidget {
   const TeacherSettingsScreen({super.key});
@@ -601,6 +602,26 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                         icon: const Icon(Icons.logout_rounded, size: 20),
                         label: Text(context.l10n.secureSignOut, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1)),
                         onPressed: _logout,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Center(
+                      child: TextButton.icon(
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.redAccent.withValues(alpha: 0.8),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        ),
+                        icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                        label: Text(
+                          context.l10n.deleteAccount,
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const DeleteAccountScreen()),
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(height: 100),

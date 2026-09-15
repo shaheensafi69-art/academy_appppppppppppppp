@@ -2904,4 +2904,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clear => 'Clear';
+
+  @override
+  String get deleteAccount => 'Delete Account';
+
+  @override
+  String get deleteAccountSubtitle => 'Permanent Account Deletion Request';
+
+  @override
+  String get deleteAccountWarning =>
+      'Warning: Deleting your account is permanent. All your purchased courses, certificates, wallet balance, quiz records, and learning progress will be permanently erased.';
+
+  @override
+  String get deleteAccountReasonHint =>
+      'Please explain why you want to delete your account (optional)';
+
+  @override
+  String get deleteAccountConfirmCheck =>
+      'I understand that this action is irreversible and all my data will be deleted.';
+
+  @override
+  String get requestAccountDeletion => 'Submit Deletion Request';
+
+  @override
+  String get accountDeletionSubmitted =>
+      'Your deletion request has been submitted. Our admin team will verify and remove your account within 24-48 hours.';
+
+  @override
+  String get deleteAccountWebPolicy => 'Official Web Deletion Policy';
 }

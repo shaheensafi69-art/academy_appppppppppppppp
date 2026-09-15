@@ -2909,4 +2909,32 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get clear => 'Temizle';
+
+  @override
+  String get deleteAccount => 'Hesabı Sil';
+
+  @override
+  String get deleteAccountSubtitle => 'Kalıcı Hesap Silme Talebi';
+
+  @override
+  String get deleteAccountWarning =>
+      'Uyarı: Hesabınızı silmek kalıcıdır. Satın alınan tüm kurslar, sertifikalar, cüzdan bakiyesi ve ilerlemeniz kalıcı olarak silinecektir.';
+
+  @override
+  String get deleteAccountReasonHint =>
+      'Lütfen hesabınızı neden silmek istediğinizi belirtin (isteğe bağlı)';
+
+  @override
+  String get deleteAccountConfirmCheck =>
+      'Bu işlemin geri alınamaz olduğunu ve tüm verilerimin silineceğini anlıyorum.';
+
+  @override
+  String get requestAccountDeletion => 'Silme Talebini Gönder';
+
+  @override
+  String get accountDeletionSubmitted =>
+      'Silme talebiniz iletildi. Yönetici ekibimiz 24-48 saat içinde hesabınızı inceleyecek ve silecektir.';
+
+  @override
+  String get deleteAccountWebPolicy => 'Web Sitesindeki Resmi Silme Politikası';
 }

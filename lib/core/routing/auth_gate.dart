@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../services/activity_log_service.dart';
 import '../services/notification_service.dart';
 import '../services/security_service.dart';
 import '../../features/auth/screens/welcome_screen.dart';
@@ -110,6 +111,9 @@ class _AuthGateState extends State<AuthGate> {
 
       // ذخیره و آپدیت توکن FCM در دیتابیس سوپابیس برای کاربر فعال
       NotificationService().saveFCMTokenToDatabase();
+
+      // ثبت خودکار فعالیت دستگاه کاربر در جدول دیتابیس device_activities
+      ActivityLogService.instance.recordLogin(user.id);
 
       setState(() {
         _targetScreen = destination;

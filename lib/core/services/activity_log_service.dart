@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -26,23 +27,28 @@ class ActivityLogEntry {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'device_model': deviceModel,
-        'os_name': osName,
-        'location': location,
-        'ip_address': ipAddress,
-        'timestamp': timestamp.toIso8601String(),
-        'is_current': isCurrent,
-      };
+    'id': id,
+    'device_model': deviceModel,
+    'os_name': osName,
+    'location': location,
+    'ip_address': ipAddress,
+    'timestamp': timestamp.toIso8601String(),
+    'is_current': isCurrent,
+  };
 
-  factory ActivityLogEntry.fromJson(Map<String, dynamic> json, {bool isCurrent = false}) {
+  factory ActivityLogEntry.fromJson(
+    Map<String, dynamic> json, {
+    bool isCurrent = false,
+  }) {
     return ActivityLogEntry(
       id: json['id']?.toString() ?? '',
       deviceModel: json['device_model']?.toString() ?? 'Mobile Device',
       osName: json['os_name']?.toString() ?? '',
       location: json['location']?.toString() ?? 'Unknown Location',
       ipAddress: json['ip_address']?.toString() ?? '',
-      timestamp: DateTime.tryParse(json['timestamp']?.toString() ?? '') ?? DateTime.now(),
+      timestamp:
+          DateTime.tryParse(json['timestamp']?.toString() ?? '') ??
+          DateTime.now(),
       isCurrent: isCurrent,
     );
   }
@@ -97,15 +103,14 @@ class ActivityLogService {
       debugPrint("Error detecting device info: $e");
     }
 
-    return {
-      "model": deviceModel,
-      "os": osName,
-    };
+    return {"model": deviceModel, "os": osName};
   }
 
   /// دریافت موقعیت تقریبی بر اساس آی‌پی با لایه Fallback سریع
   Future<Map<String, String>> getApproximateLocation() async {
     String location = "Online";
+    String country = "Unknown";
+    String city = "Unknown";
     String ip = "—";
 
     try {
@@ -115,30 +120,37 @@ class ActivityLogService {
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
-        final city = data['city']?.toString();
-        final country = data['country_name']?.toString();
+        city = data['city']?.toString() ?? "Unknown";
+        country = data['country_name']?.toString() ?? "Unknown";
         ip = data['ip']?.toString() ?? "—";
 
-        if (city != null && country != null) {
+        if (city != "Unknown" && country != "Unknown") {
           location = "$city, $country";
-        } else if (country != null) {
+        } else if (country != "Unknown") {
           location = country;
         }
       }
     } catch (_) {
-      // اگر ارتباط به هر دلیلی قطع بود
       location = "Secured Session";
     }
 
-    return {
-      "location": location,
-      "ip": ip,
-    };
+    return {"location": location, "country": country, "city": city, "ip": ip};
   }
 
-  /// ثبت لاگ ورود کاربر به سیستم
-  Future<void> recordLogin(String userId) async {
+  /// ثبت لاگ ورود کاربر در جدول دیتابیس device_activities و کش محلی
+  Future<void> recordLogin(String userId, {bool force = false}) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final lastRecordedKey = "last_recorded_activity_$userId";
+      final lastTime = prefs.getInt(lastRecordedKey) ?? 0;
+      final now = DateTime.now().millisecondsSinceEpoch;
+
+      // اگر کمتر از ۳ دقیقه گذشته باشد، ثبت دوباره نیاز نیست مگر با درخواست force
+      if (!force && (now - lastTime < 3 * 60 * 1000)) {
+        debugPrint("Activity already recorded recently for $userId, skipping.");
+        return;
+      }
+
       final device = await getDeviceDetails();
       final loc = await getApproximateLocation();
       final sessionId = currentSessionId;
@@ -153,12 +165,10 @@ class ActivityLogService {
         isCurrent: true,
       );
 
-      // ذخیره در SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
+      // ۱. ذخیره سریع در SharedPreferences (برای دسترسی آنی و حالت آفلاین)
       final key = "activity_logs_$userId";
       final rawList = prefs.getStringList(key) ?? [];
 
-      // تبدیل و افزودن آیتم جدید به اول لیست
       List<Map<String, dynamic>> list = rawList
           .map((item) {
             try {
@@ -175,37 +185,135 @@ class ActivityLogService {
         list = list.sublist(0, 20); // نگهداری ۲۰ لاگ اخیر
       }
 
-      await prefs.setStringList(
-        key,
-        list.map((m) => jsonEncode(m)).toList(),
-      );
+      await prefs.setStringList(key, list.map((m) => jsonEncode(m)).toList());
+      await prefs.setInt(lastRecordedKey, now);
 
-      // تلاش برای ثبت در سوپابیس در صورت وجود جدول
+      // ۲. ذخیره پایدار در جدول رسمی دیتابیس: device_activities
       try {
-        await supabase.from('user_login_activities').insert({
-          'user_id': userId,
-          'session_id': sessionId,
-          'device_model': newEntry.deviceModel,
-          'os_name': newEntry.osName,
-          'location': newEntry.location,
-          'ip_address': newEntry.ipAddress,
-          'created_at': DateTime.now().toIso8601String(),
-        });
-      } catch (_) {}
+        final insertData = {
+          'id': _generateUuidV4(),
+          'student_id': userId,
+          'device_name': newEntry.deviceModel,
+          'country': loc['country'] ?? 'Unknown',
+          'city': loc['city'] ?? 'Unknown',
+          'ip_address': loc['ip'] ?? '—',
+          'logged_in_at': DateTime.now().toUtc().toIso8601String(),
+        };
+
+        final res = await supabase.from('device_activities').insert(insertData).select();
+        debugPrint("Successfully recorded login in device_activities: $res");
+      } catch (e) {
+        debugPrint("Primary insert into device_activities failed: $e, trying fallback without id...");
+        try {
+          final res2 = await supabase.from('device_activities').insert({
+            'student_id': userId,
+            'device_name': newEntry.deviceModel,
+            'country': loc['country'] ?? 'Unknown',
+            'city': loc['city'] ?? 'Unknown',
+            'ip_address': loc['ip'] ?? '—',
+            'logged_in_at': DateTime.now().toUtc().toIso8601String(),
+          }).select();
+          debugPrint("Fallback insert into device_activities succeeded: $res2");
+        } catch (e2) {
+          debugPrint("Error: Could not record into device_activities: $e2");
+        }
+      }
     } catch (e) {
       debugPrint("Failed to record activity log: $e");
     }
   }
 
-  /// دریافت سوابق ورود کاربر
+  /// دریافت سوابق ورود کاربر (همگام‌سازی از جدول device_activities با کش محلی)
   Future<List<ActivityLogEntry>> getLogs(String userId) async {
     final List<ActivityLogEntry> logs = [];
 
     try {
       final prefs = await SharedPreferences.getInstance();
       final key = "activity_logs_$userId";
-      final rawList = prefs.getStringList(key) ?? [];
 
+      // ابتدا تلاش برای بارگذاری از دیتابیس مرکزی device_activities
+      try {
+        final List<dynamic> dbRows = await supabase
+            .from('device_activities')
+            .select('*')
+            .eq('student_id', userId)
+            .order('logged_in_at', ascending: false)
+            .limit(20);
+
+        if (dbRows.isNotEmpty) {
+          for (var i = 0; i < dbRows.length; i++) {
+            final row = dbRows[i] as Map<String, dynamic>;
+            final country = row['country']?.toString() ?? '';
+            final city = row['city']?.toString() ?? '';
+            String loc = "$city, $country".replaceAll(
+              RegExp(r'^,\s*|,\s*$'),
+              '',
+            );
+            if (loc.isEmpty) loc = "Online Session";
+
+            final entry = ActivityLogEntry(
+              id: row['id']?.toString() ?? i.toString(),
+              deviceModel: row['device_name']?.toString() ?? 'Mobile Device',
+              osName: 'Mobile',
+              location: loc,
+              ipAddress: row['ip_address']?.toString() ?? '—',
+              timestamp:
+                  DateTime.tryParse(row['logged_in_at']?.toString() ?? '') ??
+                  DateTime.now(),
+              isCurrent: (i == 0),
+            );
+            logs.add(entry);
+          }
+
+          // ذخیره در کش محلی
+          await prefs.setStringList(
+            key,
+            logs.map((e) => jsonEncode(e.toJson())).toList(),
+          );
+          return logs;
+        } else {
+          // اگر هنوز رکوردی در دیتابیس نیست، فوری ثبت کن
+          await recordLogin(userId, force: true);
+          final List<dynamic> retryRows = await supabase
+              .from('device_activities')
+              .select('*')
+              .eq('student_id', userId)
+              .order('logged_in_at', ascending: false)
+              .limit(20);
+
+          if (retryRows.isNotEmpty) {
+            for (var i = 0; i < retryRows.length; i++) {
+              final row = retryRows[i] as Map<String, dynamic>;
+              final country = row['country']?.toString() ?? '';
+              final city = row['city']?.toString() ?? '';
+              String loc = "$city, $country".replaceAll(RegExp(r'^,\s*|,\s*$'), '');
+              if (loc.isEmpty) loc = "Online Session";
+
+              logs.add(ActivityLogEntry(
+                id: row['id']?.toString() ?? i.toString(),
+                deviceModel: row['device_name']?.toString() ?? 'Mobile Device',
+                osName: 'Mobile',
+                location: loc,
+                ipAddress: row['ip_address']?.toString() ?? '—',
+                timestamp: DateTime.tryParse(row['logged_in_at']?.toString() ?? '') ?? DateTime.now(),
+                isCurrent: (i == 0),
+              ));
+            }
+            await prefs.setStringList(
+              key,
+              logs.map((e) => jsonEncode(e.toJson())).toList(),
+            );
+            return logs;
+          }
+        }
+      } catch (e) {
+        debugPrint(
+          "Could not fetch remote device_activities, falling back to local: $e",
+        );
+      }
+
+      // اگر آفلاین بود، از کش محلی می‌خواند
+      final rawList = prefs.getStringList(key) ?? [];
       for (var item in rawList) {
         try {
           final map = jsonDecode(item) as Map<String, dynamic>;
@@ -214,7 +322,7 @@ class ActivityLogService {
         } catch (_) {}
       }
 
-      // اگر هنوز هیچ لاگی برای این سشن نیست، لاگ دستگاه فعلی را فوری بسازد
+      // در صورتی که هیچ لاگی نبود، لاگ سشن فعلی را بسازد
       if (logs.isEmpty) {
         final device = await getDeviceDetails();
         final loc = await getApproximateLocation();
@@ -237,7 +345,7 @@ class ActivityLogService {
     return logs;
   }
 
-  /// پاک کردن تاریخچه لاگین‌ها (به جز نشست فعلی)
+  /// پاک کردن تاریخچه لاگین‌ها (هم در دیتابیس device_activities و هم کش محلی)
   Future<void> clearLogs(String userId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -248,6 +356,27 @@ class ActivityLogService {
         key,
         currentOnly.map((e) => jsonEncode(e.toJson())).toList(),
       );
+
+      // پاک کردن سوابق از دیتابیس
+      try {
+        await supabase
+            .from('device_activities')
+            .delete()
+            .eq('student_id', userId);
+      } catch (_) {}
     } catch (_) {}
   }
+
+  String _generateUuidV4() {
+    final random = Random.secure();
+    final values = List<int>.generate(16, (i) => random.nextInt(256));
+    // Set version to 4
+    values[6] = (values[6] & 0x0f) | 0x40;
+    // Set variant to RFC 4122
+    values[8] = (values[8] & 0x3f) | 0x80;
+
+    final hexDigits = values.map((b) => b.toRadixString(16).padLeft(2, '0')).toList();
+    return '${hexDigits.sublist(0, 4).join()}-${hexDigits.sublist(4, 6).join()}-${hexDigits.sublist(6, 8).join()}-${hexDigits.sublist(8, 10).join()}-${hexDigits.sublist(10, 16).join()}';
+  }
 }
+

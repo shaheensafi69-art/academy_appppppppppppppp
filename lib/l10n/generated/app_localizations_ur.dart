@@ -2909,4 +2909,32 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get clear => 'صاف کریں';
+
+  @override
+  String get deleteAccount => 'اکاؤنٹ حذف کریں';
+
+  @override
+  String get deleteAccountSubtitle => 'مستقل اکاؤنٹ حذف کرنے کی درخواست';
+
+  @override
+  String get deleteAccountWarning =>
+      'انتباہ: اپنے اکاؤنٹ کو حذف کرنا مستقل ہے۔ آپ کے تمام خریدے گئے کورسز، سرٹیفکیٹس، والیٹ بیلنس اور تعلیمی پیشرفت کو مستقل طور پر مٹا دیا جائے گا۔';
+
+  @override
+  String get deleteAccountReasonHint =>
+      'براہ کرم بتائیں کہ آپ اپنا اکاؤنٹ کیوں حذف کرنا چاہتے ہیں (اختیاری)';
+
+  @override
+  String get deleteAccountConfirmCheck =>
+      'میں سمجھتا ہوں کہ یہ عمل ناقابل واپسی ہے اور میرا تمام ڈیٹا حذف ہو جائے گا۔';
+
+  @override
+  String get requestAccountDeletion => 'حذف کرنے کی درخواست جمع کروائیں';
+
+  @override
+  String get accountDeletionSubmitted =>
+      'آپ کی اکاؤنٹ حذف کرنے کی درخواست موصول ہو گئی ہے۔ انتظامیہ کی ٹیم 24 سے 48 گھنٹوں کے اندر آپ کے اکاؤنٹ کو ہٹا دے گی۔';
+
+  @override
+  String get deleteAccountWebPolicy => 'ویب سائٹ پر حذف کرنے کی پالیسی دیکھیں';
 }

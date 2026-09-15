@@ -937,5 +937,13 @@
   "noOtherActiveSessions": "Keine weiteren aktiven Sitzungen aufgezeichnet.",
   "activeNow": "Jetzt aktiv",
   "refresh": "Aktualisieren",
-  "clear": "Löschen"
+  "clear": "Löschen",
+  "deleteAccount": "Konto löschen",
+  "deleteAccountSubtitle": "Dauerhafte Kontolöschungsanfrage",
+  "deleteAccountWarning": "Warnung: Das Löschen Ihres Kontos ist dauerhaft. Alle gekauften Kurse, Zertifikate, das Guthaben und Ihre Fortschritte werden unwiderruflich gelöscht.",
+  "deleteAccountReasonHint": "Bitte erläutern Sie, warum Sie Ihr Konto löschen möchten (optional)",
+  "deleteAccountConfirmCheck": "Ich verstehe, dass dieser Vorgang unwiderruflich ist und alle meine Daten gelöscht werden.",
+  "requestAccountDeletion": "Löschungsantrag einreichen",
+  "accountDeletionSubmitted": "Ihr Löschungsantrag wurde eingereicht. Unser Admin-Team wird Ihr Konto innerhalb von 24-48 Stunden überprüfen und löschen.",
+  "deleteAccountWebPolicy": "Offizielle Web-Löschungsrichtlinie"
 }

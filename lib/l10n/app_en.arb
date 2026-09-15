@@ -944,5 +944,13 @@
   "noOtherActiveSessions": "No other active sessions recorded.",
   "activeNow": "Active Now",
   "refresh": "Refresh",
-  "clear": "Clear"
+  "clear": "Clear",
+  "deleteAccount": "Delete Account",
+  "deleteAccountSubtitle": "Permanent Account Deletion Request",
+  "deleteAccountWarning": "Warning: Deleting your account is permanent. All your purchased courses, certificates, wallet balance, quiz records, and learning progress will be permanently erased.",
+  "deleteAccountReasonHint": "Please explain why you want to delete your account (optional)",
+  "deleteAccountConfirmCheck": "I understand that this action is irreversible and all my data will be deleted.",
+  "requestAccountDeletion": "Submit Deletion Request",
+  "accountDeletionSubmitted": "Your deletion request has been submitted. Our admin team will verify and remove your account within 24-48 hours.",
+  "deleteAccountWebPolicy": "Official Web Deletion Policy"
 }

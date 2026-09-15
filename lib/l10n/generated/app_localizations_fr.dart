@@ -2930,4 +2930,34 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get clear => 'Effacer';
+
+  @override
+  String get deleteAccount => 'Supprimer le compte';
+
+  @override
+  String get deleteAccountSubtitle =>
+      'Demande de suppression définitive du compte';
+
+  @override
+  String get deleteAccountWarning =>
+      'Attention : La suppression de votre compte est irréversible. Tous vos cours achetés, certificats, solde du portefeuille et progrès seront définitivement effacés.';
+
+  @override
+  String get deleteAccountReasonHint =>
+      'Veuillez expliquer pourquoi vous souhaitez supprimer votre compte (facultatif)';
+
+  @override
+  String get deleteAccountConfirmCheck =>
+      'Je comprends que cette action est irréversible et que toutes mes données seront supprimées.';
+
+  @override
+  String get requestAccountDeletion => 'Soumettre la demande de suppression';
+
+  @override
+  String get accountDeletionSubmitted =>
+      'Votre demande de suppression a été soumise. Notre équipe vérifiera et supprimera votre compte dans les 24 à 48 heures.';
+
+  @override
+  String get deleteAccountWebPolicy =>
+      'Politique officielle de suppression sur le Web';
 }

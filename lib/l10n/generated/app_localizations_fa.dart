@@ -2898,4 +2898,32 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get clear => 'پاک کردن';
+
+  @override
+  String get deleteAccount => 'حذف حساب کاربری';
+
+  @override
+  String get deleteAccountSubtitle => 'درخواست حذف دائمی حساب کاربری';
+
+  @override
+  String get deleteAccountWarning =>
+      'هشدار: حذف حساب کاربری برگشت‌ناپذیر است. کلیه دوره‌های خریداری شده، گواهینامه‌ها، موجودی کیف پول، نمرات آزمون‌ها و پیشرفت تحصیلی شما به طور کامل حذف خواهد شد.';
+
+  @override
+  String get deleteAccountReasonHint =>
+      'لطفاً علت تمایل به حذف حساب را شرح دهید (اختیاری)';
+
+  @override
+  String get deleteAccountConfirmCheck =>
+      'من متوجه هستم که این اقدام غیرقابل بازگشت است و تمام اطلاعات من حذف خواهد شد.';
+
+  @override
+  String get requestAccountDeletion => 'ثبت درخواست حذف حساب';
+
+  @override
+  String get accountDeletionSubmitted =>
+      'درخواست حذف حساب شما ثبت گردید. تیم مدیریت طی ۲۴ تا ۴۸ ساعت آینده حساب شما را بررسی و حذف خواهد کرد.';
+
+  @override
+  String get deleteAccountWebPolicy => 'مشاهده صفحه قوانین حذف در وب‌سایت';
 }

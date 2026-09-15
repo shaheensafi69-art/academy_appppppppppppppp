@@ -5739,6 +5739,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear'**
   String get clear;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanent Account Deletion Request'**
+  String get deleteAccountSubtitle;
+
+  /// No description provided for @deleteAccountWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning: Deleting your account is permanent. All your purchased courses, certificates, wallet balance, quiz records, and learning progress will be permanently erased.'**
+  String get deleteAccountWarning;
+
+  /// No description provided for @deleteAccountReasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Please explain why you want to delete your account (optional)'**
+  String get deleteAccountReasonHint;
+
+  /// No description provided for @deleteAccountConfirmCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand that this action is irreversible and all my data will be deleted.'**
+  String get deleteAccountConfirmCheck;
+
+  /// No description provided for @requestAccountDeletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Deletion Request'**
+  String get requestAccountDeletion;
+
+  /// No description provided for @accountDeletionSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your deletion request has been submitted. Our admin team will verify and remove your account within 24-48 hours.'**
+  String get accountDeletionSubmitted;
+
+  /// No description provided for @deleteAccountWebPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Official Web Deletion Policy'**
+  String get deleteAccountWebPolicy;
 }
 
 class _AppLocalizationsDelegate

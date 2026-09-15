@@ -937,5 +937,13 @@
   "noOtherActiveSessions": "لا توجد جلسات نشطة أخرى مسجلة.",
   "activeNow": "نشط الآن",
   "refresh": "تحديث",
-  "clear": "مسح"
+  "clear": "مسح",
+  "deleteAccount": "حذف الحساب",
+  "deleteAccountSubtitle": "طلب حذف الحساب نهائياً",
+  "deleteAccountWarning": "تحذير: حذف الحساب لا رجعة فيه. سيتم مسح جميع الدورات المشتراة والشهادات ورصيد المحفظة وسجلات الاختبارات وتقدمك بشكل دائم.",
+  "deleteAccountReasonHint": "يرجى توضيح سبب رغبتك في حذف حسابك (اختياري)",
+  "deleteAccountConfirmCheck": "أدرك أن هذا الإجراء لا يمكن الرجوع عنه وسيتم حذف جميع بياناتي.",
+  "requestAccountDeletion": "إرسال طلب حذف الحساب",
+  "accountDeletionSubmitted": "تم إرسال طلب الحذف الخاص بك. سيقوم فريق الإدارة بمراجعة حسابك وإزالته في غضون 24-48 ساعة.",
+  "deleteAccountWebPolicy": "عرض سياسة الحذف على الموقع"
 }

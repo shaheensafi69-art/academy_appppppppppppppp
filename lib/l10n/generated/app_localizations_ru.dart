@@ -2910,4 +2910,32 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get clear => 'Очистить';
+
+  @override
+  String get deleteAccount => 'Удалить аккаунт';
+
+  @override
+  String get deleteAccountSubtitle => 'Запрос на постоянное удаление аккаунта';
+
+  @override
+  String get deleteAccountWarning =>
+      'Предупреждение: Удаление аккаунта необратимо. Все купленные курсы, сертификаты, баланс кошелька и ваш прогресс будут удалены навсегда.';
+
+  @override
+  String get deleteAccountReasonHint =>
+      'Пожалуйста, укажите причиنу удаления аккаунта (необязательно)';
+
+  @override
+  String get deleteAccountConfirmCheck =>
+      'Я понимаю, что это действие необратимо и все мои данные будут удалены.';
+
+  @override
+  String get requestAccountDeletion => 'Отправить запрос на удаление';
+
+  @override
+  String get accountDeletionSubmitted =>
+      'Ваш запрос на удаление отправлен. Команда администраторов проверит и удалит ваш аккаунт в течение 24-48 часов.';
+
+  @override
+  String get deleteAccountWebPolicy => 'Официальная политика удаления на сайте';
 }

@@ -28,10 +28,13 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
     _loadLogs();
   }
 
-  Future<void> _loadLogs() async {
+  Future<void> _loadLogs({bool forceSync = false}) async {
     setState(() => _isLoading = true);
     final user = supabase.auth.currentUser;
     if (user != null) {
+      if (forceSync) {
+        await ActivityLogService.instance.recordLogin(user.id, force: true);
+      }
       final logs = await ActivityLogService.instance.getLogs(user.id);
       if (mounted) {
         setState(() {
@@ -89,7 +92,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
           IconButton(
             icon: const Icon(Icons.refresh_rounded, color: textGrey),
             tooltip: context.l10n.refresh,
-            onPressed: _loadLogs,
+            onPressed: () => _loadLogs(forceSync: true),
           ),
         ],
       ),
@@ -97,7 +100,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
           ? const Center(child: CircularProgressIndicator(color: primaryPink))
           : RefreshIndicator(
               color: primaryPink,
-              onRefresh: _loadLogs,
+              onRefresh: () => _loadLogs(forceSync: true),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

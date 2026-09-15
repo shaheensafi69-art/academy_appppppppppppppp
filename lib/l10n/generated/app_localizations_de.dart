@@ -2927,4 +2927,32 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get clear => 'Löschen';
+
+  @override
+  String get deleteAccount => 'Konto löschen';
+
+  @override
+  String get deleteAccountSubtitle => 'Dauerhafte Kontolöschungsanfrage';
+
+  @override
+  String get deleteAccountWarning =>
+      'Warnung: Das Löschen Ihres Kontos ist dauerhaft. Alle gekauften Kurse, Zertifikate, das Guthaben und Ihre Fortschritte werden unwiderruflich gelöscht.';
+
+  @override
+  String get deleteAccountReasonHint =>
+      'Bitte erläutern Sie, warum Sie Ihr Konto löschen möchten (optional)';
+
+  @override
+  String get deleteAccountConfirmCheck =>
+      'Ich verstehe, dass dieser Vorgang unwiderruflich ist und alle meine Daten gelöscht werden.';
+
+  @override
+  String get requestAccountDeletion => 'Löschungsantrag einreichen';
+
+  @override
+  String get accountDeletionSubmitted =>
+      'Ihr Löschungsantrag wurde eingereicht. Unser Admin-Team wird Ihr Konto innerhalb von 24-48 Stunden überprüfen und löschen.';
+
+  @override
+  String get deleteAccountWebPolicy => 'Offizielle Web-Löschungsrichtlinie';
 }
