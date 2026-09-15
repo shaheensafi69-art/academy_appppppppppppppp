@@ -33,24 +33,23 @@ class SystemUiHelper {
     // در کل اپ، نوگیشن بار گوشی مخفی (immersiveSticky) باقی می‌ماند
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    // On Android 15+, setting status/navigation bar colors directly is deprecated.
+    // On Android 15+ (API 35+), setting statusBarColor, systemNavigationBarColor,
+    // and systemNavigationBarDividerColor is deprecated by Android and flagged by Play Console.
+    // Edge-to-edge handles transparency automatically.
     if (Platform.isAndroid && _androidSdkVersion >= 35) {
       SystemChrome.setSystemUIOverlayStyle(
         SystemUiOverlayStyle(
           systemNavigationBarIconBrightness: isReels ? Brightness.light : Brightness.dark,
           statusBarIconBrightness: isReels ? Brightness.light : Brightness.dark,
-          systemNavigationBarColor: Colors.transparent,
-          statusBarColor: Colors.transparent,
         ),
       );
     } else {
       SystemChrome.setSystemUIOverlayStyle(
         SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
           statusBarIconBrightness: isReels ? Brightness.light : Brightness.dark,
-          systemNavigationBarColor: Colors.transparent,
-          systemNavigationBarDividerColor: Colors.transparent,
           systemNavigationBarIconBrightness: isReels ? Brightness.light : Brightness.dark,
+          statusBarColor: Platform.isAndroid ? Colors.transparent : null,
+          systemNavigationBarColor: Platform.isAndroid ? Colors.transparent : null,
         ),
       );
     }
