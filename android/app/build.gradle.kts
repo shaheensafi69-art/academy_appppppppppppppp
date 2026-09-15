@@ -17,7 +17,7 @@ plugins {
 
 android {
     namespace = "org.safiacademy.app"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
