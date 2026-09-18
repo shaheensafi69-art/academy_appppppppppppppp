@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
+import '../../../core/services/media_processing_service.dart';
 
 class CreatePostScreen extends StatefulWidget {
   final VoidCallback? onPostSuccess;
@@ -94,11 +95,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
       String? uploadedImageUrl;
       if (_selectedImageFile != null) {
+        // 🖼️ فشرده‌سازی عکس بدون واترمارک جهت اشغال حجم اندک و لود فوری در فید
+        final compressedImage = await MediaProcessingService.instance
+            .compressFeedImage(_selectedImageFile!);
+
         final fileName = "post_${DateTime.now().millisecondsSinceEpoch}.jpg";
         uploadedImageUrl = await CloudflareStorageService.instance.upload(
           bucket: "safiacademy-media",
           path: "feed/$fileName",
-          file: _selectedImageFile,
+          file: compressedImage,
           contentType: "image/jpeg",
         );
       }

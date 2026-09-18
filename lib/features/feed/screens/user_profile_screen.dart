@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/services/cloudflare_storage_service.dart';
 import '../../chat/screens/direct_chat_screen.dart';
 import 'reels_viewer_screen.dart';
 
@@ -16,6 +19,9 @@ class UserProfileScreen extends StatefulWidget {
 class _UserProfileScreenState extends State<UserProfileScreen> {
   final supabase = Supabase.instance.client;
   bool isLoading = true;
+  bool isCoverUploading = false;
+  bool isAvatarUploading = false;
+  final ImagePicker _picker = ImagePicker();
   Map<String, dynamic>? profileData;
   List<Map<String, dynamic>> userPosts = [];
   List<Map<String, dynamic>> userReels = [];
@@ -181,13 +187,138 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
-  // دیالوگ ویرایش پروفایل برای کاربر خودم
+  // هندلر آپلود عکس کاورپیج به کلودفلر R2 و ثبت در دیتابیس Supabase
+  Future<void> _handleCoverUpload() async {
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+      maxWidth: 2560,
+      maxHeight: 1440,
+    );
+    if (image == null) return;
+
+    setState(() => isCoverUploading = true);
+    try {
+      final user = supabase.auth.currentUser;
+      if (user == null) return;
+
+      final fileExt = image.name.split('.').last;
+      final fileName =
+          'cover-${user.id}-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      final bytes = await image.readAsBytes();
+
+      final publicUrl = await CloudflareStorageService.instance.upload(
+        bucket: 'covers',
+        path: fileName,
+        bytes: bytes,
+        contentType: 'image/jpeg',
+      );
+
+      await supabase
+          .from('profiles')
+          .update({'cover_image_url': publicUrl})
+          .eq('id', user.id);
+
+      setState(() {
+        if (profileData != null) {
+          profileData!['cover_image_url'] = publicUrl;
+          profileData!['cover_url'] = publicUrl;
+        }
+      });
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Cover photo updated successfully! 🖼️✅"),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      debugPrint("Cover upload error: $e");
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to upload cover: $e"),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => isCoverUploading = false);
+    }
+  }
+
+  // هندلر آپلود عکس آواتار به کلودفلر R2 و ثبت در دیتابیس Supabase
+  Future<void> _handleAvatarUpload() async {
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+      maxWidth: 1024,
+      maxHeight: 1024,
+    );
+    if (image == null) return;
+
+    setState(() => isAvatarUploading = true);
+    try {
+      final user = supabase.auth.currentUser;
+      if (user == null) return;
+
+      final fileExt = image.name.split('.').last;
+      final fileName =
+          'avatar-${user.id}-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      final bytes = await image.readAsBytes();
+
+      final publicUrl = await CloudflareStorageService.instance.upload(
+        bucket: 'avatars',
+        path: fileName,
+        bytes: bytes,
+        contentType: 'image/jpeg',
+      );
+
+      await supabase
+          .from('profiles')
+          .update({'avatar_url': publicUrl})
+          .eq('id', user.id);
+
+      setState(() {
+        if (profileData != null) {
+          profileData!['avatar_url'] = publicUrl;
+        }
+      });
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Profile avatar updated successfully! 👤✅"),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      debugPrint("Avatar upload error: $e");
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to upload avatar: $e"),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => isAvatarUploading = false);
+    }
+  }
+
+  // دیالوگ فوق‌العاده حرفه‌ای و کامل ویرایش پروفایل
   void _showEditProfileModal() {
     final TextEditingController firstNameController = TextEditingController(
       text: profileData?['first_name'] ?? '',
     );
     final TextEditingController lastNameController = TextEditingController(
       text: profileData?['last_name'] ?? '',
+    );
+    final TextEditingController fatherNameController = TextEditingController(
+      text: profileData?['father_name'] ?? '',
+    );
+    final TextEditingController phoneController = TextEditingController(
+      text: profileData?['phone_number'] ?? '',
     );
     final TextEditingController countryController = TextEditingController(
       text: profileData?['country'] ?? '',
@@ -206,139 +337,277 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.only(
-          left: 24,
-          right: 24,
-          top: 24,
-          bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Edit Profile ✏️",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  color: textDark,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (modalContext, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Edit Profile ✏️",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: textDark,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: textGrey),
+                      onPressed: () => Navigator.pop(sheetContext),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: firstNameController,
-                cursorColor: primaryPink,
-                decoration: _inputDecoration("First Name"),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: textDark,
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: lastNameController,
-                cursorColor: primaryPink,
-                decoration: _inputDecoration("Last Name"),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: textDark,
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: countryController,
-                cursorColor: primaryPink,
-                decoration: _inputDecoration("Country"),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: textDark,
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: dobController,
-                cursorColor: primaryPink,
-                decoration: _inputDecoration("Date of Birth (YYYY-MM-DD)"),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: textDark,
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: bioController,
-                cursorColor: primaryPink,
-                maxLines: 4,
-                decoration: _inputDecoration("Biography / About Me"),
-                style: const TextStyle(fontSize: 14, color: textDark),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryPink,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                const SizedBox(height: 16),
+
+                // بخش مدیریت تصاویر آواتار و کاور در بالای فرم
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: lightPinkBg.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: primaryPink.withValues(alpha: 0.2),
                     ),
                   ),
-                  onPressed: () async {
-                    try {
-                      final user = supabase.auth.currentUser;
-                      if (user == null) return;
-
-                      await supabase
-                          .from("profiles")
-                          .update({
-                            'first_name': firstNameController.text.trim(),
-                            'last_name': lastNameController.text.trim(),
-                            'country': countryController.text.trim(),
-                            'date_of_birth': dobController.text.trim().isEmpty
-                                ? null
-                                : dobController.text.trim(),
-                            'bio': bioController.text.trim(),
-                          })
-                          .eq("id", user.id);
-
-                      if (!mounted) return;
-                      Navigator.pop(sheetContext);
-                      await _fetchProfileAndPosts();
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Profile updated successfully! ✅"),
-                          backgroundColor: Colors.green,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            await _handleAvatarUpload();
+                            setModalState(() {});
+                          },
+                          borderRadius: BorderRadius.circular(14),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: surfaceWhite,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: cardBorder),
+                            ),
+                            child: Column(
+                              children: [
+                                CircleAvatar(
+                                  radius: 24,
+                                  backgroundColor: primaryPink.withValues(alpha: 0.1),
+                                  backgroundImage: profileData?['avatar_url'] != null &&
+                                          profileData!['avatar_url'].toString().isNotEmpty
+                                      ? NetworkImage(profileData!['avatar_url'])
+                                      : null,
+                                  child: isAvatarUploading
+                                      ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: primaryPink,
+                                          ),
+                                        )
+                                      : const Icon(Icons.camera_alt_rounded, color: primaryPink, size: 20),
+                                ),
+                                const SizedBox(height: 6),
+                                const Text(
+                                  "Change Photo 👤",
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: textDark),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      );
-                    } catch (e) {
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text("Error updating profile: $e"),
-                          backgroundColor: Colors.redAccent,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            await _handleCoverUpload();
+                            setModalState(() {});
+                          },
+                          borderRadius: BorderRadius.circular(14),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: surfaceWhite,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: cardBorder),
+                            ),
+                            child: Column(
+                              children: [
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Colors.purple.withValues(alpha: 0.1),
+                                    image: (profileData?['cover_image_url'] ?? profileData?['cover_url']) != null &&
+                                            (profileData!['cover_image_url'] ?? profileData!['cover_url']).toString().isNotEmpty
+                                        ? DecorationImage(
+                                            image: NetworkImage((profileData!['cover_image_url'] ?? profileData!['cover_url']).toString()),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : null,
+                                  ),
+                                  child: isCoverUploading
+                                      ? const Center(
+                                          child: SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.purple,
+                                            ),
+                                          ),
+                                        )
+                                      : const Center(
+                                          child: Icon(Icons.image_rounded, color: Colors.purple, size: 22),
+                                        ),
+                                ),
+                                const SizedBox(height: 6),
+                                const Text(
+                                  "Change Cover 🖼️",
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: textDark),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      );
-                    }
-                  },
-                  child: const Text(
-                    "SAVE CHANGES",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.5,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: firstNameController,
+                        cursorColor: primaryPink,
+                        decoration: _inputDecoration("First Name"),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textDark),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextField(
+                        controller: lastNameController,
+                        cursorColor: primaryPink,
+                        decoration: _inputDecoration("Last Name"),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textDark),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: fatherNameController,
+                  cursorColor: primaryPink,
+                  decoration: _inputDecoration("Father's Name"),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textDark),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: phoneController,
+                  keyboardType: TextInputType.phone,
+                  cursorColor: primaryPink,
+                  decoration: _inputDecoration("Phone Number (+...)"),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textDark),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: countryController,
+                  cursorColor: primaryPink,
+                  decoration: _inputDecoration("Country / Location"),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textDark),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: dobController,
+                  cursorColor: primaryPink,
+                  decoration: _inputDecoration("Date of Birth (YYYY-MM-DD)"),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textDark),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: bioController,
+                  cursorColor: primaryPink,
+                  maxLines: 3,
+                  decoration: _inputDecoration("Biography / About Me"),
+                  style: const TextStyle(fontSize: 14, color: textDark),
+                ),
+                const SizedBox(height: 22),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryPink,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: () async {
+                      try {
+                        final user = supabase.auth.currentUser;
+                        if (user == null) return;
+
+                        await supabase
+                            .from("profiles")
+                            .update({
+                              'first_name': firstNameController.text.trim(),
+                              'last_name': lastNameController.text.trim(),
+                              'father_name': fatherNameController.text.trim(),
+                              'phone_number': phoneController.text.trim(),
+                              'country': countryController.text.trim(),
+                              'date_of_birth': dobController.text.trim().isEmpty
+                                  ? null
+                                  : dobController.text.trim(),
+                              'bio': bioController.text.trim(),
+                            })
+                            .eq("id", user.id);
+
+                        if (!mounted) return;
+                        Navigator.pop(sheetContext);
+                        await _fetchProfileAndPosts();
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Profile updated successfully! ✅"),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      } catch (e) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Error updating profile: $e"),
+                            backgroundColor: Colors.redAccent,
+                          ),
+                        );
+                      }
+                    },
+                    child: const Text(
+                      "SAVE CHANGES",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -672,9 +941,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // کارت اطلاعات پروفایل
+                          // کارت اطلاعات پروفایل با عکس کاورپیج و آواتار
                           Container(
-                            padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
                               color: surfaceWhite,
                               borderRadius: BorderRadius.circular(28),
@@ -690,264 +958,575 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 ),
                               ],
                             ),
+                            clipBehavior: Clip.antiAlias,
                             child: Column(
                               children: [
-                                Row(
+                                // بخش کاورپیج
+                                Stack(
                                   children: [
-                                    CircleAvatar(
-                                      radius: 36,
-                                      backgroundColor: roleColor.withValues(
-                                        alpha: 0.1,
+                                    Container(
+                                      height: 180,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            roleColor.withValues(alpha: 0.85),
+                                            primaryPink,
+                                            const Color(0xFF6366F1),
+                                          ],
+                                        ),
                                       ),
-                                      backgroundImage:
-                                          profileData!['avatar_url'] != null &&
-                                              profileData!['avatar_url']
+                                      child: (profileData!['cover_image_url'] ?? profileData!['cover_url']) != null &&
+                                              (profileData!['cover_image_url'] ?? profileData!['cover_url'])
                                                   .toString()
                                                   .isNotEmpty
-                                          ? NetworkImage(
-                                              profileData!['avatar_url'],
-                                            )
-                                          : null,
-                                      child:
-                                          profileData!['avatar_url'] == null ||
-                                              profileData!['avatar_url']
-                                                  .toString()
-                                                  .isEmpty
-                                          ? Text(
-                                              profileData!['first_name'] !=
-                                                          null &&
-                                                      profileData!['first_name']
-                                                          .toString()
-                                                          .isNotEmpty
-                                                  ? profileData!['first_name'][0]
-                                                  : 'U',
-                                              style: TextStyle(
-                                                color: roleColor,
-                                                fontWeight: FontWeight.w900,
-                                                fontSize: 24,
+                                          ? Image.network(
+                                              (profileData!['cover_image_url'] ?? profileData!['cover_url']).toString(),
+                                              width: double.infinity,
+                                              height: 180,
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (context, error, stackTrace) =>
+                                                  Center(
+                                                child: Icon(
+                                                  Icons.landscape_rounded,
+                                                  size: 48,
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.4),
+                                                ),
                                               ),
                                             )
-                                          : null,
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              vertical: 3,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: roleColor.withValues(
-                                                alpha: 0.1,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              roleLabel,
-                                              style: TextStyle(
-                                                fontSize: 9,
-                                                fontWeight: FontWeight.w900,
-                                                color: roleColor,
+                                          : Center(
+                                              child: Icon(
+                                                Icons.landscape_rounded,
+                                                size: 48,
+                                                color: Colors.white
+                                                    .withValues(alpha: 0.35),
                                               ),
                                             ),
+                                    ),
+                                    // گرادیان ملایم پایین کاور
+                                    Positioned(
+                                      bottom: 0,
+                                      left: 0,
+                                      right: 0,
+                                      height: 50,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              Colors.transparent,
+                                              Colors.black.withValues(alpha: 0.35),
+                                            ],
                                           ),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            "${profileData!['first_name'] ?? ''} ${profileData!['last_name'] ?? ''}",
-                                            style: const TextStyle(
-                                              color: textDark,
-                                              fontWeight: FontWeight.w900,
-                                              fontSize: 18,
-                                            ),
-                                          ),
-                                        ],
+                                        ),
                                       ),
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-                                const Divider(color: cardBorder, height: 1),
-                                const SizedBox(height: 16),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    _buildStatItem(
-                                      "Network",
-                                      "$friendsCount",
-                                      roleColor,
-                                    ),
-                                    if (!isTeacher && !isAdmin)
-                                      _buildStatItem(
-                                        "Score",
-                                        "${profileData!['total_score'] ?? 0}",
-                                        roleColor,
-                                      ),
-                                    _buildStatItem(
-                                      "Posts",
-                                      "${userPosts.length}",
-                                      roleColor,
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-
-                                if (isMyProfile)
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton.icon(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: lightPinkBg,
-                                        foregroundColor: primaryPink,
-                                        elevation: 0,
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 14,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            14,
-                                          ),
-                                        ),
-                                      ),
-                                      icon: const Icon(
-                                        Icons.edit_rounded,
-                                        size: 16,
-                                      ),
-                                      label: const Text(
-                                        "Edit My Profile ✏️",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w900,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                      onPressed: _showEditProfileModal,
-                                    ),
-                                  )
-                                else
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: ElevatedButton.icon(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                                friendshipStatus == 'friends'
-                                                ? cardBorder
-                                                : primaryPink,
-                                            foregroundColor:
-                                                friendshipStatus == 'friends'
-                                                ? textDark
-                                                : Colors.white,
-                                            elevation: 0,
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 14,
-                                            ),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(14),
-                                            ),
-                                          ),
-                                          icon: Icon(
-                                            friendshipStatus == 'friends'
-                                                ? Icons.how_to_reg_rounded
-                                                : friendshipStatus ==
-                                                      'pending_sent'
-                                                ? Icons.access_time_rounded
-                                                : friendshipStatus ==
-                                                      'pending_received'
-                                                ? Icons.person_add_alt_1_rounded
-                                                : Icons.person_add_rounded,
-                                            size: 16,
-                                          ),
-                                          label: Text(
-                                            friendshipStatus == 'friends'
-                                                ? 'Connected ✓'
-                                                : friendshipStatus ==
-                                                      'pending_sent'
-                                                ? 'Pending'
-                                                : friendshipStatus ==
-                                                      'pending_received'
-                                                ? 'Accept'
-                                                : 'Connect 🤝',
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w900,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          onPressed: isActionLoading
-                                              ? null
-                                              : _handleFriendAction,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      ElevatedButton.icon(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: primaryPink,
-                                          foregroundColor: Colors.white,
-                                          elevation: 0,
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 14,
-                                            horizontal: 16,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              14,
-                                            ),
-                                          ),
-                                        ),
-                                        icon: const Icon(
-                                          Icons.chat_bubble_outline_rounded,
-                                          size: 16,
-                                        ),
-                                        label: const Text(
-                                          "Chat 💬",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                        onPressed: () {
-                                          final targetId =
-                                              widget.userId ??
-                                              (profileData != null
-                                                  ? profileData!['id']
-                                                  : null);
-                                          if (targetId != null) {
-                                            final peerName =
-                                                "${profileData?['first_name'] ?? ''} ${profileData?['last_name'] ?? ''}"
-                                                    .trim();
-                                            final peerAvatar =
-                                                profileData?['avatar_url'] ??
-                                                '';
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (_) =>
-                                                    DirectChatScreen(
-                                                      peerId: targetId,
-                                                      peerName:
-                                                          peerName.isNotEmpty
-                                                          ? peerName
-                                                          : 'User',
-                                                      peerAvatar: peerAvatar,
+                                    // دکمه تغییر عکس کاور برای صاحب پروفایل
+                                    if (isMyProfile)
+                                      Positioned(
+                                        top: 14,
+                                        right: 14,
+                                        child: Material(
+                                          color: Colors.transparent,
+                                          child: InkWell(
+                                            onTap: isCoverUploading
+                                                ? null
+                                                : _handleCoverUpload,
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 12,
+                                                vertical: 6,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.black
+                                                    .withValues(alpha: 0.65),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                border: Border.all(
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.35),
+                                                ),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black
+                                                        .withValues(alpha: 0.25),
+                                                    blurRadius: 8,
+                                                  ),
+                                                ],
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  if (isCoverUploading)
+                                                    const SizedBox(
+                                                      width: 13,
+                                                      height: 13,
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        color: Colors.white,
+                                                      ),
+                                                    )
+                                                  else
+                                                    const Icon(
+                                                      Icons.camera_alt_rounded,
+                                                      size: 14,
+                                                      color: Colors.white,
                                                     ),
+                                                  const SizedBox(width: 6),
+                                                  Text(
+                                                    isCoverUploading
+                                                        ? "Uploading..."
+                                                        : "Cover Photo",
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 11,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                            );
-                                          }
-                                        },
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+
+                                // بخش آواتار و مشخصات کاربر
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                                  child: Column(
+                                    children: [
+                                      // آواتار همپوشان با کاور
+                                      Transform.translate(
+                                        offset: const Offset(0, -44),
+                                        child: Center(
+                                          child: Stack(
+                                            clipBehavior: Clip.none,
+                                            children: [
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color: surfaceWhite,
+                                                    width: 4,
+                                                  ),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black
+                                                          .withValues(alpha: 0.12),
+                                                      blurRadius: 16,
+                                                      offset:
+                                                          const Offset(0, 4),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: CircleAvatar(
+                                                  radius: 46,
+                                                  backgroundColor:
+                                                      roleColor.withValues(
+                                                    alpha: 0.12,
+                                                  ),
+                                                  backgroundImage:
+                                                      profileData!['avatar_url'] !=
+                                                                  null &&
+                                                              profileData![
+                                                                      'avatar_url']
+                                                                  .toString()
+                                                                  .isNotEmpty
+                                                          ? NetworkImage(
+                                                              profileData![
+                                                                  'avatar_url'],
+                                                            )
+                                                          : null,
+                                                  child: profileData![
+                                                                  'avatar_url'] ==
+                                                              null ||
+                                                          profileData![
+                                                                  'avatar_url']
+                                                              .toString()
+                                                              .isEmpty
+                                                      ? Text(
+                                                          profileData!['first_name'] !=
+                                                                      null &&
+                                                                  profileData![
+                                                                          'first_name']
+                                                                      .toString()
+                                                                      .isNotEmpty
+                                                              ? profileData![
+                                                                  'first_name'][0]
+                                                              : 'U',
+                                                          style: TextStyle(
+                                                            color: roleColor,
+                                                            fontWeight:
+                                                                FontWeight.w900,
+                                                            fontSize: 28,
+                                                          ),
+                                                        )
+                                                      : null,
+                                                ),
+                                              ),
+                                              // دکمه تغییر آواتار
+                                              if (isMyProfile)
+                                                Positioned(
+                                                  bottom: 2,
+                                                  right: 2,
+                                                  child: GestureDetector(
+                                                    onTap: isAvatarUploading
+                                                        ? null
+                                                        : _handleAvatarUpload,
+                                                    child: Container(
+                                                      padding:
+                                                          const EdgeInsets.all(7),
+                                                      decoration: BoxDecoration(
+                                                        color: primaryPink,
+                                                        shape: BoxShape.circle,
+                                                        border: Border.all(
+                                                          color: surfaceWhite,
+                                                          width: 2.5,
+                                                        ),
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color: Colors.black
+                                                                .withValues(
+                                                              alpha: 0.2,
+                                                            ),
+                                                            blurRadius: 6,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      child: isAvatarUploading
+                                                          ? const SizedBox(
+                                                              width: 14,
+                                                              height: 14,
+                                                              child:
+                                                                  CircularProgressIndicator(
+                                                                strokeWidth: 2,
+                                                                color:
+                                                                    Colors.white,
+                                                              ),
+                                                            )
+                                                          : const Icon(
+                                                              Icons
+                                                                  .camera_alt_rounded,
+                                                              size: 14,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+
+                                      // نام و نقش کاربر با فاصله هماهنگ
+                                      Transform.translate(
+                                        offset: const Offset(0, -32),
+                                        child: Column(
+                                          children: [
+                                            Text(
+                                              "${profileData!['first_name'] ?? ''} ${profileData!['last_name'] ?? ''}"
+                                                      .trim()
+                                                      .isEmpty
+                                                  ? "Safi User"
+                                                  : "${profileData!['first_name'] ?? ''} ${profileData!['last_name'] ?? ''}",
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                color: textDark,
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: 20,
+                                                letterSpacing: -0.3,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                horizontal: 10,
+                                                vertical: 4,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: roleColor.withValues(
+                                                  alpha: 0.1,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                                border: Border.all(
+                                                  color: roleColor.withValues(
+                                                    alpha: 0.2,
+                                                  ),
+                                                ),
+                                              ),
+                                              child: Text(
+                                                roleLabel,
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: roleColor,
+                                                  letterSpacing: 0.4,
+                                                ),
+                                              ),
+                                            ),
+                                            if (profileData!['bio'] != null &&
+                                                profileData!['bio']
+                                                    .toString()
+                                                    .isNotEmpty) ...[
+                                              const SizedBox(height: 10),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 16,
+                                                ),
+                                                child: Text(
+                                                  profileData!['bio'],
+                                                  textAlign: TextAlign.center,
+                                                  style: const TextStyle(
+                                                    color: textGrey,
+                                                    fontSize: 12,
+                                                    height: 1.4,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                            const SizedBox(height: 16),
+                                            const Divider(
+                                              color: cardBorder,
+                                              height: 1,
+                                            ),
+                                            const SizedBox(height: 14),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
+                                              children: [
+                                                _buildStatItem(
+                                                  "Network",
+                                                  "$friendsCount",
+                                                  roleColor,
+                                                ),
+                                                if (!isTeacher && !isAdmin)
+                                                  _buildStatItem(
+                                                    "Score",
+                                                    "${profileData!['total_score'] ?? 0}",
+                                                    roleColor,
+                                                  ),
+                                                _buildStatItem(
+                                                  "Posts",
+                                                  "${userPosts.length}",
+                                                  roleColor,
+                                                ),
+                                                _buildStatItem(
+                                                  "Reels",
+                                                  "${userReels.length}",
+                                                  roleColor,
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 18),
+                                            if (isMyProfile)
+                                              SizedBox(
+                                                width: double.infinity,
+                                                child: ElevatedButton.icon(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor: lightPinkBg,
+                                                    foregroundColor:
+                                                        primaryPink,
+                                                    elevation: 0,
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                      vertical: 14,
+                                                    ),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                        14,
+                                                      ),
+                                                      side: const BorderSide(
+                                                        color: primaryPink,
+                                                        width: 1,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  icon: const Icon(
+                                                    Icons.edit_rounded,
+                                                    size: 16,
+                                                  ),
+                                                  label: const Text(
+                                                    "Edit Profile ✏️",
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
+                                                  onPressed:
+                                                      _showEditProfileModal,
+                                                ),
+                                              )
+                                            else
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: ElevatedButton.icon(
+                                                      style:
+                                                          ElevatedButton.styleFrom(
+                                                        backgroundColor:
+                                                            friendshipStatus ==
+                                                                    'friends'
+                                                                ? cardBorder
+                                                                : primaryPink,
+                                                        foregroundColor:
+                                                            friendshipStatus ==
+                                                                    'friends'
+                                                                ? textDark
+                                                                : Colors.white,
+                                                        elevation: 0,
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                          vertical: 14,
+                                                        ),
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                            14,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      icon: Icon(
+                                                        friendshipStatus ==
+                                                                'friends'
+                                                            ? Icons
+                                                                .how_to_reg_rounded
+                                                            : friendshipStatus ==
+                                                                    'pending_sent'
+                                                                ? Icons
+                                                                    .access_time_rounded
+                                                                : friendshipStatus ==
+                                                                        'pending_received'
+                                                                    ? Icons
+                                                                        .person_add_alt_1_rounded
+                                                                    : Icons
+                                                                        .person_add_rounded,
+                                                        size: 16,
+                                                      ),
+                                                      label: Text(
+                                                        friendshipStatus ==
+                                                                'friends'
+                                                            ? 'Connected ✓'
+                                                            : friendshipStatus ==
+                                                                    'pending_sent'
+                                                                ? 'Pending'
+                                                                : friendshipStatus ==
+                                                                        'pending_received'
+                                                                    ? 'Accept'
+                                                                    : 'Connect 🤝',
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w900,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                      onPressed: isActionLoading
+                                                          ? null
+                                                          : _handleFriendAction,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 10),
+                                                  ElevatedButton.icon(
+                                                    style:
+                                                        ElevatedButton.styleFrom(
+                                                      backgroundColor:
+                                                          primaryPink,
+                                                      foregroundColor:
+                                                          Colors.white,
+                                                      elevation: 0,
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                        vertical: 14,
+                                                        horizontal: 16,
+                                                      ),
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                          14,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    icon: const Icon(
+                                                      Icons
+                                                          .chat_bubble_outline_rounded,
+                                                      size: 16,
+                                                    ),
+                                                    label: const Text(
+                                                      "Chat 💬",
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                    onPressed: () {
+                                                      final targetId =
+                                                          widget.userId ??
+                                                              (profileData !=
+                                                                      null
+                                                                  ? profileData![
+                                                                      'id']
+                                                                  : null);
+                                                      if (targetId != null) {
+                                                        final peerName =
+                                                            "${profileData?['first_name'] ?? ''} ${profileData?['last_name'] ?? ''}"
+                                                                .trim();
+                                                        final peerAvatar =
+                                                            profileData?[
+                                                                    'avatar_url'] ??
+                                                                '';
+                                                        Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (_) =>
+                                                                DirectChatScreen(
+                                                              peerId: targetId,
+                                                              peerName: peerName
+                                                                      .isNotEmpty
+                                                                  ? peerName
+                                                                  : 'User',
+                                                              peerAvatar:
+                                                                  peerAvatar,
+                                                            ),
+                                                          ),
+                                                        );
+                                                      }
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   ),
+                                ),
                               ],
                             ),
                           ),
                           const SizedBox(height: 20),
 
-                          // اطلاعات کامل پروفایل (بدون شماره موبایل و اسم پدر)
+                          // اطلاعات کامل پروفایل
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(20),
@@ -955,38 +1534,102 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                               color: surfaceWhite,
                               borderRadius: BorderRadius.circular(24),
                               border: Border.all(color: cardBorder, width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.03),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  "Complete Profile Info",
-                                  style: TextStyle(
-                                    color: textDark,
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  (profileData!['bio'] != null &&
-                                          profileData!['bio']
-                                              .toString()
-                                              .isNotEmpty)
-                                      ? profileData!['bio']
-                                      : "No biography provided yet.",
-                                  style: const TextStyle(
-                                    color: textGrey,
-                                    fontSize: 12,
-                                    height: 1.4,
-                                  ),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: roleColor.withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Icon(
+                                        Icons.badge_rounded,
+                                        color: roleColor,
+                                        size: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      "Complete Profile Information",
+                                      style: TextStyle(
+                                        color: textDark,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(height: 16),
+                                // شماره تماس با قابلیت کپی
+                                if (profileData!['phone_number'] != null &&
+                                    profileData!['phone_number']
+                                        .toString()
+                                        .isNotEmpty) ...[
+                                  _buildInfoRow(
+                                    Icons.phone_iphone_rounded,
+                                    "Phone Number",
+                                    profileData!['phone_number'],
+                                    roleColor,
+                                    onCopy: () {
+                                      Clipboard.setData(
+                                        ClipboardData(
+                                          text: profileData!['phone_number'],
+                                        ),
+                                      );
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text("Phone number copied! 📋"),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 10),
+                                ],
+                                // نام پدر
+                                if (profileData!['father_name'] != null &&
+                                    profileData!['father_name']
+                                        .toString()
+                                        .isNotEmpty) ...[
+                                  _buildInfoRow(
+                                    Icons.family_restroom_rounded,
+                                    "Father's Name",
+                                    profileData!['father_name'],
+                                    roleColor,
+                                  ),
+                                  const SizedBox(height: 10),
+                                ],
                                 _buildInfoRow(
                                   Icons.email_outlined,
                                   "Email Address",
                                   profileData!['email'] ?? 'Not specified',
                                   roleColor,
+                                  onCopy: profileData!['email'] != null
+                                      ? () {
+                                          Clipboard.setData(
+                                            ClipboardData(
+                                              text: profileData!['email'],
+                                            ),
+                                          );
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text("Email copied! 📋"),
+                                              duration: Duration(seconds: 2),
+                                            ),
+                                          );
+                                        }
+                                      : null,
                                 ),
                                 const SizedBox(height: 10),
                                 _buildInfoRow(
@@ -1023,6 +1666,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                   "Referral Code",
                                   profileData!['referral_code'] ?? 'N/A',
                                   roleColor,
+                                  onCopy: profileData!['referral_code'] != null
+                                      ? () {
+                                          Clipboard.setData(
+                                            ClipboardData(
+                                              text:
+                                                  profileData!['referral_code'],
+                                            ),
+                                          );
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                "Referral code copied! 📋",
+                                              ),
+                                              duration: Duration(seconds: 2),
+                                            ),
+                                          );
+                                        }
+                                      : null,
                                 ),
                                 const SizedBox(height: 10),
                                 _buildInfoRow(
@@ -1030,6 +1691,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                   "Referral Link",
                                   profileData!['referral_link'] ?? 'N/A',
                                   roleColor,
+                                  onCopy: profileData!['referral_link'] != null
+                                      ? () {
+                                          Clipboard.setData(
+                                            ClipboardData(
+                                              text:
+                                                  profileData!['referral_link'],
+                                            ),
+                                          );
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                "Referral link copied! 📋",
+                                              ),
+                                              duration: Duration(seconds: 2),
+                                            ),
+                                          );
+                                        }
+                                      : null,
                                 ),
                                 const SizedBox(height: 10),
                                 _buildInfoRow(
@@ -1044,8 +1723,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                   "Member Since",
                                   profileData!['created_at'] != null
                                       ? profileData!['created_at']
-                                            .toString()
-                                            .split('T')[0]
+                                          .toString()
+                                          .split('T')[0]
                                       : 'N/A',
                                   roleColor,
                                 ),
@@ -1627,43 +2306,73 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value, Color color) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10),
+  Widget _buildInfoRow(
+    IconData icon,
+    String label,
+    String value,
+    Color color, {
+    VoidCallback? onCopy,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: lightPinkBg.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: cardBorder, width: 1),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 16),
           ),
-          child: Icon(icon, color: color, size: 16),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  color: textGrey,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w900,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: textGrey,
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: textDark,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (onCopy != null)
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onCopy,
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(
+                    Icons.copy_rounded,
+                    size: 16,
+                    color: color,
+                  ),
                 ),
               ),
-              const SizedBox(height: 1),
-              Text(
-                value,
-                style: const TextStyle(
-                  color: textDark,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+            ),
+        ],
+      ),
     );
   }
 }

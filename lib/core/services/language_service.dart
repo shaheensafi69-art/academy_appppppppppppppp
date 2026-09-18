@@ -8,6 +8,7 @@ class AppLanguage {
   final String name;
   final String englishName;
   final String flag;
+  final String countryCode;
   final bool isRtl;
 
   const AppLanguage({
@@ -15,6 +16,7 @@ class AppLanguage {
     required this.name,
     required this.englishName,
     required this.flag,
+    required this.countryCode,
     required this.isRtl,
   });
 }
@@ -25,13 +27,14 @@ class LanguageService {
 
   static const String _prefKey = 'user_selected_language';
 
-  // لیست کامل ۹ زبان با نام‌های بومی، پرچم‌ها و وضعیت راست‌چین/چپ‌چین
+  // لیست کامل ۱۹ زبان وب‌سایت با نام‌های بومی، کدهای کشوری پرچم و وضعیت راست‌چین
   static const List<AppLanguage> supportedLanguages = [
     AppLanguage(
       code: 'en',
       name: 'English',
       englishName: 'English',
       flag: '🇬🇧',
+      countryCode: 'GB',
       isRtl: false,
     ),
     AppLanguage(
@@ -39,6 +42,7 @@ class LanguageService {
       name: 'فارسی / دری',
       englishName: 'Persian (Dari)',
       flag: '🇦🇫',
+      countryCode: 'AF',
       isRtl: true,
     ),
     AppLanguage(
@@ -46,13 +50,31 @@ class LanguageService {
       name: 'پښتو',
       englishName: 'Pashto',
       flag: '🇦🇫',
+      countryCode: 'AF',
       isRtl: true,
+    ),
+    AppLanguage(
+      code: 'ru',
+      name: 'Русский',
+      englishName: 'Russian',
+      flag: '🇷🇺',
+      countryCode: 'RU',
+      isRtl: false,
+    ),
+    AppLanguage(
+      code: 'tr',
+      name: 'Türkçe',
+      englishName: 'Turkish',
+      flag: '🇹🇷',
+      countryCode: 'TR',
+      isRtl: false,
     ),
     AppLanguage(
       code: 'de',
       name: 'Deutsch',
       englishName: 'German',
       flag: '🇩🇪',
+      countryCode: 'DE',
       isRtl: false,
     ),
     AppLanguage(
@@ -60,27 +82,7 @@ class LanguageService {
       name: 'Français',
       englishName: 'French',
       flag: '🇫🇷',
-      isRtl: false,
-    ),
-    AppLanguage(
-      code: 'ur',
-      name: 'اردو',
-      englishName: 'Urdu',
-      flag: '🇵🇰',
-      isRtl: true,
-    ),
-    AppLanguage(
-      code: 'tr',
-      name: 'Türkçe',
-      englishName: 'Turkish',
-      flag: '🇹🇷',
-      isRtl: false,
-    ),
-    AppLanguage(
-      code: 'ru',
-      name: 'Русский',
-      englishName: 'Russian',
-      flag: '🇷🇺',
+      countryCode: 'FR',
       isRtl: false,
     ),
     AppLanguage(
@@ -88,7 +90,96 @@ class LanguageService {
       name: 'العربية',
       englishName: 'Arabic',
       flag: '🇸🇦',
+      countryCode: 'SA',
       isRtl: true,
+    ),
+    AppLanguage(
+      code: 'ur',
+      name: 'اردو',
+      englishName: 'Urdu',
+      flag: '🇵🇰',
+      countryCode: 'PK',
+      isRtl: true,
+    ),
+    AppLanguage(
+      code: 'es',
+      name: 'Español',
+      englishName: 'Spanish',
+      flag: '🇪🇸',
+      countryCode: 'ES',
+      isRtl: false,
+    ),
+    AppLanguage(
+      code: 'zh',
+      name: '简体中文',
+      englishName: 'Chinese (Simplified)',
+      flag: '🇨🇳',
+      countryCode: 'CN',
+      isRtl: false,
+    ),
+    AppLanguage(
+      code: 'hi',
+      name: 'हिन्दी',
+      englishName: 'Hindi',
+      flag: '🇮🇳',
+      countryCode: 'IN',
+      isRtl: false,
+    ),
+    AppLanguage(
+      code: 'it',
+      name: 'Italiano',
+      englishName: 'Italian',
+      flag: '🇮🇹',
+      countryCode: 'IT',
+      isRtl: false,
+    ),
+    AppLanguage(
+      code: 'pt',
+      name: 'Português',
+      englishName: 'Portuguese',
+      flag: '🇵🇹',
+      countryCode: 'PT',
+      isRtl: false,
+    ),
+    AppLanguage(
+      code: 'ja',
+      name: '日本語',
+      englishName: 'Japanese',
+      flag: '🇯🇵',
+      countryCode: 'JP',
+      isRtl: false,
+    ),
+    AppLanguage(
+      code: 'ko',
+      name: '한국어',
+      englishName: 'Korean',
+      flag: '🇰🇷',
+      countryCode: 'KR',
+      isRtl: false,
+    ),
+    AppLanguage(
+      code: 'nl',
+      name: 'Nederlands',
+      englishName: 'Dutch',
+      flag: '🇳🇱',
+      countryCode: 'NL',
+      isRtl: false,
+    ),
+    AppLanguage(
+      code: 'uz',
+      name: 'Oʻzbekcha',
+      englishName: 'Uzbek',
+      flag: '🇺🇿',
+      countryCode: 'UZ',
+      isRtl: false,
+    ),
+    AppLanguage(
+      code: 'id',
+      name: 'Bahasa Indonesia',
+      englishName: 'Indonesian',
+      flag: '🇮🇩',
+      countryCode: 'ID',
+      isRtl: false,
     ),
   ];
 

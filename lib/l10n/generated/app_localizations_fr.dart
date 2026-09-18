@@ -2960,4 +2960,105 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get deleteAccountWebPolicy =>
       'Politique officielle de suppression sur le Web';
+
+  @override
+  String get shop => 'Boutique';
+
+  @override
+  String get shopSubtitle =>
+      'Produits de revendeur vérifiés et matériel éducatif';
+
+  @override
+  String get resellerProducts => 'Produits revendeurs';
+
+  @override
+  String get inStock => 'En stock';
+
+  @override
+  String get outOfStock => 'En rupture de stock';
+
+  @override
+  String get buyNow => 'Acheter maintenant';
+
+  @override
+  String get productDetails => 'Détails du produit';
+
+  @override
+  String get priceUsd => 'Prix (USD)';
+
+  @override
+  String get localEquivalent => 'Valeur locale estimée';
+
+  @override
+  String get paymentMethods => 'Méthodes de paiement';
+
+  @override
+  String get hesabPay => 'HesabPay';
+
+  @override
+  String get atomaPay => 'Payer Atoma';
+
+  @override
+  String get hesabPayNumber => '+93796040415';
+
+  @override
+  String get atomaPayNumber => '+93773449567';
+
+  @override
+  String get copyNumber => 'Copier le numéro de compte';
+
+  @override
+  String get buyerFullName => 'Nom complet';
+
+  @override
+  String get buyerContact => 'Téléphone / Télégramme / WhatsApp';
+
+  @override
+  String get completeOrder => 'Achat final et finition';
+
+  @override
+  String get orderProcessing => 'Soumission de la commande...';
+
+  @override
+  String get orderSubmittedSuccess =>
+      'Commande passée avec succès ! Notification envoyée à Telegram.';
+
+  @override
+  String get selectAppColor => 'Sélectionnez la couleur de l\'application';
+
+  @override
+  String get selectAppColorDesc => 'Choisissez votre palette de thèmes de luxe';
+
+  @override
+  String get themeImperialRoseGold => 'Or Rose Impérial & Champagne';
+
+  @override
+  String get themeRoyalEmerald => 'Émeraude royale et or 24 carats';
+
+  @override
+  String get themeMidnightSapphire => 'Saphir de minuit et platine';
+
+  @override
+  String get themeObsidianVelvet => 'Velours d\'obsidienne et rubis riche';
+
+  @override
+  String get themeAmethystGlow => 'Améthyste éclat et diamant';
+
+  @override
+  String get syncResellerProducts => 'Synchroniser les produits des revendeurs';
+
+  @override
+  String get syncNow => 'Synchroniser maintenant';
+
+  @override
+  String get syncStatus => 'Statut de synchronisation';
+
+  @override
+  String get syncHistory => 'Historique de synchronisation';
+
+  @override
+  String get lastSynced => 'Dernière synchronisation';
+
+  @override
+  String get itemsUpdated => 'Articles mis à jour';
 }

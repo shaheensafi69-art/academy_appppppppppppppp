@@ -2938,4 +2938,107 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get deleteAccountWebPolicy => 'Официальная политика удаления на сайте';
+
+  @override
+  String get shop => 'Магазин';
+
+  @override
+  String get shopSubtitle =>
+      'Проверенные реселлерские продукты и образовательное оборудование';
+
+  @override
+  String get resellerProducts => 'Продукты для реселлеров';
+
+  @override
+  String get inStock => 'В наличии';
+
+  @override
+  String get outOfStock => 'Нет в наличии';
+
+  @override
+  String get buyNow => 'Купить сейчас';
+
+  @override
+  String get productDetails => 'Подробная информация о продукте';
+
+  @override
+  String get priceUsd => 'Цена (долл. США)';
+
+  @override
+  String get localEquivalent => 'Ориентировочная местная стоимость';
+
+  @override
+  String get paymentMethods => 'Способы оплаты';
+
+  @override
+  String get hesabPay => 'HesabPay';
+
+  @override
+  String get atomaPay => 'Атома Пей';
+
+  @override
+  String get hesabPayNumber => '+93796040415';
+
+  @override
+  String get atomaPayNumber => '+93773449567';
+
+  @override
+  String get copyNumber => 'Копировать номер счета';
+
+  @override
+  String get buyerFullName => 'Полное имя';
+
+  @override
+  String get buyerContact => 'Телефон/Телеграм/Ватсап';
+
+  @override
+  String get completeOrder => 'Полная покупка и завершение';
+
+  @override
+  String get orderProcessing => 'Отправка заказа...';
+
+  @override
+  String get orderSubmittedSuccess =>
+      'Заказ успешно оформлен! Уведомление отправлено в Telegram.';
+
+  @override
+  String get selectAppColor => 'Выберите цвет приложения';
+
+  @override
+  String get selectAppColorDesc =>
+      'Выберите свою роскошную тематическую палитру';
+
+  @override
+  String get themeImperialRoseGold =>
+      'Императорское розовое золото и шампанское';
+
+  @override
+  String get themeRoyalEmerald => 'Королевский изумруд и 24-каратное золото';
+
+  @override
+  String get themeMidnightSapphire => 'Полуночный сапфир и платина';
+
+  @override
+  String get themeObsidianVelvet => 'Обсидиановый бархат и насыщенный рубин';
+
+  @override
+  String get themeAmethystGlow => 'Аметист Сияние и Бриллиант';
+
+  @override
+  String get syncResellerProducts => 'Синхронизировать реселлерские продукты';
+
+  @override
+  String get syncNow => 'Синхронизировать сейчас';
+
+  @override
+  String get syncStatus => 'Статус синхронизации';
+
+  @override
+  String get syncHistory => 'Синхронизировать историю';
+
+  @override
+  String get lastSynced => 'Последняя синхронизация';
+
+  @override
+  String get itemsUpdated => 'Элементы обновлены';
 }

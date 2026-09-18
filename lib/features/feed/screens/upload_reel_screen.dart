@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/services/language_service.dart';
+import '../../../core/services/media_processing_service.dart';
 import 'reels_viewer_screen.dart';
 
 class UploadReelScreen extends StatefulWidget {
@@ -54,7 +55,11 @@ class _UploadReelScreenState extends State<UploadReelScreen> {
     setState(() => isUploadingFile = true);
 
     try {
-      final bytes = await video.readAsBytes();
+      // 🎬 پردازش و فشرده‌سازی در موبایل + درج واترمارک اختصاصی Safi Academy
+      final processedFile = await MediaProcessingService.instance
+          .processVideoWithWatermark(inputVideoPath: video.path);
+
+      final bytes = await processedFile.readAsBytes();
       final user = supabase.auth.currentUser;
       final uId = user?.id ?? 'guest';
       final fileName = "reel_${DateTime.now().millisecondsSinceEpoch}_$uId.mp4";

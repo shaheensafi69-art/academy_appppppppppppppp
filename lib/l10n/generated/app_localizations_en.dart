@@ -2932,4 +2932,104 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteAccountWebPolicy => 'Official Web Deletion Policy';
+
+  @override
+  String get shop => 'Shop';
+
+  @override
+  String get shopSubtitle => 'Verified Reseller Products & Educational Gear';
+
+  @override
+  String get resellerProducts => 'Reseller Products';
+
+  @override
+  String get inStock => 'In Stock';
+
+  @override
+  String get outOfStock => 'Out of Stock';
+
+  @override
+  String get buyNow => 'Buy Now';
+
+  @override
+  String get productDetails => 'Product Details';
+
+  @override
+  String get priceUsd => 'Price (USD)';
+
+  @override
+  String get localEquivalent => 'Estimated Local Value';
+
+  @override
+  String get paymentMethods => 'Payment Methods';
+
+  @override
+  String get hesabPay => 'HesabPay';
+
+  @override
+  String get atomaPay => 'Atoma Pay';
+
+  @override
+  String get hesabPayNumber => '+93796040415';
+
+  @override
+  String get atomaPayNumber => '+93773449567';
+
+  @override
+  String get copyNumber => 'Copy Account Number';
+
+  @override
+  String get buyerFullName => 'Full Name';
+
+  @override
+  String get buyerContact => 'Phone / Telegram / WhatsApp';
+
+  @override
+  String get completeOrder => 'Complete Purchase & Finish';
+
+  @override
+  String get orderProcessing => 'Submitting Order...';
+
+  @override
+  String get orderSubmittedSuccess =>
+      'Order placed successfully! Notification sent to Telegram.';
+
+  @override
+  String get selectAppColor => 'Select App Color';
+
+  @override
+  String get selectAppColorDesc => 'Choose your luxury theme palette';
+
+  @override
+  String get themeImperialRoseGold => 'Imperial Rose Gold & Champagne';
+
+  @override
+  String get themeRoyalEmerald => 'Royal Emerald & 24K Gold';
+
+  @override
+  String get themeMidnightSapphire => 'Midnight Sapphire & Platinum';
+
+  @override
+  String get themeObsidianVelvet => 'Obsidian Velvet & Rich Ruby';
+
+  @override
+  String get themeAmethystGlow => 'Amethyst Glow & Diamond';
+
+  @override
+  String get syncResellerProducts => 'Sync Reseller Products';
+
+  @override
+  String get syncNow => 'Sync Now';
+
+  @override
+  String get syncStatus => 'Sync Status';
+
+  @override
+  String get syncHistory => 'Sync History';
+
+  @override
+  String get lastSynced => 'Last Synced';
+
+  @override
+  String get itemsUpdated => 'Items Updated';
 }

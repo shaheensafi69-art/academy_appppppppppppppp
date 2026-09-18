@@ -2916,4 +2916,104 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get deleteAccountWebPolicy => 'عرض سياسة الحذف على الموقع';
+
+  @override
+  String get shop => 'محل';
+
+  @override
+  String get shopSubtitle => 'منتجات الموزعين المعتمدين والأدوات التعليمية';
+
+  @override
+  String get resellerProducts => 'منتجات الموزع';
+
+  @override
+  String get inStock => 'في الأوراق المالية';
+
+  @override
+  String get outOfStock => 'إنتهى من المخزن';
+
+  @override
+  String get buyNow => 'اشتري الآن';
+
+  @override
+  String get productDetails => 'تفاصيل المنتج';
+
+  @override
+  String get priceUsd => 'السعر (بالدولار الأمريكي)';
+
+  @override
+  String get localEquivalent => 'القيمة المحلية المقدرة';
+
+  @override
+  String get paymentMethods => 'طرق الدفع';
+
+  @override
+  String get hesabPay => 'HesabPay';
+
+  @override
+  String get atomaPay => 'Atoma Pay';
+
+  @override
+  String get hesabPayNumber => '+93796040415';
+
+  @override
+  String get atomaPayNumber => '+93773449567';
+
+  @override
+  String get copyNumber => 'نسخ رقم الحساب';
+
+  @override
+  String get buyerFullName => 'الاسم الكامل';
+
+  @override
+  String get buyerContact => 'هاتف / تيليجرام / واتساب';
+
+  @override
+  String get completeOrder => 'استكمال الشراء والانتهاء';
+
+  @override
+  String get orderProcessing => 'إرسال الطلب...';
+
+  @override
+  String get orderSubmittedSuccess =>
+      'Order placed successfully! Notification sent to Telegram.';
+
+  @override
+  String get selectAppColor => 'حدد لون التطبيق';
+
+  @override
+  String get selectAppColorDesc => 'اختر لوحة السمات الفاخرة الخاصة بك';
+
+  @override
+  String get themeImperialRoseGold => 'إمبريال روز جولد والشمبانيا';
+
+  @override
+  String get themeRoyalEmerald => 'الزمرد الملكي والذهب عيار 24 قيراط';
+
+  @override
+  String get themeMidnightSapphire => 'منتصف الليل الياقوت والبلاتين';
+
+  @override
+  String get themeObsidianVelvet => 'حجر السج المخملي والياقوت الغني';
+
+  @override
+  String get themeAmethystGlow => 'الجمشت الوهج والماس';
+
+  @override
+  String get syncResellerProducts => 'مزامنة منتجات الموزع';
+
+  @override
+  String get syncNow => 'مزامنة الآن';
+
+  @override
+  String get syncStatus => 'حالة المزامنة';
+
+  @override
+  String get syncHistory => 'سجل المزامنة';
+
+  @override
+  String get lastSynced => 'آخر مزامنة';
+
+  @override
+  String get itemsUpdated => 'تم تحديث العناصر';
 }

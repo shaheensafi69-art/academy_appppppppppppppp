@@ -10,7 +10,9 @@ import 'package:video_player/video_player.dart';
 
 import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/services/ad_service.dart';
+import '../../../core/services/media_processing_service.dart';
 import '../../../core/widgets/auth_required_modal.dart';
+import '../../../core/widgets/safi_academy_video_watermark.dart';
 import '../../chat/screens/direct_chat_screen.dart';
 import '../widgets/reels_ad_card.dart';
 
@@ -859,7 +861,14 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                         if (video != null) {
                           setModalState(() => isUploadingFile = true);
                           try {
-                            final bytes = await video.readAsBytes();
+                            // 🎬 فشرده‌سازی در موبایل + درج واترمارک اختصاصی Safi Academy
+                            final processedFile = await MediaProcessingService
+                                .instance
+                                .processVideoWithWatermark(
+                                  inputVideoPath: video.path,
+                                );
+
+                            final bytes = await processedFile.readAsBytes();
                             final user = supabase.auth.currentUser;
                             final uId = user?.id ?? 'guest';
                             final fileName =
@@ -1555,6 +1564,13 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
               ),
             ],
           ),
+        ),
+
+        // 🎬 واترمارک اختصاصی متنی Safi Academy (فقط در ویدیو با استایل لوکس)
+        const Positioned(
+          top: 60,
+          right: 16,
+          child: SafiAcademyVideoWatermark(scale: 0.95),
         ),
       ],
     );

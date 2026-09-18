@@ -2955,4 +2955,105 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get deleteAccountWebPolicy => 'Offizielle Web-Löschungsrichtlinie';
+
+  @override
+  String get shop => 'Einkaufen';
+
+  @override
+  String get shopSubtitle =>
+      'Verifizierte Wiederverkäuferprodukte und Bildungsausrüstung';
+
+  @override
+  String get resellerProducts => 'Wiederverkäuferprodukte';
+
+  @override
+  String get inStock => 'Auf Lager';
+
+  @override
+  String get outOfStock => 'Ausverkauft';
+
+  @override
+  String get buyNow => 'Jetzt kaufen';
+
+  @override
+  String get productDetails => 'Produktdetails';
+
+  @override
+  String get priceUsd => 'Preis (USD)';
+
+  @override
+  String get localEquivalent => 'Geschätzter lokaler Wert';
+
+  @override
+  String get paymentMethods => 'Zahlungsmethoden';
+
+  @override
+  String get hesabPay => 'HesabPay';
+
+  @override
+  String get atomaPay => 'Atoma Pay';
+
+  @override
+  String get hesabPayNumber => '+93796040415';
+
+  @override
+  String get atomaPayNumber => '+93773449567';
+
+  @override
+  String get copyNumber => 'Kontonummer kopieren';
+
+  @override
+  String get buyerFullName => 'Vollständiger Name';
+
+  @override
+  String get buyerContact => 'Telefon / Telegramm / WhatsApp';
+
+  @override
+  String get completeOrder => 'Kauf abschließen und fertigstellen';
+
+  @override
+  String get orderProcessing => 'Bestellung abschicken...';
+
+  @override
+  String get orderSubmittedSuccess =>
+      'Bestellung erfolgreich aufgegeben! Benachrichtigung an Telegram gesendet.';
+
+  @override
+  String get selectAppColor => 'Wählen Sie App-Farbe';
+
+  @override
+  String get selectAppColorDesc => 'Wählen Sie Ihre Luxus-Themenpalette';
+
+  @override
+  String get themeImperialRoseGold => 'Imperiales Roségold und Champagner';
+
+  @override
+  String get themeRoyalEmerald => 'Königlicher Smaragd und 24-karätiges Gold';
+
+  @override
+  String get themeMidnightSapphire => 'Mitternachtssaphir und Platin';
+
+  @override
+  String get themeObsidianVelvet => 'Obsidian-Samt und satter Rubin';
+
+  @override
+  String get themeAmethystGlow => 'Amethyst-Glühen und Diamant';
+
+  @override
+  String get syncResellerProducts => 'Reseller-Produkte synchronisieren';
+
+  @override
+  String get syncNow => 'Jetzt synchronisieren';
+
+  @override
+  String get syncStatus => 'Synchronisierungsstatus';
+
+  @override
+  String get syncHistory => 'Verlauf synchronisieren';
+
+  @override
+  String get lastSynced => 'Zuletzt synchronisiert';
+
+  @override
+  String get itemsUpdated => 'Artikel aktualisiert';
 }

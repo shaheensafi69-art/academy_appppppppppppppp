@@ -2926,4 +2926,104 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get deleteAccountWebPolicy => 'مشاهده صفحه قوانین حذف در وب‌سایت';
+
+  @override
+  String get shop => 'خرید کنید';
+
+  @override
+  String get shopSubtitle => 'محصولات نمایندگی فروش تایید شده و تجهیزات آموزشی';
+
+  @override
+  String get resellerProducts => 'محصولات نمایندگی فروش';
+
+  @override
+  String get inStock => 'موجود است';
+
+  @override
+  String get outOfStock => 'موجود نیست';
+
+  @override
+  String get buyNow => 'اکنون بخرید';
+
+  @override
+  String get productDetails => 'جزئیات محصول';
+
+  @override
+  String get priceUsd => 'قیمت (تومان آمریکا)';
+
+  @override
+  String get localEquivalent => 'ارزش محلی تخمینی';
+
+  @override
+  String get paymentMethods => 'روش های پرداخت';
+
+  @override
+  String get hesabPay => 'حساب پرداخت';
+
+  @override
+  String get atomaPay => 'Atoma Pay';
+
+  @override
+  String get hesabPayNumber => '+93796040415';
+
+  @override
+  String get atomaPayNumber => '+93773449567';
+
+  @override
+  String get copyNumber => 'کپی شماره حساب';
+
+  @override
+  String get buyerFullName => 'نام کامل';
+
+  @override
+  String get buyerContact => 'تلفن / تلگرام / واتس اپ';
+
+  @override
+  String get completeOrder => 'خرید و پایان کامل';
+
+  @override
+  String get orderProcessing => 'در حال ارسال سفارش...';
+
+  @override
+  String get orderSubmittedSuccess =>
+      'سفارش با موفقیت انجام شد! اطلاعیه به تلگرام ارسال شد.';
+
+  @override
+  String get selectAppColor => 'رنگ برنامه را انتخاب کنید';
+
+  @override
+  String get selectAppColorDesc => 'پالت تم لوکس خود را انتخاب کنید';
+
+  @override
+  String get themeImperialRoseGold => 'امپریال رزگلد و شامپاین';
+
+  @override
+  String get themeRoyalEmerald => 'رویال زمرد و طلای 24 عیار';
+
+  @override
+  String get themeMidnightSapphire => 'یاقوت کبود نیمه شب و پلاتین';
+
+  @override
+  String get themeObsidianVelvet => 'مخمل آبسیدین و یاقوت غنی';
+
+  @override
+  String get themeAmethystGlow => 'درخشش آمیتیست و الماس';
+
+  @override
+  String get syncResellerProducts => 'همگام سازی محصولات نمایندگی فروش';
+
+  @override
+  String get syncNow => 'اکنون همگام سازی کنید';
+
+  @override
+  String get syncStatus => 'وضعیت همگام سازی';
+
+  @override
+  String get syncHistory => 'همگام سازی تاریخچه';
+
+  @override
+  String get lastSynced => 'آخرین همگام سازی';
+
+  @override
+  String get itemsUpdated => 'موارد به روز شد';
 }

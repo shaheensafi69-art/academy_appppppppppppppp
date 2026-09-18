@@ -2937,4 +2937,104 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get deleteAccountWebPolicy => 'ویب سائٹ پر حذف کرنے کی پالیسی دیکھیں';
+
+  @override
+  String get shop => 'دکان';
+
+  @override
+  String get shopSubtitle => 'تصدیق شدہ ری سیلر مصنوعات اور تعلیمی سامان';
+
+  @override
+  String get resellerProducts => 'ری سیلر مصنوعات';
+
+  @override
+  String get inStock => 'اسٹاک میں';
+
+  @override
+  String get outOfStock => 'اسٹاک سے باہر';
+
+  @override
+  String get buyNow => 'ابھی خریدیں۔';
+
+  @override
+  String get productDetails => 'پروڈکٹ کی تفصیلات';
+
+  @override
+  String get priceUsd => 'قیمت (USD)';
+
+  @override
+  String get localEquivalent => 'تخمینی مقامی قدر';
+
+  @override
+  String get paymentMethods => 'ادائیگی کے طریقے';
+
+  @override
+  String get hesabPay => 'HesabPay';
+
+  @override
+  String get atomaPay => 'ایٹما پے';
+
+  @override
+  String get hesabPayNumber => '+93796040415';
+
+  @override
+  String get atomaPayNumber => '+93773449567';
+
+  @override
+  String get copyNumber => 'اکاؤنٹ نمبر کاپی کریں۔';
+
+  @override
+  String get buyerFullName => 'پورا نام';
+
+  @override
+  String get buyerContact => 'فون / ٹیلیگرام / واٹس ایپ';
+
+  @override
+  String get completeOrder => 'مکمل خریداری اور ختم';
+
+  @override
+  String get orderProcessing => 'آرڈر جمع کرایا جا رہا ہے...';
+
+  @override
+  String get orderSubmittedSuccess =>
+      'آرڈر کامیابی کے ساتھ رکھا گیا! اطلاع ٹیلی گرام پر بھیجی گئی۔';
+
+  @override
+  String get selectAppColor => 'ایپ کا رنگ منتخب کریں۔';
+
+  @override
+  String get selectAppColorDesc => 'اپنے لگژری تھیم پیلیٹ کا انتخاب کریں۔';
+
+  @override
+  String get themeImperialRoseGold => 'امپیریل روز گولڈ اور شیمپین';
+
+  @override
+  String get themeRoyalEmerald => 'رائل ایمرالڈ اور 24K گولڈ';
+
+  @override
+  String get themeMidnightSapphire => 'آدھی رات کا نیلم اور پلاٹینم';
+
+  @override
+  String get themeObsidianVelvet => 'Obsidian Velvet & Rich Ruby';
+
+  @override
+  String get themeAmethystGlow => 'ایمیتھسٹ گلو اینڈ ڈائمنڈ';
+
+  @override
+  String get syncResellerProducts => 'ری سیلر مصنوعات کی مطابقت پذیری کریں۔';
+
+  @override
+  String get syncNow => 'ابھی مطابقت پذیری کریں۔';
+
+  @override
+  String get syncStatus => 'مطابقت پذیری کی حیثیت';
+
+  @override
+  String get syncHistory => 'مطابقت پذیری کی تاریخ';
+
+  @override
+  String get lastSynced => 'آخری بار مطابقت پذیر';
+
+  @override
+  String get itemsUpdated => 'آئٹمز کو اپ ڈیٹ کر دیا گیا۔';
 }

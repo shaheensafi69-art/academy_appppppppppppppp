@@ -21,6 +21,7 @@ import '../../feed/screens/create_post_screen.dart';
 import '../../feed/screens/reels_viewer_screen.dart';
 import '../../feed/screens/upload_reel_screen.dart';
 import 'teacher_support_screen.dart';
+import '../../shop/screens/shop_screen.dart';
 
 import '../../../core/routing/auth_gate.dart';
 import '../../../core/utils/system_ui_helper.dart';
@@ -71,6 +72,7 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
       isActive: _currentIndex == 16,
     ), // 16 - صفحه ویدیوهای کوتاه ریلز
     const TeacherSupportScreen(), // 17 - پشتیبانی و چت زنده با ادمین
+    const ShopScreen(), // 18 - فروشگاه ریسیلر
   ];
 
   List<Map<String, Object>> _getMenuItems(BuildContext context) => [
@@ -99,6 +101,7 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
     {"index": 13, "name": context.l10n.myProfile, "icon": Icons.person_rounded},
     {"index": 14, "name": context.l10n.settings, "icon": Icons.settings_rounded},
     {"index": 17, "name": context.l10n.supportChat, "icon": Icons.headset_mic_rounded},
+    {"index": 18, "name": "فروشگاه • Shop", "icon": Icons.storefront_rounded},
   ];
 
   @override
@@ -966,12 +969,15 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
                                 ),
                                 foregroundColor: Colors.redAccent,
                                 elevation: 0,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                 side: BorderSide(
                                   color: Colors.redAccent.withOpacity(0.3),
                                   width: 1.5,
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 12,
+                                  vertical: 8,
                                 ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),

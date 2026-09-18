@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/language_service.dart';
+import 'circular_country_flag.dart';
 
 class LanguageSelectorSheet extends StatelessWidget {
   const LanguageSelectorSheet({super.key});
@@ -7,7 +8,7 @@ class LanguageSelectorSheet extends StatelessWidget {
   static Future<void> show(BuildContext context) {
     return showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFF0B1120),
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -69,7 +70,10 @@ class LanguageSelectorSheet extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            Flexible(
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.65,
+              ),
               child: ListView.separated(
                 shrinkWrap: true,
                 physics: const BouncingScrollPhysics(),
@@ -89,8 +93,8 @@ class LanguageSelectorSheet extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFFF494AC).withValues(alpha: 0.15)
-                            : Colors.white.withValues(alpha: 0.04),
+                            ? const Color(0xFF1E293B)
+                            : Colors.white.withValues(alpha: 0.03),
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
                           color: isSelected
@@ -101,7 +105,10 @@ class LanguageSelectorSheet extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          Text(lang.flag, style: const TextStyle(fontSize: 24)),
+                          CircularCountryFlag(
+                            countryCode: lang.countryCode,
+                            size: 28,
+                          ),
                           const SizedBox(width: 14),
                           Expanded(
                             child: Column(
@@ -110,16 +117,16 @@ class LanguageSelectorSheet extends StatelessWidget {
                                 Text(
                                   lang.name,
                                   style: TextStyle(
-                                    color: isSelected ? const Color(0xFFF494AC) : Colors.white,
+                                    color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.9),
                                     fontSize: 15,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   lang.englishName,
                                   style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.5),
+                                    color: Colors.white.withValues(alpha: 0.45),
                                     fontSize: 12,
                                   ),
                                 ),
@@ -141,11 +148,32 @@ class LanguageSelectorSheet extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 12),
                           if (isSelected)
-                            const Icon(Icons.check_circle_rounded, color: Color(0xFFF494AC), size: 22)
+                            Container(
+                              width: 9,
+                              height: 9,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFF10B981),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF10B981).withValues(alpha: 0.8),
+                                    blurRadius: 8,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                              ),
+                            )
                           else
-                            const Icon(Icons.circle_outlined, color: Colors.white24, size: 22),
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white.withValues(alpha: 0.15),
+                              ),
+                            ),
                         ],
                       ),
                     ),

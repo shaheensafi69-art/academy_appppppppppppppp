@@ -5,6 +5,7 @@ import '../../../core/routing/auth_gate.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/services/security_service.dart';
 import '../../../core/widgets/language_selector_sheet.dart';
+import '../../../core/widgets/circular_country_flag.dart';
 import '../../auth/screens/activity_log_screen.dart';
 import '../../auth/screens/delete_account_screen.dart';
 
@@ -798,11 +799,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Text(
-                                            currentLang.flag,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                            ),
+                                          CircularCountryFlag(
+                                            countryCode: currentLang.countryCode,
+                                            size: 18,
                                           ),
                                           const SizedBox(width: 6),
                                           Text(

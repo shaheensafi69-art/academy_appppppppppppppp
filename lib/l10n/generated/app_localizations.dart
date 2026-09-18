@@ -8,12 +8,22 @@ import 'package:intl/intl.dart' as intl;
 import 'app_localizations_ar.dart';
 import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
 import 'app_localizations_fa.dart';
 import 'app_localizations_fr.dart';
+import 'app_localizations_hi.dart';
+import 'app_localizations_id.dart';
+import 'app_localizations_it.dart';
+import 'app_localizations_ja.dart';
+import 'app_localizations_ko.dart';
+import 'app_localizations_nl.dart';
 import 'app_localizations_ps.dart';
+import 'app_localizations_pt.dart';
 import 'app_localizations_ru.dart';
 import 'app_localizations_tr.dart';
 import 'app_localizations_ur.dart';
+import 'app_localizations_uz.dart';
+import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
 
@@ -104,12 +114,22 @@ abstract class AppLocalizations {
     Locale('ar'),
     Locale('de'),
     Locale('en'),
+    Locale('es'),
     Locale('fa'),
     Locale('fr'),
+    Locale('hi'),
+    Locale('id'),
+    Locale('it'),
+    Locale('ja'),
+    Locale('ko'),
+    Locale('nl'),
     Locale('ps'),
+    Locale('pt'),
     Locale('ru'),
     Locale('tr'),
     Locale('ur'),
+    Locale('uz'),
+    Locale('zh'),
   ];
 
   /// No description provided for @appName.
@@ -5787,6 +5807,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Official Web Deletion Policy'**
   String get deleteAccountWebPolicy;
+
+  /// No description provided for @shop.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop'**
+  String get shop;
+
+  /// No description provided for @shopSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified Reseller Products & Educational Gear'**
+  String get shopSubtitle;
+
+  /// No description provided for @resellerProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Reseller Products'**
+  String get resellerProducts;
+
+  /// No description provided for @inStock.
+  ///
+  /// In en, this message translates to:
+  /// **'In Stock'**
+  String get inStock;
+
+  /// No description provided for @outOfStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of Stock'**
+  String get outOfStock;
+
+  /// No description provided for @buyNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy Now'**
+  String get buyNow;
+
+  /// No description provided for @productDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Details'**
+  String get productDetails;
+
+  /// No description provided for @priceUsd.
+  ///
+  /// In en, this message translates to:
+  /// **'Price (USD)'**
+  String get priceUsd;
+
+  /// No description provided for @localEquivalent.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated Local Value'**
+  String get localEquivalent;
+
+  /// No description provided for @paymentMethods.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Methods'**
+  String get paymentMethods;
+
+  /// No description provided for @hesabPay.
+  ///
+  /// In en, this message translates to:
+  /// **'HesabPay'**
+  String get hesabPay;
+
+  /// No description provided for @atomaPay.
+  ///
+  /// In en, this message translates to:
+  /// **'Atoma Pay'**
+  String get atomaPay;
+
+  /// No description provided for @hesabPayNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'+93796040415'**
+  String get hesabPayNumber;
+
+  /// No description provided for @atomaPayNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'+93773449567'**
+  String get atomaPayNumber;
+
+  /// No description provided for @copyNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Account Number'**
+  String get copyNumber;
+
+  /// No description provided for @buyerFullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get buyerFullName;
+
+  /// No description provided for @buyerContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone / Telegram / WhatsApp'**
+  String get buyerContact;
+
+  /// No description provided for @completeOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Purchase & Finish'**
+  String get completeOrder;
+
+  /// No description provided for @orderProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitting Order...'**
+  String get orderProcessing;
+
+  /// No description provided for @orderSubmittedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Order placed successfully! Notification sent to Telegram.'**
+  String get orderSubmittedSuccess;
+
+  /// No description provided for @selectAppColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Select App Color'**
+  String get selectAppColor;
+
+  /// No description provided for @selectAppColorDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your luxury theme palette'**
+  String get selectAppColorDesc;
+
+  /// No description provided for @themeImperialRoseGold.
+  ///
+  /// In en, this message translates to:
+  /// **'Imperial Rose Gold & Champagne'**
+  String get themeImperialRoseGold;
+
+  /// No description provided for @themeRoyalEmerald.
+  ///
+  /// In en, this message translates to:
+  /// **'Royal Emerald & 24K Gold'**
+  String get themeRoyalEmerald;
+
+  /// No description provided for @themeMidnightSapphire.
+  ///
+  /// In en, this message translates to:
+  /// **'Midnight Sapphire & Platinum'**
+  String get themeMidnightSapphire;
+
+  /// No description provided for @themeObsidianVelvet.
+  ///
+  /// In en, this message translates to:
+  /// **'Obsidian Velvet & Rich Ruby'**
+  String get themeObsidianVelvet;
+
+  /// No description provided for @themeAmethystGlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Amethyst Glow & Diamond'**
+  String get themeAmethystGlow;
+
+  /// No description provided for @syncResellerProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Reseller Products'**
+  String get syncResellerProducts;
+
+  /// No description provided for @syncNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Now'**
+  String get syncNow;
+
+  /// No description provided for @syncStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Status'**
+  String get syncStatus;
+
+  /// No description provided for @syncHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync History'**
+  String get syncHistory;
+
+  /// No description provided for @lastSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Synced'**
+  String get lastSynced;
+
+  /// No description provided for @itemsUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Items Updated'**
+  String get itemsUpdated;
 }
 
 class _AppLocalizationsDelegate
@@ -5803,12 +6021,22 @@ class _AppLocalizationsDelegate
     'ar',
     'de',
     'en',
+    'es',
     'fa',
     'fr',
+    'hi',
+    'id',
+    'it',
+    'ja',
+    'ko',
+    'nl',
     'ps',
+    'pt',
     'ru',
     'tr',
     'ur',
+    'uz',
+    'zh',
   ].contains(locale.languageCode);
 
   @override
@@ -5824,18 +6052,38 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsDe();
     case 'en':
       return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
     case 'fa':
       return AppLocalizationsFa();
     case 'fr':
       return AppLocalizationsFr();
+    case 'hi':
+      return AppLocalizationsHi();
+    case 'id':
+      return AppLocalizationsId();
+    case 'it':
+      return AppLocalizationsIt();
+    case 'ja':
+      return AppLocalizationsJa();
+    case 'ko':
+      return AppLocalizationsKo();
+    case 'nl':
+      return AppLocalizationsNl();
     case 'ps':
       return AppLocalizationsPs();
+    case 'pt':
+      return AppLocalizationsPt();
     case 'ru':
       return AppLocalizationsRu();
     case 'tr':
       return AppLocalizationsTr();
     case 'ur':
       return AppLocalizationsUr();
+    case 'uz':
+      return AppLocalizationsUz();
+    case 'zh':
+      return AppLocalizationsZh();
   }
 
   throw FlutterError(

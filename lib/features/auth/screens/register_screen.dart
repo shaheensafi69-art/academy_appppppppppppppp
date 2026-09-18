@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/services/language_service.dart';
+import '../../../core/theme/app_theme_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -54,13 +55,13 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   late AnimationController _floatController;
   late Animation<Offset> _floatAnimation;
 
-  // Color Palette (Clean Light Surface & Rich Pink Accent)
-  static const Color primaryPink = Color(0xFFF494AC);
-  static const Color lightPinkBg = Color(0xFFFAF4F6);
-  static const Color surfaceWhite = Colors.white;
-  static const Color textDark = Color(0xFF111827);
-  static const Color textGrey = Color(0xFF6B7280);
-  static const Color cardBorder = Color(0xFFE5E7EB);
+  // پالت رنگی هماهنگ با تم انتخابی سراسری اپلیکیشن
+  Color get primaryPink => AppThemeService.instance.current.primary;
+  Color get lightPinkBg => AppThemeService.instance.current.background;
+  Color get surfaceWhite => AppThemeService.instance.current.surface;
+  Color get textDark => AppThemeService.instance.current.textPrimary;
+  Color get textGrey => AppThemeService.instance.current.textSecondary;
+  Color get cardBorder => AppThemeService.instance.current.cardBorder;
 
   @override
   void initState() {
@@ -283,7 +284,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                 child: Image.asset(
                                   'assets/logo-without-b.png',
                                   height: 42,
-                                  errorBuilder: (context, error, stackTrace) => const Icon(
+                                  errorBuilder: (context, error, stackTrace) => Icon(
                                     Icons.school_rounded,
                                     size: 42,
                                     color: primaryPink,
@@ -293,7 +294,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                               const SizedBox(height: 12),
                               Text(
                                 context.l10n.createAccount,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w900,
                                   color: textDark,
@@ -301,7 +302,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
+                              Text(
                                 "Join Safi Academy digital ecosystem.",
                                 style: TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.w500),
                               ),
@@ -348,7 +349,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                     onTap: () => Navigator.pop(context),
                                     child: Text(
                                       context.l10n.alreadyHaveAccount,
-                                      style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 11),
+                                      style: TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 11),
                                     ),
                                   ),
                                 ],
@@ -381,7 +382,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                               child: Image.network(
                                 'https://i.ibb.co/HTZ6DPsS/original-33b8479c324a5448d6145b3cad7c51e7-removebg-preview.png',
                                 width: 450,
-                                errorBuilder: (context, error, stackTrace) => const Icon(
+                                errorBuilder: (context, error, stackTrace) => Icon(
                                   Icons.school_outlined,
                                   size: 140,
                                   color: primaryPink,
@@ -437,17 +438,17 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
             shape: BoxShape.circle,
             border: Border.all(color: primaryPink.withOpacity(0.3)),
           ),
-          child: const Icon(Icons.mark_email_unread_rounded, color: primaryPink, size: 40),
+          child: Icon(Icons.mark_email_unread_rounded, color: primaryPink, size: 40),
         ),
         const SizedBox(height: 16),
         Text(
           context.l10n.verifyYourIdentity,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textDark),
         ),
         const SizedBox(height: 6),
         Text(
           context.l10n.verificationLinkSent,
-          style: const TextStyle(color: textGrey, fontSize: 11),
+          style: TextStyle(color: textGrey, fontSize: 11),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 10),
@@ -459,7 +460,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           ),
           child: Text(
             emailCtrl.text.trim(),
-            style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 12),
+            style: TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 12),
           ),
         ),
         const SizedBox(height: 14),
@@ -474,13 +475,13 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
             children: [
               Text(
                 context.l10n.clickLinkInEmail,
-                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textDark),
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textDark),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 4),
               Text(
                 context.l10n.checkSpamFolder,
-                style: const TextStyle(fontSize: 9, color: textGrey),
+                style: TextStyle(fontSize: 9, color: textGrey),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -536,11 +537,11 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                     radius: 36,
                     backgroundColor: lightPinkBg,
                     backgroundImage: _photoFile != null ? FileImage(_photoFile!) : null,
-                    child: _photoFile == null ? const Icon(Icons.camera_alt_rounded, color: primaryPink, size: 26) : null,
+                    child: _photoFile == null ? Icon(Icons.camera_alt_rounded, color: primaryPink, size: 26) : null,
                   ),
                   Container(
                     padding: const EdgeInsets.all(5),
-                    decoration: const BoxDecoration(color: primaryPink, shape: BoxShape.circle),
+                    decoration: BoxDecoration(color: primaryPink, shape: BoxShape.circle),
                     child: const Icon(Icons.add_rounded, color: Colors.white, size: 14),
                   )
                 ],
@@ -572,10 +573,10 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                         return Theme(
                           data: Theme.of(context).copyWith(
                             textTheme: Theme.of(context).textTheme.copyWith(
-                              bodyLarge: const TextStyle(color: textDark),
-                              bodyMedium: const TextStyle(color: textDark),
+                              bodyLarge: TextStyle(color: textDark),
+                              bodyMedium: TextStyle(color: textDark),
                             ),
-                            colorScheme: const ColorScheme.light(
+                            colorScheme: ColorScheme.light(
                               primary: primaryPink,
                               onPrimary: Colors.white,
                               surface: surfaceWhite,
@@ -609,7 +610,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           const SizedBox(height: 10),
 
           // Learning Goals Chips
-          const Text("LEARNING GOALS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+          Text("LEARNING GOALS", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
           const SizedBox(height: 6),
           Wrap(
             spacing: 6,
@@ -661,7 +662,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                       foregroundColor: textDark,
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      side: const BorderSide(color: cardBorder, width: 1.5),
+                      side: BorderSide(color: cardBorder, width: 1.5),
                     ),
                     onPressed: _prevStep,
                     child: Text(context.l10n.back.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
@@ -707,7 +708,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+        Text(label, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
         const SizedBox(height: 4),
         TextFormField(
           controller: controller,
@@ -715,7 +716,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
           maxLines: maxLines,
           cursorColor: primaryPink,
           keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
-          style: const TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold),
+          style: TextStyle(color: textDark, fontSize: 11, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             filled: true,
             fillColor: cardBorder.withOpacity(0.4),
@@ -726,11 +727,11 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                     onPressed: onToggleObscure,
                   )
                 : null,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: primaryPink, width: 1.5)),
             hintText: hint,
-            hintStyle: const TextStyle(color: textGrey, fontSize: 10),
+            hintStyle: TextStyle(color: textGrey, fontSize: 10),
           ),
         ),
       ],

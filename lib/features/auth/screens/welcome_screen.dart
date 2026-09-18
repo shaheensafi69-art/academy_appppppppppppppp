@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/widgets/language_selector_sheet.dart';
+import '../../../core/widgets/circular_country_flag.dart';
+import '../../../core/theme/app_theme_service.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
 import '../../feed/screens/guest_feed_layout.dart';
@@ -28,13 +30,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
 
-  // پالت رنگی پرمیوم و هماهنگ با دیزاین جدید
-  static const Color primaryPink = Color(0xFFF494AC);
-  static const Color lightPinkBg = Color(0xFFFAF4F6);
-  static const Color surfaceWhite = Colors.white;
-  static const Color textDark = Color(0xFF111827);
-  static const Color textGrey = Color(0xFF6B7280);
-  static const Color cardBorder = Color(0xFFF3F4F6);
+  // پالت رنگی هماهنگ با تم انتخابی سراسری اپلیکیشن
+  Color get primaryPink => AppThemeService.instance.current.primary;
+  Color get lightPinkBg => AppThemeService.instance.current.background;
+  Color get surfaceWhite => AppThemeService.instance.current.surface;
+  Color get textDark => AppThemeService.instance.current.textPrimary;
+  Color get textGrey => AppThemeService.instance.current.textSecondary;
+  Color get cardBorder => AppThemeService.instance.current.cardBorder;
 
   List<OnboardingItem> _getPages(BuildContext context) => [
     OnboardingItem(
@@ -161,14 +163,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               ),
                             ],
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.school_rounded,
                             color: primaryPink,
                             size: 18,
                           ),
                         ),
                         const SizedBox(width: 10),
-                        const Text(
+                        Text(
                           "SAFI ACADEMY",
                           style: TextStyle(
                             color: textDark,
@@ -181,13 +183,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     ),
                     Row(
                       children: [
-                        // دکمه انتخاب زبان
-                        IconButton(
-                          icon: Container(
-                            padding: const EdgeInsets.all(6),
+                        // دکمه انتخاب زبان با پرچم دایره‌ای زیبا
+                        InkWell(
+                          onTap: () => LanguageSelectorSheet.show(context),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
                             decoration: BoxDecoration(
                               color: surfaceWhite,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: primaryPink.withOpacity(0.35),
                                 width: 1.2,
@@ -200,13 +207,34 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                 ),
                               ],
                             ),
-                            child: const Icon(
-                              Icons.language_rounded,
-                              color: primaryPink,
-                              size: 18,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircularCountryFlag(
+                                  countryCode: LanguageService
+                                      .instance.currentLanguage.countryCode,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  LanguageService
+                                      .instance.currentLanguage.code
+                                      .toUpperCase(),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w900,
+                                    color: textDark,
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: textGrey,
+                                  size: 16,
+                                ),
+                              ],
                             ),
                           ),
-                          onPressed: () => LanguageSelectorSheet.show(context),
                         ),
                         if (_currentIndex < totalPages - 1)
                           TextButton(
@@ -261,7 +289,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                 ],
                               ),
                               alignment: Alignment.center,
-                              child: const Icon(
+                              child: Icon(
                                 Icons.school_rounded,
                                 size: 64,
                                 color: primaryPink,
@@ -270,7 +298,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             const SizedBox(height: 36),
                             Text(
                               context.l10n.readyToBegin,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: textDark,
                                 fontSize: 26,
                                 fontWeight: FontWeight.w900,
@@ -281,7 +309,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             const SizedBox(height: 12),
                             Text(
                               context.l10n.readyToBeginDesc,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: textGrey,
                                 fontSize: 13,
                                 height: 1.6,
@@ -326,7 +354,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           const SizedBox(height: 44),
                           Text(
                             item.title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: textDark,
                               fontSize: 24,
                               fontWeight: FontWeight.w900,
@@ -337,7 +365,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           const SizedBox(height: 14),
                           Text(
                             item.subtitle,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: textGrey,
                               fontSize: 13,
                               height: 1.6,
@@ -410,7 +438,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
                             foregroundColor: primaryPink,
-                            side: const BorderSide(
+                            side: BorderSide(
                               color: primaryPink,
                               width: 1.5,
                             ),
@@ -452,7 +480,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.explore_rounded,
                                       color: primaryPink,
                                       size: 18,
@@ -460,7 +488,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                     const SizedBox(width: 8),
                                     Text(
                                       context.l10n.exploreFeedAsGuest,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: textDark,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w900,

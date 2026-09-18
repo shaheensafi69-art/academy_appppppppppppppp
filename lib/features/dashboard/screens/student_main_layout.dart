@@ -22,6 +22,7 @@ import 'certificates_screen.dart';
 import 'wishlist_screen.dart';
 import 'payments_screen.dart';
 import 'scholarships_screen.dart';
+import '../../shop/screens/shop_screen.dart';
 import '../../feed/screens/create_post_screen.dart'; // صفحه ساخت پست جدید
 import 'settings_screen.dart';
 import 'help_center_screen.dart';
@@ -31,6 +32,7 @@ import '../../../core/routing/auth_gate.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/utils/system_ui_helper.dart';
 import '../../../core/widgets/language_selector_sheet.dart';
+import '../../../core/widgets/circular_country_flag.dart';
 
 class StudentMainLayout extends StatefulWidget {
   const StudentMainLayout({super.key});
@@ -84,6 +86,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
     StudentReelsScreen(
       isActive: _currentIndex == 21,
     ), // 21 - ویدیوهای کوتاه ریلز
+    const ShopScreen(), // 22 - فروشگاه ریسیلر
   ];
 
   List<Map<String, Object>> _getMenuItems(BuildContext context) {
@@ -130,6 +133,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
       },
       {"index": 19, "name": l10n.myProfile, "icon": Icons.person_rounded},
       {"index": 20, "name": l10n.appSettings, "icon": Icons.settings_rounded},
+      {"index": 22, "name": "فروشگاه • Shop", "icon": Icons.storefront_rounded},
     ];
   }
 
@@ -845,9 +849,9 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text(
-                                      LanguageService.instance.currentLanguage.flag,
-                                      style: const TextStyle(fontSize: 13),
+                                    CircularCountryFlag(
+                                      countryCode: LanguageService.instance.currentLanguage.countryCode,
+                                      size: 15,
                                     ),
                                     const SizedBox(width: 4),
                                     Text(

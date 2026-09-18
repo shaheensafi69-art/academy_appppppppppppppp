@@ -86,8 +86,56 @@ class _ReelsAdCardState extends State<ReelsAdCard> {
         },
         onAdFailedToLoad: (ad, error) {
           debugPrint(
-            '[ReelsAdCard] Fresh ad failed to load: ${error.message} (Code: ${error.code})',
+            '[ReelsAdCard] Primary ad failed to load: ${error.message} (Code: ${error.code}). Trying fallback test ad...',
           );
+          try {
+            ad.dispose();
+          } catch (_) {}
+          _loadFallbackTestNativeAd();
+        },
+      ),
+    );
+
+    _nativeAd?.load();
+  }
+
+  void _loadFallbackTestNativeAd() {
+    final fallbackUnitId = AdService.testNativeAdUnitIdAndroid;
+    _nativeAd = NativeAd(
+      adUnitId: fallbackUnitId,
+      request: const AdRequest(),
+      nativeTemplateStyle: NativeTemplateStyle(
+        templateType: TemplateType.medium,
+        mainBackgroundColor: const Color(0xFF1E293B),
+        cornerRadius: 24.0,
+        callToActionTextStyle: NativeTemplateTextStyle(
+          textColor: Colors.white,
+          backgroundColor: primaryPink,
+          style: NativeTemplateFontStyle.bold,
+          size: 14.0,
+        ),
+        primaryTextStyle: NativeTemplateTextStyle(
+          textColor: Colors.white,
+          style: NativeTemplateFontStyle.bold,
+          size: 15.0,
+        ),
+        secondaryTextStyle: NativeTemplateTextStyle(
+          textColor: const Color(0xFF94A3B8),
+          style: NativeTemplateFontStyle.normal,
+          size: 13.0,
+        ),
+      ),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          if (mounted) {
+            setState(() {
+              _isAdLoaded = true;
+              _hasError = false;
+            });
+          }
+        },
+        onAdFailedToLoad: (ad, error) {
+          debugPrint('[ReelsAdCard] Fallback test ad failed: ${error.message}');
           try {
             ad.dispose();
           } catch (_) {}
@@ -99,9 +147,7 @@ class _ReelsAdCardState extends State<ReelsAdCard> {
           }
         },
       ),
-    );
-
-    _nativeAd?.load();
+    )..load();
   }
 
   @override

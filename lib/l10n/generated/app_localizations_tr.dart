@@ -2937,4 +2937,104 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get deleteAccountWebPolicy => 'Web Sitesindeki Resmi Silme Politikası';
+
+  @override
+  String get shop => 'Mağaza';
+
+  @override
+  String get shopSubtitle => 'Doğrulanmış Bayi Ürünleri ve Eğitim Gereçleri';
+
+  @override
+  String get resellerProducts => 'Bayi Ürünleri';
+
+  @override
+  String get inStock => 'Stokta var';
+
+  @override
+  String get outOfStock => 'Stokta Yok';
+
+  @override
+  String get buyNow => 'Şimdi Satın Al';
+
+  @override
+  String get productDetails => 'Ürün Detayları';
+
+  @override
+  String get priceUsd => 'Fiyat (USD)';
+
+  @override
+  String get localEquivalent => 'Tahmini Yerel Değer';
+
+  @override
+  String get paymentMethods => 'Ödeme Yöntemleri';
+
+  @override
+  String get hesabPay => 'HesabPay';
+
+  @override
+  String get atomaPay => 'Atoma Ödemesi';
+
+  @override
+  String get hesabPayNumber => '+93796040415';
+
+  @override
+  String get atomaPayNumber => '+93773449567';
+
+  @override
+  String get copyNumber => 'Hesap Numarasını Kopyala';
+
+  @override
+  String get buyerFullName => 'Tam Ad';
+
+  @override
+  String get buyerContact => 'Telefon / Telgraf / WhatsApp';
+
+  @override
+  String get completeOrder => 'Satın Alma İşlemini Tamamla ve Bitir';
+
+  @override
+  String get orderProcessing => 'Sipariş Gönderiliyor...';
+
+  @override
+  String get orderSubmittedSuccess =>
+      'Sipariş başarıyla verildi! Telegram\'a bildirim gönderildi.';
+
+  @override
+  String get selectAppColor => 'Uygulama Rengini Seçin';
+
+  @override
+  String get selectAppColorDesc => 'Lüks tema paletinizi seçin';
+
+  @override
+  String get themeImperialRoseGold => 'Imperial Rose Gold ve Şampanya';
+
+  @override
+  String get themeRoyalEmerald => 'Kraliyet Zümrüdü ve 24K Altın';
+
+  @override
+  String get themeMidnightSapphire => 'Gece Yarısı Safir ve Platin';
+
+  @override
+  String get themeObsidianVelvet => 'Obsidyen Kadife ve Zengin Yakut';
+
+  @override
+  String get themeAmethystGlow => 'Ametist Parıltı ve Pırlanta';
+
+  @override
+  String get syncResellerProducts => 'Bayi Ürünlerini Senkronize Et';
+
+  @override
+  String get syncNow => 'Şimdi Senkronize Et';
+
+  @override
+  String get syncStatus => 'Senkronizasyon Durumu';
+
+  @override
+  String get syncHistory => 'Senkronizasyon Geçmişi';
+
+  @override
+  String get lastSynced => 'Son Senkronize Edildi';
+
+  @override
+  String get itemsUpdated => 'Öğeler Güncellendi';
 }

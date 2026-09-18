@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/services/language_service.dart';
+import '../../../core/services/media_processing_service.dart';
 
 class CreateStoryScreen extends StatefulWidget {
   const CreateStoryScreen({super.key});
@@ -56,7 +58,18 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
     if (file != null) {
       setState(() => isUploadingFile = true);
       try {
-        final bytes = await file.readAsBytes();
+        File processedFile;
+        if (mediaType == 'video') {
+          // 🎬 ویدیو: فشرده‌سازی + واترمارک اختصاصی Safi Academy
+          processedFile = await MediaProcessingService.instance
+              .processVideoWithWatermark(inputVideoPath: file.path);
+        } else {
+          // 🖼️ عکس: فقط فشرده‌سازی (بدون واترمارک)
+          processedFile = await MediaProcessingService.instance
+              .compressFeedImage(File(file.path));
+        }
+
+        final bytes = await processedFile.readAsBytes();
         final ext = mediaType == 'image' ? 'jpg' : 'mp4';
         final fileName = "story_${DateTime.now().millisecondsSinceEpoch}.$ext";
 

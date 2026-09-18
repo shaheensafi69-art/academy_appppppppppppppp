@@ -14,6 +14,7 @@ import 'announcements_screen.dart';
 import 'live_classes_screen.dart';
 import 'admin_support_requests_screen.dart';
 import 'settings_screen.dart';
+import 'reseller_sync_screen.dart';
 
 import '../../feed/screens/feed_viewer_screen.dart';
 import '../../feed/screens/friends_viewer_screen.dart';
@@ -69,6 +70,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
       onExit: () => setState(() => _currentIndex = 0),
     ), // 14: Admin Profile
     StudentReelsScreen(isActive: _currentIndex == 15), // 15: Educational Reels
+    const ResellerSyncScreen(), // 16: Reseller Sync
   ];
 
   final List<Map<String, dynamic>> _menuItems = [
@@ -132,6 +134,11 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
       "index": 10,
       "color": textGrey,
     },
+    {
+      "icon": Icons.sync_rounded,
+      "index": 16,
+      "color": const Color(0xFF8E24AA),
+    },
   ];
 
   String _getMenuItemName(BuildContext context, int index) {
@@ -166,6 +173,8 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
         return context.l10n.profile;
       case 15:
         return context.l10n.reels;
+      case 16:
+        return 'همگام‌سازی ریسیلر (Edge Function)';
       default:
         return '';
     }

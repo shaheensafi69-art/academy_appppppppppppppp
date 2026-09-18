@@ -2,7 +2,7 @@ name: safi_academy_app
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.0.0+13
+version: 1.0.0+14
 
 environment:
   sdk: ^3.11.0
@@ -60,6 +60,9 @@ flutter:
     - assets/linkedin.com-logo.webp
     - assets/whatsapp.com-logo.webp
     - assets/x.com-logo.webp
+    - assets/hesabpay.jpg
+    - assets/atomapay.jpg
+    - assets/watermark_safi_academy.png
 
 # 🔥 تنظیمات خودکار آیکون اپلیکیشن (بر اساس عکس‌های پوشه icon)
 flutter_launcher_icons:

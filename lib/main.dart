@@ -9,6 +9,7 @@ import 'core/services/deep_link_service.dart';
 import 'core/services/language_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/security_service.dart';
+import 'core/theme/app_theme_service.dart';
 import 'core/utils/system_ui_helper.dart';
 import 'features/auth/screens/welcome_screen.dart';
 import 'l10n/generated/app_localizations.dart';
@@ -46,6 +47,8 @@ Future<void> main() async {
 
     // مقداردهی اولیه سرویس تبلیغات گوگل بدون کند کردن شروع برنامه
     AdService.instance.initialize();
+    // مقداردهی اولیه سرویس تم‌های لوکس و رنگ‌های برنامه
+    await AppThemeService.instance.initialize();
   } catch (e) {
     debugPrint('Supabase initialization failed: $e');
   }
@@ -92,24 +95,34 @@ class _SafiAcademyAppState extends State<SafiAcademyApp> with WidgetsBindingObse
     return ValueListenableBuilder<Locale>(
       valueListenable: LanguageService.instance.localeNotifier,
       builder: (context, currentLocale, _) {
-        return MaterialApp(
-          navigatorKey: appNavigatorKey,
-          title: 'Safi Academy',
-          debugShowCheckedModeBanner: false,
-          locale: currentLocale,
-          supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          theme: ThemeData(
-            scaffoldBackgroundColor: const Color(0xFF020202),
-            colorScheme: const ColorScheme.dark(primary: Colors.white),
-            useMaterial3: true,
-          ),
-          home: widget.supabaseReady ? const AuthGate() : const WelcomeScreen(),
+        return ValueListenableBuilder<LuxuryPalette>(
+          valueListenable: AppThemeService.instance.currentPaletteNotifier,
+          builder: (context, luxuryPalette, _) {
+            return MaterialApp(
+              key: ValueKey('safi_app_${currentLocale.languageCode}_${luxuryPalette.id}'),
+              navigatorKey: appNavigatorKey,
+              title: 'Safi Academy',
+              debugShowCheckedModeBanner: false,
+              locale: currentLocale,
+              supportedLocales: AppLocalizations.supportedLocales,
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              localeResolutionCallback: (locale, supportedLocales) {
+                for (var supported in supportedLocales) {
+                  if (supported.languageCode == currentLocale.languageCode) {
+                    return supported;
+                  }
+                }
+                return supportedLocales.first;
+              },
+              theme: luxuryPalette.toThemeData(),
+              home: widget.supabaseReady ? const AuthGate() : const WelcomeScreen(),
+            );
+          },
         );
       },
     );

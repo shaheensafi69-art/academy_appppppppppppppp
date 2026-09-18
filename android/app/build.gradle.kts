@@ -74,7 +74,7 @@ flutter {
 
 dependencies {
     // وارد کردن Firebase BoM برای مدیریت نسخه هماهنگ پکیج‌ها
-    implementation(platform("com.google.firebase:firebase-bom:34.18.0"))
+    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
     
     // پکیج‌های مورد نیاز فایربیس (آنالیتیکس و پیام‌رسانی/نوتیفیکیشن)
     implementation("com.google.firebase:firebase-analytics")

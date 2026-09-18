@@ -1,20 +1,31 @@
 -- ====================================================================
--- SAFI ACADEMY - MULTILINGUAL (9 LANGUAGES) EXPANSION SCHEMA
--- Supported Languages:
--- 1. English (en)
--- 2. Persian / Dari (fa)
--- 3. Pashto (ps)
--- 4. German (de)
--- 5. French (fr)
--- 6. Urdu (ur)
--- 7. Turkish (tr)
--- 8. Russian (ru)
--- 9. Arabic (ar)
+-- SAFI ACADEMY - MULTILINGUAL (19 LANGUAGES) EXPANSION SCHEMA
+-- Supported Languages (Matching Safi Academy Official Website):
+-- 1. English (en) - GB
+-- 2. Persian / Dari (fa) - AF
+-- 3. Pashto (ps) - AF
+-- 4. Russian (ru) - RU
+-- 5. Turkish (tr) - TR
+-- 6. German (de) - DE
+-- 7. French (fr) - FR
+-- 8. Arabic (ar) - SA
+-- 9. Urdu (ur) - PK
+-- 10. Spanish (es) - ES
+-- 11. Chinese (zh) - CN
+-- 12. Hindi (hi) - IN
+-- 13. Italian (it) - IT
+-- 14. Portuguese (pt) - PT
+-- 15. Japanese (ja) - JP
+-- 16. Korean (ko) - KR
+-- 17. Dutch (nl) - NL
+-- 18. Uzbek (uz) - UZ
+-- 19. Indonesian (id) - ID
 -- ====================================================================
 
--- 1. 👤 ذخیره زبان انتخابی کاربر در جدول پروفایل
+-- 1. 👤 ذخیره زبان انتخابی و کاورپیج کاربر در جدول پروفایل
 ALTER TABLE IF EXISTS public.profiles 
-ADD COLUMN IF NOT EXISTS preferred_language VARCHAR(10) DEFAULT 'en';
+ADD COLUMN IF NOT EXISTS preferred_language VARCHAR(10) DEFAULT 'en',
+ADD COLUMN IF NOT EXISTS cover_url TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_profiles_preferred_language 
 ON public.profiles(preferred_language);

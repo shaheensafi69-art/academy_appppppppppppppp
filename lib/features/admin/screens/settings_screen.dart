@@ -6,6 +6,7 @@ import '../../../core/routing/auth_gate.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/services/security_service.dart';
 import '../../../core/widgets/language_selector_sheet.dart';
+import '../../../core/widgets/circular_country_flag.dart';
 import '../../auth/screens/activity_log_screen.dart';
 import '../../auth/screens/delete_account_screen.dart';
 
@@ -688,13 +689,22 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                           fontSize: 14,
                         ),
                       ),
-                      subtitle: Text(
-                        "${currentLang.flag} ${currentLang.name}",
-                        style: const TextStyle(
-                          color: textGrey,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      subtitle: Row(
+                        children: [
+                          CircularCountryFlag(
+                            countryCode: currentLang.countryCode,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            currentLang.name,
+                            style: const TextStyle(
+                              color: textGrey,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                       trailing: const Icon(
                         Icons.arrow_forward_ios_rounded,

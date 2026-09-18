@@ -2927,4 +2927,104 @@ class AppLocalizationsPs extends AppLocalizations {
 
   @override
   String get deleteAccountWebPolicy => 'په ویب پاڼه کې د حذف پالیسۍ وګورئ';
+
+  @override
+  String get shop => 'هټۍ';
+
+  @override
+  String get shopSubtitle => 'تصدیق شوي بیا پلورونکي محصولات او تعلیمي ګیر';
+
+  @override
+  String get resellerProducts => 'د پلورونکي محصولات';
+
+  @override
+  String get inStock => 'په سټاک کې';
+
+  @override
+  String get outOfStock => 'له سټاک څخه بهر';
+
+  @override
+  String get buyNow => 'اوس وپلورئ';
+
+  @override
+  String get productDetails => 'د محصول توضیحات';
+
+  @override
+  String get priceUsd => 'قیمت (USD)';
+
+  @override
+  String get localEquivalent => 'اټکل شوي محلي ارزښت';
+
+  @override
+  String get paymentMethods => 'د تادیاتو میتودونه';
+
+  @override
+  String get hesabPay => 'HesabPay';
+
+  @override
+  String get atomaPay => 'د اتوما تادیه';
+
+  @override
+  String get hesabPayNumber => '+93796040415';
+
+  @override
+  String get atomaPayNumber => '+93773449567';
+
+  @override
+  String get copyNumber => 'د حساب شمیره کاپي کړئ';
+
+  @override
+  String get buyerFullName => 'بشپړ نوم';
+
+  @override
+  String get buyerContact => 'تلیفون / ټیلیګرام / WhatsApp';
+
+  @override
+  String get completeOrder => 'بشپړ پیرود او پای';
+
+  @override
+  String get orderProcessing => 'د سپارلو امر...';
+
+  @override
+  String get orderSubmittedSuccess =>
+      'امر په بریالیتوب سره کیښودل شو! خبرتیا ټیلیګرام ته لیږل شوې.';
+
+  @override
+  String get selectAppColor => 'د اپلیکیشن رنګ غوره کړئ';
+
+  @override
+  String get selectAppColorDesc => 'خپل د آرایشي موضوع پیلیټ غوره کړئ';
+
+  @override
+  String get themeImperialRoseGold => 'امپیریل ګلاب سرو زرو او شیمپین';
+
+  @override
+  String get themeRoyalEmerald => 'شاهي زمرد او 24K سرو زرو';
+
+  @override
+  String get themeMidnightSapphire => 'د نیمې شپې نیلم او پلاټینیم';
+
+  @override
+  String get themeObsidianVelvet => 'Obsidian Velvet & Rich Ruby';
+
+  @override
+  String get themeAmethystGlow => 'امیتیسټ ګلو او الماس';
+
+  @override
+  String get syncResellerProducts => 'د بیا پلورونکي محصولات همغږي کړئ';
+
+  @override
+  String get syncNow => 'همدا اوس همغږي کړئ';
+
+  @override
+  String get syncStatus => 'د همغږۍ حالت';
+
+  @override
+  String get syncHistory => 'د همغږي تاریخ';
+
+  @override
+  String get lastSynced => 'وروستی همغږي شوی';
+
+  @override
+  String get itemsUpdated => 'توکي تازه شوي';
 }

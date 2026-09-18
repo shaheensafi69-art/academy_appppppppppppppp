@@ -80,8 +80,56 @@ class _FeedAdCardState extends State<FeedAdCard> {
         },
         onAdFailedToLoad: (ad, error) {
           debugPrint(
-            '[FeedAdCard] Fresh ad failed to load: ${error.message} (Code: ${error.code})',
+            '[FeedAdCard] Primary ad failed to load: ${error.message} (Code: ${error.code}). Loading guaranteed fallback test ad...',
           );
+          try {
+            ad.dispose();
+          } catch (_) {}
+          _loadFallbackTestNativeAd();
+        },
+      ),
+    );
+
+    _nativeAd?.load();
+  }
+
+  void _loadFallbackTestNativeAd() {
+    final fallbackUnitId = AdService.testNativeAdUnitIdAndroid;
+    _nativeAd = NativeAd(
+      adUnitId: fallbackUnitId,
+      request: const AdRequest(),
+      nativeTemplateStyle: NativeTemplateStyle(
+        templateType: TemplateType.medium,
+        mainBackgroundColor: Colors.white,
+        cornerRadius: 24.0,
+        callToActionTextStyle: NativeTemplateTextStyle(
+          textColor: Colors.white,
+          backgroundColor: primaryPink,
+          style: NativeTemplateFontStyle.bold,
+          size: 14.0,
+        ),
+        primaryTextStyle: NativeTemplateTextStyle(
+          textColor: const Color(0xFF1E293B),
+          style: NativeTemplateFontStyle.bold,
+          size: 15.0,
+        ),
+        secondaryTextStyle: NativeTemplateTextStyle(
+          textColor: const Color(0xFF64748B),
+          style: NativeTemplateFontStyle.normal,
+          size: 13.0,
+        ),
+      ),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          if (mounted) {
+            setState(() {
+              _isAdLoaded = true;
+              _hasError = false;
+            });
+          }
+        },
+        onAdFailedToLoad: (ad, error) {
+          debugPrint('[FeedAdCard] Fallback test ad also failed: ${error.message}');
           try {
             ad.dispose();
           } catch (_) {}
@@ -93,9 +141,7 @@ class _FeedAdCardState extends State<FeedAdCard> {
           }
         },
       ),
-    );
-
-    _nativeAd?.load();
+    )..load();
   }
 
   @override
@@ -106,17 +152,9 @@ class _FeedAdCardState extends State<FeedAdCard> {
 
   @override
   Widget build(BuildContext context) {
-    // اگر در پلتفرم دسکتاپ (مانند مک فعلی) یا وب هستیم، کارت پیش‌نمایش تمیز را نشان بده
-    if (!AdService.instance.isPlatformSupported) {
+    // اگر در پلتفرم دسکتاپ یا خطای بارگذاری گوگل باشد، کارت تبلیغاتی تضمینی را نشان بده
+    if (!AdService.instance.isPlatformSupported || !_isAdLoaded || _nativeAd == null || _hasError) {
       return _buildDesktopPreviewCard();
-    }
-
-    if (!_isAdLoaded || _nativeAd == null || _hasError) {
-      // در صورت بروز خطا در حالت تست، پیش‌نمایش را نشان بده تا ساختار فید به‌هم نریزد
-      if (AdService.useTestAdUnits) {
-        return _buildDesktopPreviewCard();
-      }
-      return const SizedBox.shrink();
     }
 
     return Container(
@@ -242,7 +280,11 @@ class _FeedAdCardState extends State<FeedAdCard> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.campaign_rounded, size: 14, color: primaryPink),
+                    const Icon(
+                      Icons.campaign_rounded,
+                      size: 14,
+                      color: primaryPink,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       context.l10n.sponsored,
@@ -256,9 +298,20 @@ class _FeedAdCardState extends State<FeedAdCard> {
                 ),
               ),
               const Spacer(),
-              const Text(
-                "AdMob Native Preview",
-                style: TextStyle(color: Color(0xFF64748B), fontSize: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  "Ad",
+                  style: TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ],
           ),
@@ -327,7 +380,10 @@ class _FeedAdCardState extends State<FeedAdCard> {
               onPressed: () {},
               child: Text(
                 context.l10n.learnMore,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
             ),
           ),

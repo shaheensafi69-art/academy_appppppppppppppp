@@ -6,6 +6,8 @@ import '../../../core/routing/auth_gate.dart';
 import '../../../core/services/activity_log_service.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/widgets/language_selector_sheet.dart';
+import '../../../core/widgets/circular_country_flag.dart';
+import '../../../core/theme/app_theme_service.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
 
@@ -34,13 +36,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   late AnimationController _floatController;
   late Animation<Offset> _floatAnimation;
 
-  // پالت رنگی پرمیوم و لایت آکادمی
-  static const Color primaryPink = Color(0xFFF494AC);
-  static const Color lightPinkBg = Color(0xFFFAF4F6);
-  static const Color surfaceWhite = Colors.white;
-  static const Color textDark = Color(0xFF111827);
-  static const Color textGrey = Color(0xFF6B7280);
-  static const Color cardBorder = Color(0xFFE5E7EB);
+  // پالت رنگی هماهنگ با تم انتخابی سراسری اپلیکیشن
+  Color get primaryPink => AppThemeService.instance.current.primary;
+  Color get lightPinkBg => AppThemeService.instance.current.background;
+  Color get surfaceWhite => AppThemeService.instance.current.surface;
+  Color get textDark => AppThemeService.instance.current.textPrimary;
+  Color get textGrey => AppThemeService.instance.current.textSecondary;
+  Color get cardBorder => AppThemeService.instance.current.cardBorder;
 
   @override
   void initState() {
@@ -198,15 +200,20 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            // Language Switcher & Header Logo
+                            // دکمه انتخاب زبان با پرچم دایره‌ای زیبا
                             Align(
                               alignment: Alignment.topRight,
-                              child: IconButton(
-                                icon: Container(
-                                  padding: const EdgeInsets.all(6),
+                              child: InkWell(
+                                onTap: () => LanguageSelectorSheet.show(context),
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 5,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: surfaceWhite,
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
                                       color: primaryPink.withOpacity(0.35),
                                       width: 1.2,
@@ -219,13 +226,38 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                       ),
                                     ],
                                   ),
-                                  child: const Icon(
-                                    Icons.language_rounded,
-                                    color: primaryPink,
-                                    size: 18,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      CircularCountryFlag(
+                                        countryCode: LanguageService
+                                            .instance
+                                            .currentLanguage
+                                            .countryCode,
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        LanguageService
+                                            .instance
+                                            .currentLanguage
+                                            .code
+                                            .toUpperCase(),
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w900,
+                                          color: textDark,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 2),
+                                      Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        color: textGrey,
+                                        size: 16,
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                onPressed: () => LanguageSelectorSheet.show(context),
                               ),
                             ),
                             Container(
@@ -245,7 +277,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               child: Image.asset(
                                 'assets/logo-without-b.png',
                                 height: 56,
-                                errorBuilder: (context, error, stackTrace) => const Icon(
+                                errorBuilder: (context, error, stackTrace) => Icon(
                                   Icons.school_rounded,
                                   size: 56,
                                   color: primaryPink,
@@ -260,7 +292,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               children: [
                                 Text(
                                   context.l10n.welcomeBack,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.w900,
                                     color: textDark,
@@ -268,13 +300,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                const Icon(Icons.auto_awesome_rounded, color: primaryPink, size: 18),
+                                Icon(Icons.auto_awesome_rounded, color: primaryPink, size: 18),
                               ],
                             ),
                             const SizedBox(height: 4),
                             Text(
                               context.l10n.stepIntoDigitalCampus,
-                              style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w500),
+                              style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w500),
                             ),
                             const SizedBox(height: 24),
 
@@ -334,7 +366,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                                         userData!['avatar_url'].toString().isEmpty)
                                                     ? Text(
                                                         userData!['first_name']?[0] ?? 'U',
-                                                        style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 18),
+                                                        style: TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 18),
                                                       )
                                                     : null,
                                               ),
@@ -346,7 +378,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                             children: [
                                               Text(
                                                 "${userData!['first_name'] ?? ''} ${userData!['last_name'] ?? ''}",
-                                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textDark),
+                                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textDark),
                                               ),
                                               const SizedBox(width: 6),
                                               Container(
@@ -358,7 +390,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                                 ),
                                                 child: Text(
                                                   (userData!['role'] ?? 'student').toString().toUpperCase(),
-                                                  style: const TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900),
+                                                  style: TextStyle(color: primaryPink, fontSize: 8, fontWeight: FontWeight.w900),
                                                 ),
                                               ),
                                             ],
@@ -382,8 +414,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                           autofillHints: const [AutofillHints.email, AutofillHints.username],
                                           onChanged: _onEmailChanged,
                                           suffixIcon: isSearching
-                                              ? const Padding(
-                                                  padding: EdgeInsets.all(12),
+                                              ? Padding(
+                                                  padding: const EdgeInsets.all(12),
                                                   child: SizedBox(
                                                     width: 16,
                                                     height: 16,
@@ -411,7 +443,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                                 MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
                                               );
                                             },
-                                            child: Text(context.l10n.forgot, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryPink)),
+                                            child: Text(context.l10n.forgot, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryPink)),
                                           ),
                                         ),
                                       ],
@@ -452,7 +484,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                       const SizedBox(width: 8),
                                       Text(
                                         context.l10n.rememberMe,
-                                        style: const TextStyle(fontSize: 12, color: textGrey, fontWeight: FontWeight.w500),
+                                        style: TextStyle(fontSize: 12, color: textGrey, fontWeight: FontWeight.w500),
                                       ),
                                     ],
                                   ),
@@ -488,13 +520,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Text("${context.l10n.newHere} ", style: const TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w500)),
+                                      Text("${context.l10n.newHere} ", style: TextStyle(color: textGrey, fontSize: 12, fontWeight: FontWeight.w500)),
                                       GestureDetector(
                                         onTap: () => Navigator.push(
                                           context,
                                           MaterialPageRoute(builder: (_) => const RegisterScreen()),
                                         ),
-                                        child: Text(context.l10n.createAccount, style: const TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 12)),
+                                        child: Text(context.l10n.createAccount, style: TextStyle(color: primaryPink, fontWeight: FontWeight.bold, fontSize: 12)),
                                       ),
                                     ],
                                   ),
@@ -528,7 +560,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               child: Image.network(
                                 'https://i.ibb.co/HTZ6DPsS/original-33b8479c324a5448d6145b3cad7c51e7-removebg-preview.png',
                                 width: 420,
-                                errorBuilder: (context, error, stackTrace) => const Icon(
+                                errorBuilder: (context, error, stackTrace) => Icon(
                                   Icons.school_outlined,
                                   size: 140,
                                   color: primaryPink,
@@ -576,7 +608,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
+            Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textGrey, letterSpacing: 0.8)),
             ?extraLabel,
           ],
         ),
@@ -588,7 +620,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           autofillHints: autofillHints,
           obscureText: isPassword && !showPassword,
           cursorColor: primaryPink,
-          style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.bold),
+          style: TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             filled: true,
             fillColor: cardBorder.withValues(alpha: 0.4),
@@ -603,11 +635,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     onPressed: onTogglePassword,
                   )
                 : suffixIcon,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: cardBorder)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: primaryPink, width: 1.5)),
             hintText: hint,
-            hintStyle: const TextStyle(color: textGrey, fontSize: 12),
+            hintStyle: TextStyle(color: textGrey, fontSize: 12),
           ),
         ),
       ],

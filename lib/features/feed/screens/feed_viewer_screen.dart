@@ -6,6 +6,7 @@ import '../../chat/screens/direct_chat_list_screen.dart';
 import '../../chat/screens/direct_chat_screen.dart';
 import 'create_story_screen.dart';
 import 'story_viewer_screen.dart';
+import 'sponsored_story_screen.dart';
 import 'reels_viewer_screen.dart';
 import '../../notifications/screens/activity_notifications_screen.dart';
 import '../../../core/services/ad_service.dart';
@@ -1137,6 +1138,49 @@ class _FeedViewerScreenState extends State<FeedViewerScreen> {
             ),
           ),
           const SizedBox(width: 14),
+
+          // استوری حامی ویژه (Sponsored Ad Story)
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const SponsoredStoryScreen(),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(right: 14),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(2.5),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFFF59E0B), Color(0xFFEF4444)],
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Colors.black,
+                      child: Icon(Icons.campaign_rounded, color: Colors.amber, size: 18),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "Sponsored",
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFF59E0B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
 
           // استوری‌های واقعاً فعال دوستان تاییدشده از Supabase
           ...activeFriendStories.map((story) {
