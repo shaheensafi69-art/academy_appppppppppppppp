@@ -86,7 +86,10 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
       case 10:
         return const StudentTradingJournalScreen();
       case 11:
-        return const CreatePostScreen();
+        return CreatePostScreen(
+          onPostSuccess: () => setState(() => _currentIndex = 12),
+          onCancel: () => setState(() => _currentIndex = 12),
+        );
       case 12:
         return const StudentFeedScreen();
       case 13:
@@ -444,6 +447,8 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
       );
     }
 
+    final bool isCreatePost = _currentIndex == 11;
+
     return Scaffold(
       backgroundColor: backgroundWhite,
       extendBody: true,
@@ -452,20 +457,21 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
           Positioned.fill(
             child: Padding(
               padding: EdgeInsets.only(
-                top: (isReels || _isInSocialSection)
+                top: (isReels || _isInSocialSection || isCreatePost)
                     ? 0
                     : (MediaQuery.of(context).padding.top + 8),
-                bottom: _isInSocialSection ? 0 : 85,
+                bottom: (_isInSocialSection || isCreatePost) ? 0 : 85,
               ),
               child: IndexedStack(index: _currentIndex, children: _screens),
             ),
           ),
-          Positioned(
-            bottom: floatBottomMargin,
-            left: 16,
-            right: 16,
-            child: _buildFloatingBottomNav(),
-          ),
+          if (!isCreatePost)
+            Positioned(
+              bottom: floatBottomMargin,
+              left: 16,
+              right: 16,
+              child: _buildFloatingBottomNav(),
+            ),
           if (_isMobileMenuOpen) Positioned.fill(child: _buildFullScreenMenu()),
         ],
       ),

@@ -40,6 +40,7 @@ class CloudflareStorageService {
     File? file,
     Uint8List? bytes,
     String? contentType,
+    bool skipCompression = false,
   }) async {
     final initialBytes = bytes ?? (file != null ? await file.readAsBytes() : null);
     if (initialBytes == null) {
@@ -66,7 +67,7 @@ class CloudflareStorageService {
         sanitizedPath.endsWith('.png') ||
         sanitizedPath.endsWith('.webp');
 
-    if (isImage && fileBytes.isNotEmpty) {
+    if (!skipCompression && isImage && fileBytes.isNotEmpty) {
       try {
         final originalKb = fileBytes.length / 1024;
         fileBytes = await MediaProcessingService.instance.compressImageBytes(fileBytes);
@@ -84,10 +85,15 @@ class CloudflareStorageService {
         sanitizedPath.endsWith('.mp4') ||
         sanitizedPath.endsWith('.mov');
 
-    if (isVideo && file != null && file.existsSync()) {
+    final isAlreadyCompressed = file != null &&
+        (file.path.contains('easy_compressor_cache') ||
+            file.path.contains('compressed_') ||
+            file.path.contains('_compressed'));
+
+    if (!skipCompression && !isAlreadyCompressed && isVideo && file != null && file.existsSync()) {
       try {
         final originalMb = file.lengthSync() / (1024 * 1024);
-        if (originalMb > 2.0) {
+        if (originalMb > 1.5) {
           debugPrint(
             '[CloudflareStorageService] 🎬 Auto-compressing video before upload: ${file.path} (${originalMb.toStringAsFixed(2)} MB)',
           );

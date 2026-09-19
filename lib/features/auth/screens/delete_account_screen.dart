@@ -5,8 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/localization/l10n_extensions.dart';
-import '../../../core/routing/auth_gate.dart';
 import '../../../core/services/activity_log_service.dart';
+import '../../../core/services/auth_helper.dart';
 
 class DeleteAccountScreen extends StatefulWidget {
   const DeleteAccountScreen({super.key});
@@ -217,12 +217,8 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
               ),
               onPressed: () async {
                 Navigator.pop(ctx);
-                await supabase.auth.signOut();
                 if (mounted) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (_) => const AuthGate()),
-                    (route) => false,
-                  );
+                  await AuthHelper.logout(context);
                 }
               },
               child: Text(context.l10n.logout, style: const TextStyle(fontWeight: FontWeight.bold)),

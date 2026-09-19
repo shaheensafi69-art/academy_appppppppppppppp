@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,6 +15,7 @@ import '../../../core/utils/app_media_picker.dart';
 import '../../../core/widgets/auth_required_modal.dart';
 import '../../chat/screens/direct_chat_screen.dart';
 import '../widgets/reels_ad_card.dart';
+import '../../../core/widgets/fast_cached_image.dart';
 
 /// Modern 2-second floating toast in English with no system paths
 void _showReelsToast(
@@ -238,11 +240,11 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
   final PageController _pageController = PageController();
 
   final Set<String> _viewedReelIds = {};
+  final Set<String> _recentlyFeaturedReelIds = {};
   String? _activeHeartReelId;
   int _heartAnimTrigger = 0;
 
   static const Color primaryPink = Color(0xFFF494AC);
-  static const Color lightPinkBg = Color(0xFFFAF4F6);
 
   void _handleDoubleTapReel(ReelItemData reel) {
     HapticFeedback.mediumImpact();
@@ -364,27 +366,40 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
         }
       }
 
-      // ۵. الگوریتم اکسپلور (Explore Algorithm) مشابه تیک‌تاک و اینستاگرام با تمرکز بالا بر لایک و کامنت
+      // ۵. الگوریتم اکسپلور پیشرفته مشابه اینستاگرام و تیک‌تاک
+      // رتبه‌بندی بر اساس کامنت، لایک، بازدید، تازگی و گردش هوشمند در هر رفرش
       double calculateExploreScore(Map<String, dynamic> r) {
         final likes = (r['likes_count'] as num?)?.toDouble() ?? 0.0;
         final comments = (r['comments_count'] as num?)?.toDouble() ?? 0.0;
         final views = (r['views_count'] as num?)?.toDouble() ?? 0.0;
 
-        // ضریب ۵ برای کامنت، ضریب ۳ برای لایک، ضریب ۰.۵ برای بازدید طبق خواسته کاربر
-        double score = (comments * 5.0) + (likes * 3.0) + (views * 0.5);
+        // ضریب ۵ برای کامنت، ضریب ۳ برای لایک، ضریب ۰.۸ برای بازدید
+        double score = (comments * 5.0) + (likes * 3.0) + (views * 0.8);
 
-        // امتیاز ویژه محتوای جدید (Recency Boost)
+        // امتیاز ویژه تازگی محتوا (Recency Boost)
         try {
           final createdAt = DateTime.parse(r['created_at'].toString());
           final hoursAgo = DateTime.now().difference(createdAt).inHours;
-          if (hoursAgo < 24) {
-            score += 35.0;
+          if (hoursAgo < 6) {
+            score += 55.0;
+          } else if (hoursAgo < 24) {
+            score += 38.0;
           } else if (hoursAgo < 72) {
-            score += 20.0;
+            score += 22.0;
           } else if (hoursAgo < 168) {
-            score += 8.0;
+            score += 10.0;
           }
         } catch (_) {}
+
+        // گردش پویای اکسپلور (Explore Jitter) تا در هر رفرش ویدیوی متفاوتی در صدر باشد
+        final dynamicJitter = Random().nextDouble() * 28.0;
+        score += dynamicJitter;
+
+        // چرخش ویدیوهایی که در رفرش قبلی در صدر بودند تا صفحه تکراری نباشد
+        final id = r['id']?.toString() ?? '';
+        if (_recentlyFeaturedReelIds.contains(id)) {
+          score -= 35.0;
+        }
 
         return score;
       }
@@ -392,10 +407,17 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
       List<Map<String, dynamic>> rawList = List<Map<String, dynamic>>.from(
         res as List,
       );
-      // مرتب‌سازی اکسپلور بر اساس بالاترین تعامل
+      // مرتب‌سازی اکسپلور بر اساس بالاترین امتیاز
       rawList.sort(
         (a, b) => calculateExploreScore(b).compareTo(calculateExploreScore(a)),
       );
+
+      // ذخیره ۴ ریلز برتر جهت گردش در رفرش بعدی
+      _recentlyFeaturedReelIds.clear();
+      for (var i = 0; i < min(4, rawList.length); i++) {
+        final id = rawList[i]['id']?.toString();
+        if (id != null) _recentlyFeaturedReelIds.add(id);
+      }
 
       List<ReelItemData> loaded = [];
 
@@ -1047,45 +1069,53 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                 if (selectedTab == 'friends' && reels.isEmpty)
                   _buildEmptyFriendsState()
                 else
-                  PageView.builder(
-                    controller: _pageController,
-                    scrollDirection: Axis.vertical,
-                    itemCount: AdService.instance.calculateTotalCount(
-                      reels.length,
-                      AdService.reelsAdInterval,
-                    ),
-                    onPageChanged: (index) {
-                      setState(() => activeIndex = index);
-                      if (!AdService.instance.isAdPosition(
-                        index,
+                  RefreshIndicator(
+                    color: primaryPink,
+                    backgroundColor: Colors.black,
+                    onRefresh: () async {
+                      await _fetchReels();
+                    },
+                    child: PageView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      controller: _pageController,
+                      scrollDirection: Axis.vertical,
+                      itemCount: AdService.instance.calculateTotalCount(
+                        reels.length,
                         AdService.reelsAdInterval,
-                      )) {
+                      ),
+                      onPageChanged: (index) {
+                        setState(() => activeIndex = index);
+                        if (!AdService.instance.isAdPosition(
+                          index,
+                          AdService.reelsAdInterval,
+                        )) {
+                          final rawIndex = AdService.instance.getRawItemIndex(
+                            index,
+                            AdService.reelsAdInterval,
+                          );
+                          if (rawIndex >= 0 && rawIndex < reels.length) {
+                            _recordView(reels[rawIndex]);
+                          }
+                        }
+                      },
+                      itemBuilder: (context, index) {
+                        if (AdService.instance.isAdPosition(
+                          index,
+                          AdService.reelsAdInterval,
+                        )) {
+                          return const ReelsAdCard();
+                        }
                         final rawIndex = AdService.instance.getRawItemIndex(
                           index,
                           AdService.reelsAdInterval,
                         );
-                        if (rawIndex >= 0 && rawIndex < reels.length) {
-                          _recordView(reels[rawIndex]);
+                        if (rawIndex >= reels.length) {
+                          return const SizedBox.shrink();
                         }
-                      }
-                    },
-                    itemBuilder: (context, index) {
-                      if (AdService.instance.isAdPosition(
-                        index,
-                        AdService.reelsAdInterval,
-                      )) {
-                        return const ReelsAdCard();
-                      }
-                      final rawIndex = AdService.instance.getRawItemIndex(
-                        index,
-                        AdService.reelsAdInterval,
-                      );
-                      if (rawIndex >= reels.length) {
-                        return const SizedBox.shrink();
-                      }
-                      final reel = reels[rawIndex];
-                      return _buildReelPage(reel, index);
-                    },
+                        final reel = reels[rawIndex];
+                        return _buildReelPage(reel, index);
+                      },
+                    ),
                   ),
 
                 // دکمه‌های بالا: دوستان | برای شما (Friends | For You)
@@ -1180,6 +1210,8 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                     if (reels.isNotEmpty && widget.isActive) {
                       _recordView(reels.first);
                     }
+                  } else {
+                    _fetchReels();
                   }
                 },
                 child: Column(
@@ -1349,23 +1381,12 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
             children: [
               Row(
                 children: [
-                  CircleAvatar(
+                  FastCircleAvatar(
+                    imageUrl: reel.authorAvatar,
                     radius: 20,
-                    backgroundColor: lightPinkBg,
-                    backgroundImage: reel.authorAvatar.isNotEmpty
-                        ? NetworkImage(reel.authorAvatar)
-                        : null,
-                    child: reel.authorAvatar.isEmpty
-                        ? Text(
-                            reel.authorName.isNotEmpty
-                                ? reel.authorName[0]
-                                : 'A',
-                            style: const TextStyle(
-                              color: primaryPink,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          )
-                        : null,
+                    fallbackText: reel.authorName.isNotEmpty
+                        ? reel.authorName[0]
+                        : 'A',
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -1851,21 +1872,10 @@ class _ReelShareBottomSheetState extends State<_ReelShareBottomSheet> {
 
                       return ListTile(
                         contentPadding: EdgeInsets.zero,
-                        leading: CircleAvatar(
+                        leading: FastCircleAvatar(
+                          imageUrl: avatar,
                           radius: 20,
-                          backgroundColor: lightPinkBg,
-                          backgroundImage: avatar.isNotEmpty
-                              ? NetworkImage(avatar)
-                              : null,
-                          child: avatar.isEmpty
-                              ? Text(
-                                  name.isNotEmpty ? name[0] : 'F',
-                                  style: const TextStyle(
-                                    color: primaryPink,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                )
-                              : null,
+                          fallbackText: name.isNotEmpty ? name[0] : 'F',
                         ),
                         title: Text(
                           name.isNotEmpty ? name : 'Academy Student',
@@ -2360,7 +2370,8 @@ class _ReelVideoPlayerWidgetState extends State<ReelVideoPlayerWidget> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  if (_controller.value.aspectRatio > 1.1)
+                  if (_controller.value.aspectRatio > 1.0) ...[
+                    // Landscape video: Ambient blurred background + centered player
                     Positioned.fill(
                       child: FittedBox(
                         fit: BoxFit.cover,
@@ -2371,18 +2382,30 @@ class _ReelVideoPlayerWidgetState extends State<ReelVideoPlayerWidget> {
                         ),
                       ),
                     ),
-                  if (_controller.value.aspectRatio > 1.1)
                     Positioned.fill(
                       child: Container(
-                        color: Colors.black.withValues(alpha: 0.75),
+                        color: Colors.black.withValues(alpha: 0.78),
                       ),
                     ),
-                  Center(
-                    child: AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: VideoPlayer(_controller),
+                    Center(
+                      child: AspectRatio(
+                        aspectRatio: _controller.value.aspectRatio,
+                        child: VideoPlayer(_controller),
+                      ),
                     ),
-                  ),
+                  ] else ...[
+                    // Portrait / Vertical Reel: Fullscreen edge-to-edge cover (Instagram Reels & TikTok standard)
+                    Positioned.fill(
+                      child: FittedBox(
+                        fit: BoxFit.cover,
+                        child: SizedBox(
+                          width: _controller.value.size.width,
+                          height: _controller.value.size.height,
+                          child: VideoPlayer(_controller),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

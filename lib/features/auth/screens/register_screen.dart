@@ -6,6 +6,7 @@ import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/theme/app_theme_service.dart';
 import '../../../core/utils/app_media_picker.dart';
+import '../../../core/widgets/fast_cached_image.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -375,10 +376,12 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                           Center(
                             child: SlideTransition(
                               position: _floatAnimation,
-                              child: Image.network(
-                                'https://i.ibb.co/HTZ6DPsS/original-33b8479c324a5448d6145b3cad7c51e7-removebg-preview.png',
+                              child: FastCachedImage(
+                                imageUrl:
+                                    'https://i.ibb.co/HTZ6DPsS/original-33b8479c324a5448d6145b3cad7c51e7-removebg-preview.png',
                                 width: 450,
-                                errorBuilder: (context, error, stackTrace) => Icon(
+                                fit: BoxFit.contain,
+                                errorWidget: Icon(
                                   Icons.school_outlined,
                                   size: 140,
                                   color: primaryPink,

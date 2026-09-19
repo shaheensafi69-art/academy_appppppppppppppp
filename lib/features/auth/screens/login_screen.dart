@@ -14,6 +14,7 @@ import '../../dashboard/screens/student_main_layout.dart';
 import '../../teacher/screens/teacher_main_layout.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
+import '../../../core/widgets/fast_cached_image.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -588,10 +589,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           Center(
                             child: SlideTransition(
                               position: _floatAnimation,
-                              child: Image.network(
-                                'https://i.ibb.co/HTZ6DPsS/original-33b8479c324a5448d6145b3cad7c51e7-removebg-preview.png',
+                              child: FastCachedImage(
+                                imageUrl:
+                                    'https://i.ibb.co/HTZ6DPsS/original-33b8479c324a5448d6145b3cad7c51e7-removebg-preview.png',
                                 width: 420,
-                                errorBuilder: (context, error, stackTrace) => Icon(
+                                fit: BoxFit.contain,
+                                errorWidget: Icon(
                                   Icons.school_outlined,
                                   size: 140,
                                   color: primaryPink,

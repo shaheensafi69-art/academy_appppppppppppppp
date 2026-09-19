@@ -49,8 +49,9 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = true
-            isShrinkResources = true
+            // غیرفعال‌سازی موقت Minify برای جلوگیری از حذف کدهای نیتیو پلاگین‌ها و کانال‌های SharedPreferences و FilePicker در حالت Release
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

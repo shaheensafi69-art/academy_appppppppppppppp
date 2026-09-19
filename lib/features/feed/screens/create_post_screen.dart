@@ -7,7 +7,8 @@ import '../../../core/utils/app_media_picker.dart';
 
 class CreatePostScreen extends StatefulWidget {
   final VoidCallback? onPostSuccess;
-  const CreatePostScreen({super.key, this.onPostSuccess});
+  final VoidCallback? onCancel;
+  const CreatePostScreen({super.key, this.onPostSuccess, this.onCancel});
 
   @override
   State<CreatePostScreen> createState() => _CreatePostScreenState();
@@ -181,6 +182,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         appBar: AppBar(
           backgroundColor: surfaceWhite,
           elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: textDark),
+            tooltip: "Back",
+            onPressed: () {
+              if (widget.onCancel != null) {
+                widget.onCancel!();
+              } else if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              }
+            },
+          ),
           iconTheme: const IconThemeData(color: textDark),
           title: const Text("Create New Post ✍️", style: TextStyle(color: textDark, fontWeight: FontWeight.w900, fontSize: 17, letterSpacing: -0.5)),
           centerTitle: true,
@@ -350,37 +362,73 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       ),
                     ),
 
-                    // نوار ابزار پایین برای عکس و تگ
+                    // نوار ابزار پایین برای عکس و تگ با پدینگ امن از ناویگیشن بار
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: EdgeInsets.only(
+                        left: 20,
+                        right: 20,
+                        top: 14,
+                        bottom: 16 + MediaQuery.of(context).padding.bottom,
+                      ),
                       decoration: BoxDecoration(
                         color: surfaceWhite,
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                         border: const Border(top: BorderSide(color: cardBorder, width: 1.5)),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: const Offset(0, -4))],
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 16,
+                            offset: const Offset(0, -4),
+                          )
+                        ],
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text("Attach Media", style: TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.w900)),
-                          Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.photo_library_rounded, color: Colors.green, size: 24),
-                                onPressed: () => _pickImage(ImageSource.gallery),
-                                tooltip: "Gallery",
+                          // دکمه انتخاب تصویر با FilePicker گوشی
+                          InkWell(
+                            onTap: () => _pickImage(ImageSource.gallery),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: lightPinkBg,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: primaryPink.withOpacity(0.2), width: 1.2),
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.camera_alt_rounded, color: primaryPink, size: 24),
-                                onPressed: () => _pickImage(ImageSource.camera),
-                                tooltip: "Camera",
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.add_photo_alternate_rounded, color: primaryPink, size: 22),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _selectedImageFile != null ? "Change Image" : "Add Image (File)",
+                                    style: const TextStyle(
+                                      color: primaryPink,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.tag_rounded, color: Colors.blue, size: 24),
-                                onPressed: () => _contentController.text += " #SafiAcademy #Trading ",
-                                tooltip: "Add Tags",
+                            ),
+                          ),
+                          // دکمه تگ‌های آکادمی
+                          IconButton(
+                            icon: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEFF6FF),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            ],
+                              child: const Icon(Icons.tag_rounded, color: Colors.blueAccent, size: 22),
+                            ),
+                            onPressed: () {
+                              if (!_contentController.text.contains("#SafiAcademy")) {
+                                _contentController.text += " #SafiAcademy #Trading ";
+                              }
+                            },
+                            tooltip: "Add Tags",
                           ),
                         ],
                       ),

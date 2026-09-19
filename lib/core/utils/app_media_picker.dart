@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -84,29 +83,8 @@ class AppMediaPicker {
     double? maxWidth,
     double? maxHeight,
   }) async {
-    await _ensurePermissions(isCamera: source == ImageSource.camera);
-
-    String? finalPath;
-
-    // ۱. تلاش با استفاده از ImagePicker
-    try {
-      final XFile? picked = await _imagePicker.pickImage(
-        source: source,
-        imageQuality: imageQuality,
-        maxWidth: maxWidth,
-        maxHeight: maxHeight,
-      );
-      if (picked != null && picked.path.isNotEmpty) {
-        finalPath = picked.path;
-      }
-    } on PlatformException catch (pe) {
-      debugPrint("⚠️ ImagePicker PlatformException: ${pe.code} - ${pe.message}");
-    } catch (e) {
-      debugPrint("⚠️ ImagePicker failed: $e");
-    }
-
-    // ۲. لایه پشتیبان خودکار گالری با FilePicker (فقط در حالت گالری)
-    if (finalPath == null && source == ImageSource.gallery) {
+    // ۱. اولویت اول و استاندارد پلی‌استور: استفاده از FilePicker بدون نیاز به درخواست مجوزهای سخت‌افزاری
+    if (source == ImageSource.gallery) {
       try {
         final FilePickerResult? result = await FilePicker.pickFiles(
           type: FileType.image,
@@ -116,7 +94,8 @@ class AppMediaPicker {
         if (result != null && result.files.isNotEmpty) {
           final platformFile = result.files.single;
           if (platformFile.path != null && platformFile.path!.isNotEmpty) {
-            finalPath = platformFile.path;
+            final file = File(platformFile.path!);
+            if (await file.exists()) return file;
           } else if (platformFile.bytes != null) {
             return await _saveBytesToTempFile(
               platformFile.bytes!,
@@ -125,37 +104,49 @@ class AppMediaPicker {
           }
         }
       } catch (fpErr) {
-        debugPrint("⚠️ FilePicker image fallback notice: $fpErr");
-        // ۳. تلاش با فرمت‌های صریح پسوند
-        try {
-          final FilePickerResult? customResult =
-              await FilePicker.pickFiles(
-            type: FileType.custom,
-            allowedExtensions: ['jpg', 'jpeg', 'png', 'webp', 'heic'],
-            allowMultiple: false,
-            withData: true,
-          );
-          if (customResult != null && customResult.files.isNotEmpty) {
-            final platformFile = customResult.files.single;
-            if (platformFile.path != null) {
-              finalPath = platformFile.path;
-            } else if (platformFile.bytes != null) {
-              return await _saveBytesToTempFile(
-                platformFile.bytes!,
-                platformFile.name,
-              );
-            }
-          }
-        } catch (_) {}
+        debugPrint("FilePicker pickImage notice: $fpErr");
       }
+
+      // لایه دوم با پسوندهای صریح اگر تایپ image شناسایی نشد
+      try {
+        final FilePickerResult? customResult = await FilePicker.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['jpg', 'jpeg', 'png', 'webp', 'heic'],
+          allowMultiple: false,
+          withData: true,
+        );
+        if (customResult != null && customResult.files.isNotEmpty) {
+          final platformFile = customResult.files.single;
+          if (platformFile.path != null && platformFile.path!.isNotEmpty) {
+            final file = File(platformFile.path!);
+            if (await file.exists()) return file;
+          } else if (platformFile.bytes != null) {
+            return await _saveBytesToTempFile(
+              platformFile.bytes!,
+              platformFile.name,
+            );
+          }
+        }
+      } catch (_) {}
     }
 
-    if (finalPath != null && finalPath.isNotEmpty) {
-      final file = File(finalPath);
-      if (await file.exists()) {
-        return file;
+    // ۲. لایه فال‌بک / حالت دوربین با ImagePicker
+    await _ensurePermissions(isCamera: source == ImageSource.camera);
+    try {
+      final XFile? picked = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: imageQuality,
+        maxWidth: maxWidth,
+        maxHeight: maxHeight,
+      );
+      if (picked != null && picked.path.isNotEmpty) {
+        final file = File(picked.path);
+        if (await file.exists()) return file;
       }
+    } catch (e) {
+      debugPrint("ImagePicker fallback notice: $e");
     }
+
     return null;
   }
 
@@ -163,27 +154,8 @@ class AppMediaPicker {
   Future<File?> pickVideo({
     ImageSource source = ImageSource.gallery,
   }) async {
-    await _ensurePermissions(
-      isCamera: source == ImageSource.camera,
-      isVideo: true,
-    );
-
-    String? finalPath;
-
-    // ۱. تلاش با ImagePicker
-    try {
-      final XFile? picked = await _imagePicker.pickVideo(source: source);
-      if (picked != null && picked.path.isNotEmpty) {
-        finalPath = picked.path;
-      }
-    } on PlatformException catch (pe) {
-      debugPrint("⚠️ ImagePicker pickVideo PlatformException: ${pe.code} - ${pe.message}");
-    } catch (e) {
-      debugPrint("⚠️ ImagePicker pickVideo failed: $e");
-    }
-
-    // ۲. لایه پشتیبان ویدیو با FilePicker
-    if (finalPath == null && source == ImageSource.gallery) {
+    // ۱. اولویت اول و استاندارد پلی‌استور: استفاده از FilePicker بدون نیاز به درخواست مجوزهای سخت‌افزاری
+    if (source == ImageSource.gallery) {
       try {
         final FilePickerResult? result = await FilePicker.pickFiles(
           type: FileType.video,
@@ -193,7 +165,8 @@ class AppMediaPicker {
         if (result != null && result.files.isNotEmpty) {
           final platformFile = result.files.single;
           if (platformFile.path != null && platformFile.path!.isNotEmpty) {
-            finalPath = platformFile.path;
+            final file = File(platformFile.path!);
+            if (await file.exists()) return file;
           } else if (platformFile.bytes != null) {
             return await _saveBytesToTempFile(
               platformFile.bytes!,
@@ -202,16 +175,25 @@ class AppMediaPicker {
           }
         }
       } catch (fpErr) {
-        debugPrint("⚠️ FilePicker video fallback notice: $fpErr");
+        debugPrint("FilePicker video notice: $fpErr");
       }
     }
 
-    if (finalPath != null && finalPath.isNotEmpty) {
-      final file = File(finalPath);
-      if (await file.exists()) {
-        return file;
+    // ۲. لایه فال‌بک / حالت ضبط دوربین
+    await _ensurePermissions(
+      isCamera: source == ImageSource.camera,
+      isVideo: true,
+    );
+    try {
+      final XFile? picked = await _imagePicker.pickVideo(source: source);
+      if (picked != null && picked.path.isNotEmpty) {
+        final file = File(picked.path);
+        if (await file.exists()) return file;
       }
+    } catch (e) {
+      debugPrint("ImagePicker pickVideo notice: $e");
     }
+
     return null;
   }
 

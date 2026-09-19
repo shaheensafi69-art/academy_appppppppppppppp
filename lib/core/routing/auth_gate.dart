@@ -121,10 +121,10 @@ class _AuthGateState extends State<AuthGate> {
       }
 
       // ۳. اگر واقعاً لاگینی وجود نداشت
-      _showFallbackScreen();
+      await _showFallbackScreen();
     } catch (e) {
       debugPrint("Error in _checkInitialSession: $e");
-      _showFallbackScreen();
+      await _showFallbackScreen();
     }
   }
 
@@ -145,7 +145,38 @@ class _AuthGateState extends State<AuthGate> {
     }
   }
 
-  void _showFallbackScreen() {
+  Future<void> _showFallbackScreen() async {
+    if (!mounted) return;
+    try {
+      final user = supabase.auth.currentUser;
+      final prefs = await SharedPreferences.getInstance();
+      final bool isExplicit =
+          prefs.getBool(AuthHelper.keyUserExplicitlyLoggedOut) ?? false;
+      final bool isUserLoggedIn =
+          prefs.getBool(AuthHelper.keyUserLoggedIn) ?? false;
+
+      // اگر کاربر وارد شده و خروج دستی نزده، هرگز به صفحه خوش‌آمدگویی پرتاب نشود
+      if ((user != null || isUserLoggedIn) && !isExplicit) {
+        final uid = user?.id ?? '';
+        final role = prefs.getString('cached_user_role_$uid') ??
+            prefs.getString(AuthHelper.keyCachedUserRole) ??
+            'student';
+        Widget dest = const StudentMainLayout();
+        if (role == 'super_admin' || role == 'admin') {
+          dest = const AdminMainLayout();
+        } else if (role == 'teacher') {
+          dest = const TeacherMainLayout();
+        }
+        if (mounted) {
+          setState(() {
+            _targetScreen = dest;
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+    } catch (_) {}
+
     if (mounted) {
       setState(() {
         _targetScreen = const WelcomeScreen();
@@ -156,18 +187,41 @@ class _AuthGateState extends State<AuthGate> {
 
   Future<void> _resolveUserSessionAndRole(Session? session) async {
     try {
-      if (session == null) {
-        _showFallbackScreen();
+      final user = session?.user ?? supabase.auth.currentUser;
+      final prefs = await SharedPreferences.getInstance();
+      final bool isExplicit =
+          prefs.getBool(AuthHelper.keyUserExplicitlyLoggedOut) ?? false;
+      final bool isUserLoggedIn =
+          prefs.getBool(AuthHelper.keyUserLoggedIn) ?? false;
+
+      if (user == null) {
+        if (!isUserLoggedIn || isExplicit) {
+          await _showFallbackScreen();
+        } else {
+          // اگر وضعیت لاگین مثبت است اما یوزر لود نشده، از کش برای هدایت استفاده شود
+          final role = prefs.getString(AuthHelper.keyCachedUserRole) ?? 'student';
+          Widget destination = const StudentMainLayout();
+          if (role == 'super_admin' || role == 'admin') {
+            destination = const AdminMainLayout();
+          } else if (role == 'teacher') {
+            destination = const TeacherMainLayout();
+          }
+          if (mounted) {
+            setState(() {
+              _targetScreen = destination;
+              _isLoading = false;
+            });
+          }
+        }
         return;
       }
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('user_explicitly_logged_out', false);
+      await prefs.setBool(AuthHelper.keyUserExplicitlyLoggedOut, false);
+      await prefs.setBool(AuthHelper.keyUserLoggedIn, true);
 
       // ۲. گرفتن نقش کاربر از جدول profiles با کش در SharedPreferences
-      final user = session.user;
       String userRole = prefs.getString('cached_user_role_${user.id}') ??
-          prefs.getString('cached_user_role') ??
+          prefs.getString(AuthHelper.keyCachedUserRole) ??
           'student';
 
       try {
@@ -221,12 +275,13 @@ class _AuthGateState extends State<AuthGate> {
     } catch (e) {
       debugPrint("Auth Resolution Error: $e");
       if (mounted) {
-        if (session != null) {
+        final user = session?.user ?? supabase.auth.currentUser;
+        if (user != null) {
           // اگر سشن معتبر وجود دارد هرگز به صفحه لاگین بازنگردد
           try {
             final prefs = await SharedPreferences.getInstance();
-            final role = prefs.getString('cached_user_role_${session.user.id}') ??
-                prefs.getString('cached_user_role') ??
+            final role = prefs.getString('cached_user_role_${user.id}') ??
+                prefs.getString(AuthHelper.keyCachedUserRole) ??
                 'student';
             Widget fallback = const StudentMainLayout();
             if (role == 'super_admin' || role == 'admin') {
@@ -245,7 +300,7 @@ class _AuthGateState extends State<AuthGate> {
             });
           }
         } else {
-          _showFallbackScreen();
+          await _showFallbackScreen();
         }
       }
     }

@@ -3,6 +3,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/auth/screens/security_lock_screen.dart';
+import '../../main.dart';
 
 class SecurityService {
   static final SecurityService _instance = SecurityService._internal();
@@ -166,20 +167,30 @@ class SecurityService {
       return true;
     }
 
-    _isLockScreenShowing = true;
-    final result = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const SecurityLockScreen(),
-        fullscreenDialog: true,
-      ),
-    );
-
-    _isLockScreenShowing = false;
-    if (result == true) {
-      _isSessionUnlocked = true;
-      return true;
+    final nav = Navigator.maybeOf(context) ?? appNavigatorKey.currentState;
+    if (nav == null || !nav.mounted) {
+      return false;
     }
-    return false;
+
+    _isLockScreenShowing = true;
+    try {
+      final result = await nav.push<bool>(
+        MaterialPageRoute(
+          builder: (_) => const SecurityLockScreen(),
+          fullscreenDialog: true,
+        ),
+      );
+
+      _isLockScreenShowing = false;
+      if (result == true) {
+        _isSessionUnlocked = true;
+        return true;
+      }
+      return false;
+    } catch (e) {
+      _isLockScreenShowing = false;
+      debugPrint("Lock screen navigation error: $e");
+      return false;
+    }
   }
 }

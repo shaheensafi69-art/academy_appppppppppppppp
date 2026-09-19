@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/language_service.dart';
+import '../../../core/widgets/fast_cached_image.dart';
 import 'student_course_detail_screen.dart';
 
 class CourseModel {
@@ -363,12 +364,11 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                                   children: [
                                     ClipRRect(
                                       borderRadius: const BorderRadius.vertical(top: Radius.circular(23)),
-                                      child: Image.network(
-                                        course.thumbnail,
+                                      child: FastCachedImage(
+                                        imageUrl: course.thumbnail,
                                         height: 150,
                                         width: double.infinity,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (_, _, _) => Container(height: 150, color: cardBorder),
                                       ),
                                     ),
                                     Positioned(

@@ -23,10 +23,11 @@ import '../../feed/screens/user_profile_screen.dart';
 import '../../feed/screens/reels_viewer_screen.dart';
 import '../../feed/screens/upload_reel_screen.dart';
 
-import '../../../core/routing/auth_gate.dart';
 import '../../../core/services/auth_helper.dart';
 import '../../../core/utils/system_ui_helper.dart';
 import '../../../core/localization/l10n_extensions.dart';
+import '../../dashboard/screens/student_main_layout.dart';
+import '../../teacher/screens/teacher_main_layout.dart';
 
 class AdminMainLayout extends StatefulWidget {
   const AdminMainLayout({super.key});
@@ -79,6 +80,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
       case 11:
         return CreatePostScreen(
           onPostSuccess: () => setState(() => _currentIndex = 12),
+          onCancel: () => setState(() => _currentIndex = 12),
         );
       case 12:
         return const StudentFeedScreen();
@@ -226,8 +228,13 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
         });
       } else if (profile != null) {
         if (!mounted) return;
+        final role = profile['role']?.toString() ?? 'student';
+        Widget target = const StudentMainLayout();
+        if (role == 'teacher') {
+          target = const TeacherMainLayout();
+        }
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const AuthGate()),
+          MaterialPageRoute(builder: (_) => target),
         );
       } else {
         if (!mounted) return;
@@ -509,6 +516,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
     }
 
     final bool isReels = _currentIndex == 15;
+    final bool isCreatePost = _currentIndex == 11;
     SystemUiHelper.setSystemStyle(isReels: isReels);
 
     return Scaffold(
@@ -520,25 +528,26 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
           Positioned.fill(
             child: Padding(
               padding: EdgeInsets.only(
-                top: (isReels || _isInSocialSection)
+                top: (isReels || _isInSocialSection || isCreatePost)
                     ? 0
                     : (MediaQuery.of(context).padding.top + 8),
-                bottom: _isInSocialSection ? 0 : contentBottomPadding,
+                bottom: (_isInSocialSection || isCreatePost) ? 0 : contentBottomPadding,
               ),
               child: IndexedStack(index: _currentIndex, children: _screens),
             ),
           ),
-          Positioned(
-            bottom: bottomPadding > 0 ? bottomPadding + 4 : 12.0,
-            left: 16,
-            right: 16,
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 800),
-                child: _buildModernBottomNav(),
+          if (!isCreatePost)
+            Positioned(
+              bottom: bottomPadding > 0 ? bottomPadding + 4 : 12.0,
+              left: 16,
+              right: 16,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 800),
+                  child: _buildModernBottomNav(),
+                ),
               ),
             ),
-          ),
           if (_isMenuOpen) Positioned.fill(child: _buildModernFullScreenMenu()),
         ],
       ),

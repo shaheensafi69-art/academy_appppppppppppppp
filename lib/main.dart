@@ -11,7 +11,6 @@ import 'core/services/notification_service.dart';
 import 'core/services/security_service.dart';
 import 'core/theme/app_theme_service.dart';
 import 'core/utils/system_ui_helper.dart';
-import 'features/auth/screens/welcome_screen.dart';
 import 'l10n/generated/app_localizations.dart';
 
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
@@ -31,35 +30,50 @@ Future<void> main() async {
   }
 
   bool isInitialized = false;
-  try {
-    await Supabase.initialize(
-      url: 'https://enpuoypqpklndnnhndax.supabase.co',
-      anonKey:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVucHVveXBxcGtsbmRubmhuZGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNzg1MjgsImV4cCI6MjA5ODY1NDUyOH0.slU2vYIzM0BXG_3ksR5pcfvP-cpFH7IkwIyuzF1pNCo',
-    );
-    isInitialized = true;
-
-    // مقداردهی اولیه فایربیس و نوتیفیکیشن‌ها
-    NotificationService().initPushNotifications();
-
-    // مقداردهی اولیه دیپ‌لینک‌ها برای باز کردن مستقیم ویدیوهای ریلز
-    DeepLinkService().init(appNavigatorKey);
-
-    // مقداردهی اولیه سرویس تبلیغات گوگل بدون کند کردن شروع برنامه
-    AdService.instance.initialize();
-    // مقداردهی اولیه سرویس تم‌های لوکس و رنگ‌های برنامه
-    await AppThemeService.instance.initialize();
-  } catch (e) {
-    debugPrint('Supabase initialization failed: $e');
+  for (int attempt = 1; attempt <= 3; attempt++) {
+    try {
+      await Supabase.initialize(
+        url: 'https://enpuoypqpklndnnhndax.supabase.co',
+        anonKey:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVucHVveXBxcGtsbmRubmhuZGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNzg1MjgsImV4cCI6MjA5ODY1NDUyOH0.slU2vYIzM0BXG_3ksR5pcfvP-cpFH7IkwIyuzF1pNCo',
+      );
+      isInitialized = true;
+      break;
+    } catch (e) {
+      debugPrint('Supabase initialization attempt $attempt failed: $e');
+      if (attempt < 3) {
+        await Future.delayed(const Duration(milliseconds: 200));
+      }
+    }
   }
 
-  runApp(SafiAcademyApp(supabaseReady: isInitialized));
+  if (isInitialized) {
+    // مقداردهی اولیه فایربیس و نوتیفیکیشن‌ها
+    try {
+      NotificationService().initPushNotifications();
+    } catch (_) {}
+
+    // مقداردهی اولیه دیپ‌لینک‌ها برای باز کردن مستقیم ویدیوهای ریلز
+    try {
+      DeepLinkService().init(appNavigatorKey);
+    } catch (_) {}
+
+    // مقداردهی اولیه سرویس تبلیغات گوگل بدون کند کردن شروع برنامه
+    try {
+      AdService.instance.initialize();
+    } catch (_) {}
+
+    // مقداردهی اولیه سرویس تم‌های لوکس و رنگ‌های برنامه
+    try {
+      await AppThemeService.instance.initialize();
+    } catch (_) {}
+  }
+
+  runApp(const SafiAcademyApp());
 }
 
 class SafiAcademyApp extends StatefulWidget {
-  final bool supabaseReady;
-
-  const SafiAcademyApp({super.key, required this.supabaseReady});
+  const SafiAcademyApp({super.key});
 
   @override
   State<SafiAcademyApp> createState() => _SafiAcademyAppState();
@@ -120,7 +134,7 @@ class _SafiAcademyAppState extends State<SafiAcademyApp> with WidgetsBindingObse
                 return supportedLocales.first;
               },
               theme: luxuryPalette.toThemeData(),
-              home: widget.supabaseReady ? const AuthGate() : const WelcomeScreen(),
+              home: const AuthGate(),
             );
           },
         );

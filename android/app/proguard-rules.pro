@@ -22,11 +22,18 @@
 -keepattributes Signature, *Annotation*
 
 # Add plugin-specific rules below if you see runtime issues
+-keep class io.flutter.plugins.** { *; }
+-keep class dev.flutter.pigeon.** { *; }
+-keep class io.flutter.plugins.sharedpreferences.** { *; }
 -keep class io.flutter.plugins.imagepicker.** { *; }
 -keep class com.mr.flutter.plugin.filepicker.** { *; }
+-keep class miguelruivo.flutter.plugins.filepicker.** { *; }
+-keep class com.baseflow.permissionhandler.** { *; }
 -keep class androidx.core.content.FileProvider { *; }
 -keep class androidx.activity.result.** { *; }
 -keep class androidx.activity.result.contract.** { *; }
+-keep class * implements io.flutter.embedding.engine.plugins.FlutterPlugin { *; }
+-keep class * implements io.flutter.plugin.common.MethodChannel$MethodCallHandler { *; }
 
 # Suppress warnings for Play Core classes referenced by Flutter deferred components
 # (generated from build outputs/mapping/release/missing_rules.txt)
