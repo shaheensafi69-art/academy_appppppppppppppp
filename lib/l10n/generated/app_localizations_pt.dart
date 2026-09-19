@@ -2970,7 +2970,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get resellerProducts => 'Produtos de revendedor';
 
   @override
-  String get inStock => 'Em estoque';
+  String get inStock => 'Em Estoque';
 
   @override
   String get outOfStock => 'Fora de estoque';
@@ -3059,4 +3059,57 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get itemsUpdated => 'Itens atualizados';
+
+  @override
+  String get resellerSyncTitle => 'Sincronização de Produtos (Edge Function)';
+
+  @override
+  String get totalProducts => 'Total de Produtos';
+
+  @override
+  String get activeInStore => 'Ativo na Loja';
+
+  @override
+  String get syncWithEdgeFunction => 'Sincronizar com Supabase Edge Function';
+
+  @override
+  String get syncDescription =>
+      'Executar função Edge para atualizar preços e estoque';
+
+  @override
+  String get edgeFunctionNameLabel => 'Nome da Supabase Edge Function';
+
+  @override
+  String get lastSyncTimeLabel => 'Última sincronização';
+
+  @override
+  String get runSyncNow => 'Sincronizar Agora';
+
+  @override
+  String get syncingInProgress => 'Sincronizando com o servidor...';
+
+  @override
+  String get syncLogsHistory => 'Histórico de Registros de Sincronização';
+
+  @override
+  String logsCount(Object count) {
+    return '$count Registros';
+  }
+
+  @override
+  String get noSyncLogsYet =>
+      'Nenhum registro ainda. Pressione o botão de sincronização.';
+
+  @override
+  String get syncSuccessMessage =>
+      'Estoque e status dos produtos sincronizados com sucesso!';
+
+  @override
+  String get syncErrorMessage => 'Erro de sincronização';
+
+  @override
+  String get syncStatusSuccess => 'Sucesso';
+
+  @override
+  String get syncStatusFailed => 'Falhou';
 }

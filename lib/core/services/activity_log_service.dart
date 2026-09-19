@@ -106,33 +106,78 @@ class ActivityLogService {
     return {"model": deviceModel, "os": osName};
   }
 
-  /// دریافت موقعیت تقریبی بر اساس آی‌پی با لایه Fallback سریع
+  /// دریافت موقعیت دقیق بر اساس آی‌پی با لایه Fallback سریع و بدون محدودیت
   Future<Map<String, String>> getApproximateLocation() async {
     String location = "Online";
     String country = "Unknown";
     String city = "Unknown";
     String ip = "—";
 
+    // 1. اولویت نخست: سرویس فوق‌العاده سریع و دقیق ipwho.is
     try {
       final res = await http
-          .get(Uri.parse('https://ipapi.co/json/'))
-          .timeout(const Duration(seconds: 2));
+          .get(Uri.parse('https://ipwho.is/'))
+          .timeout(const Duration(seconds: 3));
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
-        city = data['city']?.toString() ?? "Unknown";
-        country = data['country_name']?.toString() ?? "Unknown";
-        ip = data['ip']?.toString() ?? "—";
+        if (data['success'] == true) {
+          city = data['city']?.toString() ?? "";
+          country = data['country']?.toString() ?? "";
+          ip = data['ip']?.toString() ?? "—";
+          final emoji = data['flag']?['emoji']?.toString() ?? "";
 
-        if (city != "Unknown" && country != "Unknown") {
-          location = "$city, $country";
-        } else if (country != "Unknown") {
-          location = country;
+          if (city.isNotEmpty && country.isNotEmpty) {
+            location = "$emoji $city, $country".trim();
+          } else if (country.isNotEmpty) {
+            location = "$emoji $country".trim();
+          }
+          if (country.isNotEmpty) {
+            return {"location": location, "country": country, "city": city, "ip": ip};
+          }
         }
       }
-    } catch (_) {
-      location = "Secured Session";
+    } catch (e) {
+      debugPrint("ipwho.is error: $e");
     }
+
+    // 2. اولویت دوم: سرویس پشتیبان مطمئن ip-api.com
+    try {
+      final res2 = await http
+          .get(Uri.parse('http://ip-api.com/json'))
+          .timeout(const Duration(seconds: 3));
+
+      if (res2.statusCode == 200) {
+        final data = jsonDecode(res2.body);
+        if (data['status'] == 'success') {
+          city = data['city']?.toString() ?? "";
+          country = data['country']?.toString() ?? "";
+          ip = data['query']?.toString() ?? "—";
+
+          if (city.isNotEmpty && country.isNotEmpty) {
+            location = "$city, $country";
+          } else if (country.isNotEmpty) {
+            location = country;
+          }
+          if (country.isNotEmpty) {
+            return {"location": location, "country": country, "city": city, "ip": ip};
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("ip-api.com fallback error: $e");
+    }
+
+    // 3. دریافت حداقل IP
+    try {
+      final res3 = await http
+          .get(Uri.parse('https://api.ipify.org?format=json'))
+          .timeout(const Duration(seconds: 2));
+      if (res3.statusCode == 200) {
+        final data = jsonDecode(res3.body);
+        ip = data['ip']?.toString() ?? ip;
+      }
+    } catch (_) {}
 
     return {"location": location, "country": country, "city": city, "ip": ip};
   }

@@ -2953,4 +2953,54 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get itemsUpdated => '更新项目';
+
+  @override
+  String get resellerSyncTitle => '商品同步 (Edge Function)';
+
+  @override
+  String get totalProducts => '商品总数';
+
+  @override
+  String get activeInStore => '店内上架';
+
+  @override
+  String get syncWithEdgeFunction => '与 Supabase Edge Function 同步';
+
+  @override
+  String get syncDescription => '执行 Edge Function 以更新价格和库存';
+
+  @override
+  String get edgeFunctionNameLabel => 'Supabase Edge Function 名称';
+
+  @override
+  String get lastSyncTimeLabel => '上次同步';
+
+  @override
+  String get runSyncNow => '立即同步';
+
+  @override
+  String get syncingInProgress => '正在与服务器同步...';
+
+  @override
+  String get syncLogsHistory => '同步日志历史记录';
+
+  @override
+  String logsCount(Object count) {
+    return '$count 条日志';
+  }
+
+  @override
+  String get noSyncLogsYet => '暂无同步日志。请点击同步按钮。';
+
+  @override
+  String get syncSuccessMessage => '商品库存与状态同步成功！';
+
+  @override
+  String get syncErrorMessage => '同步出错';
+
+  @override
+  String get syncStatusSuccess => '成功';
+
+  @override
+  String get syncStatusFailed => '失败';
 }

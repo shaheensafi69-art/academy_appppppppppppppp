@@ -3052,4 +3052,57 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get itemsUpdated => 'Item Diperbarui';
+
+  @override
+  String get resellerSyncTitle => 'Sinkronisasi Produk (Edge Function)';
+
+  @override
+  String get totalProducts => 'Total Produk';
+
+  @override
+  String get activeInStore => 'Aktif di Toko';
+
+  @override
+  String get syncWithEdgeFunction => 'Sinkronkan dengan Supabase Edge Function';
+
+  @override
+  String get syncDescription =>
+      'Jalankan Edge Function untuk memperbarui harga dan stok';
+
+  @override
+  String get edgeFunctionNameLabel => 'Nama Supabase Edge Function';
+
+  @override
+  String get lastSyncTimeLabel => 'Sinkronisasi Terakhir';
+
+  @override
+  String get runSyncNow => 'Mulai Sinkronisasi Sekarang';
+
+  @override
+  String get syncingInProgress => 'Menyinkronkan dengan server...';
+
+  @override
+  String get syncLogsHistory => 'Riwayat Log Sinkronisasi';
+
+  @override
+  String logsCount(Object count) {
+    return '$count Log';
+  }
+
+  @override
+  String get noSyncLogsYet =>
+      'Belum ada log tercatat. Tekan tombol sinkronisasi.';
+
+  @override
+  String get syncSuccessMessage =>
+      'Stok dan status produk berhasil disinkronkan!';
+
+  @override
+  String get syncErrorMessage => 'Kesalahan sinkronisasi';
+
+  @override
+  String get syncStatusSuccess => 'Berhasil';
+
+  @override
+  String get syncStatusFailed => 'Gagal';
 }

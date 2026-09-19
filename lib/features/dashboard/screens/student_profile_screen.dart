@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/services/language_service.dart';
+import '../../../core/utils/app_media_picker.dart';
 
 class StudentSettingsScreen extends StatefulWidget {
   const StudentSettingsScreen({super.key});
@@ -27,8 +27,6 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
 
   String _avatarUrl = '';
   String _email = '';
-
-  final ImagePicker _picker = ImagePicker();
 
   // پالت رنگی لایت (سفید پاکیزه و صورتی غلیظ خالص)
   static const Color primaryPink = Color(0xFFF494AC);
@@ -87,23 +85,21 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
   }
 
   Future<void> _handleAvatarUpload() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
+    final file = await AppMediaPicker.instance.pickImage(
       maxWidth: 1920,
       maxHeight: 1920,
     );
-    if (image == null) return;
+    if (file == null) return;
 
     setState(() => isSaving = true);
     try {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
-      final fileExt = image.name.split('.').last;
+      final fileExt = file.path.split('.').lastOrNull ?? 'jpg';
       final fileName =
           '${user.id}-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
-      final bytes = await image.readAsBytes();
+      final bytes = await file.readAsBytes();
 
       final publicUrl = await CloudflareStorageService.instance.upload(
         bucket: 'avatars',
@@ -362,18 +358,9 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                         _buildTextField(context.l10n.firstName, _firstNameController),
                         const SizedBox(height: 14),
                         _buildTextField(context.l10n.lastName, _lastNameController),
-                        const SizedBox(height: 14),
-                        _buildTextField(context.l10n.fatherName, _fatherNameController),
-                        const SizedBox(height: 14),
                         _buildTextField(context.l10n.dateOfBirth, _dobController),
                         const SizedBox(height: 14),
                         _buildReadOnlyField(context.l10n.emailAddress, _email),
-                        const SizedBox(height: 14),
-                        _buildTextField(
-                          context.l10n.phoneNumber,
-                          _phoneController,
-                          keyboardType: TextInputType.phone,
-                        ),
                         const SizedBox(height: 14),
                         _buildTextField(context.l10n.country, _countryController),
                         const SizedBox(height: 14),

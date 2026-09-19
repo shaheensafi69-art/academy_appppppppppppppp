@@ -2938,7 +2938,7 @@ class AppLocalizationsPs extends AppLocalizations {
   String get resellerProducts => 'د پلورونکي محصولات';
 
   @override
-  String get inStock => 'په سټاک کې';
+  String get inStock => 'په ذخیره کې شته';
 
   @override
   String get outOfStock => 'له سټاک څخه بهر';
@@ -3027,4 +3027,57 @@ class AppLocalizationsPs extends AppLocalizations {
 
   @override
   String get itemsUpdated => 'توکي تازه شوي';
+
+  @override
+  String get resellerSyncTitle => 'د محصولاتو همغږي کول (Edge Function)';
+
+  @override
+  String get totalProducts => 'ټول محصولات';
+
+  @override
+  String get activeInStore => 'په پلورنځي کې فعال';
+
+  @override
+  String get syncWithEdgeFunction => 'د Supabase Edge Function سره همغږي';
+
+  @override
+  String get syncDescription =>
+      'د بیو او موجودۍ نوي کولو لپاره د ایج فنکشن اجرا کول';
+
+  @override
+  String get edgeFunctionNameLabel => 'په سوپابیس کې د Edge Function نوم';
+
+  @override
+  String get lastSyncTimeLabel => 'وروستی سینک';
+
+  @override
+  String get runSyncNow => 'فوري همغږي پیل کړئ';
+
+  @override
+  String get syncingInProgress => 'له سرور سره د همغږۍ په حال کې...';
+
+  @override
+  String get syncLogsHistory => 'د همغږۍ لاګونو تاریخچه';
+
+  @override
+  String logsCount(Object count) {
+    return '$count لاګونه';
+  }
+
+  @override
+  String get noSyncLogsYet =>
+      'تر اوسه هیڅ لاګ ثبت شوی نه دی. د همغږۍ تڼۍ کېکاږئ.';
+
+  @override
+  String get syncSuccessMessage =>
+      'د محصولاتو موجودي او حالت په بریالیتوب سره همغږي شول!';
+
+  @override
+  String get syncErrorMessage => 'په همغږۍ کې تېروتنه';
+
+  @override
+  String get syncStatusSuccess => 'بریالی';
+
+  @override
+  String get syncStatusFailed => 'ناکام';
 }

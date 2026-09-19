@@ -978,5 +978,21 @@
   "syncStatus": "Статус синхронизации",
   "syncHistory": "Синхронизировать историю",
   "lastSynced": "Последняя синхронизация",
-  "itemsUpdated": "Элементы обновлены"
+  "itemsUpdated": "Элементы обновлены",
+  "resellerSyncTitle": "Синхронизация товаров (Edge Function)",
+  "totalProducts": "Всего товаров",
+  "activeInStore": "Активно в магазине",
+  "syncWithEdgeFunction": "Синхронизация с Supabase Edge Function",
+  "syncDescription": "Запуск Edge Function для обновления цен и наличия",
+  "edgeFunctionNameLabel": "Имя Edge Function в Supabase",
+  "lastSyncTimeLabel": "Последняя синхронизация",
+  "runSyncNow": "Запустить синхронизацию",
+  "syncingInProgress": "Синхронизация с сервером...",
+  "syncLogsHistory": "История журналов синхронизации",
+  "logsCount": "{count} Журналов",
+  "noSyncLogsYet": "Журналов пока нет. Нажмите кнопку синхронизации.",
+  "syncSuccessMessage": "Наличие и статус товаров успешно синхронизированы!",
+  "syncErrorMessage": "Ошибка синхронизации",
+  "syncStatusSuccess": "Успешно",
+  "syncStatusFailed": "Не удалось"
 }

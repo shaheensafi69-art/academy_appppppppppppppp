@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:local_auth/local_auth.dart';
 import '../../../core/localization/l10n_extensions.dart';
-import '../../../core/routing/auth_gate.dart';
+import '../../../core/services/auth_helper.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/services/security_service.dart';
 import '../../../core/widgets/language_selector_sheet.dart';
@@ -512,18 +512,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     if (confirm != true) return;
 
     setState(() => isLoggingOut = true);
-    try {
-      await supabase.auth.signOut();
-      if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const AuthGate()),
-        (route) => false,
-      );
-    } catch (e) {
-      debugPrint("Logout error: $e");
-    } finally {
-      if (mounted) setState(() => isLoggingOut = false);
-    }
+    await AuthHelper.logout(context);
   }
 
   @override

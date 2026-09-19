@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/services/media_processing_service.dart';
+import '../../../core/utils/app_media_picker.dart';
 import 'reels_viewer_screen.dart';
 
 class UploadReelScreen extends StatefulWidget {
@@ -48,18 +48,17 @@ class _UploadReelScreenState extends State<UploadReelScreen> {
   }
 
   Future<void> _pickAndUploadVideo() async {
-    final picker = ImagePicker();
-    final XFile? video = await picker.pickVideo(source: ImageSource.gallery);
-    if (video == null) return;
+    final file = await AppMediaPicker.instance.pickVideo();
+    if (file == null) return;
+    final pickedFilePath = file.path;
 
     setState(() => isUploadingFile = true);
 
     try {
-      // 🎬 پردازش و فشرده‌سازی در موبایل + درج واترمارک اختصاصی Safi Academy
+      // 🎬 فشرده‌سازی با شتاب سخت‌افزاری در موبایل (Media3 / AVFoundation)
       final processedFile = await MediaProcessingService.instance
-          .processVideoWithWatermark(inputVideoPath: video.path);
+          .compressVideo(pickedFilePath);
 
-      final bytes = await processedFile.readAsBytes();
       final user = supabase.auth.currentUser;
       final uId = user?.id ?? 'guest';
       final fileName = "reel_${DateTime.now().millisecondsSinceEpoch}_$uId.mp4";
@@ -67,7 +66,7 @@ class _UploadReelScreenState extends State<UploadReelScreen> {
       final publicUrl = await CloudflareStorageService.instance.upload(
         bucket: "safiacademy-media",
         path: "reels/$fileName",
-        bytes: bytes,
+        file: processedFile,
         contentType: 'video/mp4',
       );
 
@@ -171,9 +170,9 @@ class _UploadReelScreenState extends State<UploadReelScreen> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          "Upload Educational Reel 🎬",
-          style: TextStyle(
+        title: Text(
+          "${context.l10n.reels} 🎬",
+          style: const TextStyle(
             color: textDark,
             fontSize: 18,
             fontWeight: FontWeight.w900,

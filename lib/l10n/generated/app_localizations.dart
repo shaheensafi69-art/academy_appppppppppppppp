@@ -2715,13 +2715,13 @@ abstract class AppLocalizations {
   /// No description provided for @educationalReel.
   ///
   /// In en, this message translates to:
-  /// **'Educational Reel 🎬'**
+  /// **'Reels 🎬'**
   String get educationalReel;
 
   /// No description provided for @checkOutReel.
   ///
   /// In en, this message translates to:
-  /// **'Check out this educational reel! 🌟'**
+  /// **'Check out this reel! 🌟'**
   String get checkOutReel;
 
   /// No description provided for @watchReel.
@@ -3513,7 +3513,7 @@ abstract class AppLocalizations {
   /// No description provided for @educationalReels.
   ///
   /// In en, this message translates to:
-  /// **'Educational Reels'**
+  /// **'Reels'**
   String get educationalReels;
 
   /// No description provided for @honors.
@@ -4521,13 +4521,13 @@ abstract class AppLocalizations {
   /// No description provided for @uploadEducationalReel.
   ///
   /// In en, this message translates to:
-  /// **'Upload Educational Reel 🎬'**
+  /// **'Upload Reel 🎬'**
   String get uploadEducationalReel;
 
   /// No description provided for @shareReelSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Share short trading or coding videos with peers'**
+  /// **'Share short reels videos with peers'**
   String get shareReelSubtitle;
 
   /// No description provided for @createFeedPost.
@@ -6005,6 +6005,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Items Updated'**
   String get itemsUpdated;
+
+  /// No description provided for @resellerSyncTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Synchronization (Edge Function)'**
+  String get resellerSyncTitle;
+
+  /// No description provided for @totalProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Products'**
+  String get totalProducts;
+
+  /// No description provided for @activeInStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Active in Store'**
+  String get activeInStore;
+
+  /// No description provided for @syncWithEdgeFunction.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync with Supabase Edge Function'**
+  String get syncWithEdgeFunction;
+
+  /// No description provided for @syncDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Execute Edge Function to update prices and stock'**
+  String get syncDescription;
+
+  /// No description provided for @edgeFunctionNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Supabase Edge Function Name'**
+  String get edgeFunctionNameLabel;
+
+  /// No description provided for @lastSyncTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Sync'**
+  String get lastSyncTimeLabel;
+
+  /// No description provided for @runSyncNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Run Sync Now'**
+  String get runSyncNow;
+
+  /// No description provided for @syncingInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing with server...'**
+  String get syncingInProgress;
+
+  /// No description provided for @syncLogsHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Synchronization Logs History'**
+  String get syncLogsHistory;
+
+  /// No description provided for @logsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Logs'**
+  String logsCount(Object count);
+
+  /// No description provided for @noSyncLogsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No sync logs recorded yet. Press the sync button.'**
+  String get noSyncLogsYet;
+
+  /// No description provided for @syncSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Product stock and status synchronized successfully!'**
+  String get syncSuccessMessage;
+
+  /// No description provided for @syncErrorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync error'**
+  String get syncErrorMessage;
+
+  /// No description provided for @syncStatusSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Successful'**
+  String get syncStatusSuccess;
+
+  /// No description provided for @syncStatusFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get syncStatusFailed;
 }
 
 class _AppLocalizationsDelegate

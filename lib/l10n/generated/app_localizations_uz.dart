@@ -2979,7 +2979,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get resellerProducts => 'Reseller mahsulotlari';
 
   @override
-  String get inStock => 'Stokda';
+  String get inStock => 'Omborda mavjud';
 
   @override
   String get outOfStock => 'Stokda yoʻq';
@@ -3068,4 +3068,58 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get itemsUpdated => 'Elementlar yangilandi';
+
+  @override
+  String get resellerSyncTitle =>
+      'Mahsulotlarni sinxronlashtirish (Edge Function)';
+
+  @override
+  String get totalProducts => 'Jami mahsulotlar';
+
+  @override
+  String get activeInStore => 'Do\'konda faol';
+
+  @override
+  String get syncWithEdgeFunction => 'Supabase Edge Function bilan sinxronlash';
+
+  @override
+  String get syncDescription =>
+      'Narxlar va qoldiqni yangilash uchun Edge Function-ni ishga tushiring';
+
+  @override
+  String get edgeFunctionNameLabel => 'Supabase Edge Function nomi';
+
+  @override
+  String get lastSyncTimeLabel => 'Oxirgi sinxronlash';
+
+  @override
+  String get runSyncNow => 'Hozir sinxronlashni boshlash';
+
+  @override
+  String get syncingInProgress => 'Server bilan sinxronlanmoqda...';
+
+  @override
+  String get syncLogsHistory => 'Sinxronlash jurnallari tarixi';
+
+  @override
+  String logsCount(Object count) {
+    return '$count Jurnal';
+  }
+
+  @override
+  String get noSyncLogsYet =>
+      'Hozircha hech qanday jurnal yozilmagan. Sinxronlash tugmasini bosing.';
+
+  @override
+  String get syncSuccessMessage =>
+      'Mahsulotlar qoldig\'i va holati muvaffaqiyatli sinxronlandi!';
+
+  @override
+  String get syncErrorMessage => 'Sinxronlash xatosi';
+
+  @override
+  String get syncStatusSuccess => 'Muvaffaqiyatli';
+
+  @override
+  String get syncStatusFailed => 'Muvaffaqiyatsiz';
 }

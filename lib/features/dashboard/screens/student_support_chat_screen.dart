@@ -9,7 +9,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/services/gemini_ai_service.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
-import 'package:file_picker/file_picker.dart' as fp;
+import '../../../core/utils/app_media_picker.dart';
 
 class SupportMessage {
   final String id;
@@ -182,26 +182,22 @@ class _StudentSupportChatScreenState extends State<StudentSupportChatScreen> {
 
   Future<void> _handleAttachFile() async {
     try {
-      fp.FilePickerResult? result = await fp.FilePicker.pickFiles(
-        type: fp.FileType.custom,
+      final file = await AppMediaPicker.instance.pickDocumentOrMedia(
         allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
       );
 
-      if (result == null || result.files.isEmpty) return;
+      if (file == null) return;
 
       setState(() => isUploading = true);
 
-      final fileBytes = result.files.first.bytes;
-      final fileStr = result.files.first.path;
       final fileName =
-          '${DateTime.now().millisecondsSinceEpoch}_${result.files.first.name}';
+          '${DateTime.now().millisecondsSinceEpoch}_${file.path.split(Platform.pathSeparator).last}';
       final filePath = 'tickets/${widget.ticketId}/$fileName';
 
       final publicUrl = await CloudflareStorageService.instance.upload(
         bucket: 'support',
         path: filePath,
-        bytes: fileBytes,
-        file: fileStr != null ? File(fileStr) : null,
+        file: file,
       );
 
       await supabase.from("ticket_messages").insert({

@@ -3056,4 +3056,58 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get itemsUpdated => 'Artikel aktualisiert';
+
+  @override
+  String get resellerSyncTitle => 'Produktsynchronisierung (Edge Function)';
+
+  @override
+  String get totalProducts => 'Gesamtprodukte';
+
+  @override
+  String get activeInStore => 'Aktiv im Shop';
+
+  @override
+  String get syncWithEdgeFunction =>
+      'Mit Supabase Edge Function synchronisieren';
+
+  @override
+  String get syncDescription =>
+      'Edge Function ausführen, um Preise und Bestand zu aktualisieren';
+
+  @override
+  String get edgeFunctionNameLabel => 'Supabase Edge Function Name';
+
+  @override
+  String get lastSyncTimeLabel => 'Letzte Synchronisierung';
+
+  @override
+  String get runSyncNow => 'Jetzt synchronisieren';
+
+  @override
+  String get syncingInProgress => 'Wird mit Server synchronisiert...';
+
+  @override
+  String get syncLogsHistory => 'Synchronisierungsprotokolle';
+
+  @override
+  String logsCount(Object count) {
+    return '$count Protokolle';
+  }
+
+  @override
+  String get noSyncLogsYet =>
+      'Noch keine Protokolle vorhanden. Klicken Sie auf Synchronisieren.';
+
+  @override
+  String get syncSuccessMessage =>
+      'Produktbestand und Status erfolgreich synchronisiert!';
+
+  @override
+  String get syncErrorMessage => 'Synchronisierungsfehler';
+
+  @override
+  String get syncStatusSuccess => 'Erfolgreich';
+
+  @override
+  String get syncStatusFailed => 'Fehlgeschlagen';
 }

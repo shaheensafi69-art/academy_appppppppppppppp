@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:image_picker/image_picker.dart' show XFile;
 import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/localization/l10n_extensions.dart';
+import '../../../core/utils/app_media_picker.dart';
 import 'student_assignments_screen.dart';
 
 class StudentAssignmentDetailScreen extends StatefulWidget {
@@ -19,7 +20,6 @@ class _StudentAssignmentDetailScreenState
   final supabase = Supabase.instance.client;
   bool isUploading = false;
   XFile? selectedFile;
-  final ImagePicker _picker = ImagePicker();
 
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
@@ -29,15 +29,10 @@ class _StudentAssignmentDetailScreenState
   static const Color cardBorder = Color(0xFFF3F4F6);
 
   Future<void> _pickFile() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-      maxWidth: 1920,
-      maxHeight: 1920,
-    );
-    if (image != null) {
+    final file = await AppMediaPicker.instance.pickDocumentOrMedia();
+    if (file != null) {
       setState(() {
-        selectedFile = image;
+        selectedFile = XFile(file.path);
       });
     }
   }

@@ -985,5 +985,21 @@
   "syncStatus": "同期ステータス",
   "syncHistory": "同期履歴",
   "lastSynced": "最終同期",
-  "itemsUpdated": "更新されたアイテム"
+  "itemsUpdated": "更新されたアイテム",
+  "resellerSyncTitle": "商品同期 (Edge Function)",
+  "totalProducts": "全商品数",
+  "activeInStore": "公開中",
+  "syncWithEdgeFunction": "Supabase Edge Function と同期",
+  "syncDescription": "Edge Function を実行して価格と在庫を更新",
+  "edgeFunctionNameLabel": "Supabase Edge Function 名",
+  "lastSyncTimeLabel": "前回の同期",
+  "runSyncNow": "今すぐ同期",
+  "syncingInProgress": "サーバーと同期中...",
+  "syncLogsHistory": "同期ログ履歴",
+  "logsCount": "{count} 件のログ",
+  "noSyncLogsYet": "ログはまだありません。同期ボタンを押してください。",
+  "syncSuccessMessage": "商品の在庫と状態が正常に同期されました！",
+  "syncErrorMessage": "同期エラー",
+  "syncStatusSuccess": "成功",
+  "syncStatusFailed": "失敗"
 }

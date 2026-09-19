@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/localization/l10n_extensions.dart';
+import '../../../core/utils/app_media_picker.dart';
 
 class TeacherProfileScreen extends StatefulWidget {
   const TeacherProfileScreen({super.key});
@@ -26,8 +26,6 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
 
   String _avatarUrl = '';
   String _email = '';
-
-  final ImagePicker _picker = ImagePicker();
 
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
@@ -85,23 +83,21 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
   }
 
   Future<void> _handleAvatarUpload() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
+    final file = await AppMediaPicker.instance.pickImage(
       maxWidth: 1920,
       maxHeight: 1920,
     );
-    if (image == null) return;
+    if (file == null) return;
 
     setState(() => isSaving = true);
     try {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
-      final fileExt = image.name.split('.').last;
+      final fileExt = file.path.split('.').lastOrNull ?? 'jpg';
       final fileName =
           '${user.id}-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
-      final bytes = await image.readAsBytes();
+      final bytes = await file.readAsBytes();
 
       final publicUrl = await CloudflareStorageService.instance.upload(
         bucket: 'avatars',

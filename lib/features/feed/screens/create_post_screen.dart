@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/services/media_processing_service.dart';
+import '../../../core/utils/app_media_picker.dart';
 
 class CreatePostScreen extends StatefulWidget {
   final VoidCallback? onPostSuccess;
@@ -18,10 +18,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   bool isLoadingProfile = true;
   bool isPosting = false;
   File? _selectedImageFile;
-
   Map<String, dynamic>? userProfile;
+  String userName = "";
+  String userAvatar = "";
+  String userRole = "Student";
+
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
+  final TextEditingController _tagsController = TextEditingController();
 
   String selectedMood = "🚀 Excited";
   final List<String> moods = ["🚀 Excited", "🌟 Explore", "💡 Learning", "📊 Analysis", "🔥 Motivated", "📢 Announcement"];
@@ -31,48 +35,54 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   static const Color surfaceWhite = Colors.white;
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
-  static const Color cardBorder = Color(0xFFE5E7EB);
+  static const Color cardBorder = Color(0xFFF3F4F6);
 
   @override
   void initState() {
     super.initState();
-    _fetchUserProfile();
+    _fetchCurrentUserProfile();
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
+    _tagsController.dispose();
     super.dispose();
   }
 
-  Future<void> _fetchUserProfile() async {
+  Future<void> _fetchCurrentUserProfile() async {
     try {
       final user = supabase.auth.currentUser;
       if (user != null) {
-        final res = await supabase
+        final profile = await supabase
             .from('profiles')
-            .select('first_name, last_name, avatar_url, role')
+            .select('full_name, first_name, last_name, avatar_url, role')
             .eq('id', user.id)
             .maybeSingle();
-        if (mounted) {
+
+        if (profile != null && mounted) {
           setState(() {
-            userProfile = res;
+            userProfile = profile;
+            userName = profile['full_name'] ?? '${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}'.trim();
+            userAvatar = profile['avatar_url'] ?? '';
+            userRole = profile['role'] ?? 'Student';
             isLoadingProfile = false;
           });
+          return;
         }
       }
+      if (mounted) setState(() => isLoadingProfile = false);
     } catch (e) {
       if (mounted) setState(() => isLoadingProfile = false);
     }
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: source, imageQuality: 85);
-    if (pickedFile != null) {
+    final file = await AppMediaPicker.instance.pickImage(source: source);
+    if (file != null && mounted) {
       setState(() {
-        _selectedImageFile = File(pickedFile.path);
+        _selectedImageFile = file;
       });
     }
   }

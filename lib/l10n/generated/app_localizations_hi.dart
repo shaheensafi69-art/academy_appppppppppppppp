@@ -2955,7 +2955,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get resellerProducts => 'पुनर्विक्रेता उत्पाद';
 
   @override
-  String get inStock => 'स्टॉक में';
+  String get inStock => 'स्टॉक में उपलब्ध';
 
   @override
   String get outOfStock => 'स्टॉक से बाहर';
@@ -3044,4 +3044,57 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get itemsUpdated => 'आइटम अपडेट किए गए';
+
+  @override
+  String get resellerSyncTitle => 'उत्पाद समन्वय (Edge Function)';
+
+  @override
+  String get totalProducts => 'कुल उत्पाद';
+
+  @override
+  String get activeInStore => 'स्टोर में सक्रिय';
+
+  @override
+  String get syncWithEdgeFunction => 'Supabase Edge Function के साथ सिंक करें';
+
+  @override
+  String get syncDescription =>
+      'कीमतों और स्टॉक को अपडेट करने के लिए एज फ़ंक्शन निष्पादित करें';
+
+  @override
+  String get edgeFunctionNameLabel => 'Supabase Edge Function का नाम';
+
+  @override
+  String get lastSyncTimeLabel => 'अंतिम सिंक';
+
+  @override
+  String get runSyncNow => 'अभी सिंक शुरू करें';
+
+  @override
+  String get syncingInProgress => 'सर्वर के साथ सिंक हो रहा है...';
+
+  @override
+  String get syncLogsHistory => 'सिंक लॉग इतिहास';
+
+  @override
+  String logsCount(Object count) {
+    return '$count लॉग';
+  }
+
+  @override
+  String get noSyncLogsYet =>
+      'अभी तक कोई लॉग रिकॉर्ड नहीं हुआ। सिंक बटन दबाएं।';
+
+  @override
+  String get syncSuccessMessage =>
+      'उत्पाद स्टॉक और स्थिति सफलतापूर्वक सिंक की गई!';
+
+  @override
+  String get syncErrorMessage => 'सिंक त्रुटि';
+
+  @override
+  String get syncStatusSuccess => 'सफल';
+
+  @override
+  String get syncStatusFailed => 'विफल';
 }

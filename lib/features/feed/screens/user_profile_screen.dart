@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
+import '../../../core/utils/app_media_picker.dart';
 import '../../chat/screens/direct_chat_screen.dart';
 import 'reels_viewer_screen.dart';
 
@@ -21,7 +21,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   bool isLoading = true;
   bool isCoverUploading = false;
   bool isAvatarUploading = false;
-  final ImagePicker _picker = ImagePicker();
   Map<String, dynamic>? profileData;
   List<Map<String, dynamic>> userPosts = [];
   List<Map<String, dynamic>> userReels = [];
@@ -189,23 +188,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   // هندلر آپلود عکس کاورپیج به کلودفلر R2 و ثبت در دیتابیس Supabase
   Future<void> _handleCoverUpload() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
+    final file = await AppMediaPicker.instance.pickImage(
       maxWidth: 2560,
       maxHeight: 1440,
     );
-    if (image == null) return;
+    if (file == null) return;
 
     setState(() => isCoverUploading = true);
     try {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
-      final fileExt = image.name.split('.').last;
+      final fileExt = file.path.split('.').lastOrNull ?? 'jpg';
       final fileName =
           'cover-${user.id}-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
-      final bytes = await image.readAsBytes();
+      final bytes = await file.readAsBytes();
 
       final publicUrl = await CloudflareStorageService.instance.upload(
         bucket: 'covers',
@@ -249,23 +246,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   // هندلر آپلود عکس آواتار به کلودفلر R2 و ثبت در دیتابیس Supabase
   Future<void> _handleAvatarUpload() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
+    final file = await AppMediaPicker.instance.pickImage(
       maxWidth: 1024,
       maxHeight: 1024,
     );
-    if (image == null) return;
+    if (file == null) return;
 
     setState(() => isAvatarUploading = true);
     try {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
-      final fileExt = image.name.split('.').last;
+      final fileExt = file.path.split('.').lastOrNull ?? 'jpg';
       final fileName =
           'avatar-${user.id}-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
-      final bytes = await image.readAsBytes();
+      final bytes = await file.readAsBytes();
 
       final publicUrl = await CloudflareStorageService.instance.upload(
         bucket: 'avatars',
@@ -1313,6 +1308,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                                   "Network",
                                                   "$friendsCount",
                                                   roleColor,
+                                                  onTap: _showNetworkMembersModal,
                                                 ),
                                                 if (!isTeacher && !isAdmin)
                                                   _buildStatItem(
@@ -1571,45 +1567,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 16),
-                                // شماره تماس با قابلیت کپی
-                                if (profileData!['phone_number'] != null &&
-                                    profileData!['phone_number']
-                                        .toString()
-                                        .isNotEmpty) ...[
-                                  _buildInfoRow(
-                                    Icons.phone_iphone_rounded,
-                                    "Phone Number",
-                                    profileData!['phone_number'],
-                                    roleColor,
-                                    onCopy: () {
-                                      Clipboard.setData(
-                                        ClipboardData(
-                                          text: profileData!['phone_number'],
-                                        ),
-                                      );
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text("Phone number copied! 📋"),
-                                          duration: Duration(seconds: 2),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  const SizedBox(height: 10),
-                                ],
-                                // نام پدر
-                                if (profileData!['father_name'] != null &&
-                                    profileData!['father_name']
-                                        .toString()
-                                        .isNotEmpty) ...[
-                                  _buildInfoRow(
-                                    Icons.family_restroom_rounded,
-                                    "Father's Name",
-                                    profileData!['father_name'],
-                                    roleColor,
-                                  ),
-                                  const SizedBox(height: 10),
-                                ],
                                 _buildInfoRow(
                                   Icons.email_outlined,
                                   "Email Address",
@@ -1648,13 +1605,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 ),
                                 const SizedBox(height: 10),
                                 _buildInfoRow(
-                                  Icons.account_balance_wallet_rounded,
-                                  "Wallet Balance",
-                                  "\$${(profileData!['wallet_balance'] ?? 0).toDouble().toStringAsFixed(2)}",
-                                  roleColor,
-                                ),
-                                const SizedBox(height: 10),
-                                _buildInfoRow(
                                   Icons.bolt_rounded,
                                   "Total Score",
                                   "${profileData!['total_score'] ?? 0} XP",
@@ -1684,38 +1634,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                           );
                                         }
                                       : null,
-                                ),
-                                const SizedBox(height: 10),
-                                _buildInfoRow(
-                                  Icons.link_rounded,
-                                  "Referral Link",
-                                  profileData!['referral_link'] ?? 'N/A',
-                                  roleColor,
-                                  onCopy: profileData!['referral_link'] != null
-                                      ? () {
-                                          Clipboard.setData(
-                                            ClipboardData(
-                                              text:
-                                                  profileData!['referral_link'],
-                                            ),
-                                          );
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                "Referral link copied! 📋",
-                                              ),
-                                              duration: Duration(seconds: 2),
-                                            ),
-                                          );
-                                        }
-                                      : null,
-                                ),
-                                const SizedBox(height: 10),
-                                _buildInfoRow(
-                                  Icons.percent_rounded,
-                                  "Referral Discount Rate",
-                                  "${profileData!['referral_discount_rate'] ?? 0}%",
-                                  roleColor,
                                 ),
                                 const SizedBox(height: 10),
                                 _buildInfoRow(
@@ -2282,8 +2200,198 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _buildStatItem(String label, String value, Color color) {
-    return Column(
+  Future<List<Map<String, dynamic>>> _fetchNetworkMembers() async {
+    final targetId = widget.userId ?? supabase.auth.currentUser?.id;
+    if (targetId == null) return [];
+
+    try {
+      final res = await supabase
+          .from('student_friends')
+          .select('sender_id, receiver_id, status')
+          .or('sender_id.eq.$targetId,receiver_id.eq.$targetId')
+          .eq('status', 'accepted');
+
+      final List<String> otherUserIds = [];
+      for (var f in (res as List)) {
+        final sId = f['sender_id']?.toString();
+        final rId = f['receiver_id']?.toString();
+        final other = (sId == targetId) ? rId : sId;
+        if (other != null && other.isNotEmpty && !otherUserIds.contains(other)) {
+          otherUserIds.add(other);
+        }
+      }
+
+      if (otherUserIds.isEmpty) return [];
+
+      final profilesRes = await supabase
+          .from('profiles')
+          .select('id, full_name, first_name, last_name, avatar_url, role, bio')
+          .inFilter('id', otherUserIds);
+
+      return List<Map<String, dynamic>>.from(profilesRes as List);
+    } catch (e) {
+      debugPrint("Error fetching network members: $e");
+      return [];
+    }
+  }
+
+  void _showNetworkMembersModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final displayName = profileData?['full_name'] ??
+            "${profileData?['first_name'] ?? ''} ${profileData?['last_name'] ?? ''}".trim();
+
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.75,
+          decoration: const BoxDecoration(
+            color: surfaceWhite,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "${displayName.isNotEmpty ? displayName : 'User'}'s Network ($friendsCount)",
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: textDark,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: textGrey),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(color: cardBorder, height: 1),
+              Expanded(
+                child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _fetchNetworkMembers(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(color: primaryPink),
+                      );
+                    }
+                    if (snapshot.hasError || snapshot.data == null || snapshot.data!.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          "No network connections found.",
+                          style: TextStyle(color: textGrey, fontSize: 13, fontWeight: FontWeight.bold),
+                        ),
+                      );
+                    }
+                    final members = snapshot.data!;
+                    return ListView.separated(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: members.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                      itemBuilder: (context, index) {
+                        final member = members[index];
+                        final mName = member['full_name'] ??
+                            "${member['first_name'] ?? ''} ${member['last_name'] ?? ''}".trim();
+                        final mAvatar = member['avatar_url'] ?? '';
+                        final mRole = member['role'] ?? 'Student';
+                        final mBio = member['bio'] ?? '';
+                        final mId = member['id']?.toString() ?? '';
+
+                        return InkWell(
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            if (mId != widget.userId) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => UserProfileScreen(userId: mId),
+                                ),
+                              );
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(18),
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: lightPinkBg.withValues(alpha: 0.4),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: cardBorder, width: 1.5),
+                            ),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 24,
+                                  backgroundColor: primaryPink.withValues(alpha: 0.15),
+                                  backgroundImage: mAvatar.isNotEmpty ? NetworkImage(mAvatar) : null,
+                                  child: mAvatar.isEmpty
+                                      ? const Icon(Icons.person, color: primaryPink, size: 24)
+                                      : null,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        mName.isNotEmpty ? mName : 'Academy Member',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 13,
+                                          color: textDark,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        mBio.isNotEmpty ? mBio : mRole.toString().toUpperCase(),
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          color: textGrey,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: textGrey),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatItem(String label, String value, Color color, {VoidCallback? onTap}) {
+    final item = Column(
       children: [
         Text(
           value,
@@ -2304,6 +2412,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         ),
       ],
     );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: item,
+        ),
+      );
+    }
+    return item;
   }
 
   Widget _buildInfoRow(

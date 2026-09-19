@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/localization/l10n_extensions.dart';
+import '../../../core/utils/app_media_picker.dart';
 
 class TeacherCertificatesDetailScreen extends StatefulWidget {
   const TeacherCertificatesDetailScreen({super.key});
@@ -117,11 +118,12 @@ class _TeacherCertificatesDetailScreenState
   }
 
   Future<void> _pickFile() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? file = await picker.pickMedia();
+    final file = await AppMediaPicker.instance.pickDocumentOrMedia(
+      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg', 'webp', 'doc', 'docx'],
+    );
     if (file != null) {
       setState(() {
-        selectedFile = file;
+        selectedFile = XFile(file.path);
       });
     }
   }

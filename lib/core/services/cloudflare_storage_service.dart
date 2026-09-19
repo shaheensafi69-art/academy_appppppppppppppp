@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:convert';
+import 'media_processing_service.dart';
 
 /// Service to handle file uploads directly to Cloudflare R2 (S3 API compatible)
 /// with seamless fallback to Supabase Storage if Cloudflare credentials are missing.
@@ -31,6 +32,7 @@ class CloudflareStorageService {
   }
 
   /// Main method to upload a file (from File or Uint8List bytes)
+  /// Automatically compresses ALL images and videos before uploading to R2 / Supabase.
   /// Returns the public URL of the uploaded file.
   Future<String> upload({
     required String bucket,
@@ -39,10 +41,11 @@ class CloudflareStorageService {
     Uint8List? bytes,
     String? contentType,
   }) async {
-    final fileBytes = bytes ?? (file != null ? await file.readAsBytes() : null);
-    if (fileBytes == null) {
+    final initialBytes = bytes ?? (file != null ? await file.readAsBytes() : null);
+    if (initialBytes == null) {
       throw Exception('No file data provided for upload.');
     }
+    Uint8List fileBytes = initialBytes;
 
     final defaultBucket = _defaultBucket.isNotEmpty ? _defaultBucket : 'safiacademy-media';
     String targetBucket = defaultBucket;
@@ -55,6 +58,54 @@ class CloudflareStorageService {
     }
 
     final mimeType = contentType ?? _inferContentType(sanitizedPath);
+
+    // ⚡ UNIVERSAL COMPRESSION FOR ALL IMAGES (Avatar, Cover, Feed, Story, Courses, etc.)
+    final isImage = mimeType.startsWith('image/') ||
+        sanitizedPath.endsWith('.jpg') ||
+        sanitizedPath.endsWith('.jpeg') ||
+        sanitizedPath.endsWith('.png') ||
+        sanitizedPath.endsWith('.webp');
+
+    if (isImage && fileBytes.isNotEmpty) {
+      try {
+        final originalKb = fileBytes.length / 1024;
+        fileBytes = await MediaProcessingService.instance.compressImageBytes(fileBytes);
+        final newKb = fileBytes.length / 1024;
+        debugPrint(
+          '[CloudflareStorageService] 🖼️ Auto-compressed image: ${originalKb.toStringAsFixed(1)} KB -> ${newKb.toStringAsFixed(1)} KB',
+        );
+      } catch (e) {
+        debugPrint('[CloudflareStorageService] Image compression bypass: $e');
+      }
+    }
+
+    // ⚡ UNIVERSAL COMPRESSION FOR ALL VIDEOS (Reels, Story, Feed)
+    final isVideo = mimeType.startsWith('video/') ||
+        sanitizedPath.endsWith('.mp4') ||
+        sanitizedPath.endsWith('.mov');
+
+    if (isVideo && file != null && file.existsSync()) {
+      try {
+        final originalMb = file.lengthSync() / (1024 * 1024);
+        if (originalMb > 2.0) {
+          debugPrint(
+            '[CloudflareStorageService] 🎬 Auto-compressing video before upload: ${file.path} (${originalMb.toStringAsFixed(2)} MB)',
+          );
+          final compressedVideoFile =
+              await MediaProcessingService.instance.compressVideo(file.path);
+          if (compressedVideoFile.existsSync() &&
+              compressedVideoFile.lengthSync() < file.lengthSync()) {
+            fileBytes = await compressedVideoFile.readAsBytes();
+            file = compressedVideoFile;
+            debugPrint(
+              '[CloudflareStorageService] ✅ Video auto-compressed: ${originalMb.toStringAsFixed(2)} MB -> ${(compressedVideoFile.lengthSync() / (1024 * 1024)).toStringAsFixed(2)} MB',
+            );
+          }
+        }
+      } catch (e) {
+        debugPrint('[CloudflareStorageService] Video compression bypass: $e');
+      }
+    }
 
     if (isConfigured) {
       try {

@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/services/media_processing_service.dart';
+import '../../../core/utils/app_media_picker.dart';
 
 class CreateStoryScreen extends StatefulWidget {
   const CreateStoryScreen({super.key});
@@ -18,9 +18,17 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
   final TextEditingController _mediaUrlController = TextEditingController();
   final TextEditingController _captionController = TextEditingController();
 
-  bool isUploading = false;
+  String mediaType = 'image';
   bool isUploadingFile = false;
-  String mediaType = 'image'; // 'image' یا 'video'
+  bool isPublishing = false;
+
+  final List<String> backgroundOptions = [
+    "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80",
+    "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&q=80",
+    "https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80",
+    "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&q=80",
+    "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&q=80",
+  ];
 
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
@@ -28,13 +36,6 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
   static const Color textDark = Color(0xFF111827);
   static const Color textGrey = Color(0xFF6B7280);
   static const Color cardBorder = Color(0xFFF3F4F6);
-
-  final List<String> sampleMedia = [
-    "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80",
-    "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80",
-    "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&q=80",
-    "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&q=80",
-  ];
 
   @override
   void dispose() {
@@ -44,29 +45,28 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
   }
 
   Future<void> _pickAndUploadMedia() async {
-    final picker = ImagePicker();
-    XFile? file;
+    final File? file;
     if (mediaType == 'image') {
-      file = await picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 85,
-      );
+      file = await AppMediaPicker.instance.pickImage();
     } else {
-      file = await picker.pickVideo(source: ImageSource.gallery);
+      file = await AppMediaPicker.instance.pickVideo();
     }
 
-    if (file != null) {
+    if (file == null) return;
+    final pickedPath = file.path;
+
+    if (pickedPath.isNotEmpty) {
       setState(() => isUploadingFile = true);
       try {
         File processedFile;
         if (mediaType == 'video') {
-          // 🎬 ویدیو: فشرده‌سازی + واترمارک اختصاصی Safi Academy
+          // 🎬 ویدیو: فشرده‌سازی با شتاب سخت‌افزاری
           processedFile = await MediaProcessingService.instance
-              .processVideoWithWatermark(inputVideoPath: file.path);
+              .compressVideo(pickedPath);
         } else {
           // 🖼️ عکس: فقط فشرده‌سازی (بدون واترمارک)
           processedFile = await MediaProcessingService.instance
-              .compressFeedImage(File(file.path));
+              .compressFeedImage(File(pickedPath));
         }
 
         final bytes = await processedFile.readAsBytes();
@@ -108,7 +108,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
     final user = supabase.auth.currentUser;
     if (user == null) return;
 
-    setState(() => isUploading = true);
+    setState(() => isPublishing = true);
 
     try {
       // انقضای ۲۴ ساعته خودکار
@@ -138,7 +138,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("${context.l10n.error}: $e")));
-        setState(() => isUploading = false);
+        setState(() => isPublishing = false);
       }
     }
   }
@@ -174,10 +174,10 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
-              onPressed: (isUploading || isUploadingFile)
+              onPressed: (isPublishing || isUploadingFile)
                   ? null
                   : _publishStory,
-              child: isUploading
+              child: isPublishing
                   ? const SizedBox(
                       width: 16,
                       height: 16,
@@ -375,10 +375,10 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
               height: 70,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: sampleMedia.length,
+                itemCount: backgroundOptions.length,
                 separatorBuilder: (_, _) => const SizedBox(width: 10),
                 itemBuilder: (context, index) {
-                  final url = sampleMedia[index];
+                  final url = backgroundOptions[index];
                   return GestureDetector(
                     onTap: () {
                       _mediaUrlController.text = url;

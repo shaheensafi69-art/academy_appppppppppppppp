@@ -2948,7 +2948,7 @@ class AppLocalizationsUr extends AppLocalizations {
   String get resellerProducts => 'ری سیلر مصنوعات';
 
   @override
-  String get inStock => 'اسٹاک میں';
+  String get inStock => 'اسٹاک میں دستیاب';
 
   @override
   String get outOfStock => 'اسٹاک سے باہر';
@@ -3037,4 +3037,57 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get itemsUpdated => 'آئٹمز کو اپ ڈیٹ کر دیا گیا۔';
+
+  @override
+  String get resellerSyncTitle => 'پروڈکٹ کی مطابقت پذیری (Edge Function)';
+
+  @override
+  String get totalProducts => 'کل مصنوعات';
+
+  @override
+  String get activeInStore => 'اسٹور میں فعال';
+
+  @override
+  String get syncWithEdgeFunction => 'Supabase Edge Function کے ساتھ ہم آہنگی';
+
+  @override
+  String get syncDescription =>
+      'قیمتوں اور اسٹاک کو اپ ڈیٹ کرنے کے لیے ایج فنکشن چلائیں';
+
+  @override
+  String get edgeFunctionNameLabel => 'Supabase میں ایج فنکشن کا نام';
+
+  @override
+  String get lastSyncTimeLabel => 'آخری ہم آہنگی';
+
+  @override
+  String get runSyncNow => 'فوری مطابقت پذیری شروع کریں';
+
+  @override
+  String get syncingInProgress => 'سرور کے ساتھ ہم آہنگ ہو رہا ہے...';
+
+  @override
+  String get syncLogsHistory => 'مطابقت پذیری کے لاگز کی تاریخ';
+
+  @override
+  String logsCount(Object count) {
+    return '$count لاگز';
+  }
+
+  @override
+  String get noSyncLogsYet =>
+      'ابھی تک کوئی لاگ ریکارڈ نہیں ہوا۔ ہم آہنگی کا بٹن دبائیں۔';
+
+  @override
+  String get syncSuccessMessage =>
+      'مصنوعات کا اسٹاک اور حیثیت کامیابی کے ساتھ ہم آہنگ ہوگئی!';
+
+  @override
+  String get syncErrorMessage => 'مطابقت پذیری کی خرابی';
+
+  @override
+  String get syncStatusSuccess => 'کامیاب';
+
+  @override
+  String get syncStatusFailed => 'ناکام';
 }

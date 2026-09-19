@@ -985,5 +985,21 @@
   "syncStatus": "Stato di sincronizzazione",
   "syncHistory": "Sincronizza la cronologia",
   "lastSynced": "Ultima sincronizzazione",
-  "itemsUpdated": "Elementi aggiornati"
+  "itemsUpdated": "Elementi aggiornati",
+  "resellerSyncTitle": "Sincronizzazione Prodotti (Edge Function)",
+  "totalProducts": "Prodotti Totali",
+  "activeInStore": "Attivo nel Negozio",
+  "syncWithEdgeFunction": "Sincronizza con Supabase Edge Function",
+  "syncDescription": "Esegui Edge Function per aggiornare prezzi e scorte",
+  "edgeFunctionNameLabel": "Nome Supabase Edge Function",
+  "lastSyncTimeLabel": "Ultima sincronizzazione",
+  "runSyncNow": "Sincronizza ora",
+  "syncingInProgress": "Sincronizzazione con il server...",
+  "syncLogsHistory": "Cronologia registri di sincronizzazione",
+  "logsCount": "{count} Registri",
+  "noSyncLogsYet": "Nessun registro registrato. Premi il pulsante di sincronizzazione.",
+  "syncSuccessMessage": "Scorte e stato dei prodotti sincronizzati con successo!",
+  "syncErrorMessage": "Errore di sincronizzazione",
+  "syncStatusSuccess": "Riuscito",
+  "syncStatusFailed": "Fallito"
 }

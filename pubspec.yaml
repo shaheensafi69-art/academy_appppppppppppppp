@@ -41,6 +41,8 @@ dependencies:
   collection: any
   gal: ^2.3.3
   google_mobile_ads: ^5.2.0
+  easy_compressor: ^1.0.0
+  video_watermark_plus: ^1.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

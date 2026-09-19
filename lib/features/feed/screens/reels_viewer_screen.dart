@@ -3,7 +3,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gal/gal.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:video_player/video_player.dart';
@@ -11,8 +10,8 @@ import 'package:video_player/video_player.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/services/ad_service.dart';
 import '../../../core/services/media_processing_service.dart';
+import '../../../core/utils/app_media_picker.dart';
 import '../../../core/widgets/auth_required_modal.dart';
-import '../../../core/widgets/safi_academy_video_watermark.dart';
 import '../../chat/screens/direct_chat_screen.dart';
 import '../widgets/reels_ad_card.dart';
 
@@ -680,7 +679,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
       // ۱. دانلود موقت در حافظه موقت (Temporary Directory)
       final tempDir = await getTemporaryDirectory();
       final tempFilePath =
-          '${tempDir.path}/reel_${DateTime.now().millisecondsSinceEpoch}.mp4';
+          '${tempDir.path}/raw_reel_${DateTime.now().millisecondsSinceEpoch}.mp4';
 
       final dio = Dio();
       await dio.download(
@@ -695,21 +694,30 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
         },
       );
 
+      // ۲. درج واترمارک اختصاصی مثل تیک‌تاک بر روی ویدیو قبل از ذخیره در گالری
+      File finalVideoFile = File(tempFilePath);
+      try {
+        finalVideoFile = await MediaProcessingService.instance
+            .addWatermarkToVideoForDownload(inputVideoPath: tempFilePath);
+      } catch (watermarkErr) {
+        debugPrint('Watermark overlay error: $watermarkErr');
+      }
+
       // بستن دیالوگ درصد دانلود
       if (mounted) {
         Navigator.of(context, rootNavigator: true).pop();
       }
 
-      // ۲. ذخیره مستقیم و رسمی در گالری گوشی (MediaStore در اندروید / Photos در iOS)
+      // ۳. ذخیره مستقیم و رسمی در گالری گوشی (MediaStore در اندروید / Photos در iOS)
       try {
         final hasAccess = await Gal.hasAccess();
         if (!hasAccess) {
           await Gal.requestAccess();
         }
-        await Gal.putVideo(tempFilePath, album: 'Safi Academy');
+        await Gal.putVideo(finalVideoFile.path, album: 'Safi Academy');
       } catch (galErr) {
         debugPrint('Gal album save fallback: $galErr');
-        await Gal.putVideo(tempFilePath);
+        await Gal.putVideo(finalVideoFile.path);
       }
 
       // پاک‌سازی فایل موقت
@@ -718,9 +726,12 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
         if (await tempFile.exists()) {
           await tempFile.delete();
         }
+        if (finalVideoFile.path != tempFilePath && await finalVideoFile.exists()) {
+          await finalVideoFile.delete();
+        }
       } catch (_) {}
 
-      // ۳. نمایش پاپ‌آپ شکیل ۲ ثانیه‌ای طبق خواسته کاربر به زبان انگلیسی (بدون کد و پیام سیستمی)
+      // ۴. نمایش پاپ‌آپ شکیل ۲ ثانیه‌ای طبق خواسته کاربر به زبان انگلیسی (بدون کد و پیام سیستمی)
       if (mounted) {
         _showReelsToast(context, 'Video saved to gallery 🎬');
       }
@@ -854,10 +865,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                 onTap: isUploadingFile
                     ? null
                     : () async {
-                        final picker = ImagePicker();
-                        final XFile? video = await picker.pickVideo(
-                          source: ImageSource.gallery,
-                        );
+                        final video = await AppMediaPicker.instance.pickVideo();
                         if (video != null) {
                           setModalState(() => isUploadingFile = true);
                           try {
@@ -1564,13 +1572,6 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
               ),
             ],
           ),
-        ),
-
-        // 🎬 واترمارک اختصاصی متنی Safi Academy (فقط در ویدیو با استایل لوکس)
-        const Positioned(
-          top: 60,
-          right: 16,
-          child: SafiAcademyVideoWatermark(scale: 0.95),
         ),
       ],
     );

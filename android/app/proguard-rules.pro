@@ -22,6 +22,11 @@
 -keepattributes Signature, *Annotation*
 
 # Add plugin-specific rules below if you see runtime issues
+-keep class io.flutter.plugins.imagepicker.** { *; }
+-keep class com.mr.flutter.plugin.filepicker.** { *; }
+-keep class androidx.core.content.FileProvider { *; }
+-keep class androidx.activity.result.** { *; }
+-keep class androidx.activity.result.contract.** { *; }
 
 # Suppress warnings for Play Core classes referenced by Flutter deferred components
 # (generated from build outputs/mapping/release/missing_rules.txt)

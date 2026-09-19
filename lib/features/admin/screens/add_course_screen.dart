@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/localization/l10n_extensions.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
+import '../../../core/utils/app_media_picker.dart';
 
 class AddCourseScreen extends StatefulWidget {
   const AddCourseScreen({super.key});
@@ -33,7 +33,6 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   bool isSubmitting = false;
 
   File? thumbnailFile;
-  final ImagePicker _picker = ImagePicker();
 
   // Luxury Light-Pink Palette
   static const Color primaryPink = Color(0xFFF494AC);
@@ -59,15 +58,13 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   }
 
   Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
+    final file = await AppMediaPicker.instance.pickImage(
       maxWidth: 1920,
       maxHeight: 1920,
     );
-    if (pickedFile != null) {
+    if (file != null) {
       setState(() {
-        thumbnailFile = File(pickedFile.path);
+        thumbnailFile = file;
       });
     }
   }

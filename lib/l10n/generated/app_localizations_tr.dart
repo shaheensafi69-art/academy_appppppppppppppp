@@ -2948,7 +2948,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get resellerProducts => 'Bayi Ürünleri';
 
   @override
-  String get inStock => 'Stokta var';
+  String get inStock => 'Stokta Var';
 
   @override
   String get outOfStock => 'Stokta Yok';
@@ -3037,4 +3037,57 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get itemsUpdated => 'Öğeler Güncellendi';
+
+  @override
+  String get resellerSyncTitle => 'Ürün Senkronizasyonu (Edge Function)';
+
+  @override
+  String get totalProducts => 'Toplam Ürün';
+
+  @override
+  String get activeInStore => 'Mağazada Aktif';
+
+  @override
+  String get syncWithEdgeFunction => 'Supabase Edge Function ile Senkronize Et';
+
+  @override
+  String get syncDescription =>
+      'Fiyatları ve stoğu güncellemek için Edge Function çalıştırın';
+
+  @override
+  String get edgeFunctionNameLabel => 'Supabase Edge Function Adı';
+
+  @override
+  String get lastSyncTimeLabel => 'Son Senkronizasyon';
+
+  @override
+  String get runSyncNow => 'Hemen Senkronize Et';
+
+  @override
+  String get syncingInProgress => 'Sunucu ile senkronize ediliyor...';
+
+  @override
+  String get syncLogsHistory => 'Senkronizasyon Günlüğü Geçmişi';
+
+  @override
+  String logsCount(Object count) {
+    return '$count Günlük';
+  }
+
+  @override
+  String get noSyncLogsYet =>
+      'Henüz kayıt bulunamadı. Senkronizasyon düğmesine basın.';
+
+  @override
+  String get syncSuccessMessage =>
+      'Ürün stoğu ve durumu başarıyla senkronize edildi!';
+
+  @override
+  String get syncErrorMessage => 'Senkronizasyon hatası';
+
+  @override
+  String get syncStatusSuccess => 'Başarılı';
+
+  @override
+  String get syncStatusFailed => 'Başarısız';
 }

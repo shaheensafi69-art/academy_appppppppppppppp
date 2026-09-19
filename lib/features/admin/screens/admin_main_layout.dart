@@ -24,6 +24,7 @@ import '../../feed/screens/reels_viewer_screen.dart';
 import '../../feed/screens/upload_reel_screen.dart';
 
 import '../../../core/routing/auth_gate.dart';
+import '../../../core/services/auth_helper.dart';
 import '../../../core/utils/system_ui_helper.dart';
 import '../../../core/localization/l10n_extensions.dart';
 
@@ -49,36 +50,70 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   static const Color textGrey = Color(0xFF6B7280);
   static const Color cardBorder = Color(0xFFE5E7EB);
 
-  List<Widget> get _screens => [
-    const AdminDashboardScreen(), // 0: Overview
-    const ManageStudentsScreen(), // 1: Students
-    const ManageTeachersScreen(), // 2: Faculty
-    const CoursesScreen(), // 3: Courses
-    const ClassesScreen(), // 4: Classes
-    const FinanceScreen(), // 5: Finance
-    const AwardsScreen(), // 6: Honors
-    const AnnouncementsScreen(), // 7: Notices
-    const LiveClassesScreen(), // 8: Live Studio
-    const AdminSupportRequestsScreen(), // 9: Support Requests
-    const AdminSettingsScreen(), // 10: Settings
-    CreatePostScreen(
-      onPostSuccess: () => setState(() => _currentIndex = 12),
-    ), // 11: Create Post
-    const StudentFeedScreen(), // 12: Academy Feed (فید اجتماعی یکپارچه)
-    const StudentFriendsScreen(), // 13: Friends & Network (شبکه یکپارچه)
-    UserProfileScreen(
-      onExit: () => setState(() => _currentIndex = 0),
-    ), // 14: Admin Profile
-    StudentReelsScreen(isActive: _currentIndex == 15), // 15: Educational Reels
-    const ResellerSyncScreen(), // 16: Reseller Sync
-  ];
+  final List<Widget?> _cachedScreens = List.filled(17, null);
+
+  Widget _createScreen(int index) {
+    switch (index) {
+      case 0:
+        return const AdminDashboardScreen();
+      case 1:
+        return const ManageStudentsScreen();
+      case 2:
+        return const ManageTeachersScreen();
+      case 3:
+        return const CoursesScreen();
+      case 4:
+        return const ClassesScreen();
+      case 5:
+        return const FinanceScreen();
+      case 6:
+        return const AwardsScreen();
+      case 7:
+        return const AnnouncementsScreen();
+      case 8:
+        return const LiveClassesScreen();
+      case 9:
+        return const AdminSupportRequestsScreen();
+      case 10:
+        return const AdminSettingsScreen();
+      case 11:
+        return CreatePostScreen(
+          onPostSuccess: () => setState(() => _currentIndex = 12),
+        );
+      case 12:
+        return const StudentFeedScreen();
+      case 13:
+        return const StudentFriendsScreen();
+      case 14:
+        return UserProfileScreen(
+          onExit: () => setState(() => _currentIndex = 0),
+        );
+      case 15:
+        return StudentReelsScreen(isActive: _currentIndex == 15);
+      case 16:
+        return const ResellerSyncScreen();
+      default:
+        return const AdminDashboardScreen();
+    }
+  }
+
+  List<Widget> get _screens {
+    return List.generate(17, (i) {
+      if (i == _currentIndex) {
+        if (i == 15) {
+          _cachedScreens[i] = const StudentReelsScreen(isActive: true);
+        } else {
+          _cachedScreens[i] ??= _createScreen(i);
+        }
+      } else if (i == 15 && _cachedScreens[15] != null) {
+        _cachedScreens[15] = const StudentReelsScreen(isActive: false);
+      }
+      return _cachedScreens[i] ?? const SizedBox.shrink();
+    });
+  }
 
   final List<Map<String, dynamic>> _menuItems = [
-    {
-      "icon": Icons.dashboard_rounded,
-      "index": 0,
-      "color": primaryPink,
-    },
+    {"icon": Icons.dashboard_rounded, "index": 0, "color": primaryPink},
     {
       "icon": Icons.school_rounded,
       "index": 1,
@@ -94,11 +129,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
       "index": 3,
       "color": const Color(0xFF7B1FA2),
     },
-    {
-      "icon": Icons.class_rounded,
-      "index": 4,
-      "color": const Color(0xFF00ACC1),
-    },
+    {"icon": Icons.class_rounded, "index": 4, "color": const Color(0xFF00ACC1)},
     {
       "icon": Icons.payments_rounded,
       "index": 5,
@@ -124,21 +155,9 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
       "index": 12,
       "color": const Color(0xFFD81B60),
     },
-    {
-      "icon": Icons.headset_mic_rounded,
-      "index": 9,
-      "color": primaryPink,
-    },
-    {
-      "icon": Icons.settings_rounded,
-      "index": 10,
-      "color": textGrey,
-    },
-    {
-      "icon": Icons.sync_rounded,
-      "index": 16,
-      "color": const Color(0xFF8E24AA),
-    },
+    {"icon": Icons.headset_mic_rounded, "index": 9, "color": primaryPink},
+    {"icon": Icons.settings_rounded, "index": 10, "color": textGrey},
+    {"icon": Icons.sync_rounded, "index": 16, "color": const Color(0xFF8E24AA)},
   ];
 
   String _getMenuItemName(BuildContext context, int index) {
@@ -189,7 +208,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   Future<void> _checkAdminAccess() async {
     final user = supabase.auth.currentUser;
     if (user == null) {
-      _logout();
+      if (mounted) setState(() => _isLoading = false);
       return;
     }
     try {
@@ -205,21 +224,29 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
           _userProfile = profile;
           _isLoading = false;
         });
+      } else if (profile != null) {
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const AuthGate()),
+        );
       } else {
-        _logout();
+        if (!mounted) return;
+        setState(() {
+          _isLoading = false;
+        });
       }
     } catch (e) {
-      _logout();
+      debugPrint("Admin access check non-fatal error: $e");
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   void _logout() async {
-    await supabase.auth.signOut();
-    if (mounted) {
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthGate()));
-    }
+    await AuthHelper.logout(context);
   }
 
   bool get _isInSocialSection =>
@@ -236,31 +263,65 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   ) {
     final isSelected = _currentIndex == index;
     final isExpanded = MediaQuery.of(context).size.width >= 1024;
+
+    if (!isExpanded) {
+      return Tooltip(
+        message: label,
+        preferBelow: false,
+        child: InkWell(
+          onTap: () => setState(() => _currentIndex = index),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            height: 44,
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? primaryPink.withValues(alpha: 0.15)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(16),
+              border: isSelected
+                  ? Border.all(color: primaryPink.withValues(alpha: 0.4), width: 1.5)
+                  : null,
+            ),
+            child: Center(
+              child: Icon(
+                icon,
+                color: isSelected ? primaryPink : textGrey,
+                size: 22,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 3, horizontal: 8),
       decoration: BoxDecoration(
         color: isSelected
             ? primaryPink.withValues(alpha: 0.12)
             : Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
+        border: isSelected
+            ? Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5)
+            : null,
       ),
       child: ListTile(
         dense: true,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         leading: Icon(
           icon,
           color: isSelected ? primaryPink : textGrey,
-          size: 22,
+          size: 20,
         ),
-        title: isExpanded
-            ? Text(
-                label,
-                style: TextStyle(
-                  color: isSelected ? primaryPink : textDark,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  fontSize: 13,
-                ),
-              )
-            : null,
+        title: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? primaryPink : textDark,
+            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+            fontSize: 12,
+          ),
+        ),
         onTap: () => setState(() => _currentIndex = index),
       ),
     );
@@ -433,7 +494,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                         Icons.logout_rounded,
                         color: Colors.redAccent,
                       ),
-                      onPressed: () => Supabase.instance.client.auth.signOut(),
+                      onPressed: _logout,
                     ),
                   ),
                 ],
@@ -485,9 +546,9 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
   }
 
   Widget _buildSidebarCreateButton(bool isExpanded) {
-    return Container(
+    final buttonWidget = Container(
       margin: const EdgeInsets.symmetric(horizontal: 8),
-      width: double.infinity,
+      width: isExpanded ? double.infinity : 44,
       height: 44,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -531,6 +592,16 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
         ),
       ),
     );
+
+    if (!isExpanded) {
+      return Tooltip(
+        message: context.l10n.createPost,
+        preferBelow: false,
+        child: buttonWidget,
+      );
+    }
+
+    return buttonWidget;
   }
 
   void _showCreateOptionsModal() {
@@ -578,7 +649,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                   ),
                 ),
                 title: Text(
-                  context.l10n.uploadEducationalReel,
+                  "${context.l10n.reels} 🎬",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -587,7 +658,10 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                 ),
                 subtitle: Text(
                   context.l10n.shareReelSubtitle,
-                  style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF6B7280),
+                  ),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -621,7 +695,10 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                 ),
                 subtitle: Text(
                   context.l10n.sharePostSubtitle,
-                  style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF6B7280),
+                  ),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -952,7 +1029,10 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
                           final item = _menuItems[index];
                           final int targetIndex = item['index'];
                           bool isActive = _currentIndex == targetIndex;
-                          final itemName = _getMenuItemName(context, targetIndex);
+                          final itemName = _getMenuItemName(
+                            context,
+                            targetIndex,
+                          );
 
                           return GestureDetector(
                             onTap: () {

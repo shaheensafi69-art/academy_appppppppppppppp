@@ -2975,4 +2975,54 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get itemsUpdated => '更新されたアイテム';
+
+  @override
+  String get resellerSyncTitle => '商品同期 (Edge Function)';
+
+  @override
+  String get totalProducts => '全商品数';
+
+  @override
+  String get activeInStore => '公開中';
+
+  @override
+  String get syncWithEdgeFunction => 'Supabase Edge Function と同期';
+
+  @override
+  String get syncDescription => 'Edge Function を実行して価格と在庫を更新';
+
+  @override
+  String get edgeFunctionNameLabel => 'Supabase Edge Function 名';
+
+  @override
+  String get lastSyncTimeLabel => '前回の同期';
+
+  @override
+  String get runSyncNow => '今すぐ同期';
+
+  @override
+  String get syncingInProgress => 'サーバーと同期中...';
+
+  @override
+  String get syncLogsHistory => '同期ログ履歴';
+
+  @override
+  String logsCount(Object count) {
+    return '$count 件のログ';
+  }
+
+  @override
+  String get noSyncLogsYet => 'ログはまだありません。同期ボタンを押してください。';
+
+  @override
+  String get syncSuccessMessage => '商品の在庫と状態が正常に同期されました！';
+
+  @override
+  String get syncErrorMessage => '同期エラー';
+
+  @override
+  String get syncStatusSuccess => '成功';
+
+  @override
+  String get syncStatusFailed => '失敗';
 }

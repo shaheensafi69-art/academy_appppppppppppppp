@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:video_player/video_player.dart';
-import '../../../core/widgets/safi_academy_video_watermark.dart';
 
 class StoryItemData {
   final String id;
@@ -647,14 +646,6 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                 ],
               ),
             ),
-
-            // 🎬 واترمارک متنی اختصاصی Safi Academy (فقط در ویدیو، هرگز در عکس!)
-            if (currentStory.mediaType == 'video')
-              Positioned(
-                top: MediaQuery.of(context).padding.top + 68,
-                right: 16,
-                child: const SafiAcademyVideoWatermark(scale: 0.9),
-              ),
 
             // زیرنویس استوری (Caption)
             if (currentStory.caption != null &&

@@ -2927,7 +2927,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get resellerProducts => 'منتجات الموزع';
 
   @override
-  String get inStock => 'في الأوراق المالية';
+  String get inStock => 'متوفر في المخزون';
 
   @override
   String get outOfStock => 'إنتهى من المخزن';
@@ -3016,4 +3016,55 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get itemsUpdated => 'تم تحديث العناصر';
+
+  @override
+  String get resellerSyncTitle => 'مزامنة المنتجات (Edge Function)';
+
+  @override
+  String get totalProducts => 'إجمالي المنتجات';
+
+  @override
+  String get activeInStore => 'نشط في المتجر';
+
+  @override
+  String get syncWithEdgeFunction => 'المزامنة مع Supabase Edge Function';
+
+  @override
+  String get syncDescription => 'تنفيذ دالة Edge لتحديث الأسعار والمخزون';
+
+  @override
+  String get edgeFunctionNameLabel => 'اسم دالة Edge في Supabase';
+
+  @override
+  String get lastSyncTimeLabel => 'آخر مزامنة';
+
+  @override
+  String get runSyncNow => 'بدء المزامنة الفورية';
+
+  @override
+  String get syncingInProgress => 'جارٍ المزامنة مع الخادم...';
+
+  @override
+  String get syncLogsHistory => 'سجل عمليات المزامنة';
+
+  @override
+  String logsCount(Object count) {
+    return '$count سجلات';
+  }
+
+  @override
+  String get noSyncLogsYet =>
+      'لم يتم تسجيل أي سجلات بعد. اضغط على زر المزامنة.';
+
+  @override
+  String get syncSuccessMessage => 'تمت مزامنة المخزون وحالة المنتجات بنجاح!';
+
+  @override
+  String get syncErrorMessage => 'خطأ في المزامنة';
+
+  @override
+  String get syncStatusSuccess => 'ناجح';
+
+  @override
+  String get syncStatusFailed => 'فشل';
 }

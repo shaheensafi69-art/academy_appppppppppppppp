@@ -985,5 +985,21 @@
   "syncStatus": "동기화 상태",
   "syncHistory": "동기화 기록",
   "lastSynced": "마지막 동기화",
-  "itemsUpdated": "업데이트된 항목"
+  "itemsUpdated": "업데이트된 항목",
+  "resellerSyncTitle": "상품 동기화 (Edge Function)",
+  "totalProducts": "총 상품 수",
+  "activeInStore": "스토어 활성",
+  "syncWithEdgeFunction": "Supabase Edge Function과 동기화",
+  "syncDescription": "가격 및 재고를 업데이트하기 위해 Edge Function 실행",
+  "edgeFunctionNameLabel": "Supabase Edge Function 이름",
+  "lastSyncTimeLabel": "마지막 동기화",
+  "runSyncNow": "지금 동기화 실행",
+  "syncingInProgress": "서버와 동기화 중...",
+  "syncLogsHistory": "동기화 로그 기록",
+  "logsCount": "{count} 개 로그",
+  "noSyncLogsYet": "아직 기록된 로그가 없습니다. 동기화 버튼을 누르세요.",
+  "syncSuccessMessage": "상품 재고 및 상태가 성공적으로 동기화되었습니다!",
+  "syncErrorMessage": "동기화 오류",
+  "syncStatusSuccess": "성공",
+  "syncStatusFailed": "실패"
 }

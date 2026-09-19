@@ -1351,10 +1351,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onlineNow => 'Online now';
 
   @override
-  String get educationalReel => 'Educational Reel 🎬';
+  String get educationalReel => 'Reels 🎬';
 
   @override
-  String get checkOutReel => 'Check out this educational reel! 🌟';
+  String get checkOutReel => 'Check out this reel! 🌟';
 
   @override
   String get watchReel => 'Watch Reel 🎥';
@@ -1754,7 +1754,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get facultyAndNetwork => 'Faculty & Network';
 
   @override
-  String get educationalReels => 'Educational Reels';
+  String get educationalReels => 'Reels';
 
   @override
   String get honors => 'Honors';
@@ -2265,11 +2265,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createNewContent => 'Create New Content 🚀';
 
   @override
-  String get uploadEducationalReel => 'Upload Educational Reel 🎬';
+  String get uploadEducationalReel => 'Upload Reel 🎬';
 
   @override
-  String get shareReelSubtitle =>
-      'Share short trading or coding videos with peers';
+  String get shareReelSubtitle => 'Share short reels videos with peers';
 
   @override
   String get createFeedPost => 'Create Feed Post 📝';
@@ -3032,4 +3031,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get itemsUpdated => 'Items Updated';
+
+  @override
+  String get resellerSyncTitle => 'Product Synchronization (Edge Function)';
+
+  @override
+  String get totalProducts => 'Total Products';
+
+  @override
+  String get activeInStore => 'Active in Store';
+
+  @override
+  String get syncWithEdgeFunction => 'Sync with Supabase Edge Function';
+
+  @override
+  String get syncDescription =>
+      'Execute Edge Function to update prices and stock';
+
+  @override
+  String get edgeFunctionNameLabel => 'Supabase Edge Function Name';
+
+  @override
+  String get lastSyncTimeLabel => 'Last Sync';
+
+  @override
+  String get runSyncNow => 'Run Sync Now';
+
+  @override
+  String get syncingInProgress => 'Syncing with server...';
+
+  @override
+  String get syncLogsHistory => 'Synchronization Logs History';
+
+  @override
+  String logsCount(Object count) {
+    return '$count Logs';
+  }
+
+  @override
+  String get noSyncLogsYet =>
+      'No sync logs recorded yet. Press the sync button.';
+
+  @override
+  String get syncSuccessMessage =>
+      'Product stock and status synchronized successfully!';
+
+  @override
+  String get syncErrorMessage => 'Sync error';
+
+  @override
+  String get syncStatusSuccess => 'Successful';
+
+  @override
+  String get syncStatusFailed => 'Failed';
 }

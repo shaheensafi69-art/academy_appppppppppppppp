@@ -2971,4 +2971,54 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get itemsUpdated => '업데이트된 항목';
+
+  @override
+  String get resellerSyncTitle => '상품 동기화 (Edge Function)';
+
+  @override
+  String get totalProducts => '총 상품 수';
+
+  @override
+  String get activeInStore => '스토어 활성';
+
+  @override
+  String get syncWithEdgeFunction => 'Supabase Edge Function과 동기화';
+
+  @override
+  String get syncDescription => '가격 및 재고를 업데이트하기 위해 Edge Function 실행';
+
+  @override
+  String get edgeFunctionNameLabel => 'Supabase Edge Function 이름';
+
+  @override
+  String get lastSyncTimeLabel => '마지막 동기화';
+
+  @override
+  String get runSyncNow => '지금 동기화 실행';
+
+  @override
+  String get syncingInProgress => '서버와 동기화 중...';
+
+  @override
+  String get syncLogsHistory => '동기화 로그 기록';
+
+  @override
+  String logsCount(Object count) {
+    return '$count 개 로그';
+  }
+
+  @override
+  String get noSyncLogsYet => '아직 기록된 로그가 없습니다. 동기화 버튼을 누르세요.';
+
+  @override
+  String get syncSuccessMessage => '상품 재고 및 상태가 성공적으로 동기화되었습니다!';
+
+  @override
+  String get syncErrorMessage => '동기화 오류';
+
+  @override
+  String get syncStatusSuccess => '성공';
+
+  @override
+  String get syncStatusFailed => '실패';
 }

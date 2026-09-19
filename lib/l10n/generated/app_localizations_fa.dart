@@ -1346,10 +1346,10 @@ class AppLocalizationsFa extends AppLocalizations {
   String get onlineNow => 'هم‌اکنون آنلاین';
 
   @override
-  String get educationalReel => 'ریلز آموزشی 🎬';
+  String get educationalReel => 'ریلز 🎬';
 
   @override
-  String get checkOutReel => 'این ریلز آموزشی جذاب را ببینید! 🌟';
+  String get checkOutReel => 'این ریلز جذاب را ببینید! 🌟';
 
   @override
   String get watchReel => 'تماشای ریلز 🎥';
@@ -1750,7 +1750,7 @@ class AppLocalizationsFa extends AppLocalizations {
   String get facultyAndNetwork => 'کادر علمی و ارتباطات';
 
   @override
-  String get educationalReels => 'ویدیوهای آموزشی ریلز';
+  String get educationalReels => 'ریلز';
 
   @override
   String get honors => 'افتخارات';
@@ -2259,11 +2259,10 @@ class AppLocalizationsFa extends AppLocalizations {
   String get createNewContent => 'ایجاد محتوای جدید 🚀';
 
   @override
-  String get uploadEducationalReel => 'بارگذاری ریلز آموزشی 🎬';
+  String get uploadEducationalReel => 'بارگذاری ریلز 🎬';
 
   @override
-  String get shareReelSubtitle =>
-      'اشتراک‌گذاری ویدیوهای کوتاه معاملاتی یا برنامه‌نویسی';
+  String get shareReelSubtitle => 'اشتراک‌گذاری ویدیوهای کوتاه ریلز';
 
   @override
   String get createFeedPost => 'ایجاد پست در فید 📝';
@@ -2937,7 +2936,7 @@ class AppLocalizationsFa extends AppLocalizations {
   String get resellerProducts => 'محصولات نمایندگی فروش';
 
   @override
-  String get inStock => 'موجود است';
+  String get inStock => 'موجود در انبار';
 
   @override
   String get outOfStock => 'موجود نیست';
@@ -3026,4 +3025,57 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get itemsUpdated => 'موارد به روز شد';
+
+  @override
+  String get resellerSyncTitle => 'همگام‌سازی محصولات (Edge Function)';
+
+  @override
+  String get totalProducts => 'کل محصولات';
+
+  @override
+  String get activeInStore => 'فعال در فروشگاه';
+
+  @override
+  String get syncWithEdgeFunction => 'همگام‌سازی با Supabase Edge Function';
+
+  @override
+  String get syncDescription =>
+      'اجرای مستقیم ایج‌فانکشن جهت به‌روزرسانی قیمت‌ها و موجودی';
+
+  @override
+  String get edgeFunctionNameLabel => 'نام Edge Function در سوپابیس';
+
+  @override
+  String get lastSyncTimeLabel => 'آخرین سینک';
+
+  @override
+  String get runSyncNow => 'شروع همگام‌سازی فوری';
+
+  @override
+  String get syncingInProgress => 'در حال همگام‌سازی با سرور...';
+
+  @override
+  String get syncLogsHistory => 'تاریخچه لاگ‌های همگام‌سازی';
+
+  @override
+  String logsCount(Object count) {
+    return '$count لاگ';
+  }
+
+  @override
+  String get noSyncLogsYet =>
+      'هنوز لاگی ثبت نشده است. دکمه همگام‌سازی را بزنید.';
+
+  @override
+  String get syncSuccessMessage =>
+      'همگام‌سازی موجودی و وضعیت محصولات با موفقیت انجام شد!';
+
+  @override
+  String get syncErrorMessage => 'خطا در همگام‌سازی';
+
+  @override
+  String get syncStatusSuccess => 'موفقیت‌آمیز';
+
+  @override
+  String get syncStatusFailed => 'ناموفق';
 }

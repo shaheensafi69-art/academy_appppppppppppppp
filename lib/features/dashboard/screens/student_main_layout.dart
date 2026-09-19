@@ -28,7 +28,7 @@ import 'settings_screen.dart';
 import 'help_center_screen.dart';
 import '../../feed/screens/user_profile_screen.dart'; // صفحه پروفایل کاربر
 
-import '../../../core/routing/auth_gate.dart';
+import '../../../core/services/auth_helper.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/utils/system_ui_helper.dart';
 import '../../../core/widgets/language_selector_sheet.dart';
@@ -59,35 +59,77 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
   static const Color borderColor = Color(0xFFF3F4F6);
   static const Color lightPinkBg = Color(0xFFFAF4F6);
 
-  List<Widget> get _screens => [
-    const StudentOverviewScreen(), // 0
-    const StudentAnnouncementsScreen(), // 1
-    const StudentCoursesScreen(), // 2
-    const WishlistScreen(), // 3
-    const StudentLiveClassesScreen(), // 4
-    const StudentAssignmentsScreen(), // 5
-    const StudentQuizzesScreen(), // 6
-    const CertificatesScreen(), // 7
-    const ScholarshipsScreen(), // 8
-    const PaymentsScreen(), // 9
-    const StudentTradingJournalScreen(), // 10
-    const CreatePostScreen(), // 11 - صفحه ساخت پست جدید
-    const StudentFeedScreen(), // 12 - فید اجتماعی
-    const StudentWalletScreen(), // 13
-    const StudentFriendsScreen(), // 14 - صفحه دوستان
-    const StudentAchievementsScreen(), // 15
-    const StudentAiAssistantScreen(), // 16 - دستیار هوشمند AI
-    const HelpCenterScreen(), // 17
-    const StudentSupportScreen(), // 18
-    UserProfileScreen(
-      onExit: () => setState(() => _currentIndex = 0),
-    ), // 19 - پروفایل شخصی
-    const SettingsScreen(), // 20
-    StudentReelsScreen(
-      isActive: _currentIndex == 21,
-    ), // 21 - ویدیوهای کوتاه ریلز
-    const ShopScreen(), // 22 - فروشگاه ریسیلر
-  ];
+  final List<Widget?> _cachedScreens = List.filled(23, null);
+
+  Widget _createScreen(int index) {
+    switch (index) {
+      case 0:
+        return const StudentOverviewScreen();
+      case 1:
+        return const StudentAnnouncementsScreen();
+      case 2:
+        return const StudentCoursesScreen();
+      case 3:
+        return const WishlistScreen();
+      case 4:
+        return const StudentLiveClassesScreen();
+      case 5:
+        return const StudentAssignmentsScreen();
+      case 6:
+        return const StudentQuizzesScreen();
+      case 7:
+        return const CertificatesScreen();
+      case 8:
+        return const ScholarshipsScreen();
+      case 9:
+        return const PaymentsScreen();
+      case 10:
+        return const StudentTradingJournalScreen();
+      case 11:
+        return const CreatePostScreen();
+      case 12:
+        return const StudentFeedScreen();
+      case 13:
+        return const StudentWalletScreen();
+      case 14:
+        return const StudentFriendsScreen();
+      case 15:
+        return const StudentAchievementsScreen();
+      case 16:
+        return const StudentAiAssistantScreen();
+      case 17:
+        return const HelpCenterScreen();
+      case 18:
+        return const StudentSupportScreen();
+      case 19:
+        return UserProfileScreen(
+          onExit: () => setState(() => _currentIndex = 0),
+        );
+      case 20:
+        return const SettingsScreen();
+      case 21:
+        return StudentReelsScreen(isActive: _currentIndex == 21);
+      case 22:
+        return const ShopScreen();
+      default:
+        return const StudentOverviewScreen();
+    }
+  }
+
+  List<Widget> get _screens {
+    return List.generate(23, (i) {
+      if (i == _currentIndex) {
+        if (i == 21) {
+          _cachedScreens[i] = const StudentReelsScreen(isActive: true);
+        } else {
+          _cachedScreens[i] ??= _createScreen(i);
+        }
+      } else if (i == 21 && _cachedScreens[21] != null) {
+        _cachedScreens[21] = const StudentReelsScreen(isActive: false);
+      }
+      return _cachedScreens[i] ?? const SizedBox.shrink();
+    });
+  }
 
   List<Map<String, Object>> _getMenuItems(BuildContext context) {
     final l10n = context.l10n;
@@ -148,7 +190,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
   Future<void> _checkStudentAccess() async {
     final user = supabase.auth.currentUser;
     if (user == null) {
-      _logout();
+      if (mounted) setState(() => _isLoading = false);
       return;
     }
 
@@ -159,24 +201,26 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
           .eq('id', user.id)
           .maybeSingle();
 
-      if (profile != null) {
+      if (mounted) {
         setState(() {
-          _userProfile = profile;
+          if (profile != null) {
+            _userProfile = profile;
+          }
           _isLoading = false;
         });
       }
     } catch (e) {
-      _logout();
+      debugPrint("Student profile fetch non-fatal error: $e");
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   void _logout() async {
-    await supabase.auth.signOut();
-    if (mounted) {
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthGate()));
-    }
+    await AuthHelper.logout(context);
   }
 
   @override
@@ -386,7 +430,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                         Icons.logout_rounded,
                         color: Colors.redAccent,
                       ),
-                      onPressed: () => Supabase.instance.client.auth.signOut(),
+                      onPressed: _logout,
                     ),
                   ),
                 ],
@@ -436,31 +480,65 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
   ) {
     final isSelected = _currentIndex == index;
     final isExpanded = MediaQuery.of(context).size.width >= 1024;
+
+    if (!isExpanded) {
+      return Tooltip(
+        message: label,
+        preferBelow: false,
+        child: InkWell(
+          onTap: () => setState(() => _currentIndex = index),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            height: 44,
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? primaryPink.withValues(alpha: 0.15)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(16),
+              border: isSelected
+                  ? Border.all(color: primaryPink.withValues(alpha: 0.4), width: 1.5)
+                  : null,
+            ),
+            child: Center(
+              child: Icon(
+                icon,
+                color: isSelected ? primaryPink : textGrey,
+                size: 22,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 3, horizontal: 8),
       decoration: BoxDecoration(
         color: isSelected
             ? primaryPink.withValues(alpha: 0.12)
             : Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
+        border: isSelected
+            ? Border.all(color: primaryPink.withValues(alpha: 0.3), width: 1.5)
+            : null,
       ),
       child: ListTile(
         dense: true,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         leading: Icon(
           icon,
           color: isSelected ? primaryPink : textGrey,
-          size: 22,
+          size: 20,
         ),
-        title: isExpanded
-            ? Text(
-                label,
-                style: TextStyle(
-                  color: isSelected ? primaryPink : textDark,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  fontSize: 13,
-                ),
-              )
-            : null,
+        title: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? primaryPink : textDark,
+            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+            fontSize: 12,
+          ),
+        ),
         onTap: () => setState(() => _currentIndex = index),
       ),
     );
@@ -474,9 +552,9 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
       _currentIndex == 21;
 
   Widget _buildSidebarCreateButton(bool isExpanded) {
-    return Container(
+    final buttonWidget = Container(
       margin: const EdgeInsets.symmetric(horizontal: 8),
-      width: double.infinity,
+      width: isExpanded ? double.infinity : 44,
       height: 44,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -520,6 +598,16 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
         ),
       ),
     );
+
+    if (!isExpanded) {
+      return Tooltip(
+        message: context.l10n.createPost,
+        preferBelow: false,
+        child: buttonWidget,
+      );
+    }
+
+    return buttonWidget;
   }
 
   void _showCreateOptionsModal() {
@@ -566,17 +654,17 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                     size: 24,
                   ),
                 ),
-                title: const Text(
-                  "Upload Educational Reel 🎬",
-                  style: TextStyle(
+                title: Text(
+                  "${context.l10n.reels} 🎬",
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                     color: Color(0xFF111827),
                   ),
                 ),
-                subtitle: const Text(
-                  "Share short trading or coding videos with peers",
-                  style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                subtitle: Text(
+                  context.l10n.shareReelSubtitle,
+                  style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
                 ),
                 onTap: () {
                   Navigator.pop(context);

@@ -3041,4 +3041,57 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get itemsUpdated => 'Элементы обновлены';
+
+  @override
+  String get resellerSyncTitle => 'Синхронизация товаров (Edge Function)';
+
+  @override
+  String get totalProducts => 'Всего товаров';
+
+  @override
+  String get activeInStore => 'Активно в магазине';
+
+  @override
+  String get syncWithEdgeFunction => 'Синхронизация с Supabase Edge Function';
+
+  @override
+  String get syncDescription =>
+      'Запуск Edge Function для обновления цен и наличия';
+
+  @override
+  String get edgeFunctionNameLabel => 'Имя Edge Function в Supabase';
+
+  @override
+  String get lastSyncTimeLabel => 'Последняя синхронизация';
+
+  @override
+  String get runSyncNow => 'Запустить синхронизацию';
+
+  @override
+  String get syncingInProgress => 'Синхронизация с сервером...';
+
+  @override
+  String get syncLogsHistory => 'История журналов синхронизации';
+
+  @override
+  String logsCount(Object count) {
+    return '$count Журналов';
+  }
+
+  @override
+  String get noSyncLogsYet =>
+      'Журналов пока нет. Нажмите кнопку синхронизации.';
+
+  @override
+  String get syncSuccessMessage =>
+      'Наличие и статус товаров успешно синхронизированы!';
+
+  @override
+  String get syncErrorMessage => 'Ошибка синхронизации';
+
+  @override
+  String get syncStatusSuccess => 'Успешно';
+
+  @override
+  String get syncStatusFailed => 'Не удалось';
 }

@@ -1,9 +1,8 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../../core/localization/l10n_extensions.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
+import '../../../core/utils/app_media_picker.dart';
 
 class CreateCourseScreen extends StatefulWidget {
   const CreateCourseScreen({super.key});
@@ -14,7 +13,6 @@ class CreateCourseScreen extends StatefulWidget {
 
 class _CreateCourseScreenState extends State<CreateCourseScreen> {
   final supabase = Supabase.instance.client;
-  final ImagePicker _picker = ImagePicker();
 
   bool isLoading = true;
   bool isSubmitting = false;
@@ -137,12 +135,11 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
 
   Future<void> _pickAndUploadThumbnail() async {
     try {
-      final pickedFile = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
-      if (pickedFile == null) return;
+      final file = await AppMediaPicker.instance.pickImage();
+      if (file == null) return;
 
       setState(() => isUploadingThumbnail = true);
-      File file = File(pickedFile.path);
-      final fileExt = pickedFile.path.split('.').last;
+      final fileExt = file.path.split('.').lastOrNull ?? 'jpg';
       final fileName = 'course-thumb-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
 
       final publicUrl = await CloudflareStorageService.instance.upload(

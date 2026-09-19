@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:image_picker/image_picker.dart' show XFile;
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/services/language_service.dart';
+import '../../../core/utils/app_media_picker.dart';
 
 // شناسه ثابت کورس فارکس
 const String forexCourseId = "d9fa8678-76b4-4705-b579-7860407d43e8";
@@ -86,7 +87,6 @@ class _StudentTradingJournalScreenState
   bool isModalOpen = false;
   bool isSubmitting = false;
   XFile? chartFile;
-  final ImagePicker _picker = ImagePicker();
 
   // فرم ثبت معامله
   final TextEditingController _symbolController = TextEditingController();
@@ -144,24 +144,12 @@ class _StudentTradingJournalScreenState
     setState(() => isLoading = true);
     try {
       final user = supabase.auth.currentUser;
-      if (user == null) return;
-
-      // ۱. بررسی دسترسی به دوره فارکس
-      final enrollment = await supabase
-          .from("enrollments")
-          .select("id")
-          .eq("student_id", user.id)
-          .eq("course_id", forexCourseId)
-          .maybeSingle();
-
-      if (enrollment == null) {
-        setState(() {
-          hasAccess = false;
-          isLoading = false;
-        });
+      if (user == null) {
+        if (mounted) setState(() => isLoading = false);
         return;
       }
 
+      // دسترسی به ژورنال معاملاتی برای تمام دانشجویان و اعضا به صورت همگانی آزاد است
       setState(() => hasAccess = true);
 
       // ۲. واکشی اطلاعات ژورنال
@@ -206,14 +194,12 @@ class _StudentTradingJournalScreenState
   }
 
   Future<void> _pickChartImage() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
+    final file = await AppMediaPicker.instance.pickImage(
       maxWidth: 1920,
       maxHeight: 1920,
     );
-    if (image != null) {
-      setState(() => chartFile = image);
+    if (file != null) {
+      setState(() => chartFile = XFile(file.path));
     }
   }
 
@@ -348,66 +334,20 @@ class _StudentTradingJournalScreenState
       );
     }
 
-    // ==========================================
-    // UI 1: اگر کاربر دسترسی نداشت
-    // ==========================================
-    if (!hasAccess) {
-      return Scaffold(
-        backgroundColor: surfaceWhite,
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.lock_rounded,
-                    color: Colors.redAccent,
-                    size: 36,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  context.l10n.accessRestricted,
-                  style: const TextStyle(
-                    color: textDark,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  context.l10n.journalRestrictedDesc,
-                  style: const TextStyle(color: textGrey, fontSize: 11, height: 1.4),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    // ==========================================
-    // UI 2: اگر کاربر دسترسی داشت
-    // ==========================================
     return Scaffold(
       backgroundColor: surfaceWhite,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // هدر صفحه
-            Container(
-              padding: const EdgeInsets.all(22),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1000),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // هدر صفحه
+                Container(
+                  padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
@@ -1027,7 +967,9 @@ class _StudentTradingJournalScreenState
           ],
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildFilterTab(String id, String label, IconData icon) {

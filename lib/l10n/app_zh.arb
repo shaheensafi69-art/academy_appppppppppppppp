@@ -985,5 +985,21 @@
   "syncStatus": "同步状态",
   "syncHistory": "同步历史记录",
   "lastSynced": "上次同步",
-  "itemsUpdated": "更新项目"
+  "itemsUpdated": "更新项目",
+  "resellerSyncTitle": "商品同步 (Edge Function)",
+  "totalProducts": "商品总数",
+  "activeInStore": "店内上架",
+  "syncWithEdgeFunction": "与 Supabase Edge Function 同步",
+  "syncDescription": "执行 Edge Function 以更新价格和库存",
+  "edgeFunctionNameLabel": "Supabase Edge Function 名称",
+  "lastSyncTimeLabel": "上次同步",
+  "runSyncNow": "立即同步",
+  "syncingInProgress": "正在与服务器同步...",
+  "syncLogsHistory": "同步日志历史记录",
+  "logsCount": "{count} 条日志",
+  "noSyncLogsYet": "暂无同步日志。请点击同步按钮。",
+  "syncSuccessMessage": "商品库存与状态同步成功！",
+  "syncErrorMessage": "同步出错",
+  "syncStatusSuccess": "成功",
+  "syncStatusFailed": "失败"
 }

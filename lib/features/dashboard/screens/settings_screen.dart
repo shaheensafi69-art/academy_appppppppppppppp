@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:local_auth/local_auth.dart';
-import '../../../core/routing/auth_gate.dart';
+import '../../../core/services/auth_helper.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/services/security_service.dart';
 import '../../../core/widgets/language_selector_sheet.dart';
@@ -319,12 +319,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _logout() async {
-    await supabase.auth.signOut();
-    if (mounted) {
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthGate()));
-    }
+    await AuthHelper.logout(context);
   }
 
   @override

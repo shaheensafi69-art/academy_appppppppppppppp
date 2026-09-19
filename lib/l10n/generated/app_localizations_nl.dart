@@ -2966,7 +2966,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get resellerProducts => 'Resellerproducten';
 
   @override
-  String get inStock => 'Op voorraad';
+  String get inStock => 'Op Voorraad';
 
   @override
   String get outOfStock => 'Niet op voorraad';
@@ -3056,4 +3056,58 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get itemsUpdated => 'Artikelen bijgewerkt';
+
+  @override
+  String get resellerSyncTitle => 'Product Synchronisatie (Edge Function)';
+
+  @override
+  String get totalProducts => 'Totaal Producten';
+
+  @override
+  String get activeInStore => 'Actief in Winkel';
+
+  @override
+  String get syncWithEdgeFunction =>
+      'Synchroniseren met Supabase Edge Function';
+
+  @override
+  String get syncDescription =>
+      'Voer Edge Function uit om prijzen en voorraad bij te werken';
+
+  @override
+  String get edgeFunctionNameLabel => 'Supabase Edge Function Naam';
+
+  @override
+  String get lastSyncTimeLabel => 'Laatste synchronisatie';
+
+  @override
+  String get runSyncNow => 'Nu synchroniseren';
+
+  @override
+  String get syncingInProgress => 'Synchroniseren met server...';
+
+  @override
+  String get syncLogsHistory => 'Geschiedenis synchronisatielogs';
+
+  @override
+  String logsCount(Object count) {
+    return '$count Logs';
+  }
+
+  @override
+  String get noSyncLogsYet =>
+      'Nog geen logs geregistreerd. Druk op de synchronisatieknop.';
+
+  @override
+  String get syncSuccessMessage =>
+      'Productvoorraad en status succesvol gesynchroniseerd!';
+
+  @override
+  String get syncErrorMessage => 'Synchronisatiefout';
+
+  @override
+  String get syncStatusSuccess => 'Succesvol';
+
+  @override
+  String get syncStatusFailed => 'Mislukt';
 }

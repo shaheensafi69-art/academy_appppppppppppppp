@@ -97,14 +97,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   void _navigateToLogin() {
-    Navigator.pushReplacement(
+    Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const LoginScreen()),
     );
   }
 
   void _navigateToRegister() {
-    Navigator.pushReplacement(
+    Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const RegisterScreen()),
     );

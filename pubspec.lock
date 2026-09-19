@@ -273,6 +273,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.0"
+  easy_compressor:
+    dependency: "direct main"
+    description:
+      name: easy_compressor
+      sha256: "33fce9d560b0e72695090201a5d2492d455d7bd2fd86ed9e93dba4a97430d337"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   fake_async:
     dependency: transitive
     description:
@@ -289,6 +297,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
+  ffmpeg_kit_flutter_new:
+    dependency: transitive
+    description:
+      name: ffmpeg_kit_flutter_new
+      sha256: a6f881b2a41c8900733afef1806e069f58ab48e395174552e98157eb10d8adc0
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.2.0"
+  ffmpeg_kit_flutter_platform_interface:
+    dependency: transitive
+    description:
+      name: ffmpeg_kit_flutter_platform_interface
+      sha256: addf046ae44e190ad0101b2fde2ad909a3cd08a2a109f6106d2f7048b7abedee
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
   file:
     dependency: transitive
     description:
@@ -1274,6 +1298,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.0"
+  video_watermark_plus:
+    dependency: "direct main"
+    description:
+      name: video_watermark_plus
+      sha256: "1b01a9650bd8266d0888366bcf90d2659eaebab498d5f57d15dce176be743141"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
   vm_service:
     dependency: transitive
     description:

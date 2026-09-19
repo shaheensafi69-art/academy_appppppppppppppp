@@ -2,12 +2,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/routing/auth_gate.dart';
 import '../../../core/services/activity_log_service.dart';
+import '../../../core/services/auth_helper.dart';
 import '../../../core/services/language_service.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../core/widgets/language_selector_sheet.dart';
 import '../../../core/widgets/circular_country_flag.dart';
 import '../../../core/theme/app_theme_service.dart';
+import '../../admin/screens/admin_main_layout.dart';
+import '../../dashboard/screens/student_main_layout.dart';
+import '../../teacher/screens/teacher_main_layout.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
 
@@ -101,10 +105,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   // ==========================================
-  // 🔒 بررسی تایید ایمیل قبل از اجازه ورود
+  // 🔒 فرآیند ورود پایدار و ورود مستقیم به داشبورد
   // ==========================================
   Future<void> _handleLogin() async {
-    if (emailCtrl.text.trim().isEmpty || passwordCtrl.text.isEmpty) {
+    final email = emailCtrl.text.trim();
+    final password = passwordCtrl.text;
+
+    if (email.isEmpty || password.isEmpty) {
       setState(() => errorMsg = "Please enter both email and password.");
       return;
     }
@@ -116,40 +123,64 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
     try {
       final authResponse = await supabase.auth.signInWithPassword(
-        email: emailCtrl.text.trim(),
-        password: passwordCtrl.text,
+        email: email,
+        password: password,
       );
 
       final user = authResponse.user;
 
       if (user != null) {
-        // بررسی اینکه آیا ایمیل کاربر توسط سوپابیس تایید شده است یا خیر
-        // (حساب‌هایی که تازه ثبت‌نام کرده‌اند اما روی لینک ایمیل کلیک نکرده‌اند emailConfirmedAtشان null است)
-        final bool isEmailVerified = user.emailConfirmedAt != null;
-
-        if (!isEmailVerified) {
-          // اگر تایید نشده بود، از حساب خارجش می‌کنیم تا نتواند وارد شود
-          await supabase.auth.signOut();
-          
-          setState(() {
-            errorMsg = "Please verify your email address before signing in.\nلطفاً قبل از ورود، ایمیل خود را تایید کنید.";
-            isLoading = false;
-          });
-          return;
-        }
-
-        // فعال‌سازی ذخیره اطلاعات حساب در Samsung Pass / Apple iCloud Keychain / Google Autofill
+        // فعال‌سازی ذخیره اطلاعات حساب در Google Autofill / Apple iCloud Keychain
         TextInput.finishAutofillContext(shouldSave: true);
 
-        // ثبت لاگ ورود کاربر در سیستم تاریخچه فعالیت‌ها
-        ActivityLogService.instance.recordLogin(user.id);
+        // واکشی نقش کاربر از پروفایل با لایه fallback
+        String userRole = 'student';
+        try {
+          final profileRes = await supabase
+              .from('profiles')
+              .select('role')
+              .eq('id', user.id)
+              .maybeSingle();
 
-        // اگر ایمیل تایید شده بود، اجازه ورود به داشبورد را می‌دهیم
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const AuthGate()),
-          );
+          if (profileRes != null && profileRes['role'] != null) {
+            userRole = profileRes['role'].toString();
+          }
+        } catch (roleErr) {
+          debugPrint("Could not fetch user role during login: $roleErr");
         }
+
+        // ذخیره وضعیت ورود دائمی و کش معتبر در SharedPreferences
+        await AuthHelper.markUserLoggedIn(userId: user.id, role: userRole);
+
+        // عملیات پس‌زمینه (نوتیفیکیشن و لاگ ورود)
+        try {
+          NotificationService().saveFCMTokenToDatabase();
+        } catch (_) {}
+        try {
+          ActivityLogService.instance.recordLogin(user.id);
+        } catch (_) {}
+
+        if (!mounted) return;
+
+        // هدایت مستقیم به داشبورد متناسب با نقش بدون بازگشت به صفحه خوش‌آمدگویی
+        Widget destination;
+        if (userRole == 'super_admin' || userRole == 'admin') {
+          destination = const AdminMainLayout();
+        } else if (userRole == 'teacher') {
+          destination = const TeacherMainLayout();
+        } else {
+          destination = const StudentMainLayout();
+        }
+
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => destination),
+          (route) => false,
+        );
+      } else {
+        setState(() {
+          errorMsg = "Login failed. Please check your credentials.";
+          isLoading = false;
+        });
       }
     } on AuthException catch (e) {
       setState(() {

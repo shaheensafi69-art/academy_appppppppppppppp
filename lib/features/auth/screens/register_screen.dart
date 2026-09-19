@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/theme/app_theme_service.dart';
+import '../../../core/utils/app_media_picker.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -26,7 +26,6 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   bool showConfirmPassword = false;
 
   File? _photoFile;
-  final ImagePicker _picker = ImagePicker();
 
   // Controllers
   final firstNameCtrl = TextEditingController();
@@ -97,13 +96,10 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
 
   Future<void> _pickImage() async {
     try {
-      final pickedFile = await _picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 80,
-      );
-      if (pickedFile != null) {
+      final file = await AppMediaPicker.instance.pickImage(imageQuality: 80);
+      if (file != null) {
         setState(() {
-          _photoFile = File(pickedFile.path);
+          _photoFile = file;
         });
       }
     } catch (e) {

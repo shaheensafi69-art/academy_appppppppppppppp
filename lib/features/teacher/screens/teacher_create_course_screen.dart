@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:file_picker/file_picker.dart';
 import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/localization/l10n_extensions.dart';
+import '../../../core/utils/app_media_picker.dart';
 
 class TeacherCreateCourseScreen extends StatefulWidget {
   const TeacherCreateCourseScreen({super.key});
@@ -104,17 +104,18 @@ class _TeacherCreateCourseScreenState extends State<TeacherCreateCourseScreen> {
     Function(String) onSuccess,
     Function(bool) setLoading,
   ) async {
-    FilePickerResult? result = await FilePicker.pickFiles(type: FileType.image);
-    if (result != null && result.files.single.bytes != null) {
+    final file = await AppMediaPicker.instance.pickImage();
+    if (file != null) {
       setLoading(true);
       try {
-        final file = result.files.single;
+        final bytes = await file.readAsBytes();
+        final fileExt = file.path.split('.').lastOrNull ?? 'jpg';
         final fileName =
-            '${DateTime.now().millisecondsSinceEpoch}.${file.extension}';
+            '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
         final url = await CloudflareStorageService.instance.upload(
           bucket: bucketName,
           path: fileName,
-          bytes: file.bytes!,
+          bytes: bytes,
         );
         onSuccess(url);
       } catch (e) {

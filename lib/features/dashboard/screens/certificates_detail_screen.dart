@@ -101,7 +101,7 @@ class _CertificateDetailScreenState extends State<CertificateDetailScreen> {
       }
 
       String fileName =
-          "Certificate_${widget.certificate.certificateCode}.${_isImage(urlString) ? 'jpg' : 'pdf'}";
+          "Safi_Academy_Certificate_${widget.certificate.certificateCode}.${_isImage(urlString) ? 'jpg' : 'pdf'}";
       String savePath = "${directory.path}/$fileName";
 
       Dio dio = Dio();

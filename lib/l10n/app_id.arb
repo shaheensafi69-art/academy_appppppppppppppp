@@ -985,5 +985,21 @@
   "syncStatus": "Status Sinkronisasi",
   "syncHistory": "Sinkronkan Riwayat",
   "lastSynced": "Terakhir Disinkronkan",
-  "itemsUpdated": "Item Diperbarui"
+  "itemsUpdated": "Item Diperbarui",
+  "resellerSyncTitle": "Sinkronisasi Produk (Edge Function)",
+  "totalProducts": "Total Produk",
+  "activeInStore": "Aktif di Toko",
+  "syncWithEdgeFunction": "Sinkronkan dengan Supabase Edge Function",
+  "syncDescription": "Jalankan Edge Function untuk memperbarui harga dan stok",
+  "edgeFunctionNameLabel": "Nama Supabase Edge Function",
+  "lastSyncTimeLabel": "Sinkronisasi Terakhir",
+  "runSyncNow": "Mulai Sinkronisasi Sekarang",
+  "syncingInProgress": "Menyinkronkan dengan server...",
+  "syncLogsHistory": "Riwayat Log Sinkronisasi",
+  "logsCount": "{count} Log",
+  "noSyncLogsYet": "Belum ada log tercatat. Tekan tombol sinkronisasi.",
+  "syncSuccessMessage": "Stok dan status produk berhasil disinkronkan!",
+  "syncErrorMessage": "Kesalahan sinkronisasi",
+  "syncStatusSuccess": "Berhasil",
+  "syncStatusFailed": "Gagal"
 }
