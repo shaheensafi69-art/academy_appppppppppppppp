@@ -142,7 +142,17 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
     {"index": 13, "name": context.l10n.myProfile, "icon": Icons.person_rounded},
     {"index": 14, "name": context.l10n.settings, "icon": Icons.settings_rounded},
     {"index": 17, "name": context.l10n.supportChat, "icon": Icons.headset_mic_rounded},
-    {"index": 18, "name": "فروشگاه • Shop", "icon": Icons.storefront_rounded},
+    {
+      "index": 18,
+      "name": LanguageService.instance.currentLanguage.code == 'fa'
+          ? 'فروشگاه'
+          : (LanguageService.instance.currentLanguage.code == 'ps'
+              ? 'پلورنځی'
+              : (LanguageService.instance.currentLanguage.code == 'ar'
+                  ? 'المتجر'
+                  : 'Shop')),
+      "icon": Icons.storefront_rounded,
+    },
   ];
 
   @override
@@ -393,9 +403,7 @@ class _TeacherMainLayoutState extends State<TeacherMainLayout> {
           Positioned.fill(
             child: Padding(
               padding: EdgeInsets.only(
-                top: (isReels || _isInSocialSection || isCreatePost)
-                    ? 0
-                    : (MediaQuery.of(context).padding.top + 8),
+                top: 0,
                 bottom: (_isInSocialSection || isCreatePost) ? 0 : 85,
               ),
               child: IndexedStack(index: _currentIndex, children: _screens),

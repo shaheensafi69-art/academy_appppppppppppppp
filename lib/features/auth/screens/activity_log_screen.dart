@@ -345,8 +345,69 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
               ],
             ),
           ),
+          if (!isCurrent)
+            IconButton(
+              icon: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
+              tooltip: "Log out device",
+              onPressed: () => _confirmRemoveSession(entry),
+            ),
         ],
       ),
     );
+  }
+
+  Future<void> _confirmRemoveSession(ActivityLogEntry entry) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.logout_rounded, color: Colors.redAccent, size: 22),
+            SizedBox(width: 8),
+            Text(
+              "Log Out Device",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Text(
+          "Are you sure you want to log out from ${entry.deviceModel}?\nThis session will be revoked.",
+          style: const TextStyle(fontSize: 13, color: textGrey),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(context.l10n.cancel, style: const TextStyle(color: textGrey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Log Out"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final user = supabase.auth.currentUser;
+      if (user != null) {
+        await ActivityLogService.instance.removeSession(user.id, entry.id);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("${entry.deviceModel} logged out successfully"),
+              backgroundColor: Colors.green,
+            ),
+          );
+          _loadLogs();
+        }
+      }
+    }
   }
 }

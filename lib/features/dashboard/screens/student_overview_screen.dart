@@ -475,18 +475,20 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [surfaceWhite, lightPinkBg.withOpacity(0.45)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
+        color: surfaceWhite,
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(color: color.withOpacity(0.2), width: 1.5),
         boxShadow: [
+          const BoxShadow(
+            color: Colors.white,
+            offset: Offset(-3, -3),
+            blurRadius: 8,
+            spreadRadius: 1,
+          ),
           BoxShadow(
-            color: color.withOpacity(0.08),
+            color: color.withOpacity(0.12),
             blurRadius: 14,
-            offset: const Offset(0, 5),
+            offset: const Offset(2, 6),
           ),
         ],
       ),
@@ -539,18 +541,20 @@ class _StudentOverviewScreenState extends State<StudentOverviewScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [surfaceWhite, lightPinkBg.withOpacity(0.35)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.18), width: 1.5),
+        color: surfaceWhite,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
         boxShadow: [
+          const BoxShadow(
+            color: Colors.white,
+            offset: Offset(-3, -3),
+            blurRadius: 8,
+            spreadRadius: 1,
+          ),
           BoxShadow(
-            color: color.withOpacity(0.07),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: color.withOpacity(0.12),
+            blurRadius: 14,
+            offset: const Offset(2, 6),
           ),
         ],
       ),

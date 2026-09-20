@@ -195,7 +195,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
       case 15:
         return context.l10n.reels;
       case 16:
-        return 'همگام‌سازی ریسیلر (Edge Function)';
+        return context.l10n.resellerSyncTitle;
       default:
         return '';
     }
@@ -528,9 +528,7 @@ class _AdminMainLayoutState extends State<AdminMainLayout> {
           Positioned.fill(
             child: Padding(
               padding: EdgeInsets.only(
-                top: (isReels || _isInSocialSection || isCreatePost)
-                    ? 0
-                    : (MediaQuery.of(context).padding.top + 8),
+                top: 0,
                 bottom: (_isInSocialSection || isCreatePost) ? 0 : contentBottomPadding,
               ),
               child: IndexedStack(index: _currentIndex, children: _screens),

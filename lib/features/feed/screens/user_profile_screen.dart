@@ -5,6 +5,7 @@ import '../../../core/services/cloudflare_storage_service.dart';
 import '../../../core/utils/app_media_picker.dart';
 import '../../chat/screens/direct_chat_screen.dart';
 import 'reels_viewer_screen.dart';
+import 'user_follows_list_screen.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final String? userId;
@@ -48,6 +49,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   @override
   void initState() {
     super.initState();
+    if (!isMyProfile && activeTab >= 2) {
+      activeTab = 0;
+    }
     _fetchProfileAndPosts();
   }
 
@@ -207,22 +211,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         following = count;
       }
 
-      // دریافت ریلزهای لایک شده توسط کاربر (Liked Videos)
+      // دریافت ریلزهای لایک شده توسط کاربر (Liked Videos - Only private to account owner)
       List<Map<String, dynamic>> likedReels = [];
-      try {
-        final lRes = await supabase
-            .from("reel_likes")
-            .select("reel_id, reels(*)")
-            .eq("user_id", targetUserId)
-            .order("created_at", ascending: false);
-        for (var item in (lRes as List)) {
-          final rData = item['reels'];
-          if (rData != null && rData is Map<String, dynamic>) {
-            likedReels.add(Map<String, dynamic>.from(rData));
+      if (isMyProfile && currentUser != null) {
+        try {
+          final lRes = await supabase
+              .from("reel_likes")
+              .select("reel_id, reels(*)")
+              .eq("user_id", targetUserId)
+              .order("created_at", ascending: false);
+          for (var item in (lRes as List)) {
+            final rData = item['reels'];
+            if (rData != null && rData is Map<String, dynamic>) {
+              likedReels.add(Map<String, dynamic>.from(rData));
+            }
           }
+        } catch (e) {
+          debugPrint("Error fetching liked reels: $e");
         }
-      } catch (e) {
-        debugPrint("Error fetching liked reels: $e");
       }
 
       // دریافت ریلزها و پست‌های بوک‌مارک شده (Saved Items)
@@ -1441,13 +1447,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                                   "Followers",
                                                   "$followersCount",
                                                   roleColor,
-                                                  onTap: () => _showFollowListModal(isFollowers: true),
+                                                  onTap: () => _navigateToFollows(0),
                                                 ),
                                                 _buildStatItem(
                                                   "Following",
                                                   "$followingCount",
                                                   roleColor,
-                                                  onTap: () => _showFollowListModal(isFollowers: false),
+                                                  onTap: () => _navigateToFollows(1),
                                                 ),
                                                 if (!isTeacher && !isAdmin)
                                                   _buildStatItem(
@@ -1779,13 +1785,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                   label: "Reels (${userReels.length})",
                                   icon: Icons.play_circle_outline_rounded,
                                 ),
-                                const SizedBox(width: 8),
-                                _buildTabPill(
-                                  index: 2,
-                                  label: "Liked (${userLikedReels.length})",
-                                  icon: Icons.favorite_rounded,
-                                ),
                                 if (isMyProfile) ...[
+                                  const SizedBox(width: 8),
+                                  _buildTabPill(
+                                    index: 2,
+                                    label: "Liked (${userLikedReels.length})",
+                                    icon: Icons.favorite_rounded,
+                                  ),
                                   const SizedBox(width: 8),
                                   _buildTabPill(
                                     index: 3,
@@ -2257,7 +2263,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       ),
                                     ),
                                   ),
-                          ] else if (activeTab == 2) ...[
+                          ] else if (isMyProfile && activeTab == 2) ...[
                             // ویدیوهای لایک شده توسط کاربر (Liked Videos)
                             userLikedReels.isNotEmpty
                                 ? GridView.builder(
@@ -2390,7 +2396,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       ],
                                     ),
                                   ),
-                          ] else if (activeTab == 3) ...[
+                          ] else if (isMyProfile && activeTab == 3) ...[
                             // بخش آیتم‌های ذخیره شده (Saved Items)
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -2759,7 +2765,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
       final profilesRes = await supabase
           .from('profiles')
-          .select('id, full_name, first_name, last_name, avatar_url, role, bio')
+          .select('id, first_name, last_name, avatar_url, role, bio')
           .inFilter('id', targetUserIds);
 
       return List<Map<String, dynamic>>.from(profilesRes as List);
@@ -2767,6 +2773,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       debugPrint("Error fetching follow members: $e");
       return [];
     }
+  }
+
+  void _navigateToFollows(int initialTab) {
+    final name = profileData != null
+        ? "${profileData!['first_name'] ?? ''} ${profileData!['last_name'] ?? ''}".trim()
+        : '';
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => UserFollowsListScreen(
+          targetUserId: targetUserId,
+          targetUserName: name.isNotEmpty ? name : "Connections",
+          initialTabIndex: initialTab,
+        ),
+      ),
+    ).then((_) {
+      if (mounted) _fetchProfileAndPosts();
+    });
   }
 
   void _showFollowListModal({required bool isFollowers}) {

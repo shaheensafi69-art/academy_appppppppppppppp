@@ -475,12 +475,21 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.95),
+                          width: 1.5,
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+                            color: Colors.black.withValues(alpha: 0.12),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                          ),
+                          const BoxShadow(
+                            color: Colors.white70,
+                            blurRadius: 8,
+                            offset: Offset(0, -2),
                           ),
                         ],
                       ),
@@ -584,13 +593,22 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                         child: Container(
                           decoration: BoxDecoration(
                             color: surfaceWhite,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: cardBorder, width: 1.5),
+                            borderRadius: BorderRadius.circular(22),
+                            border: Border.all(
+                              color: cardBorder.withValues(alpha: 0.6),
+                              width: 1.5,
+                            ),
                             boxShadow: [
+                              const BoxShadow(
+                                color: Colors.white,
+                                offset: Offset(-3, -3),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                              ),
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.02),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
+                                color: Colors.black.withValues(alpha: 0.04),
+                                blurRadius: 12,
+                                offset: const Offset(2, 5),
                               ),
                             ],
                           ),
@@ -603,8 +621,8 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                                 decoration: BoxDecoration(
                                   color: statusColor,
                                   borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(20),
-                                    bottomLeft: Radius.circular(20),
+                                    topLeft: Radius.circular(22),
+                                    bottomLeft: Radius.circular(22),
                                   ),
                                 ),
                               ),
@@ -704,7 +722,20 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
                     decoration: BoxDecoration(
                       color: surfaceWhite,
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: cardBorder, width: 1.5),
+                      border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
+                      boxShadow: [
+                        const BoxShadow(
+                          color: Colors.white,
+                          offset: Offset(-3, -3),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 14,
+                          offset: const Offset(2, 6),
+                        ),
+                      ],
                     ),
                     child: Column(
                       children: [
@@ -745,16 +776,28 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
   // ویجت کمکی برای ساخت کارت‌های آمار
   Widget _buildStatCard(String title, int count, Color color, IconData icon) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       decoration: BoxDecoration(
         color: surfaceWhite,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.2), width: 1.5),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: color.withValues(alpha: 0.22), width: 1.5),
         boxShadow: [
+          const BoxShadow(
+            color: Colors.white,
+            offset: Offset(-3, -3),
+            blurRadius: 8,
+            spreadRadius: 1,
+          ),
           BoxShadow(
-            color: color.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: color.withValues(alpha: 0.12),
+            offset: const Offset(2, 6),
+            blurRadius: 14,
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            offset: const Offset(0, 2),
+            blurRadius: 6,
           ),
         ],
       ),
@@ -765,10 +808,18 @@ class _StudentSupportScreenState extends State<StudentSupportScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: color.withValues(alpha: 0.25), width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.08),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Icon(icon, color: color, size: 16),
               ),

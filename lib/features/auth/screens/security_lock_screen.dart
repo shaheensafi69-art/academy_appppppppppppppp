@@ -35,11 +35,15 @@ class _SecurityLockScreenState extends State<SecurityLockScreen> {
   Future<void> _authenticateWithBiometrics() async {
     if (_isAuthenticating) return;
     try {
+      final canAuth = await SecurityService.instance.canCheckBiometrics();
+      if (!canAuth) return;
+
       setState(() => _isAuthenticating = true);
       
       bool authenticated = await auth.authenticate(
-        localizedReason: 'Please authenticate to access your portal securely',
-        biometricOnly: false,
+        localizedReason: 'Please authenticate with Face ID or Fingerprint to access Safi Academy',
+        biometricOnly: true,
+        persistAcrossBackgrounding: true,
       );
 
       if (authenticated && mounted) {

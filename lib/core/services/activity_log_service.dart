@@ -210,7 +210,7 @@ class ActivityLogService {
         isCurrent: true,
       );
 
-      // ۱. ذخیره سریع در SharedPreferences (برای دسترسی آنی و حالت آفلاین)
+      // ۱. ذخیره هوشمند در SharedPreferences (به‌روزرسانی رکورد همان دستگاه یا افزودن رکورد جدید)
       final key = "activity_logs_$userId";
       final rawList = prefs.getStringList(key) ?? [];
 
@@ -223,6 +223,7 @@ class ActivityLogService {
             }
           })
           .whereType<Map<String, dynamic>>()
+          .where((m) => m['device_model'] != newEntry.deviceModel) // حذف رکورد قبلی همین دستگاه
           .toList();
 
       list.insert(0, newEntry.toJson());
@@ -233,38 +234,77 @@ class ActivityLogService {
       await prefs.setStringList(key, list.map((m) => jsonEncode(m)).toList());
       await prefs.setInt(lastRecordedKey, now);
 
-      // ۲. ذخیره پایدار در جدول رسمی دیتابیس: device_activities
+      // ۲. ذخیره یا به‌روزرسانی در جدول دیتابیس device_activities بر اساس نام دستگاه
       try {
-        final insertData = {
-          'id': _generateUuidV4(),
-          'student_id': userId,
-          'device_name': newEntry.deviceModel,
-          'country': loc['country'] ?? 'Unknown',
-          'city': loc['city'] ?? 'Unknown',
-          'ip_address': loc['ip'] ?? '—',
-          'logged_in_at': DateTime.now().toUtc().toIso8601String(),
-        };
+        final existing = await supabase
+            .from('device_activities')
+            .select('id')
+            .eq('student_id', userId)
+            .eq('device_name', newEntry.deviceModel)
+            .maybeSingle();
 
-        final res = await supabase.from('device_activities').insert(insertData).select();
-        debugPrint("Successfully recorded login in device_activities: $res");
-      } catch (e) {
-        debugPrint("Primary insert into device_activities failed: $e, trying fallback without id...");
-        try {
-          final res2 = await supabase.from('device_activities').insert({
+        if (existing != null && existing['id'] != null) {
+          final existingId = existing['id'].toString();
+          await supabase.from('device_activities').update({
+            'country': loc['country'] ?? 'Unknown',
+            'city': loc['city'] ?? 'Unknown',
+            'ip_address': loc['ip'] ?? '—',
+            'logged_in_at': DateTime.now().toUtc().toIso8601String(),
+          }).eq('id', existingId);
+          debugPrint("Updated login timestamp for existing device: ${newEntry.deviceModel}");
+        } else {
+          final insertData = {
+            'id': _generateUuidV4(),
             'student_id': userId,
             'device_name': newEntry.deviceModel,
             'country': loc['country'] ?? 'Unknown',
             'city': loc['city'] ?? 'Unknown',
             'ip_address': loc['ip'] ?? '—',
             'logged_in_at': DateTime.now().toUtc().toIso8601String(),
-          }).select();
-          debugPrint("Fallback insert into device_activities succeeded: $res2");
-        } catch (e2) {
-          debugPrint("Error: Could not record into device_activities: $e2");
+          };
+          await supabase.from('device_activities').insert(insertData);
+          debugPrint("Inserted new device record: ${newEntry.deviceModel}");
         }
+      } catch (e) {
+        debugPrint("Error syncing device_activities in Supabase: $e");
       }
     } catch (e) {
       debugPrint("Failed to record activity log: $e");
+    }
+  }
+
+  /// حذف یک نشست (لاگ‌اوت ریموت دیوایس)
+  Future<bool> removeSession(String userId, String logId) async {
+    try {
+      await supabase
+          .from('device_activities')
+          .delete()
+          .eq('id', logId)
+          .eq('student_id', userId);
+    } catch (e) {
+      debugPrint("Error deleting remote device_activity: $e");
+    }
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = "activity_logs_$userId";
+      final rawList = prefs.getStringList(key) ?? [];
+      final list = rawList
+          .map((item) {
+            try {
+              return jsonDecode(item) as Map<String, dynamic>;
+            } catch (_) {
+              return null;
+            }
+          })
+          .whereType<Map<String, dynamic>>()
+          .where((m) => m['id']?.toString() != logId)
+          .toList();
+      await prefs.setStringList(key, list.map((m) => jsonEncode(m)).toList());
+      return true;
+    } catch (e) {
+      debugPrint("Error removing local activity log: $e");
+      return false;
     }
   }
 

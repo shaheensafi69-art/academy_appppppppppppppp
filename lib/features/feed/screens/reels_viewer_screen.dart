@@ -2322,6 +2322,88 @@ class _ReelCommentsBottomSheetState extends State<_ReelCommentsBottomSheet> {
   }
 }
 
+/// مدیر کش محلی ویدیوهای ریلز در حافظه موقت (Temporary Cache)
+class ReelCacheManager {
+  static final ReelCacheManager instance = ReelCacheManager._internal();
+  ReelCacheManager._internal();
+
+  final Dio _dio = Dio();
+  final Set<String> _inProgressDownloads = {};
+  Directory? _cacheDir;
+
+  Future<Directory> _getCacheDirectory() async {
+    if (_cacheDir != null) return _cacheDir!;
+    final temp = await getTemporaryDirectory();
+    final dir = Directory('${temp.path}/reels_session_cache');
+    if (!dir.existsSync()) {
+      dir.createSync(recursive: true);
+    }
+    _cacheDir = dir;
+    return dir;
+  }
+
+  String _getCacheFilename(String url) {
+    final uri = Uri.tryParse(url);
+    final lastSegment = uri?.pathSegments.lastOrNull ?? 'video';
+    final cleanSegment = lastSegment.replaceAll(RegExp(r'[^a-zA-Z0-9_\-\.]'), '');
+    final urlHash = url.codeUnits
+        .fold<int>(0, (prev, elem) => ((prev << 5) - prev + elem) & 0xFFFFFFFF)
+        .abs()
+        .toString();
+    return 'reel_${urlHash}_$cleanSegment';
+  }
+
+  Future<File?> getCachedFile(String url) async {
+    try {
+      final dir = await _getCacheDirectory();
+      final filename = _getCacheFilename(url);
+      final file = File('${dir.path}/$filename');
+      if (await file.exists() && (await file.length()) > 50000) {
+        return file;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  void cacheVideoInBackground(String url) {
+    if (_inProgressDownloads.contains(url)) return;
+    _inProgressDownloads.add(url);
+
+    Future.microtask(() async {
+      try {
+        final dir = await _getCacheDirectory();
+        final filename = _getCacheFilename(url);
+        final targetFile = File('${dir.path}/$filename');
+        if (await targetFile.exists() && (await targetFile.length()) > 50000) {
+          _inProgressDownloads.remove(url);
+          return;
+        }
+
+        final partFile = File('${dir.path}/$filename.part');
+        await _dio.download(
+          url,
+          partFile.path,
+          options: Options(
+            receiveTimeout: const Duration(seconds: 45),
+            sendTimeout: const Duration(seconds: 20),
+          ),
+        );
+
+        if (await partFile.exists() && (await partFile.length()) > 50000) {
+          await partFile.rename(targetFile.path);
+          debugPrint("Successfully cached reel video to temp: ${targetFile.path}");
+        } else if (await partFile.exists()) {
+          await partFile.delete();
+        }
+      } catch (e) {
+        debugPrint("Background reel cache download error: $e");
+      } finally {
+        _inProgressDownloads.remove(url);
+      }
+    });
+  }
+}
+
 class ReelVideoPlayerWidget extends StatefulWidget {
   final String videoUrl;
   final String? thumbnailUrl;
@@ -2354,9 +2436,17 @@ class _ReelVideoPlayerWidgetState extends State<ReelVideoPlayerWidget> {
 
   Future<void> _initializePlayer() async {
     try {
-      _controller = VideoPlayerController.networkUrl(
-        Uri.parse(widget.videoUrl),
-      );
+      final cachedFile = await ReelCacheManager.instance.getCachedFile(widget.videoUrl);
+      if (cachedFile != null) {
+        debugPrint("Playing reel from local cache: ${cachedFile.path}");
+        _controller = VideoPlayerController.file(cachedFile);
+      } else {
+        _controller = VideoPlayerController.networkUrl(
+          Uri.parse(widget.videoUrl),
+        );
+        ReelCacheManager.instance.cacheVideoInBackground(widget.videoUrl);
+      }
+
       await _controller.initialize();
       _controller.setLooping(true);
       if (mounted) {

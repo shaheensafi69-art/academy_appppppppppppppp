@@ -47,7 +47,8 @@ class SecurityService {
         if (res != null) {
           final bool dbBio = res['is_biometric_enabled'] ?? false;
           final String? pin = res['pin_code']?.toString();
-          final bool enabled = dbBio && (pin != null && pin.isNotEmpty);
+          final bool hasPin = pin != null && pin.isNotEmpty;
+          final bool enabled = hasPin || dbBio;
           await prefs.setBool('app_lock_enabled', enabled);
           if (pin != null) await prefs.setString('app_lock_pin', pin);
           return enabled;
@@ -144,7 +145,8 @@ class SecurityService {
 
       return await _auth.authenticate(
         localizedReason: reason,
-        biometricOnly: false,
+        biometricOnly: true,
+        persistAcrossBackgrounding: true,
       );
     } catch (e) {
       debugPrint("Biometric auth failed: $e");

@@ -284,7 +284,17 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
       },
       {"index": 19, "name": l10n.myProfile, "icon": Icons.person_rounded},
       {"index": 20, "name": l10n.appSettings, "icon": Icons.settings_rounded},
-      {"index": 22, "name": "فروشگاه • Shop", "icon": Icons.storefront_rounded},
+      {
+        "index": 22,
+        "name": LanguageService.instance.currentLanguage.code == 'fa'
+            ? 'فروشگاه'
+            : (LanguageService.instance.currentLanguage.code == 'ps'
+                ? 'پلورنځی'
+                : (LanguageService.instance.currentLanguage.code == 'ar'
+                    ? 'المتجر'
+                    : 'Shop')),
+        "icon": Icons.storefront_rounded,
+      },
     ];
   }
 
@@ -560,9 +570,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                 Positioned.fill(
                   child: Padding(
                     padding: EdgeInsets.only(
-                      top: (isReels || _isInSocialSection || isCreatePost)
-                          ? 0
-                          : (MediaQuery.of(context).padding.top + 8),
+                      top: 0,
                       bottom: (_isInSocialSection || isCreatePost) ? 0 : 85,
                     ),
                     child: IndexedStack(index: _currentIndex, children: _screens),

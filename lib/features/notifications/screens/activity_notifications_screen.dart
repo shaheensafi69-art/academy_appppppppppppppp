@@ -236,6 +236,70 @@ class _ActivityNotificationsScreenState
     }
   }
 
+  String _getLocalizedTitle(ActivityNotificationItem item) {
+    final lang = LanguageService.instance.currentLanguageCode;
+    if (item.type == 'like') {
+      if (lang == 'fa') return "پسندیدن ریلز ❤️";
+      if (lang == 'ps') return "د ریلز خوښول ❤️";
+      if (lang == 'tr') return "Reel'inizi Beğendi ❤️";
+      if (lang == 'ar') return "أعجب بفيديو ريلز ❤️";
+      if (lang == 'ru') return "Понравился ваш рилс ❤️";
+      if (lang == 'de') return "Gefällt dein Reel ❤️";
+      if (lang == 'fr') return "A aimé votre Reel ❤️";
+      return "Liked your Reel ❤️";
+    } else if (item.type == 'comment') {
+      if (lang == 'fa') return "دیدگاه روی ریلز 💬";
+      if (lang == 'ps') return "په ریلز نظر 💬";
+      if (lang == 'tr') return "Reel'e Yorum 💬";
+      if (lang == 'ar') return "تعليق على الفيديو 💬";
+      if (lang == 'ru') return "Комментарий к рилсу 💬";
+      if (lang == 'de') return "Kommentar zum Reel 💬";
+      if (lang == 'fr') return "Commentaire sur le Reel 💬";
+      return "Comment on your Reel 💬";
+    } else if (item.type == 'friend_request') {
+      if (lang == 'fa') return "درخواست ارتباط 👥";
+      if (lang == 'ps') return "د ملګرتیا غوښتنه 👥";
+      if (lang == 'tr') return "Takip İsteği 👥";
+      if (lang == 'ar') return "طلب متابعة 👥";
+      if (lang == 'ru') return "Запрос на связь 👥";
+      return "Connection Request 👥";
+    }
+    return item.title;
+  }
+
+  String _getLocalizedMessage(ActivityNotificationItem item) {
+    final lang = LanguageService.instance.currentLanguageCode;
+    final name = item.senderName.isNotEmpty ? item.senderName : 'Someone';
+
+    if (item.type == 'like') {
+      if (lang == 'fa') return "$name ویدیوی ریلز شما را لایک کرد.";
+      if (lang == 'ps') return "$name ستاسو د ریلز ویډیو خوښه کړه.";
+      if (lang == 'tr') return "$name reel videonuzu beğendi.";
+      if (lang == 'ar') return "أعجب $name بمقطع الفيديو الخاص بك.";
+      if (lang == 'ru') return "$name оценил(а) ваш рилс.";
+      if (lang == 'de') return "$name hat dein Reel-Video mit «Gefällt mir» markiert.";
+      if (lang == 'fr') return "$name a aimé votre vidéo reel.";
+      return "$name liked your reel video.";
+    } else if (item.type == 'comment') {
+      if (lang == 'fa') return "$name روی ویدیوی ریلز شما نظر داد.";
+      if (lang == 'ps') return "$name ستاسو په ریلز تبصره وکړه.";
+      if (lang == 'tr') return "$name reel videonuza yorum yaptı.";
+      if (lang == 'ar') return "علق $name على مقطع الفيديو الخاص بك.";
+      if (lang == 'ru') return "$name прокомментировал(а) ваш рилс.";
+      if (lang == 'de') return "$name hat dein Reel-Video kommentiert.";
+      if (lang == 'fr') return "$name a commenté votre vidéo reel.";
+      return "$name commented on your reel video.";
+    } else if (item.type == 'friend_request') {
+      if (lang == 'fa') return "$name به شما درخواست ارتباط فرستاد.";
+      if (lang == 'ps') return "$name تاسو ته د ملګرتیا غوښتنه واستوله.";
+      if (lang == 'tr') return "$name size bir takip isteği gönderdi.";
+      if (lang == 'ar') return "أرسل لك $name طلب اتصال.";
+      if (lang == 'ru') return "$name отправил(а) вам запрос на контакт.";
+      return "$name sent you a connection request.";
+    }
+    return item.message;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -455,7 +519,7 @@ class _ActivityNotificationsScreenState
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        item.title,
+                                        _getLocalizedTitle(item),
                                         style: const TextStyle(
                                           fontWeight: FontWeight.w900,
                                           fontSize: 13,
@@ -464,7 +528,7 @@ class _ActivityNotificationsScreenState
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        item.message,
+                                        _getLocalizedMessage(item),
                                         style: const TextStyle(
                                           color: textGrey,
                                           fontSize: 11,

@@ -173,9 +173,11 @@ class _ShopScreenState extends State<ShopScreen> {
 
     switch (key) {
       case 'title':
-        if (isEn) return 'Reseller Shop';
-        if (isAr) return 'متجر المنتجات';
-        return 'فروشگاه ریسیلر';
+        if (isEn) return 'Shop';
+        if (lang == 'ps') return 'پلورنځی';
+        if (lang == 'tr') return 'Mağaza';
+        if (isAr) return 'المتجر';
+        return 'فروشگاه';
       case 'subtitle':
         if (isEn) return 'Verified Educational Gear & Official Licenses';
         if (isAr) return 'منتجات تعليمية وتراخيص رسمية موثقة';

@@ -121,6 +121,8 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
   }
 
   bool isFriend = false;
+  bool isMutualFollow = false;
+  bool isRequestAccepted = false;
 
   Future<void> _fetchMessages({bool showLoading = true}) async {
     if (showLoading) setState(() => isLoading = true);
@@ -129,7 +131,26 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
       if (user == null) return;
       final currentUserId = user.id;
 
-      // بررسی وضعیت دوستی (accepted) در جدول student_friends
+      // بررسی وضعیت فالو دوطرفه (Mutual Follow) در جدول user_follows
+      bool mutualStatus = false;
+      try {
+        final fRes = await supabase
+            .from("user_follows")
+            .select("follower_id, following_id")
+            .or("and(follower_id.eq.$currentUserId,following_id.eq.${widget.peerId}),and(follower_id.eq.${widget.peerId},following_id.eq.$currentUserId)");
+
+        bool iFollow = false;
+        bool peerFollows = false;
+        for (var row in (fRes as List)) {
+          final fId = row['follower_id']?.toString() ?? '';
+          final tgId = row['following_id']?.toString() ?? '';
+          if (fId == currentUserId && tgId == widget.peerId) iFollow = true;
+          if (fId == widget.peerId && tgId == currentUserId) peerFollows = true;
+        }
+        mutualStatus = iFollow && peerFollows;
+      } catch (_) {}
+
+      // بررسی وضعیت دوستی (accepted) در جدول student_friends برای سازگاری عقب‌رو
       bool friendStatus = false;
       try {
         final friendCheck = await supabase
@@ -149,6 +170,10 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
           }
         }
       } catch (_) {}
+
+      if (!mutualStatus) {
+        mutualStatus = friendStatus;
+      }
 
       // دریافت پیام‌های چت اختصاصی از جدول direct_messages
       final res = await supabase
@@ -208,6 +233,7 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
       if (mounted) {
         setState(() {
           isFriend = friendStatus;
+          isMutualFollow = mutualStatus;
           messages = loadedMessages;
           isLoading = false;
         });
@@ -216,6 +242,29 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
     } catch (e) {
       debugPrint("Error fetching direct messages: $e");
       if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _acceptMessageRequest() async {
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+    setState(() => isRequestAccepted = true);
+    _messageController.text = "👋 Hello! Message request accepted.";
+    await _sendMessage();
+  }
+
+  Future<void> _declineMessageRequest() async {
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+    try {
+      await supabase
+          .from("direct_messages")
+          .delete()
+          .eq("sender_id", widget.peerId)
+          .eq("receiver_id", user.id);
+      if (mounted) Navigator.pop(context);
+    } catch (_) {
+      if (mounted) Navigator.pop(context);
     }
   }
 
@@ -491,88 +540,177 @@ class _DirectChatScreenState extends State<DirectChatScreen> {
               ),
             ),
 
-          // ================= ورودی پیام یا کادر غیرفعال برای غیر دوستان =================
+          // ================= ورودی پیام یا وضعیت درخواست پیام بر اساس فالو =================
           SafeArea(
             top: false,
-            child: !isFriend
-                ? Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF9FAFB),
+            child: Builder(
+              builder: (context) {
+                final bool hasPeerReplied = messages.any((m) => !m.isMe);
+                final int mySentCount = messages.where((m) => m.isMe).length;
+                final bool isUnlocked = isMutualFollow || hasPeerReplied || isRequestAccepted;
+                final bool isRecipientWithRequest = !isUnlocked && messages.isNotEmpty && !messages.first.isMe && mySentCount == 0;
+                final bool isSenderWaitingApproval = !isUnlocked && mySentCount >= 1;
+
+                if (isRecipientWithRequest) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: surfaceWhite,
                       border: Border(top: BorderSide(color: cardBorder, width: 1.5)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 8,
+                          offset: const Offset(0, -2),
+                        ),
+                      ],
                     ),
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
+                        Text(
+                          "${widget.peerName} sent you a message request.",
+                          style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          "They don't follow you back or you don't follow them. If you accept, you can message each other freely.",
+                          style: TextStyle(color: textGrey, fontSize: 11),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
                         Row(
                           children: [
-                            Icon(Icons.lock_outline_rounded, color: Colors.grey.shade500, size: 20),
-                            const SizedBox(width: 10),
                             Expanded(
-                              child: Text(
-                                context.l10n.friendRequirementNotice,
-                                style: const TextStyle(color: textGrey, fontSize: 11, fontWeight: FontWeight.bold, height: 1.3),
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  side: const BorderSide(color: Color(0xFFCBD5E1)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                onPressed: _declineMessageRequest,
+                                child: const Text("Decline", style: TextStyle(color: textGrey, fontWeight: FontWeight.bold, fontSize: 12)),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: primaryPink,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                onPressed: _acceptMessageRequest,
+                                child: const Text("Accept", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryPink,
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                            onPressed: _sendFriendRequest,
-                            icon: const Icon(Icons.person_add_rounded, color: Colors.white, size: 16),
-                            label: Text(context.l10n.sendFriendRequest, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                          ),
-                        ),
                       ],
                     ),
-                  )
-                : Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: surfaceWhite,
+                  );
+                }
+
+                if (isSenderWaitingApproval) {
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF8FAFC),
                       border: Border(top: BorderSide(color: cardBorder, width: 1.5)),
                     ),
                     child: Row(
                       children: [
-                        IconButton(
-                          icon: Icon(showEmojiPicker ? Icons.keyboard_rounded : Icons.emoji_emotions_outlined, color: textGrey, size: 22),
-                          onPressed: () => setState(() => showEmojiPicker = !showEmojiPicker),
-                        ),
-                        Expanded(
-                          child: TextField(
-                            controller: _messageController,
-                            style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.w600),
-                            decoration: InputDecoration(
-                              hintText: context.l10n.chatInputHint,
-                              hintStyle: const TextStyle(color: textGrey, fontSize: 12),
-                              filled: true,
-                              fillColor: cardBorder.withValues(alpha: 0.5),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: const BorderSide(color: cardBorder)),
-                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: const BorderSide(color: cardBorder)),
-                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
-                            ),
-                            onSubmitted: (_) => _sendMessage(),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: const BoxDecoration(
+                            color: lightPinkBg,
+                            shape: BoxShape.circle,
                           ),
+                          child: const Icon(Icons.hourglass_top_rounded, color: primaryPink, size: 18),
                         ),
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: _sendMessage,
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: const BoxDecoration(color: primaryPink, shape: BoxShape.circle),
-                            child: const Icon(Icons.send_rounded, color: Colors.white, size: 18),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            "Message request sent. You can send more messages once ${widget.peerName} accepts your request.",
+                            style: const TextStyle(
+                              color: textDark,
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              height: 1.3,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                  ),
+                  );
+                }
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!isUnlocked && mySentCount == 0)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        color: lightPinkBg,
+                        child: const Text(
+                          "ℹ️ You don't mutually follow each other. You can send 1 message request.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: primaryPink,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: surfaceWhite,
+                        border: Border(top: BorderSide(color: cardBorder, width: 1.5)),
+                      ),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(showEmojiPicker ? Icons.keyboard_rounded : Icons.emoji_emotions_outlined, color: textGrey, size: 22),
+                            onPressed: () => setState(() => showEmojiPicker = !showEmojiPicker),
+                          ),
+                          Expanded(
+                            child: TextField(
+                              controller: _messageController,
+                              style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.w600),
+                              decoration: InputDecoration(
+                                hintText: context.l10n.chatInputHint,
+                                hintStyle: const TextStyle(color: textGrey, fontSize: 12),
+                                filled: true,
+                                fillColor: cardBorder.withValues(alpha: 0.5),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: const BorderSide(color: cardBorder)),
+                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: const BorderSide(color: cardBorder)),
+                                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: const BorderSide(color: primaryPink, width: 1.5)),
+                              ),
+                              onSubmitted: (_) => _sendMessage(),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: _sendMessage,
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: const BoxDecoration(color: primaryPink, shape: BoxShape.circle),
+                              child: const Icon(Icons.send_rounded, color: Colors.white, size: 18),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ],
       ),
