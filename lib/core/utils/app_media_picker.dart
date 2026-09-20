@@ -31,26 +31,15 @@ class AppMediaPicker {
       }
 
       if (Platform.isAndroid) {
-        // برای اندروید ۱۳ و بالاتر
+        // در اندروید ۱۳ و بالاتر، سیستم پیکر استاندارد (Photo Picker / SAF)
+        // کاملاً مستقل و بدون نیاز به مجوزهای دسترسی رسانه‌ای کار می‌کند (مطابق خط‌مشی گوگل‌پلی).
+        // فقط برای اندروید ۱۲ و نسخه‌های پایین‌تر مجوز ذخیره‌سازی بررسی می‌شود:
         try {
-          if (isVideo) {
-            final videoStatus = await Permission.videos.status;
-            if (!videoStatus.isGranted && !videoStatus.isPermanentlyDenied) {
-              await Permission.videos.request();
-            }
-          } else {
-            final photosStatus = await Permission.photos.status;
-            if (!photosStatus.isGranted && !photosStatus.isPermanentlyDenied) {
-              await Permission.photos.request();
-            }
+          final storageStatus = await Permission.storage.status;
+          if (!storageStatus.isGranted && !storageStatus.isPermanentlyDenied) {
+            await Permission.storage.request();
           }
         } catch (_) {}
-
-        // برای اندروید ۱۲ و پایین‌تر
-        final storageStatus = await Permission.storage.status;
-        if (!storageStatus.isGranted && !storageStatus.isPermanentlyDenied) {
-          await Permission.storage.request();
-        }
       } else if (Platform.isIOS) {
         final status = await Permission.photos.status;
         if (!status.isGranted && !status.isPermanentlyDenied) {

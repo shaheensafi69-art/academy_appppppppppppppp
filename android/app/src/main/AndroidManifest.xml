@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- مجوزهای اینترنت و وضعیت شبکه برای ارتباط با سرور و AdMob -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -6,19 +7,34 @@
     <!-- شناسه تبلیغاتی گوگل برای اندروید 13 و بالاتر (کاملاً اجباری برای Google AdMob) -->
     <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
 
-    <!-- مجوزهای دسترسی به فایل‌ها، گالری و دوربین (سازگار با تمامی نسخه‌های اندروید تا اندروید 16) -->
+    <!-- مجوزهای دسترسی به فایل‌ها (سازگار با نسخه‌های قدیمی اندروید قبل از سیستم پیکر) -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
-    <uses-permission android:name="android.permission.CAMERA" />
 
-    <!-- مجوزهای بیومتریک و ضبط صدا -->
+    <!-- حذف صریح مجوزهای حساس رسانه‌ای طبق خط‌مشی سخت‌گیرانه گوگل پلی (Google Play Photo & Video Permissions Policy) -->
+    <!-- اپلیکیشن با تکیه بر Photo Picker استاندارد اندروید و Storage Access Framework بدون نیاز به این مجوزها کار می‌کند -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" tools:node="remove" />
+
+    <!-- مجوز دوربین، بیومتریک و ضبط صدا -->
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
     <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- ویژگی‌های سخت‌افزاری اختیاری (required="false") جهت پشتیبانی از تمام تبلت‌ها، دیوایس‌های بدون فوکوس خودکار یا حسگر و رفع ارور 400-500 دیوایس ناسازگار در گوگل پلی -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.any" android:required="false" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
+    <uses-feature android:name="android.hardware.fingerprint" android:required="false" />
+    <uses-feature android:name="android.hardware.biometrics" android:required="false" />
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+    <uses-feature android:name="android.hardware.wifi" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
     <application
         android:label="Safi Academy"

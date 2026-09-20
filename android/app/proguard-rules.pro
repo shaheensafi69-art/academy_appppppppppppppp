@@ -48,3 +48,36 @@
 -dontwarn com.google.android.play.core.tasks.OnFailureListener
 -dontwarn com.google.android.play.core.tasks.OnSuccessListener
 -dontwarn com.google.android.play.core.tasks.Task
+
+# Google Play Services & AdMob
+-keep class com.google.android.gms.ads.** { *; }
+-keep class com.google.ads.** { *; }
+-dontwarn com.google.android.gms.**
+
+# Firebase
+-keep class com.google.firebase.** { *; }
+-dontwarn com.google.firebase.**
+
+# Local Auth & Biometric
+-keep class io.flutter.plugins.localauth.** { *; }
+-keep class androidx.biometric.** { *; }
+
+# Media, Audio & Utility plugins
+-keep class xyz.luan.audioplayers.** { *; }
+-keep class io.flutter.plugins.videoplayer.** { *; }
+-keep class com.tundralabs.fluttertts.** { *; }
+-keep class cs.mimic.speechtotext.** { *; }
+-keep class endigo.of.flutter.flutter_pdfview.** { *; }
+-keep class studio.midoridesign.gal.** { *; }
+-keep class com.example.easy_compressor.** { *; }
+-keep class com.example.video_watermark_plus.** { *; }
+-keep class dev.fluttercommunity.plus.** { *; }
+-keep class io.flutter.plugins.urllauncher.** { *; }
+-keep class io.flutter.plugins.pathprovider.** { *; }
+-keep class com.llfbandit.app_links.** { *; }
+
+# Networking (Dio, OkHttp)
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-dontwarn javax.annotation.**
+
