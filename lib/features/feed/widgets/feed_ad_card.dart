@@ -42,106 +42,124 @@ class _FeedAdCardState extends State<FeedAdCard> {
   }
 
   void _loadFreshNativeAd() {
-    final adUnitId = AdService.instance.nativeAdUnitId;
-    if (adUnitId.isEmpty) return;
+    try {
+      final adUnitId = AdService.instance.nativeAdUnitId;
+      if (adUnitId.isEmpty) return;
 
-    _nativeAd = NativeAd(
-      adUnitId: adUnitId,
-      request: const AdRequest(),
-      nativeTemplateStyle: NativeTemplateStyle(
-        templateType: TemplateType.medium,
-        mainBackgroundColor: Colors.white,
-        cornerRadius: 24.0,
-        callToActionTextStyle: NativeTemplateTextStyle(
-          textColor: Colors.white,
-          backgroundColor: primaryPink,
-          style: NativeTemplateFontStyle.bold,
-          size: 14.0,
+      _nativeAd = NativeAd(
+        adUnitId: adUnitId,
+        request: const AdRequest(),
+        nativeTemplateStyle: NativeTemplateStyle(
+          templateType: TemplateType.medium,
+          mainBackgroundColor: Colors.white,
+          cornerRadius: 24.0,
+          callToActionTextStyle: NativeTemplateTextStyle(
+            textColor: Colors.white,
+            backgroundColor: primaryPink,
+            style: NativeTemplateFontStyle.bold,
+            size: 14.0,
+          ),
+          primaryTextStyle: NativeTemplateTextStyle(
+            textColor: const Color(0xFF1E293B),
+            style: NativeTemplateFontStyle.bold,
+            size: 15.0,
+          ),
+          secondaryTextStyle: NativeTemplateTextStyle(
+            textColor: const Color(0xFF64748B),
+            style: NativeTemplateFontStyle.normal,
+            size: 13.0,
+          ),
         ),
-        primaryTextStyle: NativeTemplateTextStyle(
-          textColor: const Color(0xFF1E293B),
-          style: NativeTemplateFontStyle.bold,
-          size: 15.0,
+        listener: NativeAdListener(
+          onAdLoaded: (ad) {
+            if (mounted) {
+              setState(() {
+                _isAdLoaded = true;
+                _hasError = false;
+              });
+            }
+          },
+          onAdFailedToLoad: (ad, error) {
+            debugPrint(
+              '[FeedAdCard] Primary ad failed to load: ${error.message} (Code: ${error.code}). Loading guaranteed fallback test ad...',
+            );
+            try {
+              ad.dispose();
+            } catch (_) {}
+            _loadFallbackTestNativeAd();
+          },
         ),
-        secondaryTextStyle: NativeTemplateTextStyle(
-          textColor: const Color(0xFF64748B),
-          style: NativeTemplateFontStyle.normal,
-          size: 13.0,
-        ),
-      ),
-      listener: NativeAdListener(
-        onAdLoaded: (ad) {
-          if (mounted) {
-            setState(() {
-              _isAdLoaded = true;
-              _hasError = false;
-            });
-          }
-        },
-        onAdFailedToLoad: (ad, error) {
-          debugPrint(
-            '[FeedAdCard] Primary ad failed to load: ${error.message} (Code: ${error.code}). Loading guaranteed fallback test ad...',
-          );
-          try {
-            ad.dispose();
-          } catch (_) {}
-          _loadFallbackTestNativeAd();
-        },
-      ),
-    );
+      );
 
-    _nativeAd?.load();
+      _nativeAd?.load();
+    } catch (e) {
+      debugPrint('[FeedAdCard] _loadFreshNativeAd catch: $e');
+      if (mounted) setState(() => _hasError = true);
+    }
   }
 
   void _loadFallbackTestNativeAd() {
-    final fallbackUnitId = AdService.testNativeAdUnitIdAndroid;
-    _nativeAd = NativeAd(
-      adUnitId: fallbackUnitId,
-      request: const AdRequest(),
-      nativeTemplateStyle: NativeTemplateStyle(
-        templateType: TemplateType.medium,
-        mainBackgroundColor: Colors.white,
-        cornerRadius: 24.0,
-        callToActionTextStyle: NativeTemplateTextStyle(
-          textColor: Colors.white,
-          backgroundColor: primaryPink,
-          style: NativeTemplateFontStyle.bold,
-          size: 14.0,
+    try {
+      final fallbackUnitId = AdService.testNativeAdUnitIdAndroid;
+      _nativeAd = NativeAd(
+        adUnitId: fallbackUnitId,
+        request: const AdRequest(),
+        nativeTemplateStyle: NativeTemplateStyle(
+          templateType: TemplateType.medium,
+          mainBackgroundColor: Colors.white,
+          cornerRadius: 24.0,
+          callToActionTextStyle: NativeTemplateTextStyle(
+            textColor: Colors.white,
+            backgroundColor: primaryPink,
+            style: NativeTemplateFontStyle.bold,
+            size: 14.0,
+          ),
+          primaryTextStyle: NativeTemplateTextStyle(
+            textColor: const Color(0xFF1E293B),
+            style: NativeTemplateFontStyle.bold,
+            size: 15.0,
+          ),
+          secondaryTextStyle: NativeTemplateTextStyle(
+            textColor: const Color(0xFF64748B),
+            style: NativeTemplateFontStyle.normal,
+            size: 13.0,
+          ),
         ),
-        primaryTextStyle: NativeTemplateTextStyle(
-          textColor: const Color(0xFF1E293B),
-          style: NativeTemplateFontStyle.bold,
-          size: 15.0,
+        listener: NativeAdListener(
+          onAdLoaded: (ad) {
+            if (mounted) {
+              setState(() {
+                _isAdLoaded = true;
+                _hasError = false;
+              });
+            }
+          },
+          onAdFailedToLoad: (ad, error) {
+            debugPrint(
+              '[FeedAdCard] Fallback test ad also failed: ${error.message}',
+            );
+            try {
+              ad.dispose();
+            } catch (_) {}
+            if (mounted) {
+              setState(() {
+                _isAdLoaded = false;
+                _hasError = true;
+              });
+            }
+          },
         ),
-        secondaryTextStyle: NativeTemplateTextStyle(
-          textColor: const Color(0xFF64748B),
-          style: NativeTemplateFontStyle.normal,
-          size: 13.0,
-        ),
-      ),
-      listener: NativeAdListener(
-        onAdLoaded: (ad) {
-          if (mounted) {
-            setState(() {
-              _isAdLoaded = true;
-              _hasError = false;
-            });
-          }
-        },
-        onAdFailedToLoad: (ad, error) {
-          debugPrint('[FeedAdCard] Fallback test ad also failed: ${error.message}');
-          try {
-            ad.dispose();
-          } catch (_) {}
-          if (mounted) {
-            setState(() {
-              _isAdLoaded = false;
-              _hasError = true;
-            });
-          }
-        },
-      ),
-    )..load();
+      );
+      _nativeAd?.load();
+    } catch (e) {
+      debugPrint('[FeedAdCard] _loadFallbackTestNativeAd catch: $e');
+      if (mounted) {
+        setState(() {
+          _isAdLoaded = false;
+          _hasError = true;
+        });
+      }
+    }
   }
 
   @override

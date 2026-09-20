@@ -7,34 +7,28 @@
     <!-- شناسه تبلیغاتی گوگل برای اندروید 13 و بالاتر (کاملاً اجباری برای Google AdMob) -->
     <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
 
-    <!-- مجوزهای دسترسی به فایل‌ها (سازگار با نسخه‌های قدیمی اندروید قبل از سیستم پیکر) -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
-
-    <!-- حذف صریح مجوزهای حساس رسانه‌ای طبق خط‌مشی سخت‌گیرانه گوگل پلی (Google Play Photo & Video Permissions Policy) -->
-    <!-- اپلیکیشن با تکیه بر Photo Picker استاندارد اندروید و Storage Access Framework بدون نیاز به این مجوزها کار می‌کند -->
+    <!-- حذف و سلب قطعی مجوزهای برودکست گالری و حافظه بر اساس قوانین جدید گوگل پلی (Google Play Photo and Video Permissions Policy) -->
+    <!-- استفاده از سیستم پیکر رسمی بدون مجوز (Android System Photo Picker & Storage Access Framework) -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove" />
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
 
-    <!-- مجوز دوربین، بیومتریک و ضبط صدا -->
+    <!-- مجوزهای دوربین، بیومتریک و ضبط صدا -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
     <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-    <!-- ویژگی‌های سخت‌افزاری اختیاری (required="false") جهت پشتیبانی از تمام تبلت‌ها، دیوایس‌های بدون فوکوس خودکار یا حسگر و رفع ارور 400-500 دیوایس ناسازگار در گوگل پلی -->
+    <!-- رفع ارور Unsupported Devices: تمامی قابلیت‌های سخت‌افزاری غیراجباری اعلام می‌شوند تا اپلیکیشن روی بیش از ۵۰۰ دیوایس تبلت، کروم‌بوک و گوشی بدون محدودیت قابل نصب باشد -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
     <uses-feature android:name="android.hardware.camera.front" android:required="false" />
-    <uses-feature android:name="android.hardware.camera.any" android:required="false" />
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
     <uses-feature android:name="android.hardware.fingerprint" android:required="false" />
-    <uses-feature android:name="android.hardware.biometrics" android:required="false" />
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
-    <uses-feature android:name="android.hardware.wifi" android:required="false" />
-    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
     <application
         android:label="Safi Academy"

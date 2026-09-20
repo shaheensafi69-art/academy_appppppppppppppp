@@ -199,13 +199,14 @@ class _FeedViewerScreenState extends State<FeedViewerScreen> {
           .toSet()
           .toList();
 
-      // Parallel batch queries for profiles, likes, and comments
+      // Parallel batch queries for profiles, likes, and comments with bulletproof error catching
       final results = await Future.wait([
         if (studentIds.isNotEmpty)
           supabase
               .from("profiles")
               .select("id, first_name, last_name, avatar_url")
               .inFilter("id", studentIds)
+              .catchError((_) => <Map<String, dynamic>>[])
         else
           Future.value([]),
         if (postIds.isNotEmpty)
@@ -213,6 +214,7 @@ class _FeedViewerScreenState extends State<FeedViewerScreen> {
               .from("discussion_likes")
               .select("post_id, student_id")
               .inFilter("post_id", postIds)
+              .catchError((_) => <Map<String, dynamic>>[])
         else
           Future.value([]),
         if (postIds.isNotEmpty)
@@ -220,6 +222,7 @@ class _FeedViewerScreenState extends State<FeedViewerScreen> {
               .from("discussion_comments")
               .select("post_id")
               .inFilter("post_id", postIds)
+              .catchError((_) => <Map<String, dynamic>>[])
         else
           Future.value([]),
         if (postIds.isNotEmpty && userId != null)
@@ -228,6 +231,7 @@ class _FeedViewerScreenState extends State<FeedViewerScreen> {
               .select("post_id")
               .eq("user_id", userId)
               .inFilter("post_id", postIds)
+              .catchError((_) => <Map<String, dynamic>>[])
         else
           Future.value([]),
       ]);

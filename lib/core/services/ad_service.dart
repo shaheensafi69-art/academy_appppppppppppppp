@@ -140,60 +140,65 @@ class AdService {
     _isLoadingFeedAd = true;
     debugPrint('[AdService] ⏳ Preloading Feed Native Ad in background...');
 
-    final ad = NativeAd(
-      adUnitId: unitId,
-      request: const AdRequest(),
-      nativeTemplateStyle: NativeTemplateStyle(
-        templateType: TemplateType.medium,
-        mainBackgroundColor: Colors.white,
-        cornerRadius: 24.0,
-        callToActionTextStyle: NativeTemplateTextStyle(
-          textColor: Colors.white,
-          backgroundColor: const Color(0xFFF494AC),
-          style: NativeTemplateFontStyle.bold,
-          size: 14.0,
+    try {
+      final ad = NativeAd(
+        adUnitId: unitId,
+        request: const AdRequest(),
+        nativeTemplateStyle: NativeTemplateStyle(
+          templateType: TemplateType.medium,
+          mainBackgroundColor: Colors.white,
+          cornerRadius: 24.0,
+          callToActionTextStyle: NativeTemplateTextStyle(
+            textColor: Colors.white,
+            backgroundColor: const Color(0xFFF494AC),
+            style: NativeTemplateFontStyle.bold,
+            size: 14.0,
+          ),
+          primaryTextStyle: NativeTemplateTextStyle(
+            textColor: const Color(0xFF1E293B),
+            style: NativeTemplateFontStyle.bold,
+            size: 15.0,
+          ),
+          secondaryTextStyle: NativeTemplateTextStyle(
+            textColor: const Color(0xFF64748B),
+            style: NativeTemplateFontStyle.normal,
+            size: 13.0,
+          ),
         ),
-        primaryTextStyle: NativeTemplateTextStyle(
-          textColor: const Color(0xFF1E293B),
-          style: NativeTemplateFontStyle.bold,
-          size: 15.0,
+        nativeAdOptions: NativeAdOptions(
+          videoOptions: VideoOptions(
+            startMuted: true,
+            clickToExpandRequested: true,
+          ),
         ),
-        secondaryTextStyle: NativeTemplateTextStyle(
-          textColor: const Color(0xFF64748B),
-          style: NativeTemplateFontStyle.normal,
-          size: 13.0,
+        listener: NativeAdListener(
+          onAdLoaded: (loadedAd) {
+            debugPrint(
+              '[AdService] ✅ Feed Native Ad preloaded & ready in memory!',
+            );
+            _feedAdPool.add(loadedAd as NativeAd);
+            _isLoadingFeedAd = false;
+            if (_feedAdPool.length < maxPoolSize) {
+              preloadFeedAd();
+            }
+          },
+          onAdFailedToLoad: (failedAd, error) {
+            debugPrint(
+              '[AdService] ❌ Failed to preload Feed Native Ad: ${error.message} (Code: ${error.code})',
+            );
+            try {
+              failedAd.dispose();
+            } catch (_) {}
+            _isLoadingFeedAd = false;
+          },
         ),
-      ),
-      nativeAdOptions: NativeAdOptions(
-        videoOptions: VideoOptions(
-          startMuted: true,
-          clickToExpandRequested: true,
-        ),
-      ),
-      listener: NativeAdListener(
-        onAdLoaded: (loadedAd) {
-          debugPrint(
-            '[AdService] ✅ Feed Native Ad preloaded & ready in memory!',
-          );
-          _feedAdPool.add(loadedAd as NativeAd);
-          _isLoadingFeedAd = false;
-          if (_feedAdPool.length < maxPoolSize) {
-            preloadFeedAd();
-          }
-        },
-        onAdFailedToLoad: (failedAd, error) {
-          debugPrint(
-            '[AdService] ❌ Failed to preload Feed Native Ad: ${error.message} (Code: ${error.code})',
-          );
-          try {
-            failedAd.dispose();
-          } catch (_) {}
-          _isLoadingFeedAd = false;
-        },
-      ),
-    );
+      );
 
-    ad.load();
+      ad.load();
+    } catch (e) {
+      debugPrint('[AdService] ❌ preloadFeedAd failed: $e');
+      _isLoadingFeedAd = false;
+    }
   }
 
   /// Get a preloaded Feed ad immediately (0ms delay) and replenish the pool
@@ -223,61 +228,66 @@ class AdService {
     _isLoadingReelsAd = true;
     debugPrint('[AdService] ⏳ Preloading Reels Native Ad in background...');
 
-    final ad = NativeAd(
-      adUnitId: unitId,
-      request: const AdRequest(),
-      nativeTemplateStyle: NativeTemplateStyle(
-        templateType: TemplateType.medium,
-        mainBackgroundColor: const Color(0xFF1E293B),
-        cornerRadius: 24.0,
-        callToActionTextStyle: NativeTemplateTextStyle(
-          textColor: Colors.white,
-          backgroundColor: const Color(0xFFF494AC),
-          style: NativeTemplateFontStyle.bold,
-          size: 14.0,
+    try {
+      final ad = NativeAd(
+        adUnitId: unitId,
+        request: const AdRequest(),
+        nativeTemplateStyle: NativeTemplateStyle(
+          templateType: TemplateType.medium,
+          mainBackgroundColor: const Color(0xFF1E293B),
+          cornerRadius: 24.0,
+          callToActionTextStyle: NativeTemplateTextStyle(
+            textColor: Colors.white,
+            backgroundColor: const Color(0xFFF494AC),
+            style: NativeTemplateFontStyle.bold,
+            size: 14.0,
+          ),
+          primaryTextStyle: NativeTemplateTextStyle(
+            textColor: Colors.white,
+            style: NativeTemplateFontStyle.bold,
+            size: 15.0,
+          ),
+          secondaryTextStyle: NativeTemplateTextStyle(
+            textColor: const Color(0xFF94A3B8),
+            style: NativeTemplateFontStyle.normal,
+            size: 13.0,
+          ),
         ),
-        primaryTextStyle: NativeTemplateTextStyle(
-          textColor: Colors.white,
-          style: NativeTemplateFontStyle.bold,
-          size: 15.0,
+        nativeAdOptions: NativeAdOptions(
+          videoOptions: VideoOptions(
+            startMuted: false,
+            clickToExpandRequested: true,
+          ),
+          mediaAspectRatio: MediaAspectRatio.any,
         ),
-        secondaryTextStyle: NativeTemplateTextStyle(
-          textColor: const Color(0xFF94A3B8),
-          style: NativeTemplateFontStyle.normal,
-          size: 13.0,
+        listener: NativeAdListener(
+          onAdLoaded: (loadedAd) {
+            debugPrint(
+              '[AdService] ✅ Reels Native Ad preloaded & ready in memory!',
+            );
+            _reelsAdPool.add(loadedAd as NativeAd);
+            _isLoadingReelsAd = false;
+            if (_reelsAdPool.length < maxPoolSize) {
+              preloadReelsAd();
+            }
+          },
+          onAdFailedToLoad: (failedAd, error) {
+            debugPrint(
+              '[AdService] ❌ Failed to preload Reels Native Ad: ${error.message} (Code: ${error.code})',
+            );
+            try {
+              failedAd.dispose();
+            } catch (_) {}
+            _isLoadingReelsAd = false;
+          },
         ),
-      ),
-      nativeAdOptions: NativeAdOptions(
-        videoOptions: VideoOptions(
-          startMuted: false,
-          clickToExpandRequested: true,
-        ),
-        mediaAspectRatio: MediaAspectRatio.any,
-      ),
-      listener: NativeAdListener(
-        onAdLoaded: (loadedAd) {
-          debugPrint(
-            '[AdService] ✅ Reels Native Ad preloaded & ready in memory!',
-          );
-          _reelsAdPool.add(loadedAd as NativeAd);
-          _isLoadingReelsAd = false;
-          if (_reelsAdPool.length < maxPoolSize) {
-            preloadReelsAd();
-          }
-        },
-        onAdFailedToLoad: (failedAd, error) {
-          debugPrint(
-            '[AdService] ❌ Failed to preload Reels Native Ad: ${error.message} (Code: ${error.code})',
-          );
-          try {
-            failedAd.dispose();
-          } catch (_) {}
-          _isLoadingReelsAd = false;
-        },
-      ),
-    );
+      );
 
-    ad.load();
+      ad.load();
+    } catch (e) {
+      debugPrint('[AdService] ❌ preloadReelsAd failed: $e');
+      _isLoadingReelsAd = false;
+    }
   }
 
   /// Get a preloaded Reels ad immediately (0ms delay) and replenish the pool

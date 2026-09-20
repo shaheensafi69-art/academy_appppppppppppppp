@@ -14,7 +14,8 @@ class AppMediaPicker {
 
   final ImagePicker _imagePicker = ImagePicker();
 
-  /// اعتبارسنجی و درخواست مجوز متناسب با نوع عملیات و نسخه سیستم‌عامل
+  /// اعتبارسنجی و درخواست مجوز متناسب با نوع عملیات
+  /// بر اساس استاندارد جدید گوگل پلی، گالری و اسناد از سیستم‌پیکر رسمی (بدون نیاز به مجوز) استفاده می‌کنند
   Future<void> _ensurePermissions({
     bool isCamera = false,
     bool isVideo = false,
@@ -29,23 +30,8 @@ class AppMediaPicker {
         }
         return;
       }
-
-      if (Platform.isAndroid) {
-        // در اندروید ۱۳ و بالاتر، سیستم پیکر استاندارد (Photo Picker / SAF)
-        // کاملاً مستقل و بدون نیاز به مجوزهای دسترسی رسانه‌ای کار می‌کند (مطابق خط‌مشی گوگل‌پلی).
-        // فقط برای اندروید ۱۲ و نسخه‌های پایین‌تر مجوز ذخیره‌سازی بررسی می‌شود:
-        try {
-          final storageStatus = await Permission.storage.status;
-          if (!storageStatus.isGranted && !storageStatus.isPermanentlyDenied) {
-            await Permission.storage.request();
-          }
-        } catch (_) {}
-      } else if (Platform.isIOS) {
-        final status = await Permission.photos.status;
-        if (!status.isGranted && !status.isPermanentlyDenied) {
-          await Permission.photos.request();
-        }
-      }
+      // انتخاب عکس، ویدیو و فایل از طریق سیستم پیکر رسمی (Android Photo Picker / Storage Access Framework)
+      // بدون نیاز به درخواست مجوزهای پرخطر READ_MEDIA یا STORAGE انجام می‌شود.
     } catch (e) {
       debugPrint("Permission check note: $e");
     }

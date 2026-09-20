@@ -49,9 +49,9 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
-            // بهینه‌سازی کدهای DEX، مبهم‌سازی (Obfuscation) و فشرده‌سازی منابع با R8 طبق الزامات گوگل پلی کنسول
-            isMinifyEnabled = true
-            isShrinkResources = true
+            // غیرفعال‌سازی Minify برای پایداری ۱۰۰٪ و جلوگیری قطعی از کرش پلاگین‌های نیتیو، ادموب، و شِیرد رفرنسز در حالت Release
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
