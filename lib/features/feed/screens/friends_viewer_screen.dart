@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/services/language_service.dart';
+import '../../chat/screens/direct_chat_screen.dart';
 import 'user_profile_screen.dart';
 
 typedef StudentFriendsScreen = FriendsViewerScreen;
@@ -18,11 +18,13 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
   final supabase = Supabase.instance.client;
   bool isLoading = true;
 
-  List<Map<String, dynamic>> myFriends = [];
-  List<Map<String, dynamic>> pendingRequests = [];
   List<Map<String, dynamic>> exploreUsers = [];
+  List<Map<String, dynamic>> followersList = [];
+  List<Map<String, dynamic>> followingList = [];
+  List<Map<String, dynamic>> pendingRequests = [];
+  Set<String> myFollowingIds = {};
 
-  String activeTab = "friends"; // "friends", "requests", "explore"
+  String activeTab = "explore"; // "explore", "followers", "following", "requests"
   String searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
 
@@ -36,7 +38,7 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchFriendshipsData();
+    _fetchSocialData();
   }
 
   @override
@@ -45,71 +47,134 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
     super.dispose();
   }
 
-  Future<void> _fetchFriendshipsData() async {
+  Future<void> _fetchSocialData() async {
     setState(() => isLoading = true);
     try {
       final user = supabase.auth.currentUser;
-      if (user == null) return;
-      final userId = user.id;
+      if (user == null) {
+        if (mounted) setState(() => isLoading = false);
+        return;
+      }
+      final myId = user.id;
 
-      final relations = await supabase
-          .from("student_friends")
-          .select("*")
-          .or("sender_id.eq.$userId,receiver_id.eq.$userId");
+      List<Map<String, dynamic>> followers = [];
+      List<Map<String, dynamic>> following = [];
+      Set<String> followingIds = {};
 
-      List<Map<String, dynamic>> friendsList = [];
-      List<Map<String, dynamic>> requestsList = [];
-      Set<String> connectedUserIds = {userId};
+      // 1. Fetch Following & Followers from user_follows
+      try {
+        final followingRes = await supabase
+            .from('user_follows')
+            .select('following_id')
+            .eq('follower_id', myId);
 
-      for (var rel in (relations as List)) {
-        String senderId = rel['sender_id'].toString();
-        String receiverId = rel['receiver_id'].toString();
-        String status = rel['status'].toString();
-        String relId = rel['id'].toString();
-
-        String otherId = (senderId == userId) ? receiverId : senderId;
-
-        if (status == 'accepted') {
-          connectedUserIds.add(otherId);
-          final profile = await _fetchProfile(otherId);
-          if (profile != null) {
-            friendsList.add({...profile, 'rel_id': relId});
+        for (var f in (followingRes as List)) {
+          final fid = f['following_id']?.toString();
+          if (fid != null && fid.isNotEmpty) {
+            followingIds.add(fid);
           }
-        } else if (status == 'pending' && receiverId == userId) {
-          connectedUserIds.add(otherId);
-          final profile = await _fetchProfile(otherId);
-          if (profile != null) {
-            requestsList.add({...profile, 'rel_id': relId});
+        }
+
+        // Fetch profiles for followed users
+        if (followingIds.isNotEmpty) {
+          final followedProfiles = await supabase
+              .from('profiles')
+              .select('*')
+              .inFilter('id', followingIds.toList());
+          for (var p in (followedProfiles as List)) {
+            following.add(p);
           }
-        } else if (status == 'pending' && senderId == userId) {
-          connectedUserIds.add(otherId);
+        }
+
+        // Fetch Followers
+        final followersRes = await supabase
+            .from('user_follows')
+            .select('follower_id')
+            .eq('following_id', myId);
+
+        Set<String> followerIds = {};
+        for (var f in (followersRes as List)) {
+          final fid = f['follower_id']?.toString();
+          if (fid != null && fid.isNotEmpty) {
+            followerIds.add(fid);
+          }
+        }
+
+        if (followerIds.isNotEmpty) {
+          final followerProfiles = await supabase
+              .from('profiles')
+              .select('*')
+              .inFilter('id', followerIds.toList());
+          for (var p in (followerProfiles as List)) {
+            followers.add(p);
+          }
+        }
+      } catch (err) {
+        debugPrint("user_follows table query note: $err. Falling back to student_friends.");
+        // Fallback to student_friends if user_follows not populated
+        final friendsRel = await supabase
+            .from('student_friends')
+            .select('*')
+            .or('sender_id.eq.$myId,receiver_id.eq.$myId');
+
+        for (var r in (friendsRel as List)) {
+          if (r['status'] == 'accepted') {
+            final otherId = (r['sender_id'] == myId) ? r['receiver_id'] : r['sender_id'];
+            if (otherId != null) {
+              final otherIdStr = otherId.toString();
+              followingIds.add(otherIdStr);
+              final p = await _fetchProfile(otherIdStr);
+              if (p != null) {
+                following.add(p);
+                followers.add(p);
+              }
+            }
+          }
         }
       }
 
-      final profilesRes = await supabase
-          .from("profiles")
-          .select("*")
-          .neq("id", userId)
-          .limit(50);
+      // 2. Fetch pending friend requests (if any from legacy system)
+      List<Map<String, dynamic>> requests = [];
+      try {
+        final reqRes = await supabase
+            .from('student_friends')
+            .select('*')
+            .eq('receiver_id', myId)
+            .eq('status', 'pending');
 
-      List<Map<String, dynamic>> exploreList = [];
-      for (var p in (profilesRes as List)) {
-        String pId = p['id'].toString();
-        if (!connectedUserIds.contains(pId)) {
-          exploreList.add(p);
+        for (var r in (reqRes as List)) {
+          final p = await _fetchProfile(r['sender_id'].toString());
+          if (p != null) {
+            requests.add({...p, 'rel_id': r['id']});
+          }
         }
+      } catch (_) {}
+
+      // 3. Fetch explore/discover profiles
+      final profilesRes = await supabase
+          .from('profiles')
+          .select('*')
+          .neq('id', myId)
+          .order('created_at', ascending: false)
+          .limit(60);
+
+      List<Map<String, dynamic>> explore = [];
+      for (var p in (profilesRes as List)) {
+        explore.add(p);
       }
 
       if (mounted) {
         setState(() {
-          myFriends = friendsList;
-          pendingRequests = requestsList;
-          exploreUsers = exploreList;
+          followingList = following;
+          followersList = followers;
+          exploreUsers = explore;
+          pendingRequests = requests;
+          myFollowingIds = followingIds;
           isLoading = false;
         });
       }
     } catch (e) {
-      debugPrint("Error fetching friendships: $e");
+      debugPrint("Error fetching social data: $e");
       if (mounted) setState(() => isLoading = false);
     }
   }
@@ -127,130 +192,163 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
     }
   }
 
-  Future<void> _acceptRequest(String relId) async {
+  Future<void> _toggleFollow(String targetUserId, String targetName) async {
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+    final myId = user.id;
+
+    final isFollowing = myFollowingIds.contains(targetUserId);
+
+    setState(() {
+      if (isFollowing) {
+        myFollowingIds.remove(targetUserId);
+        followingList.removeWhere((p) => p['id'].toString() == targetUserId);
+      } else {
+        myFollowingIds.add(targetUserId);
+        final profile = exploreUsers.firstWhere(
+          (p) => p['id'].toString() == targetUserId,
+          orElse: () => followersList.firstWhere(
+            (p) => p['id'].toString() == targetUserId,
+            orElse: () => {'id': targetUserId, 'first_name': targetName},
+          ),
+        );
+        if (!followingList.any((p) => p['id'].toString() == targetUserId)) {
+          followingList.add(profile);
+        }
+      }
+    });
+
+    try {
+      if (isFollowing) {
+        // Unfollow
+        try {
+          await supabase
+              .from('user_follows')
+              .delete()
+              .match({'follower_id': myId, 'following_id': targetUserId});
+        } catch (_) {
+          await supabase
+              .from('student_friends')
+              .delete()
+              .or('and(sender_id.eq.$myId,receiver_id.eq.$targetUserId),and(sender_id.eq.$targetUserId,receiver_id.eq.$myId)');
+        }
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Unfollowed $targetName"),
+              duration: const Duration(seconds: 2),
+              backgroundColor: Colors.grey[800],
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+        }
+      } else {
+        // Follow
+        try {
+          await supabase.from('user_follows').insert({
+            'follower_id': myId,
+            'following_id': targetUserId,
+          });
+        } catch (_) {
+          await supabase.from('student_friends').upsert({
+            'sender_id': myId,
+            'receiver_id': targetUserId,
+            'status': 'accepted',
+          });
+        }
+
+        // Notify
+        final myProfile = await supabase
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('id', myId)
+            .maybeSingle();
+        final myName = myProfile != null
+            ? "${myProfile['first_name'] ?? 'Someone'} ${myProfile['last_name'] ?? ''}".trim()
+            : 'Someone';
+
+        await supabase.from('user_notifications').insert({
+          'user_id': targetUserId,
+          'sender_id': myId,
+          'title': "👤 New Follower",
+          'message': "$myName started following you.",
+          'notification_type': "follow",
+          'link_url': "/profile?id=$myId",
+          'is_read': false,
+          'created_at': DateTime.now().toIso8601String(),
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Following $targetName! ✨"),
+              duration: const Duration(seconds: 2),
+              backgroundColor: primaryPink,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint("Error toggling follow: $e");
+      // Revert on failure
+      setState(() {
+        if (isFollowing) {
+          myFollowingIds.add(targetUserId);
+        } else {
+          myFollowingIds.remove(targetUserId);
+        }
+      });
+    }
+  }
+
+  Future<void> _acceptRequest(String relId, String otherUserId) async {
     setState(() => isLoading = true);
     try {
-      final friendship = await supabase
-          .from("student_friends")
-          .select("sender_id")
-          .eq("id", relId)
-          .maybeSingle();
-
       await supabase
           .from("student_friends")
           .update({'status': 'accepted'})
           .eq('id', relId);
 
-      if (friendship != null && friendship['sender_id'] != null) {
-        final senderId = friendship['sender_id'].toString();
-        final user = supabase.auth.currentUser;
-        if (user != null) {
-          final receiverProfile = await supabase
-              .from("profiles")
-              .select("first_name, last_name")
-              .eq("id", user.id)
-              .maybeSingle();
-          final String receiverName = (receiverProfile != null)
-              ? "${receiverProfile['first_name'] ?? 'Someone'} ${receiverProfile['last_name'] ?? ''}"
-                    .trim()
-              : 'Someone';
-
-          await supabase.from("user_notifications").insert({
-            'user_id': senderId,
-            'sender_id': user.id,
-            'title': "🤝 Friend Request Accepted",
-            'message': "$receiverName accepted your friend request.",
-            'notification_type': "friend_request",
-            'link_url': "/friends",
-            'is_read': false,
-            'created_at': DateTime.now().toIso8601String(),
-          });
-        }
-      }
+      myFollowingIds.add(otherUserId);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Friend request accepted! ✅"),
+          SnackBar(
+            content: const Text("Request accepted! 🤝"),
             backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
-      await _fetchFriendshipsData();
+      await _fetchSocialData();
     } catch (e) {
       debugPrint("Error accepting request: $e");
       if (mounted) setState(() => isLoading = false);
     }
   }
 
-  Future<void> _removeFriendOrDecline(
-    String relId, {
-    bool isDecline = false,
-  }) async {
+  Future<void> _declineRequest(String relId) async {
     setState(() => isLoading = true);
     try {
       await supabase.from("student_friends").delete().eq('id', relId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              isDecline ? "Friend request declined." : "Removed from friends.",
-            ),
+            content: const Text("Request declined."),
             backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
-      await _fetchFriendshipsData();
+      await _fetchSocialData();
     } catch (e) {
-      debugPrint("Error removing friend: $e");
-      if (mounted) setState(() => isLoading = false);
-    }
-  }
-
-  Future<void> _sendFriendRequest(String receiverId) async {
-    final user = supabase.auth.currentUser;
-    if (user == null) return;
-
-    setState(() => isLoading = true);
-    try {
-      await supabase.from("student_friends").insert({
-        'sender_id': user.id,
-        'receiver_id': receiverId,
-        'status': 'pending',
-      });
-
-      final senderProfile = await supabase
-          .from("profiles")
-          .select("first_name, last_name")
-          .eq("id", user.id)
-          .maybeSingle();
-      final String senderName = (senderProfile != null)
-          ? "${senderProfile['first_name'] ?? 'Someone'} ${senderProfile['last_name'] ?? ''}"
-                .trim()
-          : 'Someone';
-
-      await supabase.from("user_notifications").insert({
-        'user_id': receiverId,
-        'sender_id': user.id,
-        'title': "🤝 New Friend Request",
-        'message': "$senderName sent you a friend request.",
-        'notification_type': "friend_request",
-        'link_url': "/friends",
-        'is_read': false,
-        'created_at': DateTime.now().toIso8601String(),
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Friend request sent! 🚀"),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-      await _fetchFriendshipsData();
-    } catch (e) {
-      debugPrint("Error sending request: $e");
+      debugPrint("Error declining request: $e");
       if (mounted) setState(() => isLoading = false);
     }
   }
@@ -258,21 +356,23 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
   @override
   Widget build(BuildContext context) {
     List<Map<String, dynamic>> activeList = [];
-    if (activeTab == "friends") activeList = myFriends;
-    if (activeTab == "requests") activeList = pendingRequests;
     if (activeTab == "explore") activeList = exploreUsers;
+    if (activeTab == "followers") activeList = followersList;
+    if (activeTab == "following") activeList = followingList;
+    if (activeTab == "requests") activeList = pendingRequests;
 
     final filteredList = activeList.where((item) {
       final fullName = "${item['first_name'] ?? ''} ${item['last_name'] ?? ''}"
           .toLowerCase();
       final email = (item['email'] ?? '').toLowerCase();
-      return fullName.contains(searchQuery.toLowerCase()) ||
-          email.contains(searchQuery.toLowerCase());
+      final country = (item['country'] ?? '').toLowerCase();
+      final q = searchQuery.toLowerCase();
+      return fullName.contains(q) || email.contains(q) || country.contains(q);
     }).toList();
 
     return AcademyLoadingOverlay(
       isLoading: isLoading,
-      message: "LOADING COMMUNITY...",
+      message: "SYNCING COMMUNITY...",
       child: Scaffold(
         backgroundColor: surfaceWhite,
         body: Container(
@@ -281,7 +381,7 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
               colors: [
                 const Color(0xFFFFF0F5),
                 surfaceWhite,
-                lightPinkBg.withOpacity(0.2),
+                lightPinkBg.withOpacity(0.3),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -289,30 +389,30 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
           ),
           child: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               physics: const BouncingScrollPhysics(),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 800),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // --- هدر بالای صفحه ---
+                    // --- هدر مدرن و شیک بدون متن نتورک (Instagram Style Header) ---
                     Container(
-                      padding: const EdgeInsets.all(22),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [surfaceWhite, lightPinkBg.withOpacity(0.4)],
+                          colors: [surfaceWhite, lightPinkBg.withOpacity(0.6)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                        borderRadius: BorderRadius.circular(28),
+                        borderRadius: BorderRadius.circular(24),
                         border: Border.all(
                           color: primaryPink.withOpacity(0.15),
                           width: 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: primaryPink.withOpacity(0.05),
+                            color: primaryPink.withOpacity(0.06),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
@@ -323,13 +423,24 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: lightPinkBg,
-                              borderRadius: BorderRadius.circular(16),
+                              gradient: const LinearGradient(
+                                colors: [primaryPink, Color(0xFFFF85A2)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(18),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: primaryPink.withOpacity(0.35),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
                             child: const Icon(
-                              Icons.people_alt_rounded,
-                              color: primaryPink,
-                              size: 28,
+                              Icons.explore_rounded,
+                              color: Colors.white,
+                              size: 26,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -337,65 +448,80 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  context.l10n.studentNetwork,
-                                  style: const TextStyle(
-                                    fontSize: 20,
+                                const Text(
+                                  "Discover & Connect",
+                                  style: TextStyle(
+                                    fontSize: 19,
                                     fontWeight: FontWeight.w900,
                                     color: textDark,
                                     letterSpacing: -0.5,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 3),
                                 Text(
-                                  context.l10n.studentNetworkDesc,
-                                  style: const TextStyle(
+                                  "Follow classmates, creators & grow your academy circle",
+                                  style: TextStyle(
                                     fontSize: 12,
-                                    color: textGrey,
+                                    color: textGrey.withOpacity(0.9),
                                     fontWeight: FontWeight.w500,
-                                    height: 1.4,
                                   ),
                                 ),
                               ],
                             ),
                           ),
+                          // دکمه رفرش
+                          IconButton(
+                            onPressed: _fetchSocialData,
+                            icon: const Icon(Icons.refresh_rounded, color: primaryPink),
+                            tooltip: "Refresh",
+                          ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
 
-                    // --- نوار تب‌ها (Segmented Control) ---
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: cardBorder,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
+                    // --- نوار تب‌های استایل اینستاگرام / تیک‌تاک ---
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
                       child: Row(
                         children: [
-                          Expanded(
-                            child: _buildTabButton(
-                              "${context.l10n.friends} (${myFriends.length})",
-                              "friends",
+                          _buildTabChip(
+                            label: "Discover",
+                            icon: Icons.explore_outlined,
+                            count: exploreUsers.length,
+                            tabKey: "explore",
+                          ),
+                          const SizedBox(width: 8),
+                          _buildTabChip(
+                            label: "Followers",
+                            icon: Icons.people_outline_rounded,
+                            count: followersList.length,
+                            tabKey: "followers",
+                          ),
+                          const SizedBox(width: 8),
+                          _buildTabChip(
+                            label: "Following",
+                            icon: Icons.person_add_disabled_outlined,
+                            count: followingList.length,
+                            tabKey: "following",
+                          ),
+                          if (pendingRequests.isNotEmpty) ...[
+                            const SizedBox(width: 8),
+                            _buildTabChip(
+                              label: "Requests",
+                              icon: Icons.mail_outline_rounded,
+                              count: pendingRequests.length,
+                              tabKey: "requests",
+                              isBadge: true,
                             ),
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: _buildTabButton(
-                              "${context.l10n.requests} (${pendingRequests.length})",
-                              "requests",
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: _buildTabButton(context.l10n.explore, "explore"),
-                          ),
+                          ],
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
 
-                    // --- سرچ باکس ---
+                    // --- سرچ باکس شیک ---
                     TextField(
                       controller: _searchController,
                       onChanged: (val) => setState(() => searchQuery = val),
@@ -404,11 +530,11 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
                         color: textDark,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                      ), // رنگ تیره برای جلوگیری از محو شدن
+                      ),
                       decoration: InputDecoration(
-                        hintText: context.l10n.searchByNameOrEmail,
-                        hintStyle: const TextStyle(
-                          color: textGrey,
+                        hintText: "Search by name, email, or country...",
+                        hintStyle: TextStyle(
+                          color: textGrey.withOpacity(0.7),
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -417,8 +543,17 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
                           color: primaryPink,
                           size: 22,
                         ),
+                        suffixIcon: searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.close_rounded, size: 18, color: textGrey),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() => searchQuery = "");
+                                },
+                              )
+                            : null,
                         filled: true,
-                        fillColor: cardBorder.withOpacity(0.6),
+                        fillColor: cardBorder.withOpacity(0.7),
                         contentPadding: const EdgeInsets.symmetric(
                           vertical: 0,
                           horizontal: 16,
@@ -436,32 +571,30 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
-                    // --- لیست کاربران ---
+                    // --- لیست کاربران با طراحی مدرن کارت‌های شبکه اجتماعی ---
                     filteredList.isNotEmpty
                         ? ListView.separated(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: filteredList.length,
-                            separatorBuilder: (_, _) =>
-                                const SizedBox(height: 14),
+                            separatorBuilder: (_, _) => const SizedBox(height: 12),
                             itemBuilder: (context, index) {
                               final userItem = filteredList[index];
                               final uId = userItem['id'].toString();
-                              final name =
-                                  "${userItem['first_name'] ?? ''} ${userItem['last_name'] ?? ''}"
-                                      .trim();
-                              final avatar = userItem['avatar_url'] ?? '';
-                              final country =
-                                  userItem['country'] ?? 'Global Student';
+                              final name = "${userItem['first_name'] ?? ''} ${userItem['last_name'] ?? ''}".trim();
+                              final avatar = userItem['avatar_url']?.toString() ?? '';
+                              final country = userItem['country']?.toString() ?? 'Global Member';
+                              final role = userItem['role']?.toString().toLowerCase() ?? 'student';
                               final score = userItem['total_score'] ?? 0;
+                              final isFollowing = myFollowingIds.contains(uId);
 
                               return Container(
-                                padding: const EdgeInsets.all(16),
+                                padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
                                   color: surfaceWhite,
-                                  borderRadius: BorderRadius.circular(24),
+                                  borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
                                     color: cardBorder,
                                     width: 1.5,
@@ -476,182 +609,215 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
                                 ),
                                 child: Row(
                                   children: [
+                                    // آواتار کاربر با حلقه گرادیان اینستاگرام
                                     GestureDetector(
                                       onTap: () => Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (_) =>
-                                              UserProfileScreen(userId: uId),
+                                          builder: (_) => UserProfileScreen(userId: uId),
                                         ),
                                       ),
-                                      child: CircleAvatar(
-                                        radius: 26,
-                                        backgroundColor: lightPinkBg,
-                                        backgroundImage: avatar.isNotEmpty
-                                            ? NetworkImage(avatar)
-                                            : null,
-                                        child: avatar.isEmpty
-                                            ? Text(
-                                                name.isNotEmpty ? name[0] : 'S',
-                                                style: const TextStyle(
-                                                  color: primaryPink,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 20,
-                                                ),
-                                              )
-                                            : null,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(2.5),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: const LinearGradient(
+                                            colors: [
+                                              primaryPink,
+                                              Color(0xFFFF85A2),
+                                              Color(0xFFBA68C8),
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ),
+                                        ),
+                                        child: CircleAvatar(
+                                          radius: 25,
+                                          backgroundColor: surfaceWhite,
+                                          child: CircleAvatar(
+                                            radius: 23,
+                                            backgroundColor: lightPinkBg,
+                                            backgroundImage: avatar.isNotEmpty
+                                                ? NetworkImage(avatar)
+                                                : null,
+                                            child: avatar.isEmpty
+                                                ? Text(
+                                                    name.isNotEmpty ? name[0].toUpperCase() : 'S',
+                                                    style: const TextStyle(
+                                                      color: primaryPink,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 18,
+                                                    ),
+                                                  )
+                                                : null,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                    const SizedBox(width: 16),
+                                    const SizedBox(width: 14),
+
+                                    // اطلاعات کاربر
                                     Expanded(
                                       child: GestureDetector(
                                         onTap: () => Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (_) =>
-                                                UserProfileScreen(userId: uId),
+                                            builder: (_) => UserProfileScreen(userId: uId),
                                           ),
                                         ),
                                         child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text(
-                                              name.isNotEmpty
-                                                  ? name
-                                                  : 'Academy Student',
-                                              style: const TextStyle(
-                                                color: textDark,
-                                                fontWeight: FontWeight.w900,
-                                                fontSize: 15,
-                                              ),
+                                            Row(
+                                              children: [
+                                                Flexible(
+                                                  child: Text(
+                                                    name.isNotEmpty ? name : 'Academy Student',
+                                                    style: const TextStyle(
+                                                      color: textDark,
+                                                      fontWeight: FontWeight.w900,
+                                                      fontSize: 14.5,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 6),
+                                                _buildRoleBadge(role),
+                                              ],
                                             ),
-                                            const SizedBox(height: 4),
+                                            const SizedBox(height: 3),
                                             Text(
-                                              "$country • Score: $score ⚡",
-                                              style: const TextStyle(
-                                                color: textGrey,
-                                                fontSize: 12,
+                                              "$country • ⚡ $score pts",
+                                              style: TextStyle(
+                                                color: textGrey.withOpacity(0.85),
+                                                fontSize: 11.5,
                                                 fontWeight: FontWeight.w600,
                                               ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
                                           ],
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: 10),
 
-                                    // --- دکمه‌های حرفه‌ای بر اساس تب فعال ---
-                                    if (activeTab == "friends")
-                                      IconButton(
-                                        style: IconButton.styleFrom(
-                                          backgroundColor: Colors.red
-                                              .withOpacity(0.1),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                          ),
-                                        ),
-                                        icon: const Icon(
-                                          Icons.person_remove_rounded,
-                                          size: 20,
-                                          color: Colors.redAccent,
-                                        ),
-                                        onPressed: () => _removeFriendOrDecline(
-                                          userItem['rel_id'],
-                                        ),
-                                        tooltip: context.l10n.removeFriend,
-                                      )
-                                    else if (activeTab == "requests")
+                                    // اکشن‌ها (Follow / Message / Accept)
+                                    if (activeTab == "requests") ...[
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           SizedBox(
-                                            height: 36,
+                                            height: 34,
                                             child: ElevatedButton(
                                               style: ElevatedButton.styleFrom(
                                                 backgroundColor: Colors.green,
                                                 foregroundColor: Colors.white,
                                                 elevation: 0,
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
+                                                  borderRadius: BorderRadius.circular(10),
                                                 ),
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 16,
-                                                    ),
+                                                padding: const EdgeInsets.symmetric(horizontal: 12),
                                               ),
-                                              onPressed: () => _acceptRequest(
-                                                userItem['rel_id'],
-                                              ),
-                                              child: Text(
-                                                context.l10n.accept,
-                                                style: const TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w900,
-                                                ),
+                                              onPressed: () => _acceptRequest(userItem['rel_id'], uId),
+                                              child: const Text(
+                                                "Accept",
+                                                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
                                               ),
                                             ),
                                           ),
-                                          const SizedBox(width: 8),
+                                          const SizedBox(width: 6),
                                           SizedBox(
-                                            height: 36,
-                                            width: 36,
+                                            height: 34,
+                                            width: 34,
                                             child: IconButton(
                                               style: IconButton.styleFrom(
                                                 backgroundColor: cardBorder,
+                                                padding: EdgeInsets.zero,
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
+                                                  borderRadius: BorderRadius.circular(10),
                                                 ),
                                               ),
-                                              icon: const Icon(
-                                                Icons.close_rounded,
-                                                size: 18,
-                                                color: textGrey,
-                                              ),
-                                              onPressed: () =>
-                                                  _removeFriendOrDecline(
-                                                    userItem['rel_id'],
-                                                    isDecline: true,
-                                                  ),
+                                              icon: const Icon(Icons.close_rounded, size: 16, color: textGrey),
+                                              onPressed: () => _declineRequest(userItem['rel_id']),
                                             ),
                                           ),
                                         ],
-                                      )
-                                    else if (activeTab == "explore")
-                                      SizedBox(
-                                        height: 36,
-                                        child: ElevatedButton.icon(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: primaryPink,
-                                            foregroundColor: Colors.white,
-                                            elevation: 0,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 16,
-                                            ),
-                                          ),
-                                          icon: const Icon(
-                                            Icons.person_add_rounded,
-                                            size: 16,
-                                          ),
-                                          label: Text(
-                                            context.l10n.add,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w900,
-                                            ),
-                                          ),
-                                          onPressed: () =>
-                                              _sendFriendRequest(uId),
-                                        ),
                                       ),
+                                    ] else ...[
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          // دکمه فالو / آنفالو
+                                          SizedBox(
+                                            height: 34,
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: isFollowing ? cardBorder : primaryPink,
+                                                foregroundColor: isFollowing ? textDark : Colors.white,
+                                                elevation: 0,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  side: isFollowing
+                                                      ? BorderSide(color: textGrey.withOpacity(0.2))
+                                                      : BorderSide.none,
+                                                ),
+                                                padding: const EdgeInsets.symmetric(horizontal: 14),
+                                              ),
+                                              onPressed: () => _toggleFollow(uId, name.isNotEmpty ? name : 'User'),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  if (isFollowing) ...[
+                                                    const Icon(Icons.check_rounded, size: 14, color: textDark),
+                                                    const SizedBox(width: 4),
+                                                  ],
+                                                  Text(
+                                                    isFollowing ? "Following" : "Follow",
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: isFollowing ? textDark : Colors.white,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+
+                                          // دکمه چت مستقیم
+                                          Container(
+                                            height: 34,
+                                            width: 34,
+                                            decoration: BoxDecoration(
+                                              color: lightPinkBg,
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: IconButton(
+                                              padding: EdgeInsets.zero,
+                                              icon: const Icon(
+                                                Icons.chat_bubble_outline_rounded,
+                                                size: 16,
+                                                color: primaryPink,
+                                              ),
+                                              onPressed: () => Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) => DirectChatScreen(
+                                                    peerId: uId,
+                                                    peerName: name.isNotEmpty ? name : 'Student',
+                                                    peerAvatar: avatar,
+                                                  ),
+                                                ),
+                                              ),
+                                              tooltip: "Message",
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ],
                                 ),
                               );
@@ -665,24 +831,27 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
                                   Icon(
                                     Icons.people_outline_rounded,
                                     size: 60,
-                                    color: textGrey.withOpacity(0.4),
+                                    color: textGrey.withOpacity(0.3),
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    context.l10n.noStudentsFound,
+                                    activeTab == "followers"
+                                        ? "No followers yet. Share reels to gain followers!"
+                                        : activeTab == "following"
+                                            ? "You haven't followed anyone yet."
+                                            : "No members found.",
                                     style: const TextStyle(
                                       color: textGrey,
-                                      fontSize: 14,
+                                      fontSize: 13,
                                       fontWeight: FontWeight.bold,
                                     ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ],
                               ),
                             ),
                           ),
-                    const SizedBox(
-                      height: 100,
-                    ), // فاصله پایین برای Bottom Navigation
+                    const SizedBox(height: 100),
                   ],
                 ),
               ),
@@ -693,44 +862,97 @@ class _FriendsViewerScreenState extends State<FriendsViewerScreen> {
     );
   }
 
-  Widget _buildTabButton(String title, String tabKey) {
-    bool isActive = activeTab == tabKey;
+  Widget _buildRoleBadge(String role) {
+    Color bg;
+    Color fg;
+    String label;
+
+    switch (role) {
+      case 'admin':
+        bg = Colors.red.withOpacity(0.12);
+        fg = Colors.redAccent;
+        label = "ADMIN";
+        break;
+      case 'teacher':
+      case 'instructor':
+        bg = Colors.purple.withOpacity(0.12);
+        fg = Colors.purpleAccent;
+        label = "TEACHER";
+        break;
+      default:
+        bg = primaryPink.withOpacity(0.12);
+        fg = primaryPink;
+        label = "STUDENT";
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: fg,
+          fontSize: 9,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabChip({
+    required String label,
+    required IconData icon,
+    required int count,
+    required String tabKey,
+    bool isBadge = false,
+  }) {
+    final isSelected = activeTab == tabKey;
     return GestureDetector(
       onTap: () => setState(() => activeTab = tabKey),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? surfaceWhite : Colors.transparent,
+          color: isSelected ? primaryPink : cardBorder.withOpacity(0.8),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: isActive
+          boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: primaryPink.withOpacity(0.3),
                     blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    offset: const Offset(0, 3),
                   ),
                 ]
               : [],
         ),
-        child: Text(
-          title,
-          style: TextStyle(
-            color: isActive ? primaryPink : textGrey,
-            fontSize: 12,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 0.5,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: isSelected ? Colors.white : textGrey,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              "$label ($count)",
+              style: TextStyle(
+                color: isSelected ? Colors.white : textDark,
+                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                fontSize: 12.5,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
-
-// ============================================================================
-// ویجت کاستوم لودینگ آکادمی (برای جلوگیری از خطای عدم وجود ویجت)
-// ============================================================================
 
 class AcademyLoadingOverlay extends StatelessWidget {
   final bool isLoading;
@@ -751,7 +973,7 @@ class AcademyLoadingOverlay extends StatelessWidget {
         child,
         if (isLoading)
           Container(
-            color: Colors.white.withOpacity(0.95),
+            color: Colors.white.withOpacity(0.92),
             alignment: Alignment.center,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

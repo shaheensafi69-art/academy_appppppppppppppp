@@ -193,6 +193,7 @@ class ReelItemData {
   int likesCount;
   int commentsCount;
   bool isLikedByMe;
+  bool isSavedByMe;
   String authorName;
   String authorAvatar;
   DateTime? createdAt;
@@ -209,6 +210,7 @@ class ReelItemData {
     this.likesCount = 0,
     this.commentsCount = 0,
     this.isLikedByMe = false,
+    this.isSavedByMe = false,
     this.authorName = 'Academy Member',
     this.authorAvatar = '',
     this.createdAt,
@@ -292,8 +294,9 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
           .select('*')
           .eq('is_published', true);
 
-      // ۲. دریافت لایک‌های کاربر به صورت یک‌جا (بچ کوئری سریع و مطمئن بدون خطای RLS)
+      // ۲. دریافت لایک‌ها و ذخیره‌های کاربر به صورت یک‌جا
       Set<String> myLikedReelIds = {};
+      Set<String> mySavedReelIds = {};
       if (currentUserId.isNotEmpty) {
         try {
           final myLikes = await supabase
@@ -321,6 +324,20 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
           _viewedReelIds.addAll(viewedIds);
         } catch (e) {
           debugPrint('Error fetching user views batch: $e');
+        }
+
+        // ۲.۶. دریافت ریلز‌های نشان‌شده (Saved/Bookmarked) کاربر به صورت یک‌جا
+        try {
+          final myBookmarks = await supabase
+              .from('reel_bookmarks')
+              .select('reel_id')
+              .eq('user_id', currentUserId);
+          mySavedReelIds = (myBookmarks as List)
+              .map((e) => e['reel_id']?.toString() ?? '')
+              .where((s) => s.isNotEmpty)
+              .toSet();
+        } catch (e) {
+          debugPrint('Error fetching user reel bookmarks batch: $e');
         }
       }
 
@@ -456,6 +473,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
             likesCount: r['likes_count'] ?? 0,
             commentsCount: r['comments_count'] ?? 0,
             isLikedByMe: myLikedReelIds.contains(id),
+            isSavedByMe: mySavedReelIds.contains(id),
             authorName: authorName,
             authorAvatar: authorAvatar,
             createdAt: createdAt,
@@ -631,6 +649,51 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
       if (mounted) setState(() {});
     } catch (e) {
       debugPrint('Error toggling reel like: $e');
+    }
+  }
+
+  // نشان کردن / ذخیره ریلز برای تماشا در آینده (Save / Bookmark)
+  Future<void> _toggleSaveReel(ReelItemData reel) async {
+    final user = supabase.auth.currentUser;
+    if (user == null) {
+      AuthRequiredModal.show(context, actionName: "save reels");
+      return;
+    }
+
+    HapticFeedback.lightImpact();
+    final previousState = reel.isSavedByMe;
+    setState(() {
+      reel.isSavedByMe = !previousState;
+    });
+
+    try {
+      if (previousState) {
+        // حذف از لیست ذخیره‌ها
+        await supabase
+            .from('reel_bookmarks')
+            .delete()
+            .eq('reel_id', reel.id)
+            .eq('user_id', user.id);
+        if (mounted) {
+          _showReelsToast(context, 'Removed from saved items');
+        }
+      } else {
+        // افزودن به لیست ذخیره‌ها
+        await supabase.from('reel_bookmarks').insert({
+          'reel_id': reel.id,
+          'user_id': user.id,
+        });
+        if (mounted) {
+          _showReelsToast(context, 'Reel saved to bookmarks 🔖');
+        }
+      }
+    } catch (e) {
+      debugPrint('Save reel error: $e');
+      if (mounted) {
+        setState(() {
+          reel.isSavedByMe = previousState;
+        });
+      }
     }
   }
 
@@ -1529,7 +1592,34 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
               ),
               const SizedBox(height: 18),
 
-              // ۳. دانلود ویدیو (مانند تیک‌تاک و اینستاگرام)
+              // ۳. بوکمارک / ذخیره در لیست علاقه‌مندی‌ها (Save / Bookmark)
+              GestureDetector(
+                onTap: () => _toggleSaveReel(reel),
+                child: Column(
+                  children: [
+                    Icon(
+                      reel.isSavedByMe
+                          ? Icons.bookmark_rounded
+                          : Icons.bookmark_border_rounded,
+                      color: reel.isSavedByMe ? primaryPink : Colors.white,
+                      size: 28,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Save',
+                      style: TextStyle(
+                        color: reel.isSavedByMe ? primaryPink : Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        shadows: const [Shadow(color: Colors.black87, blurRadius: 4)],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+
+              // ۴. دانلود مستقیم ویدیو در گالری گوشی
               GestureDetector(
                 onTap: () => _downloadReel(reel),
                 child: const Column(
@@ -1537,7 +1627,7 @@ class _StudentReelsScreenState extends State<StudentReelsScreen> {
                     Icon(Icons.download_rounded, color: Colors.white, size: 28),
                     SizedBox(height: 4),
                     Text(
-                      'Save',
+                      'Download',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 11,
@@ -2370,42 +2460,33 @@ class _ReelVideoPlayerWidgetState extends State<ReelVideoPlayerWidget> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  if (_controller.value.aspectRatio > 1.0) ...[
-                    // Landscape video: Ambient blurred background + centered player
-                    Positioned.fill(
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: _controller.value.size.width,
-                          height: _controller.value.size.height,
-                          child: VideoPlayer(_controller),
-                        ),
-                      ),
-                    ),
-                    Positioned.fill(
-                      child: Container(
-                        color: Colors.black.withValues(alpha: 0.78),
-                      ),
-                    ),
-                    Center(
-                      child: AspectRatio(
-                        aspectRatio: _controller.value.aspectRatio,
+                  // Ambient background layer: fills screen with subtle darkened video backdrop
+                  Positioned.fill(
+                    child: FittedBox(
+                      fit: BoxFit.cover,
+                      child: SizedBox(
+                        width: _controller.value.size.width,
+                        height: _controller.value.size.height,
                         child: VideoPlayer(_controller),
                       ),
                     ),
-                  ] else ...[
-                    // Portrait / Vertical Reel: Fullscreen edge-to-edge cover (Instagram Reels & TikTok standard)
-                    Positioned.fill(
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: _controller.value.size.width,
-                          height: _controller.value.size.height,
-                          child: VideoPlayer(_controller),
-                        ),
+                  ),
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withValues(alpha: 0.75),
+                    ),
+                  ),
+                  // Foreground player: 100% visible, never zoomed or cropped at the edges
+                  Center(
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: SizedBox(
+                        width: _controller.value.size.width,
+                        height: _controller.value.size.height,
+                        child: VideoPlayer(_controller),
                       ),
                     ),
-                  ],
+                  ),
                 ],
               ),
             ),

@@ -8,7 +8,9 @@ import '../widgets/shop_ad_banner.dart';
 import 'product_checkout_screen.dart';
 
 class ShopScreen extends StatefulWidget {
-  const ShopScreen({super.key});
+  final VoidCallback? onBack;
+
+  const ShopScreen({super.key, this.onBack});
 
   @override
   State<ShopScreen> createState() => _ShopScreenState();
@@ -236,7 +238,13 @@ class _ShopScreenState extends State<ShopScreen> {
             color: textPrimary,
             size: 20,
           ),
-          onPressed: () => Navigator.of(context).maybePop(),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else if (widget.onBack != null) {
+              widget.onBack!();
+            }
+          },
         ),
         title: Row(
           mainAxisSize: MainAxisSize.min,

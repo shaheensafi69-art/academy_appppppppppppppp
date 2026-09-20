@@ -24,7 +24,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Map<String, dynamic>? profileData;
   List<Map<String, dynamic>> userPosts = [];
   List<Map<String, dynamic>> userReels = [];
-  int activeTab = 0; // 0 for Posts, 1 for Reels
+  List<Map<String, dynamic>> userLikedReels = [];
+  List<Map<String, dynamic>> userSavedReels = [];
+  List<Map<String, dynamic>> userSavedPosts = [];
+  int activeTab = 0; // 0: Posts, 1: Reels, 2: Liked, 3: Saved
+  int activeSavedSubTab = 0; // 0: Saved Reels, 1: Saved Posts
+
+  int followersCount = 0;
+  int followingCount = 0;
+  bool isFollowedByMe = false;
 
   String friendshipStatus = 'none';
   bool isActionLoading = false;
@@ -170,19 +178,138 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         }
       } catch (_) {}
 
+      // دریافت فالوورها و فالووینگ‌ها
+      int followers = 0;
+      int following = 0;
+      bool followedByMe = false;
+      try {
+        final fRes = await supabase
+            .from("user_follows")
+            .select("follower_id")
+            .eq("following_id", targetUserId);
+        followers = (fRes as List).length;
+        if (currentUser != null) {
+          followedByMe = (fRes as List).any(
+            (f) => f['follower_id']?.toString() == currentUser.id,
+          );
+        }
+      } catch (_) {
+        followers = count;
+      }
+
+      try {
+        final fRes = await supabase
+            .from("user_follows")
+            .select("following_id")
+            .eq("follower_id", targetUserId);
+        following = (fRes as List).length;
+      } catch (_) {
+        following = count;
+      }
+
+      // دریافت ریلزهای لایک شده توسط کاربر (Liked Videos)
+      List<Map<String, dynamic>> likedReels = [];
+      try {
+        final lRes = await supabase
+            .from("reel_likes")
+            .select("reel_id, reels(*)")
+            .eq("user_id", targetUserId)
+            .order("created_at", ascending: false);
+        for (var item in (lRes as List)) {
+          final rData = item['reels'];
+          if (rData != null && rData is Map<String, dynamic>) {
+            likedReels.add(Map<String, dynamic>.from(rData));
+          }
+        }
+      } catch (e) {
+        debugPrint("Error fetching liked reels: $e");
+      }
+
+      // دریافت ریلزها و پست‌های بوک‌مارک شده (Saved Items)
+      List<Map<String, dynamic>> savedReels = [];
+      List<Map<String, dynamic>> savedPosts = [];
+      if (isMyProfile && currentUser != null) {
+        try {
+          final bReelsRes = await supabase
+              .from("reel_bookmarks")
+              .select("reel_id, reels(*)")
+              .eq("user_id", currentUser.id)
+              .order("created_at", ascending: false);
+          for (var item in (bReelsRes as List)) {
+            final rData = item['reels'];
+            if (rData != null && rData is Map<String, dynamic>) {
+              savedReels.add(Map<String, dynamic>.from(rData));
+            }
+          }
+        } catch (e) {
+          debugPrint("Error fetching saved reels: $e");
+        }
+
+        try {
+          final bPostsRes = await supabase
+              .from("discussion_bookmarks")
+              .select("post_id, discussion_posts(*)")
+              .eq("user_id", currentUser.id)
+              .order("created_at", ascending: false);
+          for (var item in (bPostsRes as List)) {
+            final pData = item['discussion_posts'];
+            if (pData != null && pData is Map<String, dynamic>) {
+              savedPosts.add(Map<String, dynamic>.from(pData));
+            }
+          }
+        } catch (e) {
+          debugPrint("Error fetching saved posts: $e");
+        }
+      }
+
       if (mounted) {
         setState(() {
           profileData = res;
           friendsCount = count;
+          followersCount = followers;
+          followingCount = following;
+          isFollowedByMe = followedByMe;
           friendshipStatus = status;
           userPosts = enrichedPosts;
           userReels = enrichedReels;
+          userLikedReels = likedReels;
+          userSavedReels = savedReels;
+          userSavedPosts = savedPosts;
           isLoading = false;
         });
       }
     } catch (e) {
       debugPrint("Error fetching profile & posts: $e");
       if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _toggleFollow() async {
+    final currentUser = supabase.auth.currentUser;
+    if (currentUser == null) return;
+
+    final willFollow = !isFollowedByMe;
+    setState(() {
+      isFollowedByMe = willFollow;
+      followersCount += willFollow ? 1 : -1;
+      if (followersCount < 0) followersCount = 0;
+    });
+
+    try {
+      if (willFollow) {
+        await supabase.from("user_follows").insert({
+          "follower_id": currentUser.id,
+          "following_id": targetUserId,
+        });
+      } else {
+        await supabase
+            .from("user_follows")
+            .delete()
+            .eq("follower_id", currentUser.id)
+            .eq("following_id", targetUserId);
+      }
+    } catch (e) {
+      debugPrint("Error toggling follow: $e");
     }
   }
 
@@ -1305,10 +1432,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                                   MainAxisAlignment.spaceAround,
                                               children: [
                                                 _buildStatItem(
-                                                  "Network",
-                                                  "$friendsCount",
+                                                  "Posts",
+                                                  "${userPosts.length + userReels.length}",
                                                   roleColor,
-                                                  onTap: _showNetworkMembersModal,
+                                                  onTap: () => setState(() => activeTab = 0),
+                                                ),
+                                                _buildStatItem(
+                                                  "Followers",
+                                                  "$followersCount",
+                                                  roleColor,
+                                                  onTap: () => _showFollowListModal(isFollowers: true),
+                                                ),
+                                                _buildStatItem(
+                                                  "Following",
+                                                  "$followingCount",
+                                                  roleColor,
+                                                  onTap: () => _showFollowListModal(isFollowers: false),
                                                 ),
                                                 if (!isTeacher && !isAdmin)
                                                   _buildStatItem(
@@ -1316,16 +1455,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                                     "${profileData!['total_score'] ?? 0}",
                                                     roleColor,
                                                   ),
-                                                _buildStatItem(
-                                                  "Posts",
-                                                  "${userPosts.length}",
-                                                  roleColor,
-                                                ),
-                                                _buildStatItem(
-                                                  "Reels",
-                                                  "${userReels.length}",
-                                                  roleColor,
-                                                ),
                                               ],
                                             ),
                                             const SizedBox(height: 18),
@@ -1379,13 +1508,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                                       style:
                                                           ElevatedButton.styleFrom(
                                                         backgroundColor:
-                                                            friendshipStatus ==
-                                                                    'friends'
+                                                            isFollowedByMe
                                                                 ? cardBorder
                                                                 : primaryPink,
                                                         foregroundColor:
-                                                            friendshipStatus ==
-                                                                    'friends'
+                                                            isFollowedByMe
                                                                 ? textDark
                                                                 : Colors.white,
                                                         elevation: 0,
@@ -1402,42 +1529,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                                         ),
                                                       ),
                                                       icon: Icon(
-                                                        friendshipStatus ==
-                                                                'friends'
-                                                            ? Icons
-                                                                .how_to_reg_rounded
-                                                            : friendshipStatus ==
-                                                                    'pending_sent'
-                                                                ? Icons
-                                                                    .access_time_rounded
-                                                                : friendshipStatus ==
-                                                                        'pending_received'
-                                                                    ? Icons
-                                                                        .person_add_alt_1_rounded
-                                                                    : Icons
-                                                                        .person_add_rounded,
+                                                        isFollowedByMe
+                                                            ? Icons.check_rounded
+                                                            : Icons.person_add_rounded,
                                                         size: 16,
                                                       ),
                                                       label: Text(
-                                                        friendshipStatus ==
-                                                                'friends'
-                                                            ? 'Connected ✓'
-                                                            : friendshipStatus ==
-                                                                    'pending_sent'
-                                                                ? 'Pending'
-                                                                : friendshipStatus ==
-                                                                        'pending_received'
-                                                                    ? 'Accept'
-                                                                    : 'Connect 🤝',
+                                                        isFollowedByMe
+                                                            ? 'Following ✓'
+                                                            : 'Follow +',
                                                         style: const TextStyle(
                                                           fontWeight:
                                                               FontWeight.w900,
-                                                          fontSize: 12,
+                                                          fontSize: 13,
                                                         ),
                                                       ),
-                                                      onPressed: isActionLoading
-                                                          ? null
-                                                          : _handleFriendAction,
+                                                      onPressed: _toggleFollow,
                                                     ),
                                                   ),
                                                   const SizedBox(width: 10),
@@ -1445,9 +1552,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                                     style:
                                                         ElevatedButton.styleFrom(
                                                       backgroundColor:
-                                                          primaryPink,
+                                                          lightPinkBg,
                                                       foregroundColor:
-                                                          Colors.white,
+                                                          primaryPink,
                                                       elevation: 0,
                                                       padding:
                                                           const EdgeInsets.symmetric(
@@ -1459,6 +1566,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                                         borderRadius:
                                                             BorderRadius.circular(
                                                           14,
+                                                        ),
+                                                        side: const BorderSide(
+                                                          color: primaryPink,
+                                                          width: 1,
                                                         ),
                                                       ),
                                                     ),
@@ -1652,72 +1763,38 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           const SizedBox(height: 24),
 
                           // دکمه‌های انتخاب تب (Posts / Reels)
-                          Row(
-                            children: [
-                              GestureDetector(
-                                onTap: () => setState(() => activeTab = 0),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: activeTab == 0
-                                        ? primaryPink
-                                        : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: activeTab == 0
-                                          ? primaryPink
-                                          : Colors.grey[300]!,
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    "Posts (${userPosts.length})",
-                                    style: TextStyle(
-                                      color: activeTab == 0
-                                          ? Colors.white
-                                          : textGrey,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                    ),
-                                  ),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            child: Row(
+                              children: [
+                                _buildTabPill(
+                                  index: 0,
+                                  label: "Posts (${userPosts.length})",
+                                  icon: Icons.grid_on_rounded,
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              GestureDetector(
-                                onTap: () => setState(() => activeTab = 1),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: activeTab == 1
-                                        ? primaryPink
-                                        : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: activeTab == 1
-                                          ? primaryPink
-                                          : Colors.grey[300]!,
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    "Reels (${userReels.length})",
-                                    style: TextStyle(
-                                      color: activeTab == 1
-                                          ? Colors.white
-                                          : textGrey,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                    ),
-                                  ),
+                                const SizedBox(width: 8),
+                                _buildTabPill(
+                                  index: 1,
+                                  label: "Reels (${userReels.length})",
+                                  icon: Icons.play_circle_outline_rounded,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 8),
+                                _buildTabPill(
+                                  index: 2,
+                                  label: "Liked (${userLikedReels.length})",
+                                  icon: Icons.favorite_rounded,
+                                ),
+                                if (isMyProfile) ...[
+                                  const SizedBox(width: 8),
+                                  _buildTabPill(
+                                    index: 3,
+                                    label: "Saved (${userSavedReels.length + userSavedPosts.length})",
+                                    icon: Icons.bookmark_rounded,
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 16),
 
@@ -2058,7 +2135,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       ),
                                     ),
                                   ),
-                          ] else ...[
+                          ] else if (activeTab == 1) ...[
                             userReels.isNotEmpty
                                 ? GridView.builder(
                                     shrinkWrap: true,
@@ -2180,6 +2257,385 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       ),
                                     ),
                                   ),
+                          ] else if (activeTab == 2) ...[
+                            // ویدیوهای لایک شده توسط کاربر (Liked Videos)
+                            userLikedReels.isNotEmpty
+                                ? GridView.builder(
+                                    shrinkWrap: true,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    gridDelegate:
+                                        const SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 3,
+                                          childAspectRatio: 0.65,
+                                          crossAxisSpacing: 8,
+                                          mainAxisSpacing: 8,
+                                        ),
+                                    itemCount: userLikedReels.length,
+                                    itemBuilder: (context, index) {
+                                      final reel = userLikedReels[index];
+                                      final thumbnailUrl =
+                                          reel['thumbnail_url']?.toString() ??
+                                          '';
+                                      return GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  StudentReelsScreen(
+                                                    targetReelId: reel['id']
+                                                        ?.toString(),
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          child: Stack(
+                                            fit: StackFit.expand,
+                                            children: [
+                                              Image.network(
+                                                thumbnailUrl.isNotEmpty
+                                                    ? thumbnailUrl
+                                                    : "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=300",
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (_, _, _) =>
+                                                    Container(
+                                                      color: Colors.grey[200],
+                                                      child: const Icon(
+                                                        Icons
+                                                            .play_circle_outline_rounded,
+                                                        color: primaryPink,
+                                                        size: 28,
+                                                      ),
+                                                    ),
+                                              ),
+                                              Container(
+                                                decoration: const BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    begin: Alignment.topCenter,
+                                                    end: Alignment.bottomCenter,
+                                                    colors: [
+                                                      Colors.transparent,
+                                                      Colors.black54,
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              Positioned(
+                                                bottom: 6,
+                                                left: 6,
+                                                right: 6,
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(
+                                                      Icons.favorite_rounded,
+                                                      color: primaryPink,
+                                                      size: 14,
+                                                    ),
+                                                    const SizedBox(width: 3),
+                                                    Expanded(
+                                                      child: Text(
+                                                        "${reel['likes_count'] ?? 0}",
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 10,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  )
+                                : Container(
+                                    padding: const EdgeInsets.all(36),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: surfaceWhite,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: cardBorder,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Icon(
+                                          Icons.favorite_border_rounded,
+                                          size: 40,
+                                          color: textGrey.withValues(alpha: 0.4),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        const Text(
+                                          "No liked videos yet ❤️",
+                                          style: TextStyle(
+                                            color: textGrey,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                          ] else if (activeTab == 3) ...[
+                            // بخش آیتم‌های ذخیره شده (Saved Items)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                ChoiceChip(
+                                  label: Text("Reels (${userSavedReels.length})"),
+                                  selected: activeSavedSubTab == 0,
+                                  selectedColor: primaryPink.withValues(alpha: 0.15),
+                                  onSelected: (_) => setState(() => activeSavedSubTab = 0),
+                                  labelStyle: TextStyle(
+                                    color: activeSavedSubTab == 0 ? primaryPink : textGrey,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                ChoiceChip(
+                                  label: Text("Posts (${userSavedPosts.length})"),
+                                  selected: activeSavedSubTab == 1,
+                                  selectedColor: primaryPink.withValues(alpha: 0.15),
+                                  onSelected: (_) => setState(() => activeSavedSubTab = 1),
+                                  labelStyle: TextStyle(
+                                    color: activeSavedSubTab == 1 ? primaryPink : textGrey,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            if (activeSavedSubTab == 0) ...[
+                              userSavedReels.isNotEmpty
+                                  ? GridView.builder(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      gridDelegate:
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 3,
+                                            childAspectRatio: 0.65,
+                                            crossAxisSpacing: 8,
+                                            mainAxisSpacing: 8,
+                                          ),
+                                      itemCount: userSavedReels.length,
+                                      itemBuilder: (context, index) {
+                                        final reel = userSavedReels[index];
+                                        final thumbnailUrl =
+                                            reel['thumbnail_url']?.toString() ??
+                                            '';
+                                        return GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    StudentReelsScreen(
+                                                      targetReelId: reel['id']
+                                                          ?.toString(),
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            child: Stack(
+                                              fit: StackFit.expand,
+                                              children: [
+                                                Image.network(
+                                                  thumbnailUrl.isNotEmpty
+                                                      ? thumbnailUrl
+                                                      : "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=300",
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (_, _, _) =>
+                                                      Container(
+                                                        color: Colors.grey[200],
+                                                        child: const Icon(
+                                                          Icons
+                                                              .play_circle_outline_rounded,
+                                                          color: primaryPink,
+                                                          size: 28,
+                                                        ),
+                                                      ),
+                                                ),
+                                                Container(
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                    gradient: LinearGradient(
+                                                      begin:
+                                                          Alignment.topCenter,
+                                                      end: Alignment.bottomCenter,
+                                                      colors: [
+                                                        Colors.transparent,
+                                                        Colors.black54,
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                                Positioned(
+                                                  bottom: 6,
+                                                  left: 6,
+                                                  right: 6,
+                                                  child: Row(
+                                                    children: [
+                                                      const Icon(
+                                                        Icons.bookmark_rounded,
+                                                        color: primaryPink,
+                                                        size: 14,
+                                                      ),
+                                                      const SizedBox(width: 3),
+                                                      Expanded(
+                                                        child: Text(
+                                                          "${reel['views_count'] ?? 0}",
+                                                          style:
+                                                              const TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 10,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  : Container(
+                                      padding: const EdgeInsets.all(36),
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: surfaceWhite,
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: cardBorder,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Icon(
+                                            Icons.bookmark_border_rounded,
+                                            size: 40,
+                                            color: textGrey.withValues(alpha: 0.4),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          const Text(
+                                            "No saved reels yet 🔖",
+                                            style: TextStyle(
+                                              color: textGrey,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                            ] else ...[
+                              userSavedPosts.isNotEmpty
+                                  ? ListView.separated(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemCount: userSavedPosts.length,
+                                      separatorBuilder: (_, _) =>
+                                          const SizedBox(height: 12),
+                                      itemBuilder: (context, index) {
+                                        final post = userSavedPosts[index];
+                                        return Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: surfaceWhite,
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                            border: Border.all(
+                                              color: cardBorder,
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                post['title'] ?? 'Untitled',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                  color: textDark,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                post['content'] ?? '',
+                                                maxLines: 3,
+                                                overflow:
+                                                    TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                  color: textGrey,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  : Container(
+                                      padding: const EdgeInsets.all(36),
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: surfaceWhite,
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: cardBorder,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Icon(
+                                            Icons.bookmark_border_rounded,
+                                            size: 40,
+                                            color: textGrey.withValues(alpha: 0.4),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          const Text(
+                                            "No saved posts yet 🔖",
+                                            style: TextStyle(
+                                              color: textGrey,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                            ],
                           ],
                         ],
                       ),
@@ -2197,6 +2653,280 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ),
               ),
       ),
+    );
+  }
+
+  Widget _buildTabPill({
+    required int index,
+    required String label,
+    required IconData icon,
+  }) {
+    final isSelected = activeTab == index;
+    return GestureDetector(
+      onTap: () => setState(() => activeTab = index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? primaryPink : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? primaryPink : Colors.grey[300]!,
+            width: 1.5,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: primaryPink.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 15,
+              color: isSelected ? Colors.white : textGrey,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : textGrey,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchFollowMembers({
+    required bool isFollowers,
+  }) async {
+    try {
+      final targetId = targetUserId;
+      if (targetId.isEmpty) return [];
+
+      List<String> targetUserIds = [];
+
+      try {
+        if (isFollowers) {
+          final res = await supabase
+              .from('user_follows')
+              .select('follower_id')
+              .eq('following_id', targetId);
+          for (var item in (res as List)) {
+            final id = item['follower_id']?.toString();
+            if (id != null && id.isNotEmpty) targetUserIds.add(id);
+          }
+        } else {
+          final res = await supabase
+              .from('user_follows')
+              .select('following_id')
+              .eq('follower_id', targetId);
+          for (var item in (res as List)) {
+            final id = item['following_id']?.toString();
+            if (id != null && id.isNotEmpty) targetUserIds.add(id);
+          }
+        }
+      } catch (_) {
+        // Fallback to student_friends
+        final res = await supabase
+            .from('student_friends')
+            .select('sender_id, receiver_id')
+            .or('sender_id.eq.$targetId,receiver_id.eq.$targetId')
+            .eq('status', 'accepted');
+        for (var f in (res as List)) {
+          final sId = f['sender_id']?.toString();
+          final rId = f['receiver_id']?.toString();
+          final other = (sId == targetId) ? rId : sId;
+          if (other != null &&
+              other.isNotEmpty &&
+              !targetUserIds.contains(other)) {
+            targetUserIds.add(other);
+          }
+        }
+      }
+
+      if (targetUserIds.isEmpty) return [];
+
+      final profilesRes = await supabase
+          .from('profiles')
+          .select('id, full_name, first_name, last_name, avatar_url, role, bio')
+          .inFilter('id', targetUserIds);
+
+      return List<Map<String, dynamic>>.from(profilesRes as List);
+    } catch (e) {
+      debugPrint("Error fetching follow members: $e");
+      return [];
+    }
+  }
+
+  void _showFollowListModal({required bool isFollowers}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final title = isFollowers
+            ? "Followers ($followersCount)"
+            : "Following ($followingCount)";
+
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.75,
+          decoration: const BoxDecoration(
+            color: surfaceWhite,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: textDark,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: textGrey),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(color: cardBorder, height: 1),
+              Expanded(
+                child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _fetchFollowMembers(isFollowers: isFollowers),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(color: primaryPink),
+                      );
+                    }
+                    final members = snapshot.data ?? [];
+                    if (members.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              isFollowers
+                                  ? Icons.group_off_rounded
+                                  : Icons.person_search_rounded,
+                              size: 48,
+                              color: textGrey.withValues(alpha: 0.5),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              isFollowers
+                                  ? "No followers yet"
+                                  : "Not following anyone yet",
+                              style: const TextStyle(
+                                color: textGrey,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    return ListView.separated(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      itemCount: members.length,
+                      separatorBuilder: (_, _) =>
+                          const Divider(color: cardBorder, height: 1),
+                      itemBuilder: (context, i) {
+                        final m = members[i];
+                        final mName =
+                            "${m['first_name'] ?? ''} ${m['last_name'] ?? ''}"
+                                .trim();
+                        final mAvatar = m['avatar_url'] ?? '';
+                        final mRole = m['role'] ?? 'student';
+
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 4,
+                            horizontal: 8,
+                          ),
+                          leading: CircleAvatar(
+                            radius: 22,
+                            backgroundColor: lightPinkBg,
+                            backgroundImage: mAvatar.isNotEmpty
+                                ? NetworkImage(mAvatar)
+                                : null,
+                            child: mAvatar.isEmpty
+                                ? const Icon(Icons.person, color: primaryPink)
+                                : null,
+                          ),
+                          title: Text(
+                            mName.isNotEmpty ? mName : 'User',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          subtitle: Text(
+                            mRole.toString().toUpperCase(),
+                            style: const TextStyle(
+                              color: textGrey,
+                              fontSize: 11,
+                            ),
+                          ),
+                          trailing: const Icon(
+                            Icons.chevron_right_rounded,
+                            color: textGrey,
+                          ),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            if (m['id'] != targetUserId) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => UserProfileScreen(
+                                    userId: m['id'].toString(),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

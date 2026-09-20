@@ -222,11 +222,26 @@ class _FeedViewerScreenState extends State<FeedViewerScreen> {
               .inFilter("post_id", postIds)
         else
           Future.value([]),
+        if (postIds.isNotEmpty && userId != null)
+          supabase
+              .from("discussion_bookmarks")
+              .select("post_id")
+              .eq("user_id", userId)
+              .inFilter("post_id", postIds)
+        else
+          Future.value([]),
       ]);
 
       final profilesRes = results[0];
       final likesRes = results[1];
       final commentsRes = results[2];
+      final bookmarksRes = results.length > 3 ? results[3] : [];
+
+      Set<String> bookmarksSet = {};
+      for (var b in bookmarksRes) {
+        final pId = b['post_id']?.toString() ?? '';
+        if (pId.isNotEmpty) bookmarksSet.add(pId);
+      }
 
       Map<String, Map<String, dynamic>> profilesMap = {};
       for (var p in profilesRes) {
@@ -344,6 +359,7 @@ class _FeedViewerScreenState extends State<FeedViewerScreen> {
           avatar: authorAvatar,
           likes: likesCount,
           liked: isLikedByMe,
+          saved: bookmarksSet.contains(pId),
           comments: commentsCount,
         );
         loadedPosts.add(postItem);

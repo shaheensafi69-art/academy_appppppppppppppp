@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../screens/student_overview_screen.dart';
@@ -47,7 +48,110 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
   bool _isLoading = true;
   bool _isMobileMenuOpen = false;
   int _currentIndex = 0;
+  final List<int> _navHistory = [];
   Map<String, dynamic>? _userProfile;
+
+  void _navigateToTab(int index) {
+    if (_currentIndex == index) return;
+    _navHistory.add(_currentIndex);
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  void _handleBackPress() {
+    if (_isMobileMenuOpen) {
+      setState(() => _isMobileMenuOpen = false);
+      return;
+    }
+    if (_navHistory.isNotEmpty) {
+      setState(() {
+        _currentIndex = _navHistory.removeLast();
+      });
+    } else if (_currentIndex != 0) {
+      setState(() {
+        _currentIndex = 0;
+      });
+    } else {
+      _showExitConfirmationDialog();
+    }
+  }
+
+  Future<void> _showExitConfirmationDialog() async {
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    final res = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF494AC).withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.exit_to_app_rounded,
+                color: Color(0xFFF494AC),
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              isRtl ? "خروج از برنامه" : "Exit App",
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E293B),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          isRtl
+              ? "آیا مطمئن هستید که می‌خواهید از صفی اکادمی خارج شوید؟"
+              : "Are you sure you want to exit Safi Academy?",
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF64748B),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              isRtl ? "خیر" : "No",
+              style: const TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF494AC),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              isRtl ? "بله، خروج" : "Yes, Exit",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (res == true) {
+      SystemNavigator.pop();
+    }
+  }
 
   static const Color primaryPink = Color(0xFFF494AC);
   static const Color backgroundWhite = Colors.white;
@@ -87,8 +191,8 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
         return const StudentTradingJournalScreen();
       case 11:
         return CreatePostScreen(
-          onPostSuccess: () => setState(() => _currentIndex = 12),
-          onCancel: () => setState(() => _currentIndex = 12),
+          onPostSuccess: () => _navigateToTab(12),
+          onCancel: _handleBackPress,
         );
       case 12:
         return const StudentFeedScreen();
@@ -106,14 +210,16 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
         return const StudentSupportScreen();
       case 19:
         return UserProfileScreen(
-          onExit: () => setState(() => _currentIndex = 0),
+          onExit: _handleBackPress,
         );
       case 20:
         return const SettingsScreen();
       case 21:
         return StudentReelsScreen(isActive: _currentIndex == 21);
       case 22:
-        return const ShopScreen();
+        return ShopScreen(
+          onBack: _handleBackPress,
+        );
       default:
         return const StudentOverviewScreen();
     }
@@ -263,218 +369,224 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
 
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     final floatBottomMargin = bottomPadding > 0 ? bottomPadding + 4 : 12.0;
-
-    if (isWideScreen) {
-      return Scaffold(
-        backgroundColor: backgroundWhite,
-        body: Row(
-          children: [
-            Container(
-              width: screenWidth >= 1024 ? 240 : 80,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(2, 0),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  const SizedBox(height: 24),
-                  Image.asset(
-                    'assets/logo-without-b.png',
-                    height: 40,
-                    errorBuilder: (_, _, _) =>
-                        const Icon(Icons.school, color: primaryPink, size: 32),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildSidebarCreateButton(screenWidth >= 1024),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      children: [
-                        _buildSidebarItem(
-                          0,
-                          Icons.dashboard_rounded,
-                          context.l10n.overview,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          1,
-                          Icons.campaign_rounded,
-                          context.l10n.notices,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          2,
-                          Icons.menu_book_rounded,
-                          context.l10n.myCourses,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          3,
-                          Icons.favorite_rounded,
-                          context.l10n.wishlist,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          4,
-                          Icons.podcasts_rounded,
-                          context.l10n.liveCampus,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          5,
-                          Icons.assignment_rounded,
-                          context.l10n.assignments,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          6,
-                          Icons.quiz_rounded,
-                          context.l10n.examsQuizzes,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          7,
-                          Icons.workspace_premium_rounded,
-                          context.l10n.certificates,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          8,
-                          Icons.school_rounded,
-                          context.l10n.scholarships,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          9,
-                          Icons.receipt_long_rounded,
-                          context.l10n.paymentsInvoices,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          10,
-                          Icons.show_chart_rounded,
-                          context.l10n.tradingJournal,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          12,
-                          Icons.dynamic_feed_rounded,
-                          context.l10n.socialFeed,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          21,
-                          Icons.video_library_rounded,
-                          context.l10n.reels,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          13,
-                          Icons.account_balance_wallet_rounded,
-                          context.l10n.walletReferral,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          14,
-                          Icons.people_alt_rounded,
-                          context.l10n.friendsNetwork,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          15,
-                          Icons.emoji_events_rounded,
-                          context.l10n.achievements,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          16,
-                          Icons.smart_toy_rounded,
-                          context.l10n.aiAssistant,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          18,
-                          Icons.support_agent_rounded,
-                          context.l10n.supportTickets,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          17,
-                          Icons.help_outline_rounded,
-                          context.l10n.helpCenter,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          20,
-                          Icons.settings_rounded,
-                          context.l10n.settings,
-                          isWideScreen,
-                        ),
-                        _buildSidebarItem(
-                          19,
-                          Icons.person_rounded,
-                          context.l10n.myProfile,
-                          isWideScreen,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.logout_rounded,
-                        color: Colors.redAccent,
-                      ),
-                      onPressed: _logout,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: IndexedStack(index: _currentIndex, children: _screens),
-            ),
-          ],
-        ),
-      );
-    }
-
     final bool isCreatePost = _currentIndex == 11;
 
-    return Scaffold(
-      backgroundColor: backgroundWhite,
-      extendBody: true,
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: (isReels || _isInSocialSection || isCreatePost)
-                    ? 0
-                    : (MediaQuery.of(context).padding.top + 8),
-                bottom: (_isInSocialSection || isCreatePost) ? 0 : 85,
-              ),
-              child: IndexedStack(index: _currentIndex, children: _screens),
+    final Widget layoutContent = isWideScreen
+        ? Scaffold(
+            backgroundColor: backgroundWhite,
+            body: Row(
+              children: [
+                Container(
+                  width: screenWidth >= 1024 ? 240 : 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(2, 0),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 24),
+                      Image.asset(
+                        'assets/logo-without-b.png',
+                        height: 40,
+                        errorBuilder: (_, _, _) =>
+                            const Icon(Icons.school, color: primaryPink, size: 32),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildSidebarCreateButton(screenWidth >= 1024),
+                      const SizedBox(height: 12),
+                      Expanded(
+                        child: ListView(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          children: [
+                            _buildSidebarItem(
+                              0,
+                              Icons.dashboard_rounded,
+                              context.l10n.overview,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              1,
+                              Icons.campaign_rounded,
+                              context.l10n.notices,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              2,
+                              Icons.menu_book_rounded,
+                              context.l10n.myCourses,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              3,
+                              Icons.favorite_rounded,
+                              context.l10n.wishlist,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              4,
+                              Icons.podcasts_rounded,
+                              context.l10n.liveCampus,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              5,
+                              Icons.assignment_rounded,
+                              context.l10n.assignments,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              6,
+                              Icons.quiz_rounded,
+                              context.l10n.examsQuizzes,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              7,
+                              Icons.workspace_premium_rounded,
+                              context.l10n.certificates,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              8,
+                              Icons.school_rounded,
+                              context.l10n.scholarships,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              9,
+                              Icons.receipt_long_rounded,
+                              context.l10n.paymentsInvoices,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              10,
+                              Icons.show_chart_rounded,
+                              context.l10n.tradingJournal,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              12,
+                              Icons.dynamic_feed_rounded,
+                              context.l10n.socialFeed,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              21,
+                              Icons.play_circle_fill_rounded,
+                              "Reels",
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              13,
+                              Icons.account_balance_wallet_rounded,
+                              context.l10n.walletReferral,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              14,
+                              Icons.people_alt_rounded,
+                              context.l10n.friendsNetwork,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              15,
+                              Icons.emoji_events_rounded,
+                              context.l10n.achievements,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              16,
+                              Icons.smart_toy_rounded,
+                              context.l10n.aiAssistant,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              18,
+                              Icons.support_agent_rounded,
+                              context.l10n.supportTickets,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              17,
+                              Icons.help_outline_rounded,
+                              context.l10n.helpCenter,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              20,
+                              Icons.settings_rounded,
+                              context.l10n.settings,
+                              isWideScreen,
+                            ),
+                            _buildSidebarItem(
+                              19,
+                              Icons.person_rounded,
+                              context.l10n.myProfile,
+                              isWideScreen,
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.logout_rounded,
+                            color: Colors.redAccent,
+                          ),
+                          onPressed: _logout,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: IndexedStack(index: _currentIndex, children: _screens),
+                ),
+              ],
             ),
-          ),
-          if (!isCreatePost)
-            Positioned(
-              bottom: floatBottomMargin,
-              left: 16,
-              right: 16,
-              child: _buildFloatingBottomNav(),
+          )
+        : Scaffold(
+            backgroundColor: backgroundWhite,
+            extendBody: true,
+            body: Stack(
+              children: [
+                Positioned.fill(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      top: (isReels || _isInSocialSection || isCreatePost)
+                          ? 0
+                          : (MediaQuery.of(context).padding.top + 8),
+                      bottom: (_isInSocialSection || isCreatePost) ? 0 : 85,
+                    ),
+                    child: IndexedStack(index: _currentIndex, children: _screens),
+                  ),
+                ),
+                if (!isCreatePost)
+                  Positioned(
+                    bottom: floatBottomMargin,
+                    left: 16,
+                    right: 16,
+                    child: _buildFloatingBottomNav(),
+                  ),
+                if (_isMobileMenuOpen) Positioned.fill(child: _buildFullScreenMenu()),
+              ],
             ),
-          if (_isMobileMenuOpen) Positioned.fill(child: _buildFullScreenMenu()),
-        ],
-      ),
+          );
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleBackPress();
+      },
+      child: layoutContent,
     );
   }
 
@@ -492,7 +604,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
         message: label,
         preferBelow: false,
         child: InkWell(
-          onTap: () => setState(() => _currentIndex = index),
+          onTap: () => _navigateToTab(index),
           borderRadius: BorderRadius.circular(16),
           child: Container(
             margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
@@ -545,7 +657,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
             fontSize: 12,
           ),
         ),
-        onTap: () => setState(() => _currentIndex = index),
+        onTap: () => _navigateToTab(index),
       ),
     );
   }
@@ -708,7 +820,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  setState(() => _currentIndex = 11); // Create Post index
+                  _navigateToTab(11); // Create Post index
                 },
               ),
             ],
@@ -864,7 +976,7 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => setState(() => _currentIndex = index),
+      onTap: () => _navigateToTab(index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
@@ -1016,9 +1128,9 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
                                 );
                               } else {
                                 setState(() {
-                                  _currentIndex = screenIndex;
                                   _isMobileMenuOpen = false;
                                 });
+                                _navigateToTab(screenIndex);
                               }
                             }
                           },
@@ -1109,9 +1221,9 @@ class _StudentMainLayoutState extends State<StudentMainLayout> {
               GestureDetector(
                     onTap: () {
                       setState(() {
-                        _currentIndex = 19;
                         _isMobileMenuOpen = false;
                       });
+                      _navigateToTab(19);
                     },
                     child: Container(
                       margin: const EdgeInsets.symmetric(

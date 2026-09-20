@@ -17,6 +17,7 @@ class FeedPostItem {
   String authorAvatar;
   int likesCount;
   bool isLikedByMe;
+  bool isSavedByMe;
   int commentsCount;
 
   String moodTag;
@@ -33,6 +34,7 @@ class FeedPostItem {
     this.authorAvatar = "",
     this.likesCount = 0,
     this.isLikedByMe = false,
+    this.isSavedByMe = false,
     this.commentsCount = 0,
   })  : moodTag = _extractMood(rawTitle),
         cleanTitle = _extractCleanTitle(rawTitle);
@@ -59,6 +61,7 @@ class FeedPostItem {
     String avatar = "",
     int likes = 0,
     bool liked = false,
+    bool saved = false,
     int comments = 0,
   }) {
     return FeedPostItem(
@@ -72,6 +75,7 @@ class FeedPostItem {
       authorAvatar: avatar,
       likesCount: likes,
       isLikedByMe: liked,
+      isSavedByMe: saved,
       commentsCount: comments,
     );
   }
@@ -108,12 +112,14 @@ class _FeedPostCardState extends State<FeedPostCard> {
   static const Color cardBorder = Color(0xFFF3F4F6);
 
   late bool isLiked;
+  late bool isSaved;
   late int likesCount;
 
   @override
   void initState() {
     super.initState();
     isLiked = widget.post.isLikedByMe;
+    isSaved = widget.post.isSavedByMe;
     likesCount = widget.post.likesCount;
   }
 
@@ -121,9 +127,66 @@ class _FeedPostCardState extends State<FeedPostCard> {
   void didUpdateWidget(covariant FeedPostCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.post.isLikedByMe != widget.post.isLikedByMe ||
+        oldWidget.post.isSavedByMe != widget.post.isSavedByMe ||
         oldWidget.post.likesCount != widget.post.likesCount) {
       isLiked = widget.post.isLikedByMe;
+      isSaved = widget.post.isSavedByMe;
       likesCount = widget.post.likesCount;
+    }
+  }
+
+  Future<void> _toggleBookmark() async {
+    final user = supabase.auth.currentUser;
+    if (user == null) {
+      AuthRequiredModal.show(context, actionName: "save posts");
+      return;
+    }
+
+    final willSave = !isSaved;
+    setState(() {
+      isSaved = willSave;
+      widget.post.isSavedByMe = isSaved;
+    });
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              willSave ? Icons.bookmark_added_rounded : Icons.bookmark_remove_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              willSave ? "Post saved to your bookmarks 🔖" : "Post removed from bookmarks",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: willSave ? const Color(0xFF1E293B) : const Color(0xFF475569),
+      ),
+    );
+
+    try {
+      if (willSave) {
+        await supabase.from("discussion_bookmarks").insert({
+          "post_id": widget.post.id,
+          "user_id": user.id,
+        });
+      } else {
+        await supabase
+            .from("discussion_bookmarks")
+            .delete()
+            .eq("post_id", widget.post.id)
+            .eq("user_id", user.id);
+      }
+    } catch (e) {
+      debugPrint("Error toggling bookmark: $e");
     }
   }
 
@@ -509,7 +572,7 @@ class _FeedPostCardState extends State<FeedPostCard> {
 
           // دکمه‌های تعاملی
           Padding(
-            padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
+            padding: const EdgeInsets.only(left: 6, right: 6, bottom: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -527,15 +590,15 @@ class _FeedPostCardState extends State<FeedPostCard> {
                                 ? Icons.thumb_up_rounded
                                 : Icons.thumb_up_outlined,
                             color: isLiked ? primaryPink : textGrey,
-                            size: 20,
+                            size: 19,
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 4),
                           Text(
                             "Like",
                             style: TextStyle(
                               color: isLiked ? primaryPink : textGrey,
                               fontWeight: FontWeight.bold,
-                              fontSize: 13,
+                              fontSize: 12,
                             ),
                           ),
                         ],
@@ -555,15 +618,45 @@ class _FeedPostCardState extends State<FeedPostCard> {
                           Icon(
                             Icons.chat_bubble_outline_rounded,
                             color: textGrey,
-                            size: 20,
+                            size: 19,
                           ),
-                          SizedBox(width: 8),
+                          SizedBox(width: 4),
                           Text(
                             "Comment",
                             style: TextStyle(
                               color: textGrey,
                               fontWeight: FontWeight.bold,
-                              fontSize: 13,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: InkWell(
+                    onTap: _toggleBookmark,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            isSaved
+                                ? Icons.bookmark_rounded
+                                : Icons.bookmark_border_rounded,
+                            color: isSaved ? primaryPink : textGrey,
+                            size: 19,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "Save",
+                            style: TextStyle(
+                              color: isSaved ? primaryPink : textGrey,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
                             ),
                           ),
                         ],
@@ -583,15 +676,15 @@ class _FeedPostCardState extends State<FeedPostCard> {
                           Icon(
                             Icons.share_outlined,
                             color: textGrey,
-                            size: 20,
+                            size: 19,
                           ),
-                          SizedBox(width: 8),
+                          SizedBox(width: 4),
                           Text(
                             "Share",
                             style: TextStyle(
                               color: textGrey,
                               fontWeight: FontWeight.bold,
-                              fontSize: 13,
+                              fontSize: 12,
                             ),
                           ),
                         ],
