@@ -87,6 +87,8 @@
     </array>
     <key>GADApplicationIdentifier</key>
     <string>ca-app-pub-6551903544426492~7497879858</string>
+    <key>GADNativeAdValidatorEnabled</key>
+    <false/>
     <key>SKAdNetworkItems</key>
     <array>
         <dict>

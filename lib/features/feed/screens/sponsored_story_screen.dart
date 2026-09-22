@@ -47,9 +47,7 @@ class _SponsoredStoryScreenState extends State<SponsoredStoryScreen> {
   void _loadAd() {
     if (!AdService.instance.isPlatformSupported) return;
 
-    final adUnitId = AdService.useTestAdUnits
-        ? AdService.testNativeAdUnitIdAndroid
-        : AdService.instance.nativeAdUnitId;
+    final adUnitId = AdService.instance.nativeAdUnitId;
 
     _nativeAd = NativeAd(
       adUnitId: adUnitId,
@@ -84,51 +82,7 @@ class _SponsoredStoryScreenState extends State<SponsoredStoryScreen> {
           }
         },
         onAdFailedToLoad: (ad, error) {
-          debugPrint('[SponsoredStoryScreen] Ad failed: ${error.message}. Trying test unit fallback...');
-          try {
-            ad.dispose();
-          } catch (_) {}
-          _loadFallbackTestAd();
-        },
-      ),
-    )..load();
-  }
-
-  void _loadFallbackTestAd() {
-    _nativeAd = NativeAd(
-      adUnitId: AdService.testNativeAdUnitIdAndroid,
-      request: const AdRequest(),
-      nativeTemplateStyle: NativeTemplateStyle(
-        templateType: TemplateType.medium,
-        mainBackgroundColor: const Color(0xFF1E293B),
-        cornerRadius: 24.0,
-        callToActionTextStyle: NativeTemplateTextStyle(
-          textColor: Colors.white,
-          backgroundColor: const Color(0xFFF494AC),
-          style: NativeTemplateFontStyle.bold,
-          size: 14.0,
-        ),
-        primaryTextStyle: NativeTemplateTextStyle(
-          textColor: Colors.white,
-          style: NativeTemplateFontStyle.bold,
-          size: 15.0,
-        ),
-        secondaryTextStyle: NativeTemplateTextStyle(
-          textColor: const Color(0xFF94A3B8),
-          style: NativeTemplateFontStyle.normal,
-          size: 13.0,
-        ),
-      ),
-      listener: NativeAdListener(
-        onAdLoaded: (ad) {
-          if (mounted) {
-            setState(() {
-              _isAdLoaded = true;
-            });
-          }
-        },
-        onAdFailedToLoad: (ad, error) {
-          debugPrint('[SponsoredStoryScreen] Fallback test ad failed: ${error.message}');
+          debugPrint('[SponsoredStoryScreen] Ad failed: ${error.message}');
           try {
             ad.dispose();
           } catch (_) {}

@@ -41,20 +41,9 @@ class AdService {
     try {
       await MobileAds.instance.initialize();
 
-      // ثبت شناسه دستگاه تستی جهت نمایش امن تبلیغات تستی روی دستگاه شما
-      // گوگل ادموب روی این دستگاه تبلیغ تستی می‌دهد و برای سایر کاربران در سراسر دنیا تبلیغات واقعی و درآمدزا پخش می‌کند
-      await MobileAds.instance.updateRequestConfiguration(
-        RequestConfiguration(
-          testDeviceIds: [
-            '6a39eaef-a912-4bd9-af60-926f848b5573',
-            '6A39EAEF-A912-4BD9-AF60-926F848B5573',
-          ],
-        ),
-      );
-
       _isInitialized = true;
       debugPrint(
-        '[AdService] Google Mobile Ads initialized successfully (Test Device ID registered)',
+        '[AdService] Google Mobile Ads initialized successfully (Production Mode)',
       );
 
       // 🔥 به محض بالا آمدن برنامه، ادز را در بکگراند لود کن تا کاربر بدون لودینگ آن را ببیند
@@ -77,9 +66,7 @@ class AdService {
     if (_preloadedShopBanner != null || _isLoadingShopBanner) return;
 
     _isLoadingShopBanner = true;
-    final adUnitId = useTestAdUnits
-        ? 'ca-app-pub-3940256099942544/6300978111'
-        : (dotenv.env['ADMOB_FEED_AD_UNIT_ID'] ?? prodNativeAdUnitId);
+    final adUnitId = dotenv.env['ADMOB_FEED_AD_UNIT_ID'] ?? prodNativeAdUnitId;
 
     final banner = BannerAd(
       adUnitId: adUnitId,
@@ -92,25 +79,9 @@ class AdService {
           _isLoadingShopBanner = false;
         },
         onAdFailedToLoad: (ad, error) {
-          debugPrint('[AdService] ❌ Failed to preload Shop Banner: ${error.message}. Trying test unit...');
+          debugPrint('[AdService] ❌ Failed to preload Shop Banner: ${error.message}');
           ad.dispose();
-          // Fallback preload test unit
-          final testBanner = BannerAd(
-            adUnitId: 'ca-app-pub-3940256099942544/6300978111',
-            size: AdSize.banner,
-            request: const AdRequest(),
-            listener: BannerAdListener(
-              onAdLoaded: (tAd) {
-                _preloadedShopBanner = tAd as BannerAd;
-                _isLoadingShopBanner = false;
-              },
-              onAdFailedToLoad: (tAd, tErr) {
-                tAd.dispose();
-                _isLoadingShopBanner = false;
-              },
-            ),
-          );
-          testBanner.load();
+          _isLoadingShopBanner = false;
         },
       ),
     );
@@ -304,36 +275,12 @@ class AdService {
     return null;
   }
 
-  // آیدی‌های رسمی و تضمینی تست Google AdMob (همیشه با ۱۰۰٪ Fill Rate بدون معطلی لود می‌شوند)
-  static const String testNativeAdUnitIdAndroid =
-      'ca-app-pub-3940256099942544/2247696110';
-  static const String testNativeAdUnitIdIOS =
-      'ca-app-pub-3940256099942544/3986624511';
-
-  // آیدی اصلی و اختصاصی درآمدزایی حساب شما (از اسکرین‌شات ادموب: Safi_Feed_Reels_Native)
+  // آیدی اصلی و اختصاصی درآمدزایی حساب شما (از پنل ادموب: Safi_Feed_Reels_Native)
   static const String prodNativeAdUnitId =
       'ca-app-pub-6551903544426492/6979005105';
 
-  /// متغیر کنترل حالت تست یا اصلی
-  static bool? _overrideUseTestAdUnits;
-  static bool get useTestAdUnits {
-    if (_overrideUseTestAdUnits != null) {
-      return _overrideUseTestAdUnits!;
-    }
-    final envVal = dotenv.env['ADMOB_USE_TEST_ADS'];
-    if (envVal != null) {
-      return envVal.trim().toLowerCase() == 'true';
-    }
-    return false;
-  }
-
-  static set useTestAdUnits(bool value) {
-    _overrideUseTestAdUnits = value;
-  }
-
   /// Official Native Ad Unit ID for Feed & Reels
-  /// از کلید اصلی جهت کسب درآمد دلاری استفاده می‌شود
-  /// دیوایس اختصاصی شما از طریق testDeviceIds ثبت شده تا بدون خطر بن شدن تست امن دریافت کند
+  /// منحصراً از شناسه اصلی جهت کسب درآمد دلاری استفاده می‌شود
   String get nativeAdUnitId {
     final envId = dotenv.env['ADMOB_FEED_AD_UNIT_ID'];
     if (envId != null && envId.isNotEmpty) return envId;

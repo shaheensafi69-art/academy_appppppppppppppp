@@ -81,62 +81,7 @@ class _FeedAdCardState extends State<FeedAdCard> {
           },
           onAdFailedToLoad: (ad, error) {
             debugPrint(
-              '[FeedAdCard] Primary ad failed to load: ${error.message} (Code: ${error.code}). Loading guaranteed fallback test ad...',
-            );
-            try {
-              ad.dispose();
-            } catch (_) {}
-            _loadFallbackTestNativeAd();
-          },
-        ),
-      );
-
-      _nativeAd?.load();
-    } catch (e) {
-      debugPrint('[FeedAdCard] _loadFreshNativeAd catch: $e');
-      if (mounted) setState(() => _hasError = true);
-    }
-  }
-
-  void _loadFallbackTestNativeAd() {
-    try {
-      final fallbackUnitId = AdService.testNativeAdUnitIdAndroid;
-      _nativeAd = NativeAd(
-        adUnitId: fallbackUnitId,
-        request: const AdRequest(),
-        nativeTemplateStyle: NativeTemplateStyle(
-          templateType: TemplateType.medium,
-          mainBackgroundColor: Colors.white,
-          cornerRadius: 24.0,
-          callToActionTextStyle: NativeTemplateTextStyle(
-            textColor: Colors.white,
-            backgroundColor: primaryPink,
-            style: NativeTemplateFontStyle.bold,
-            size: 14.0,
-          ),
-          primaryTextStyle: NativeTemplateTextStyle(
-            textColor: const Color(0xFF1E293B),
-            style: NativeTemplateFontStyle.bold,
-            size: 15.0,
-          ),
-          secondaryTextStyle: NativeTemplateTextStyle(
-            textColor: const Color(0xFF64748B),
-            style: NativeTemplateFontStyle.normal,
-            size: 13.0,
-          ),
-        ),
-        listener: NativeAdListener(
-          onAdLoaded: (ad) {
-            if (mounted) {
-              setState(() {
-                _isAdLoaded = true;
-                _hasError = false;
-              });
-            }
-          },
-          onAdFailedToLoad: (ad, error) {
-            debugPrint(
-              '[FeedAdCard] Fallback test ad also failed: ${error.message}',
+              '[FeedAdCard] Ad failed to load: ${error.message} (Code: ${error.code})',
             );
             try {
               ad.dispose();
@@ -150,15 +95,11 @@ class _FeedAdCardState extends State<FeedAdCard> {
           },
         ),
       );
+
       _nativeAd?.load();
     } catch (e) {
-      debugPrint('[FeedAdCard] _loadFallbackTestNativeAd catch: $e');
-      if (mounted) {
-        setState(() {
-          _isAdLoaded = false;
-          _hasError = true;
-        });
-      }
+      debugPrint('[FeedAdCard] _loadFreshNativeAd catch: $e');
+      if (mounted) setState(() => _hasError = true);
     }
   }
 
@@ -245,14 +186,10 @@ class _FeedAdCardState extends State<FeedAdCard> {
 
           // In-feed Native Template Ad widget (rendered instantly with zero wait)
           ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                minWidth: 320,
-                minHeight: 320,
-                maxWidth: 400,
-                maxHeight: 360,
-              ),
+            borderRadius: BorderRadius.circular(18),
+            child: SizedBox(
+              width: double.infinity,
+              height: 365,
               child: AdWidget(ad: _nativeAd!),
             ),
           ),

@@ -29,10 +29,7 @@ class _ShopAdBannerState extends State<ShopAdBanner> {
   }
 
   void _loadBanner() {
-    // Try native ad or banner ad with resilient fallback
-    final adUnitId = AdService.useTestAdUnits
-        ? 'ca-app-pub-3940256099942544/6300978111'
-        : AdService.instance.nativeAdUnitId;
+    final adUnitId = AdService.instance.nativeAdUnitId;
 
     _bannerAd = BannerAd(
       adUnitId: adUnitId,
@@ -47,30 +44,7 @@ class _ShopAdBannerState extends State<ShopAdBanner> {
           }
         },
         onAdFailedToLoad: (ad, error) {
-          debugPrint('[ShopAdBanner] First tier failed: ${error.message}. Trying test fallback...');
-          ad.dispose();
-          // Fallback tier: Test Banner Unit
-          _loadFallbackBanner();
-        },
-      ),
-    )..load();
-  }
-
-  void _loadFallbackBanner() {
-    _bannerAd = BannerAd(
-      adUnitId: 'ca-app-pub-3940256099942544/6300978111',
-      size: AdSize.banner,
-      request: const AdRequest(),
-      listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          if (mounted) {
-            setState(() {
-              _isLoaded = true;
-            });
-          }
-        },
-        onAdFailedToLoad: (ad, error) {
-          debugPrint('[ShopAdBanner] Fallback ad failed: ${error.message}');
+          debugPrint('[ShopAdBanner] Banner failed to load: ${error.message}');
           ad.dispose();
           if (mounted) {
             setState(() {
