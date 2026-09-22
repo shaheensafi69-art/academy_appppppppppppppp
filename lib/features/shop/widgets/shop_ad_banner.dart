@@ -105,7 +105,11 @@ class _ShopAdBannerState extends State<ShopAdBanner> {
               color: palette.primary.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.verified_rounded, color: palette.primary, size: 22),
+            child: Icon(
+              Icons.verified_rounded,
+              color: palette.primary,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -116,7 +120,10 @@ class _ShopAdBannerState extends State<ShopAdBanner> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: palette.primary,
                         borderRadius: BorderRadius.circular(6),

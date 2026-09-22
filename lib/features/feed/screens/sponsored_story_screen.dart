@@ -145,7 +145,11 @@ class _SponsoredStoryScreenState extends State<SponsoredStoryScreen> {
                       child: const CircleAvatar(
                         radius: 18,
                         backgroundColor: Colors.black,
-                        child: Icon(Icons.campaign_rounded, color: Colors.white, size: 20),
+                        child: Icon(
+                          Icons.campaign_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -161,7 +165,10 @@ class _SponsoredStoryScreenState extends State<SponsoredStoryScreen> {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 1,
+                          ),
                           decoration: BoxDecoration(
                             color: palette.primary.withValues(alpha: 0.25),
                             borderRadius: BorderRadius.circular(6),
@@ -235,7 +242,10 @@ class _SponsoredStoryScreenState extends State<SponsoredStoryScreen> {
                     icon: const Icon(Icons.open_in_new, size: 18),
                     label: const Text(
                       'مشاهده جزییات پیشنهاد • View Offer',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -270,7 +280,11 @@ class _SponsoredStoryScreenState extends State<SponsoredStoryScreen> {
               gradient: palette.gradient,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.star_rounded, color: Colors.white, size: 42),
+            child: const Icon(
+              Icons.star_rounded,
+              color: Colors.white,
+              size: 42,
+            ),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -315,7 +329,11 @@ class _SponsoredStoryScreenState extends State<SponsoredStoryScreen> {
       ),
       child: Text(
         label,
-        style: TextStyle(color: palette.primary, fontSize: 11, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          color: palette.primary,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

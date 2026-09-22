@@ -79,7 +79,9 @@ class AdService {
           _isLoadingShopBanner = false;
         },
         onAdFailedToLoad: (ad, error) {
-          debugPrint('[AdService] ❌ Failed to preload Shop Banner: ${error.message}');
+          debugPrint(
+            '[AdService] ❌ Failed to preload Shop Banner: ${error.message}',
+          );
           ad.dispose();
           _isLoadingShopBanner = false;
         },

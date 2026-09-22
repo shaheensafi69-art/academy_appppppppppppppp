@@ -112,7 +112,10 @@ class _FeedAdCardState extends State<FeedAdCard> {
   @override
   Widget build(BuildContext context) {
     // اگر در پلتفرم دسکتاپ یا خطای بارگذاری گوگل باشد، کارت تبلیغاتی تضمینی را نشان بده
-    if (!AdService.instance.isPlatformSupported || !_isAdLoaded || _nativeAd == null || _hasError) {
+    if (!AdService.instance.isPlatformSupported ||
+        !_isAdLoaded ||
+        _nativeAd == null ||
+        _hasError) {
       return _buildDesktopPreviewCard();
     }
 
